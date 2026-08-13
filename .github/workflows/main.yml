@@ -38,4 +38,4 @@ jobs:
 
         run: |
 
-          python afternoon_screener
+          python afternoon_screener.py
