@@ -86,7 +86,7 @@ def get_intraday(ticker: str):
         return None
 
 
-def score_candidate(df: pd.DataFrame):
+def score_candidate(df: pd.DataFrame,ticker:str):
     """
     12:00時点までのデータでスコア。
     実運用では後からWFAで重みを検証する。
@@ -247,7 +247,7 @@ def main():
         if df is None:
             continue
 
-        r = score_candidate(df)
+        r = score_candidate(df,ticker)
         if r:
             results.append(r)
 
