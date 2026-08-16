@@ -371,7 +371,159 @@ def download_5m(ticker):
         )
 
         return None
+# ============================================================
 
+# RS計算
+
+# ============================================================
+
+def calculate_rs():
+
+    market = download_daily(
+
+        MARKET_TICKER
+
+    )
+
+    if market is None:
+
+        return {}
+
+    market_close = pd.to_numeric(
+
+        market["close"],
+
+        errors="coerce"
+
+    ).dropna()
+
+    market_close.index = pd.to_datetime(
+
+        market_close.index
+
+    ).normalize()
+
+    market_return = (
+
+        market_close.shift(1)
+
+        /
+
+        market_close.shift(
+
+            RS_LOOKBACK + 1
+
+        )
+
+        - 1
+
+    )
+
+    returns = {}
+
+    for ticker in UNIVERSE:
+
+        df = download_daily(
+
+            ticker
+
+        )
+
+        if df is None:
+
+            continue
+
+        close = pd.to_numeric(
+
+            df["close"],
+
+            errors="coerce"
+
+        ).dropna()
+
+        if len(close) < RS_LOOKBACK + 2:
+
+            continue
+
+        close.index = pd.to_datetime(
+
+            close.index
+
+        ).normalize()
+
+        returns[ticker] = (
+
+            close.shift(1)
+
+            /
+
+            close.shift(
+
+                RS_LOOKBACK + 1
+
+            )
+
+            - 1
+
+        )
+
+    if not returns:
+
+        return {}
+
+    stocks = pd.DataFrame(
+
+        returns
+
+    )
+
+    common = stocks.index.intersection(
+
+        market_return.index
+
+    )
+
+    stocks = stocks.loc[common]
+
+    market_return = market_return.loc[common]
+
+    relative = stocks.sub(
+
+        market_return,
+
+        axis=0
+
+    )
+
+    rs = (
+
+        relative
+
+        .rank(
+
+            axis=1,
+
+            pct=True
+
+        )
+
+        * 100
+
+    )
+
+    today = datetime.now(TZ).date()
+
+    valid = rs[
+
+        rs.index.date < today
+
+    ]
+
+    if valid.empty:
+
+        return {}
+
+    return valid.iloc[-1].dropna().to_dict()
 # ============================================================
 
 # 起動テスト
