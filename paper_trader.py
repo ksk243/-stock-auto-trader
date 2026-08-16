@@ -1250,7 +1250,7 @@ def run_1245():
 
             lines.append("")
 
-            lines.append("候補:") l
+            lines.append("候補:") 
 
             for c in candidates[:10]:
 
