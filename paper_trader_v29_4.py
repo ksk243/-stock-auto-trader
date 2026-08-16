@@ -20,37 +20,25 @@ import yfinance as yf
 
 # LONG + SHORT 各1倍
 
+# 完全No-Future
+
 # ============================================================
 
 TZ = ZoneInfo("Asia/Tokyo")
 
-# ----------------------------
+# ============================================================
 
-# 初期資産
+# 基本設定
+
+# ============================================================
 
 # キオクシア26株 × 金曜日終値
 
-# 1,117,792円
-
-# ----------------------------
-
 INITIAL_CAPITAL = 1_117_792
-
-# ----------------------------
-
-# レバレッジ
-
-# ----------------------------
 
 LONG_LEVERAGE = 1.0
 
 SHORT_LEVERAGE = 1.0
-
-# ----------------------------
-
-# RS
-
-# ----------------------------
 
 RS_LOOKBACK = 20
 
@@ -58,21 +46,9 @@ LONG_RS_THRESHOLD = 70.0
 
 SHORT_RS_THRESHOLD = 30.0
 
-# ----------------------------
-
-# TP / SL
-
-# ----------------------------
-
 TP = 0.020
 
 SL = 0.015
-
-# ----------------------------
-
-# 時刻
-
-# ----------------------------
 
 MORNING_START = "09:00"
 
@@ -80,29 +56,11 @@ MORNING_END = "12:40"
 
 ENTRY_TIME = "12:45"
 
-# ----------------------------
-
-# 最大ポジション数
-
-# ----------------------------
-
 MAX_LONG_POSITIONS = 10
 
 MAX_SHORT_POSITIONS = 10
 
-# ----------------------------
-
-# ETF / 市場RS
-
-# ----------------------------
-
 MARKET_TICKER = "1306.T"
-
-# ----------------------------
-
-# ファイル
-
-# ----------------------------
 
 PORTFOLIO_FILE = "data/v29_4_portfolio.json"
 
@@ -110,7 +68,7 @@ TRADES_FILE = "data/v29_4_trades.csv"
 
 # ============================================================
 
-# ユニバース
+# 銘柄ユニバース
 
 # ============================================================
 
@@ -214,7 +172,7 @@ UNIVERSE = [
 
 # ============================================================
 
-# Yahoo共通
+# Yahooデータ整形
 
 # ============================================================
 
@@ -226,7 +184,13 @@ def clean_yahoo(df):
 
     if isinstance(df.columns, pd.MultiIndex):
 
-        df.columns = df.columns.get_level_values(0)
+        df.columns = (
+
+            df.columns
+
+            .get_level_values(0)
+
+        )
 
     df.columns = [
 
@@ -278,7 +242,11 @@ def clean_yahoo(df):
 
         return None
 
-    idx = pd.to_datetime(df.index)
+    idx = pd.to_datetime(
+
+        df.index
+
+    )
 
     if getattr(idx, "tz", None) is not None:
 
@@ -298,7 +266,7 @@ def clean_yahoo(df):
 
 # ============================================================
 
-# 日足
+# 日足取得
 
 # ============================================================
 
@@ -336,7 +304,7 @@ def download_daily(ticker):
 
 # ============================================================
 
-# 5分足
+# 5分足取得
 
 # ============================================================
 
@@ -371,13 +339,22 @@ def download_5m(ticker):
         )
 
         return None
+
 # ============================================================
 
 # RS計算
 
+#
+
+# 当日の終値は使わない。
+
+# 12:45時点では前営業日終値までしか利用しない。
+
 # ============================================================
 
 def calculate_rs():
+
+    print("市場データ取得中...")
 
     market = download_daily(
 
@@ -386,6 +363,12 @@ def calculate_rs():
     )
 
     if market is None:
+
+        print(
+
+            "1306.T取得失敗"
+
+        )
 
         return {}
 
@@ -397,11 +380,15 @@ def calculate_rs():
 
     ).dropna()
 
-    market_close.index = pd.to_datetime(
+    market_close.index = (
 
-        market_close.index
+        pd.to_datetime(
 
-    ).normalize()
+            market_close.index
+
+        ).normalize()
+
+    )
 
     market_return = (
 
@@ -421,7 +408,21 @@ def calculate_rs():
 
     returns = {}
 
-    for ticker in UNIVERSE:
+    print(
+
+        f"銘柄RS計算: "
+
+        f"{len(UNIVERSE)}銘柄"
+
+    )
+
+    for i, ticker in enumerate(
+
+        UNIVERSE,
+
+        start=1
+
+    ):
 
         df = download_daily(
 
@@ -441,15 +442,23 @@ def calculate_rs():
 
         ).dropna()
 
-        if len(close) < RS_LOOKBACK + 2:
+        if len(close) < (
+
+            RS_LOOKBACK + 2
+
+        ):
 
             continue
 
-        close.index = pd.to_datetime(
+        close.index = (
 
-            close.index
+            pd.to_datetime(
 
-        ).normalize()
+                close.index
+
+            ).normalize()
+
+        )
 
         returns[ticker] = (
 
@@ -477,15 +486,33 @@ def calculate_rs():
 
     )
 
-    common = stocks.index.intersection(
+    common = (
 
-        market_return.index
+        stocks.index
+
+        .intersection(
+
+            market_return.index
+
+        )
 
     )
 
-    stocks = stocks.loc[common]
+    stocks = stocks.loc[
 
-    market_return = market_return.loc[common]
+        common
+
+    ]
+
+    market_return = (
+
+        market_return.loc[
+
+            common
+
+        ]
+
+    )
 
     relative = stocks.sub(
 
@@ -503,7 +530,9 @@ def calculate_rs():
 
             axis=1,
 
-            pct=True
+            pct=True,
+
+            method="average"
 
         )
 
@@ -511,7 +540,11 @@ def calculate_rs():
 
     )
 
-    today = datetime.now(TZ).date()
+    today = datetime.now(
+
+        TZ
+
+    ).date()
 
     valid = rs[
 
@@ -523,14 +556,33 @@ def calculate_rs():
 
         return {}
 
-    return valid.iloc[-1].dropna().to_dict()
-    # ============================================================
+    latest = (
+
+        valid
+
+        .iloc[-1]
+
+        .dropna()
+
+        .to_dict()
+
+    )
+
+    return latest
+
+# ============================================================
 
 # Morning High / Low
 
 # ============================================================
 
-def get_morning_levels(df, date):
+def get_morning_levels(
+
+    df,
+
+    date
+
+):
 
     day = df[
 
@@ -566,63 +618,133 @@ def get_morning_levels(df, date):
 
     )
 
-    return morning_high, morning_low
+    return (
+
+        morning_high,
+
+        morning_low
+
+    )
 
 # ============================================================
 
-# v29.4 12:45候補抽出
+# 12:45候補抽出
 
-# LONG + SHORT
+#
+
+# LONG:
+
+#   RS >= 70
+
+#   Morning High突破
+
+#
+
+# SHORT:
+
+#   RS <= 30
+
+#   Morning Low突破
+
+#
+
+# Entry価格:
+
+#   ブレイクした5分足のHigh / Low
 
 # ============================================================
 
 def find_candidates():
 
-    print("RS計算中...")
+    print()
+
+    print(
+
+        "RS計算中..."
+
+    )
 
     rs = calculate_rs()
 
     if not rs:
 
-        print("RSデータなし")
+        print(
+
+            "RSデータなし"
+
+        )
 
         return []
 
-    today = datetime.now(TZ).date()
+    today = datetime.now(
+
+        TZ
+
+    ).date()
 
     candidates = []
+
+    long_rs_count = 0
+
+    short_rs_count = 0
 
     for ticker, rs_value in rs.items():
 
         side = None
 
-        if rs_value >= LONG_RS_THRESHOLD:
+        if (
+
+            rs_value
+
+            >=
+
+            LONG_RS_THRESHOLD
+
+        ):
 
             side = "LONG"
 
-        elif rs_value <= SHORT_RS_THRESHOLD:
+            long_rs_count += 1
+
+        elif (
+
+            rs_value
+
+            <=
+
+            SHORT_RS_THRESHOLD
+
+        ):
 
             side = "SHORT"
+
+            short_rs_count += 1
 
         else:
 
             continue
 
-        df = download_5m(ticker)
+        df = download_5m(
+
+            ticker
+
+        )
 
         if df is None:
 
             continue
 
-        morning_high, morning_low = (
+        (
 
-            get_morning_levels(
+            morning_high,
 
-                df,
+            morning_low
 
-                today
+        ) = get_morning_levels(
 
-            )
+            df,
+
+            today
 
         )
 
@@ -648,11 +770,13 @@ def find_candidates():
 
             continue
 
-        # 12:45以降
-
         afternoon = day[
 
-            day.index.strftime("%H:%M")
+            day.index.strftime(
+
+                "%H:%M"
+
+            )
 
             >= ENTRY_TIME
 
@@ -664,17 +788,23 @@ def find_candidates():
 
         # ----------------------------------------------------
 
-        # v29.4
-
-        # 実約定価格 = ブレイクした5分足のHigh / Low
+        # LONG
 
         # ----------------------------------------------------
 
         if side == "LONG":
 
-            for ts, row in afternoon.iterrows():
+            for ts, row in (
 
-                high = float(row["high"])
+                afternoon.iterrows()
+
+            ):
+
+                high = float(
+
+                    row["high"]
+
+                )
 
                 if high >= morning_high:
 
@@ -682,11 +812,17 @@ def find_candidates():
 
                     candidates.append({
 
-                        "ticker": ticker,
+                        "ticker":
 
-                        "side": "LONG",
+                            ticker,
 
-                        "rs": float(rs_value),
+                        "side":
+
+                            "LONG",
+
+                        "rs":
+
+                            float(rs_value),
 
                         "morning_high":
 
@@ -702,11 +838,15 @@ def find_candidates():
 
                         "tp":
 
-                            entry_price * (1 + TP),
+                            entry_price
+
+                            * (1 + TP),
 
                         "sl":
 
-                            entry_price * (1 - SL),
+                            entry_price
+
+                            * (1 - SL),
 
                         "time":
 
@@ -724,9 +864,17 @@ def find_candidates():
 
         elif side == "SHORT":
 
-            for ts, row in afternoon.iterrows():
+            for ts, row in (
 
-                low = float(row["low"])
+                afternoon.iterrows()
+
+            ):
+
+                low = float(
+
+                    row["low"]
+
+                )
 
                 if low <= morning_low:
 
@@ -734,11 +882,17 @@ def find_candidates():
 
                     candidates.append({
 
-                        "ticker": ticker,
+                        "ticker":
 
-                        "side": "SHORT",
+                            ticker,
 
-                        "rs": float(rs_value),
+                        "side":
+
+                            "SHORT",
+
+                        "rs":
+
+                            float(rs_value),
 
                         "morning_high":
 
@@ -754,11 +908,15 @@ def find_candidates():
 
                         "tp":
 
-                            entry_price * (1 - TP),
+                            entry_price
+
+                            * (1 - TP),
 
                         "sl":
 
-                            entry_price * (1 + SL),
+                            entry_price
+
+                            * (1 + SL),
 
                         "time":
 
@@ -770,9 +928,15 @@ def find_candidates():
 
     # --------------------------------------------------------
 
-    # LONGはRSが高い順
+    # LONG:
 
-    # SHORTはRSが低い順
+    # RS高い順
+
+    #
+
+    # SHORT:
+
+    # RS低い順
 
     # --------------------------------------------------------
 
@@ -780,7 +944,11 @@ def find_candidates():
 
         key=lambda x: (
 
-            0 if x["side"] == "LONG" else 1,
+            0
+
+            if x["side"] == "LONG"
+
+            else 1,
 
             -x["rs"]
 
@@ -792,62 +960,159 @@ def find_candidates():
 
     )
 
+    print()
+
     print(
 
-        f"Entry候補 : "
+        f"RS LONG条件通過 : "
+
+        f"{long_rs_count}銘柄"
+
+    )
+
+    print(
+
+        f"RS SHORT条件通過: "
+
+        f"{short_rs_count}銘柄"
+
+    )
+
+    print(
+
+        f"Entry候補       : "
 
         f"{len(candidates)}件"
 
     )
 
-    long_count = sum(
-
-        c["side"] == "LONG"
-
-        for c in candidates
-
-    )
-
-    short_count = sum(
-
-        c["side"] == "SHORT"
-
-        for c in candidates
-
-    )
-
-    print(
-
-        f"LONG候補 : "
-
-        f"{long_count}件"
-
-    )
-
-    print(
-
-        f"SHORT候補 : "
-
-        f"{short_count}件"
-
-    )
-
     return candidates
+
 # ============================================================
 
-# 起動テスト
+# Portfolio
+
+# ============================================================
+
+def load_portfolio():
+
+    os.makedirs(
+
+        "data",
+
+        exist_ok=True
+
+    )
+
+    if not os.path.exists(
+
+        PORTFOLIO_FILE
+
+    ):
+
+        portfolio = {
+
+            "cash":
+
+                INITIAL_CAPITAL,
+
+            "positions":
+
+                [],
+
+            "realized_pnl":
+
+                0.0
+
+        }
+
+        save_portfolio(
+
+            portfolio
+
+        )
+
+        return portfolio
+
+    with open(
+
+        PORTFOLIO_FILE,
+
+        "r",
+
+        encoding="utf-8"
+
+    ) as f:
+
+        return json.load(f)
+
+def save_portfolio(
+
+    portfolio
+
+):
+
+    os.makedirs(
+
+        "data",
+
+        exist_ok=True
+
+    )
+
+    with open(
+
+        PORTFOLIO_FILE,
+
+        "w",
+
+        encoding="utf-8"
+
+    ) as f:
+
+        json.dump(
+
+            portfolio,
+
+            f,
+
+            ensure_ascii=False,
+
+            indent=2
+
+        )
+
+# ============================================================
+
+# テスト用MAIN
 
 # ============================================================
 
 def main():
 
-    now = datetime.now(TZ)
+    now = datetime.now(
 
-    print("=" * 70)
+        TZ
 
-    print("v29.4 Paper Trader")
+    )
 
-    print("=" * 70)
+    print()
+
+    print("=" * 80)
+
+    print(
+
+        "v29.4 LONG + SHORT 各1倍"
+
+    )
+
+    print(
+
+        "Paper Trader 基礎テスト"
+
+    )
+
+    print("=" * 80)
 
     print(
 
@@ -867,23 +1132,23 @@ def main():
 
     print(
 
-        f"LONG     : "
+        f"LONG枠  : "
 
-        f"{LONG_LEVERAGE:.1f}倍"
-
-    )
-
-    print(
-
-        f"SHORT    : "
-
-        f"{SHORT_LEVERAGE:.1f}倍"
+        f"Equity × {LONG_LEVERAGE:.1f}倍"
 
     )
 
     print(
 
-        f"RS       : "
+        f"SHORT枠 : "
+
+        f"Equity × {SHORT_LEVERAGE:.1f}倍"
+
+    )
+
+    print(
+
+        f"RS      : "
 
         f"LONG >= {LONG_RS_THRESHOLD:.0f} / "
 
@@ -893,7 +1158,7 @@ def main():
 
     print(
 
-        f"TP / SL  : "
+        f"TP / SL : "
 
         f"+{TP * 100:.1f}% / "
 
@@ -903,11 +1168,19 @@ def main():
 
     print()
 
-    print("Yahoo Finance 接続テスト...")
+    print(
 
-    df = download_daily(MARKET_TICKER)
+        "Yahoo Finance 接続確認..."
 
-    if df is None:
+    )
+
+    test_daily = download_daily(
+
+        MARKET_TICKER
+
+    )
+
+    if test_daily is None:
 
         raise RuntimeError(
 
@@ -917,15 +1190,19 @@ def main():
 
     print(
 
-        f"1306.T 日足取得OK : "
+        f"1306.T 日足 : "
 
-        f"{len(df)}本"
+        f"{len(test_daily)}本 OK"
 
     )
 
-    df5 = download_5m(MARKET_TICKER)
+    test_5m = download_5m(
 
-    if df5 is None:
+        MARKET_TICKER
+
+    )
+
+    if test_5m is None:
 
         raise RuntimeError(
 
@@ -935,17 +1212,103 @@ def main():
 
     print(
 
-        f"1306.T 5分足取得OK : "
+        f"1306.T 5分足 : "
 
-        f"{len(df5)}本"
+        f"{len(test_5m)}本 OK"
 
     )
 
+    # --------------------------------------------------------
+
+    # 現在が12:45前なら候補抽出はしない
+
+    # --------------------------------------------------------
+
+    if (
+
+        now.hour == 12
+
+        and now.minute >= 45
+
+    ):
+
+        print()
+
+        print(
+
+            "12:45候補抽出を実行..."
+
+        )
+
+        candidates = (
+
+            find_candidates()
+
+        )
+
+        print()
+
+        print(
+
+            "【候補上位20件】"
+
+        )
+
+        if not candidates:
+
+            print(
+
+                "候補なし"
+
+            )
+
+        else:
+
+            for c in candidates[:20]:
+
+                print(
+
+                    f"{c['side']:5s} "
+
+                    f"{c['ticker']:10s} "
+
+                    f"RS={c['rs']:5.1f} "
+
+                    f"Entry=¥{c['entry']:,.1f} "
+
+                    f"TP=¥{c['tp']:,.1f} "
+
+                    f"SL=¥{c['sl']:,.1f}"
+
+                )
+
+    else:
+
+        print()
+
+        print(
+
+            "現在は12:45候補抽出時間外"
+
+        )
+
+        print(
+
+            "Yahoo Finance接続テストのみ完了"
+
+        )
+
     print()
 
-    print("v29.4 基礎動作確認 OK")
+    print("=" * 80)
 
-    print("=" * 70)
+    print(
+
+        "v29.4 基礎テスト完了"
+
+    )
+
+    print("=" * 80)
 
 if __name__ == "__main__":
 
