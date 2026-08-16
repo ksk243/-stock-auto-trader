@@ -1,1 +1,3 @@
-print("v29.4 paper trader 起動OK")
+# -*- coding: utf-8 -*-
+
+print("v29.4 START")
