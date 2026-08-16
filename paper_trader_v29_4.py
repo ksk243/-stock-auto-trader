@@ -524,6 +524,315 @@ def calculate_rs():
         return {}
 
     return valid.iloc[-1].dropna().to_dict()
+    # ============================================================
+
+# Morning High / Low
+
+# ============================================================
+
+def get_morning_levels(df, date):
+
+    day = df[
+
+        df.index.date == date
+
+    ]
+
+    if day.empty:
+
+        return None, None
+
+    morning = day.between_time(
+
+        MORNING_START,
+
+        MORNING_END
+
+    )
+
+    if morning.empty:
+
+        return None, None
+
+    morning_high = float(
+
+        morning["high"].max()
+
+    )
+
+    morning_low = float(
+
+        morning["low"].min()
+
+    )
+
+    return morning_high, morning_low
+
+# ============================================================
+
+# v29.4 12:45候補抽出
+
+# LONG + SHORT
+
+# ============================================================
+
+def find_candidates():
+
+    print("RS計算中...")
+
+    rs = calculate_rs()
+
+    if not rs:
+
+        print("RSデータなし")
+
+        return []
+
+    today = datetime.now(TZ).date()
+
+    candidates = []
+
+    for ticker, rs_value in rs.items():
+
+        side = None
+
+        if rs_value >= LONG_RS_THRESHOLD:
+
+            side = "LONG"
+
+        elif rs_value <= SHORT_RS_THRESHOLD:
+
+            side = "SHORT"
+
+        else:
+
+            continue
+
+        df = download_5m(ticker)
+
+        if df is None:
+
+            continue
+
+        morning_high, morning_low = (
+
+            get_morning_levels(
+
+                df,
+
+                today
+
+            )
+
+        )
+
+        if (
+
+            morning_high is None
+
+            or
+
+            morning_low is None
+
+        ):
+
+            continue
+
+        day = df[
+
+            df.index.date == today
+
+        ]
+
+        if day.empty:
+
+            continue
+
+        # 12:45以降
+
+        afternoon = day[
+
+            day.index.strftime("%H:%M")
+
+            >= ENTRY_TIME
+
+        ]
+
+        if afternoon.empty:
+
+            continue
+
+        # ----------------------------------------------------
+
+        # v29.4
+
+        # 実約定価格 = ブレイクした5分足のHigh / Low
+
+        # ----------------------------------------------------
+
+        if side == "LONG":
+
+            for ts, row in afternoon.iterrows():
+
+                high = float(row["high"])
+
+                if high >= morning_high:
+
+                    entry_price = high
+
+                    candidates.append({
+
+                        "ticker": ticker,
+
+                        "side": "LONG",
+
+                        "rs": float(rs_value),
+
+                        "morning_high":
+
+                            morning_high,
+
+                        "morning_low":
+
+                            morning_low,
+
+                        "entry":
+
+                            entry_price,
+
+                        "tp":
+
+                            entry_price * (1 + TP),
+
+                        "sl":
+
+                            entry_price * (1 - SL),
+
+                        "time":
+
+                            ts.isoformat()
+
+                    })
+
+                    break
+
+        # ----------------------------------------------------
+
+        # SHORT
+
+        # ----------------------------------------------------
+
+        elif side == "SHORT":
+
+            for ts, row in afternoon.iterrows():
+
+                low = float(row["low"])
+
+                if low <= morning_low:
+
+                    entry_price = low
+
+                    candidates.append({
+
+                        "ticker": ticker,
+
+                        "side": "SHORT",
+
+                        "rs": float(rs_value),
+
+                        "morning_high":
+
+                            morning_high,
+
+                        "morning_low":
+
+                            morning_low,
+
+                        "entry":
+
+                            entry_price,
+
+                        "tp":
+
+                            entry_price * (1 - TP),
+
+                        "sl":
+
+                            entry_price * (1 + SL),
+
+                        "time":
+
+                            ts.isoformat()
+
+                    })
+
+                    break
+
+    # --------------------------------------------------------
+
+    # LONGはRSが高い順
+
+    # SHORTはRSが低い順
+
+    # --------------------------------------------------------
+
+    candidates.sort(
+
+        key=lambda x: (
+
+            0 if x["side"] == "LONG" else 1,
+
+            -x["rs"]
+
+            if x["side"] == "LONG"
+
+            else x["rs"]
+
+        )
+
+    )
+
+    print(
+
+        f"Entry候補 : "
+
+        f"{len(candidates)}件"
+
+    )
+
+    long_count = sum(
+
+        c["side"] == "LONG"
+
+        for c in candidates
+
+    )
+
+    short_count = sum(
+
+        c["side"] == "SHORT"
+
+        for c in candidates
+
+    )
+
+    print(
+
+        f"LONG候補 : "
+
+        f"{long_count}件"
+
+    )
+
+    print(
+
+        f"SHORT候補 : "
+
+        f"{short_count}件"
+
+    )
+
+    return candidates
 # ============================================================
 
 # 起動テスト
