@@ -1435,7 +1435,9 @@ def main():
         now.hour == 12
 
         and 40 <= now.minute <= 55
+) or (
 
+    os.environ.get("FORCE_1245") == "1"
     ):
 
         run_1245()
