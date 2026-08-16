@@ -53,7 +53,7 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
 
           MAIL_TO: ${{ secrets.MAIL_TO }}
-
+          FORCE_1245: ${{ secrets.FORCE_1245 }}
         run: |
 
           python paper_trader.py
