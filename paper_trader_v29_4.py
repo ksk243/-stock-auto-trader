@@ -4,6 +4,12 @@ import os
 
 import json
 
+import smtplib
+
+from email.mime.text import MIMEText
+
+from email.header import Header
+
 from datetime import datetime
 
 from zoneinfo import ZoneInfo
@@ -18,21 +24,47 @@ import yfinance as yf
 
 # v29.4 Paper Trader
 
+#
+
 # LONG + SHORT 各1倍
 
-# 完全No-Future
+#
+
+# 初期資産:
+
+#   キオクシア26株 × 金曜日終値
+
+#   = 1,117,792円
+
+#
+
+# LONG:
+
+#   現在Equity × 1.0倍
+
+#
+
+# SHORT:
+
+#   現在Equity × 1.0倍
+
+#
+
+# 合計最大:
+
+#   現在Equity × 2.0倍
+
+#
+
+# ============================================================
+
+# ============================================================
+
+# 設定
 
 # ============================================================
 
 TZ = ZoneInfo("Asia/Tokyo")
-
-# ============================================================
-
-# 基本設定
-
-# ============================================================
-
-# キオクシア26株 × 金曜日終値
 
 INITIAL_CAPITAL = 1_117_792
 
@@ -61,6 +93,16 @@ MAX_LONG_POSITIONS = 10
 MAX_SHORT_POSITIONS = 10
 
 MARKET_TICKER = "1306.T"
+
+# 信用コスト
+
+INTEREST_RATE = 0.028
+
+BORROW_RATE = 0.028
+
+# GitHub Actionsで実行済み日の二重実行を防止
+
+STATE_FILE = "data/v29_4_state.json"
 
 PORTFOLIO_FILE = "data/v29_4_portfolio.json"
 
@@ -342,19 +384,269 @@ def download_5m(ticker):
 
 # ============================================================
 
+# Portfolio
+
+# ============================================================
+
+def load_portfolio():
+
+    os.makedirs(
+
+        "data",
+
+        exist_ok=True
+
+    )
+
+    if not os.path.exists(
+
+        PORTFOLIO_FILE
+
+    ):
+
+        portfolio = {
+
+            "cash":
+
+                float(INITIAL_CAPITAL),
+
+            "positions":
+
+                [],
+
+            "realized_pnl":
+
+                0.0,
+
+            "total_pnl":
+
+                0.0
+
+        }
+
+        save_portfolio(
+
+            portfolio
+
+        )
+
+        return portfolio
+
+    try:
+
+        with open(
+
+            PORTFOLIO_FILE,
+
+            "r",
+
+            encoding="utf-8"
+
+        ) as f:
+
+            portfolio = json.load(f)
+
+        return portfolio
+
+    except Exception:
+
+        print(
+
+            "Portfolio読み込み失敗。"
+
+            "初期状態から開始します。"
+
+        )
+
+        portfolio = {
+
+            "cash":
+
+                float(INITIAL_CAPITAL),
+
+            "positions":
+
+                [],
+
+            "realized_pnl":
+
+                0.0,
+
+            "total_pnl":
+
+                0.0
+
+        }
+
+        return portfolio
+
+def save_portfolio(
+
+    portfolio
+
+):
+
+    os.makedirs(
+
+        "data",
+
+        exist_ok=True
+
+    )
+
+    with open(
+
+        PORTFOLIO_FILE,
+
+        "w",
+
+        encoding="utf-8"
+
+    ) as f:
+
+        json.dump(
+
+            portfolio,
+
+            f,
+
+            ensure_ascii=False,
+
+            indent=2
+
+        )
+
+# ============================================================
+
+# Equity計算
+
+#
+
+# LONG:
+
+#   cash + 現在価値
+
+#
+
+# SHORT:
+
+#   cash - 現在の買戻し価値
+
+# ============================================================
+
+def calculate_equity(
+
+    portfolio
+
+):
+
+    equity = float(
+
+        portfolio["cash"]
+
+    )
+
+    for p in portfolio["positions"]:
+
+        df = download_5m(
+
+            p["ticker"]
+
+        )
+
+        if df is None or df.empty:
+
+            continue
+
+        latest = df.iloc[-1]
+
+        close = float(
+
+            latest["close"]
+
+        )
+
+        shares = int(
+
+            p["shares"]
+
+        )
+
+        if p["side"] == "LONG":
+
+            equity += (
+
+                close * shares
+
+            )
+
+        else:
+
+            equity -= (
+
+                close * shares
+
+            )
+
+    return float(equity)
+
+# ============================================================
+
+# 現在建玉
+
+# ============================================================
+
+def get_exposure(
+
+    portfolio
+
+):
+
+    long_exposure = 0.0
+
+    short_exposure = 0.0
+
+    for p in portfolio["positions"]:
+
+        value = (
+
+            float(p["entry_price"])
+
+            *
+
+            int(p["shares"])
+
+        )
+
+        if p["side"] == "LONG":
+
+            long_exposure += value
+
+        else:
+
+            short_exposure += value
+
+    return (
+
+        long_exposure,
+
+        short_exposure
+
+    )
+
+# ============================================================
+
 # RS計算
 
 #
 
-# 当日の終値は使わない。
+# 前営業日終値まで使用。
 
-# 12:45時点では前営業日終値までしか利用しない。
+# 当日終値は使用しない。
 
 # ============================================================
 
 def calculate_rs():
-
-    print("市場データ取得中...")
 
     market = download_daily(
 
@@ -363,12 +655,6 @@ def calculate_rs():
     )
 
     if market is None:
-
-        print(
-
-            "1306.T取得失敗"
-
-        )
 
         return {}
 
@@ -408,21 +694,7 @@ def calculate_rs():
 
     returns = {}
 
-    print(
-
-        f"銘柄RS計算: "
-
-        f"{len(UNIVERSE)}銘柄"
-
-    )
-
-    for i, ticker in enumerate(
-
-        UNIVERSE,
-
-        start=1
-
-    ):
+    for ticker in UNIVERSE:
 
         df = download_daily(
 
@@ -556,7 +828,7 @@ def calculate_rs():
 
         return {}
 
-    latest = (
+    return (
 
         valid
 
@@ -567,8 +839,6 @@ def calculate_rs():
         .to_dict()
 
     )
-
-    return latest
 
 # ============================================================
 
@@ -606,73 +876,43 @@ def get_morning_levels(
 
         return None, None
 
-    morning_high = float(
-
-        morning["high"].max()
-
-    )
-
-    morning_low = float(
-
-        morning["low"].min()
-
-    )
-
     return (
 
-        morning_high,
+        float(morning["high"].max()),
 
-        morning_low
+        float(morning["low"].min())
 
     )
 
 # ============================================================
 
-# 12:45候補抽出
+# 12:45候補
 
 #
 
-# LONG:
-
-#   RS >= 70
-
-#   Morning High突破
-
-#
-
-# SHORT:
-
-#   RS <= 30
-
-#   Morning Low突破
+# 12:45時点で既にブレイクしているものだけ。
 
 #
 
 # Entry価格:
 
-#   ブレイクした5分足のHigh / Low
+#   現時点の最新Close
+
+#
+
+# 理由:
+
+#   12:45に将来のブレイク足High/Lowを
+
+#   知ることはできないため。
 
 # ============================================================
 
 def find_candidates():
 
-    print()
-
-    print(
-
-        "RS計算中..."
-
-    )
-
     rs = calculate_rs()
 
     if not rs:
-
-        print(
-
-            "RSデータなし"
-
-        )
 
         return []
 
@@ -684,41 +924,27 @@ def find_candidates():
 
     candidates = []
 
-    long_rs_count = 0
-
-    short_rs_count = 0
-
     for ticker, rs_value in rs.items():
-
-        side = None
 
         if (
 
-            rs_value
+            rs_value < LONG_RS_THRESHOLD
 
-            >=
+            and
 
-            LONG_RS_THRESHOLD
+            rs_value > SHORT_RS_THRESHOLD
 
         ):
+
+            continue
+
+        if rs_value >= LONG_RS_THRESHOLD:
 
             side = "LONG"
 
-            long_rs_count += 1
-
-        elif (
-
-            rs_value
-
-            <=
-
-            SHORT_RS_THRESHOLD
-
-        ):
+        elif rs_value <= SHORT_RS_THRESHOLD:
 
             side = "SHORT"
-
-            short_rs_count += 1
 
         else:
 
@@ -770,175 +996,119 @@ def find_candidates():
 
             continue
 
-        afternoon = day[
+        # 12:45より前のデータ
 
-            day.index.strftime(
+        available = day[
 
-                "%H:%M"
+            day.index.strftime("%H:%M")
 
-            )
-
-            >= ENTRY_TIME
+            <= ENTRY_TIME
 
         ]
 
-        if afternoon.empty:
+        if available.empty:
 
             continue
 
-        # ----------------------------------------------------
+        latest = available.iloc[-1]
+
+        price = float(
+
+            latest["close"]
+
+        )
 
         # LONG
 
-        # ----------------------------------------------------
-
         if side == "LONG":
 
-            for ts, row in (
+            if price < morning_high:
 
-                afternoon.iterrows()
+                continue
 
-            ):
+            candidates.append({
 
-                high = float(
+                "ticker":
 
-                    row["high"]
+                    ticker,
 
-                )
+                "side":
 
-                if high >= morning_high:
+                    "LONG",
 
-                    entry_price = high
+                "rs":
 
-                    candidates.append({
+                    float(rs_value),
 
-                        "ticker":
+                "morning_high":
 
-                            ticker,
+                    morning_high,
 
-                        "side":
+                "morning_low":
 
-                            "LONG",
+                    morning_low,
 
-                        "rs":
+                "entry":
 
-                            float(rs_value),
+                    price,
 
-                        "morning_high":
+                "tp":
 
-                            morning_high,
+                    price * (1 + TP),
 
-                        "morning_low":
+                "sl":
 
-                            morning_low,
+                    price * (1 - SL)
 
-                        "entry":
-
-                            entry_price,
-
-                        "tp":
-
-                            entry_price
-
-                            * (1 + TP),
-
-                        "sl":
-
-                            entry_price
-
-                            * (1 - SL),
-
-                        "time":
-
-                            ts.isoformat()
-
-                    })
-
-                    break
-
-        # ----------------------------------------------------
+            })
 
         # SHORT
 
-        # ----------------------------------------------------
+        else:
 
-        elif side == "SHORT":
+            if price > morning_low:
 
-            for ts, row in (
+                continue
 
-                afternoon.iterrows()
+            candidates.append({
 
-            ):
+                "ticker":
 
-                low = float(
+                    ticker,
 
-                    row["low"]
+                "side":
 
-                )
+                    "SHORT",
 
-                if low <= morning_low:
+                "rs":
 
-                    entry_price = low
+                    float(rs_value),
 
-                    candidates.append({
+                "morning_high":
 
-                        "ticker":
+                    morning_high,
 
-                            ticker,
+                "morning_low":
 
-                        "side":
+                    morning_low,
 
-                            "SHORT",
+                "entry":
 
-                        "rs":
+                    price,
 
-                            float(rs_value),
+                "tp":
 
-                        "morning_high":
+                    price * (1 - TP),
 
-                            morning_high,
+                "sl":
 
-                        "morning_low":
+                    price * (1 + SL)
 
-                            morning_low,
+            })
 
-                        "entry":
+    # LONG = RS高い順
 
-                            entry_price,
-
-                        "tp":
-
-                            entry_price
-
-                            * (1 - TP),
-
-                        "sl":
-
-                            entry_price
-
-                            * (1 + SL),
-
-                        "time":
-
-                            ts.isoformat()
-
-                    })
-
-                    break
-
-    # --------------------------------------------------------
-
-    # LONG:
-
-    # RS高い順
-
-    #
-
-    # SHORT:
-
-    # RS低い順
-
-    # --------------------------------------------------------
+    # SHORT = RS低い順
 
     candidates.sort(
 
@@ -960,41 +1130,793 @@ def find_candidates():
 
     )
 
-    print()
-
-    print(
-
-        f"RS LONG条件通過 : "
-
-        f"{long_rs_count}銘柄"
-
-    )
-
-    print(
-
-        f"RS SHORT条件通過: "
-
-        f"{short_rs_count}銘柄"
-
-    )
-
-    print(
-
-        f"Entry候補       : "
-
-        f"{len(candidates)}件"
-
-    )
-
     return candidates
 
 # ============================================================
 
-# Portfolio
+# Entry
+
+#
+
+# Equity × レバレッジで枠を計算。
 
 # ============================================================
 
-def load_portfolio():
+def enter_positions(
+
+    portfolio,
+
+    candidates
+
+):
+
+    if not candidates:
+
+        return []
+
+    equity = calculate_equity(
+
+        portfolio
+
+    )
+
+    if equity <= 0:
+
+        return []
+
+    long_limit = (
+
+        equity
+
+        *
+
+        LONG_LEVERAGE
+
+    )
+
+    short_limit = (
+
+        equity
+
+        *
+
+        SHORT_LEVERAGE
+
+    )
+
+    long_exposure, short_exposure = (
+
+        get_exposure(
+
+            portfolio
+
+        )
+
+    )
+
+    existing_tickers = {
+
+        p["ticker"]
+
+        for p in portfolio["positions"]
+
+    }
+
+    long_count = sum(
+
+        p["side"] == "LONG"
+
+        for p in portfolio["positions"]
+
+    )
+
+    short_count = sum(
+
+        p["side"] == "SHORT"
+
+        for p in portfolio["positions"]
+
+    )
+
+    executed = []
+
+    for c in candidates:
+
+        ticker = c["ticker"]
+
+        if ticker in existing_tickers:
+
+            continue
+
+        price = float(
+
+            c["entry"]
+
+        )
+
+        if price <= 0:
+
+            continue
+
+        # ----------------------------------------
+
+        # LONG
+
+        # ----------------------------------------
+
+        if c["side"] == "LONG":
+
+            if long_count >= (
+
+                MAX_LONG_POSITIONS
+
+            ):
+
+                continue
+
+            available = (
+
+                long_limit
+
+                -
+
+                long_exposure
+
+            )
+
+            if available <= 0:
+
+                continue
+
+            shares = int(
+
+                available
+
+                /
+
+                price
+
+                /
+
+                100
+
+            ) * 100
+
+            if shares <= 0:
+
+                continue
+
+            value = (
+
+                price * shares
+
+            )
+
+            # LONGは購入代金をcashから差し引く
+
+            portfolio["cash"] -= value
+
+            long_exposure += value
+
+            long_count += 1
+
+        # ----------------------------------------
+
+        # SHORT
+
+        # ----------------------------------------
+
+        else:
+
+            if short_count >= (
+
+                MAX_SHORT_POSITIONS
+
+            ):
+
+                continue
+
+            available = (
+
+                short_limit
+
+                -
+
+                short_exposure
+
+            )
+
+            if available <= 0:
+
+                continue
+
+            shares = int(
+
+                available
+
+                /
+
+                price
+
+                /
+
+                100
+
+            ) * 100
+
+            if shares <= 0:
+
+                continue
+
+            value = (
+
+                price * shares
+
+            )
+
+            # SHORT売却代金をcashに加える
+
+            portfolio["cash"] += value
+
+            short_exposure += value
+
+            short_count += 1
+
+        position = {
+
+            "ticker":
+
+                ticker,
+
+            "side":
+
+                c["side"],
+
+            "entry_date":
+
+                datetime.now(
+
+                    TZ
+
+                ).date().isoformat(),
+
+            "entry_price":
+
+                price,
+
+            "shares":
+
+                int(shares),
+
+            "tp":
+
+                float(c["tp"]),
+
+            "sl":
+
+                float(c["sl"]),
+
+            "rs":
+
+                float(c["rs"]),
+
+            "morning_high":
+
+                float(
+
+                    c["morning_high"]
+
+                ),
+
+            "morning_low":
+
+                float(
+
+                    c["morning_low"]
+
+                )
+
+        }
+
+        portfolio[
+
+            "positions"
+
+        ].append(
+
+            position
+
+        )
+
+        existing_tickers.add(
+
+            ticker
+
+        )
+
+        executed.append(
+
+            position
+
+        )
+
+    return executed
+
+# ============================================================
+
+# TP / SL
+
+#
+
+# LONG:
+
+#   TP = +2%
+
+#   SL = -1.5%
+
+#
+
+# SHORT:
+
+#   TP = -2%
+
+#   SL = +1.5%
+
+#
+
+# 同一5分足で両方:
+
+#   保守的にSL
+
+# ============================================================
+
+def check_positions(
+
+    portfolio
+
+):
+
+    today = datetime.now(
+
+        TZ
+
+    ).date()
+
+    closed = []
+
+    holding = []
+
+    for p in portfolio["positions"]:
+
+        df = download_5m(
+
+            p["ticker"]
+
+        )
+
+        if df is None:
+
+            holding.append(p)
+
+            continue
+
+        day = df[
+
+            df.index.date == today
+
+        ]
+
+        if day.empty:
+
+            holding.append(p)
+
+            continue
+
+        tp = float(
+
+            p["tp"]
+
+        )
+
+        sl = float(
+
+            p["sl"]
+
+        )
+
+        exit_price = None
+
+        reason = None
+
+        for ts, row in day.iterrows():
+
+            high = float(
+
+                row["high"]
+
+            )
+
+            low = float(
+
+                row["low"]
+
+            )
+
+            if p["side"] == "LONG":
+
+                hit_tp = (
+
+                    high >= tp
+
+                )
+
+                hit_sl = (
+
+                    low <= sl
+
+                )
+
+            else:
+
+                hit_tp = (
+
+                    low <= tp
+
+                )
+
+                hit_sl = (
+
+                    high >= sl
+
+                )
+
+            # 両方
+
+            if hit_tp and hit_sl:
+
+                exit_price = sl
+
+                reason = "SL"
+
+                break
+
+            # SL
+
+            if hit_sl:
+
+                exit_price = sl
+
+                reason = "SL"
+
+                break
+
+            # TP
+
+            if hit_tp:
+
+                exit_price = tp
+
+                reason = "TP"
+
+                break
+
+        if exit_price is None:
+
+            holding.append(p)
+
+            continue
+
+        entry_price = float(
+
+            p["entry_price"]
+
+        )
+
+        shares = int(
+
+            p["shares"]
+
+        )
+
+        holding_days = max(
+
+            1,
+
+            (
+
+                today
+
+                -
+
+                datetime.fromisoformat(
+
+                    p["entry_date"]
+
+                ).date()
+
+            ).days
+
+        )
+
+        if p["side"] == "LONG":
+
+            gross_pnl = (
+
+                exit_price
+
+                -
+
+                entry_price
+
+            ) * shares
+
+            interest = (
+
+                entry_price
+
+                *
+
+                shares
+
+                *
+
+                INTEREST_RATE
+
+                *
+
+                holding_days
+
+                /
+
+                365
+
+            )
+
+            pnl = (
+
+                gross_pnl
+
+                -
+
+                interest
+
+            )
+
+            # LONG売却
+
+            portfolio["cash"] += (
+
+                exit_price
+
+                *
+
+                shares
+
+            )
+
+        else:
+
+            gross_pnl = (
+
+                entry_price
+
+                -
+
+                exit_price
+
+            ) * shares
+
+            borrow = (
+
+                entry_price
+
+                *
+
+                shares
+
+                *
+
+                BORROW_RATE
+
+                *
+
+                holding_days
+
+                /
+
+                365
+
+            )
+
+            pnl = (
+
+                gross_pnl
+
+                -
+
+                borrow
+
+            )
+
+            # SHORT買戻し
+
+            portfolio["cash"] -= (
+
+                exit_price
+
+                *
+
+                shares
+
+            )
+
+        portfolio[
+
+            "realized_pnl"
+
+        ] += pnl
+
+        closed.append({
+
+            "ticker":
+
+                p["ticker"],
+
+            "side":
+
+                p["side"],
+
+            "entry":
+
+                entry_price,
+
+            "exit":
+
+                exit_price,
+
+            "shares":
+
+                shares,
+
+            "pnl":
+
+                pnl,
+
+            "reason":
+
+                reason,
+
+            "holding_days":
+
+                holding_days
+
+        })
+
+    portfolio[
+
+        "positions"
+
+    ] = holding
+
+    return closed
+
+# ============================================================
+
+# CSV
+
+# ============================================================
+
+def save_trades(
+
+    trades
+
+):
+
+    if not trades:
+
+        return
+
+    os.makedirs(
+
+        "data",
+
+        exist_ok=True
+
+    )
+
+    rows = []
+
+    now = datetime.now(
+
+        TZ
+
+    ).isoformat()
+
+    for t in trades:
+
+        rows.append({
+
+            "datetime":
+
+                now,
+
+            "ticker":
+
+                t["ticker"],
+
+            "side":
+
+                t["side"],
+
+            "entry":
+
+                t["entry"],
+
+            "exit":
+
+                t["exit"],
+
+            "shares":
+
+                t["shares"],
+
+            "pnl":
+
+                t["pnl"],
+
+            "reason":
+
+                t["reason"],
+
+            "holding_days":
+
+                t["holding_days"]
+
+        })
+
+    new = pd.DataFrame(
+
+        rows
+
+    )
+
+    if os.path.exists(
+
+        TRADES_FILE
+
+    ):
+
+        old = pd.read_csv(
+
+            TRADES_FILE
+
+        )
+
+        new = pd.concat(
+
+            [old, new],
+
+            ignore_index=True
+
+        )
+
+    new.to_csv(
+
+        TRADES_FILE,
+
+        index=False,
+
+        encoding="utf-8-sig"
+
+    )
+
+# ============================================================
+
+# State
+
+# ============================================================
+
+def load_state():
 
     os.makedirs(
 
@@ -1006,49 +1928,33 @@ def load_portfolio():
 
     if not os.path.exists(
 
-        PORTFOLIO_FILE
+        STATE_FILE
 
     ):
 
-        portfolio = {
+        return {}
 
-            "cash":
+    try:
 
-                INITIAL_CAPITAL,
+        with open(
 
-            "positions":
+            STATE_FILE,
 
-                [],
+            "r",
 
-            "realized_pnl":
+            encoding="utf-8"
 
-                0.0
+        ) as f:
 
-        }
+            return json.load(f)
 
-        save_portfolio(
+    except Exception:
 
-            portfolio
+        return {}
 
-        )
+def save_state(
 
-        return portfolio
-
-    with open(
-
-        PORTFOLIO_FILE,
-
-        "r",
-
-        encoding="utf-8"
-
-    ) as f:
-
-        return json.load(f)
-
-def save_portfolio(
-
-    portfolio
+    state
 
 ):
 
@@ -1062,7 +1968,7 @@ def save_portfolio(
 
     with open(
 
-        PORTFOLIO_FILE,
+        STATE_FILE,
 
         "w",
 
@@ -1072,7 +1978,7 @@ def save_portfolio(
 
         json.dump(
 
-            portfolio,
+            state,
 
             f,
 
@@ -1084,7 +1990,527 @@ def save_portfolio(
 
 # ============================================================
 
-# テスト用MAIN
+# メール
+
+#
+
+# iCloud SMTP:
+
+#   SMTP_HOST
+
+#   SMTP_PORT
+
+#   SMTP_USER
+
+#   SMTP_PASSWORD
+
+#   MAIL_TO
+
+#
+
+# GitHub Secretsに設定
+
+# ============================================================
+
+def send_email(
+
+    subject,
+
+    body
+
+):
+
+    host = os.environ.get(
+
+        "SMTP_HOST"
+
+    )
+
+    port = int(
+
+        os.environ.get(
+
+            "SMTP_PORT",
+
+            "587"
+
+        )
+
+    )
+
+    user = os.environ.get(
+
+        "SMTP_USER"
+
+    )
+
+    password = os.environ.get(
+
+        "SMTP_PASSWORD"
+
+    )
+
+    recipient = os.environ.get(
+
+        "MAIL_TO"
+
+    )
+
+    if not all([
+
+        host,
+
+        user,
+
+        password,
+
+        recipient
+
+    ]):
+
+        raise RuntimeError(
+
+            "メール用GitHub Secretsが未設定です"
+
+        )
+
+    msg = MIMEText(
+
+        body,
+
+        "plain",
+
+        "utf-8"
+
+    )
+
+    msg["Subject"] = Header(
+
+        subject,
+
+        "utf-8"
+
+    )
+
+    msg["From"] = user
+
+    msg["To"] = recipient
+
+    with smtplib.SMTP(
+
+        host,
+
+        port,
+
+        timeout=30
+
+    ) as server:
+
+        server.starttls()
+
+        server.login(
+
+            user,
+
+            password
+
+        )
+
+        server.send_message(
+
+            msg
+
+        )
+
+# ============================================================
+
+# 12:45
+
+#
+
+# 新規Entry
+
+# ============================================================
+
+def run_1245():
+
+    portfolio = load_portfolio()
+
+    candidates = find_candidates()
+
+    executed = enter_positions(
+
+        portfolio,
+
+        candidates
+
+    )
+
+    save_portfolio(
+
+        portfolio
+
+    )
+
+    equity = calculate_equity(
+
+        portfolio
+
+    )
+
+    long_exposure, short_exposure = (
+
+        get_exposure(
+
+            portfolio
+
+        )
+
+    )
+
+    lines = []
+
+    lines.append(
+
+        "【v29.4 仮想取引】12:45"
+
+    )
+
+    lines.append("")
+
+    lines.append(
+
+        f"Equity : "
+
+        f"¥{equity:,.0f}"
+
+    )
+
+    lines.append(
+
+        f"LONG上限 : "
+
+        f"¥{equity * LONG_LEVERAGE:,.0f}"
+
+    )
+
+    lines.append(
+
+        f"SHORT上限: "
+
+        f"¥{equity * SHORT_LEVERAGE:,.0f}"
+
+    )
+
+    lines.append(
+
+        f"LONG建玉 : "
+
+        f"¥{long_exposure:,.0f}"
+
+    )
+
+    lines.append(
+
+        f"SHORT建玉: "
+
+        f"¥{short_exposure:,.0f}"
+
+    )
+
+    lines.append("")
+
+    if executed:
+
+        lines.append(
+
+            "【新規エントリー】"
+
+        )
+
+        for p in executed:
+
+            sign = p["side"]
+
+            lines.append(
+
+                f"{sign} "
+
+                f"{p['ticker']} "
+
+                f"{p['shares']}株 "
+
+                f"Entry ¥{p['entry_price']:,.1f} "
+
+                f"TP ¥{p['tp']:,.1f} "
+
+                f"SL ¥{p['sl']:,.1f} "
+
+                f"RS {p['rs']:.1f}"
+
+            )
+
+    else:
+
+        lines.append(
+
+            "【新規エントリーなし】"
+
+        )
+
+        if candidates:
+
+            lines.append("")
+
+            lines.append(
+
+                "候補:"
+
+            )
+
+            for c in candidates[:10]:
+
+                lines.append(
+
+                    f"{c['side']} "
+
+                    f"{c['ticker']} "
+
+                    f"RS {c['rs']:.1f} "
+
+                    f"Entry ¥{c['entry']:,.1f}"
+
+                )
+
+        else:
+
+            lines.append(
+
+                "RS + Morning Breakout"
+
+            )
+
+            lines.append(
+
+                "条件を満たす銘柄なし"
+
+            )
+
+    lines.append("")
+
+    lines.append(
+
+        "【現在の持越し】"
+
+    )
+
+    if portfolio["positions"]:
+
+        for p in portfolio["positions"]:
+
+            lines.append(
+
+                f"{p['side']} "
+
+                f"{p['ticker']} "
+
+                f"{p['shares']}株 "
+
+                f"Entry ¥{p['entry_price']:,.1f}"
+
+            )
+
+    else:
+
+        lines.append(
+
+            "なし"
+
+        )
+
+    send_email(
+
+        "【v29.4】12:45 仮想取引指示",
+
+        "\n".join(lines)
+
+    )
+
+# ============================================================
+
+# 15:45
+
+#
+
+# TP / SL確認
+
+# ============================================================
+
+def run_1545():
+
+    portfolio = load_portfolio()
+
+    closed = check_positions(
+
+        portfolio
+
+    )
+
+    save_trades(
+
+        closed
+
+    )
+
+    save_portfolio(
+
+        portfolio
+
+    )
+
+    equity = calculate_equity(
+
+        portfolio
+
+    )
+
+    long_exposure, short_exposure = (
+
+        get_exposure(
+
+            portfolio
+
+        )
+
+    )
+
+    lines = []
+
+    lines.append(
+
+        "【v29.4 仮想取引】15:45"
+
+    )
+
+    lines.append("")
+
+    lines.append(
+
+        f"Equity : "
+
+        f"¥{equity:,.0f}"
+
+    )
+
+    lines.append(
+
+        f"確定損益累計 : "
+
+        f"¥{portfolio['realized_pnl']:+,.0f}"
+
+    )
+
+    lines.append(
+
+        f"LONG建玉 : "
+
+        f"¥{long_exposure:,.0f}"
+
+    )
+
+    lines.append(
+
+        f"SHORT建玉: "
+
+        f"¥{short_exposure:,.0f}"
+
+    )
+
+    lines.append("")
+
+    lines.append(
+
+        "【本日の決済】"
+
+    )
+
+    if closed:
+
+        for t in closed:
+
+            sign = (
+
+                "+"
+
+                if t["pnl"] >= 0
+
+                else ""
+
+            )
+
+            lines.append(
+
+                f"{t['side']} "
+
+                f"{t['ticker']} "
+
+                f"{t['reason']} "
+
+                f"{sign}¥{t['pnl']:,.0f}"
+
+            )
+
+    else:
+
+        lines.append(
+
+            "決済なし"
+
+        )
+
+    lines.append("")
+
+    lines.append(
+
+        "【持越し】"
+
+    )
+
+    if portfolio["positions"]:
+
+        for p in portfolio["positions"]:
+
+            lines.append(
+
+                f"{p['side']} "
+
+                f"{p['ticker']} "
+
+                f"{p['shares']}株 "
+
+                f"Entry ¥{p['entry_price']:,.1f}"
+
+            )
+
+    else:
+
+        lines.append(
+
+            "なし"
+
+        )
+
+    send_email(
+
+        "【v29.4】15:45 結果・持越し",
+
+        "\n".join(lines)
+
+    )
+
+# ============================================================
+
+# MAIN
 
 # ============================================================
 
@@ -1096,8 +2522,6 @@ def main():
 
     )
 
-    print()
-
     print("=" * 80)
 
     print(
@@ -1108,7 +2532,7 @@ def main():
 
     print(
 
-        "Paper Trader 基礎テスト"
+        "Paper Trader"
 
     )
 
@@ -1132,95 +2556,91 @@ def main():
 
     print(
 
-        f"LONG枠  : "
+        f"LONG : Equity × "
 
-        f"Equity × {LONG_LEVERAGE:.1f}倍"
-
-    )
-
-    print(
-
-        f"SHORT枠 : "
-
-        f"Equity × {SHORT_LEVERAGE:.1f}倍"
+        f"{LONG_LEVERAGE:.1f}"
 
     )
 
     print(
 
-        f"RS      : "
+        f"SHORT: Equity × "
 
-        f"LONG >= {LONG_RS_THRESHOLD:.0f} / "
-
-        f"SHORT <= {SHORT_RS_THRESHOLD:.0f}"
-
-    )
-
-    print(
-
-        f"TP / SL : "
-
-        f"+{TP * 100:.1f}% / "
-
-        f"-{SL * 100:.1f}%"
+        f"{SHORT_LEVERAGE:.1f}"
 
     )
 
     print()
 
-    print(
+    # --------------------------------------------------------
 
-        "Yahoo Finance 接続確認..."
+    # GitHub Actionsから強制実行する場合
 
-    )
+    # --------------------------------------------------------
 
-    test_daily = download_daily(
+    force_1245 = (
 
-        MARKET_TICKER
+        os.environ.get(
 
-    )
-
-    if test_daily is None:
-
-        raise RuntimeError(
-
-            "1306.T 日足取得失敗"
+            "FORCE_1245"
 
         )
 
-    print(
-
-        f"1306.T 日足 : "
-
-        f"{len(test_daily)}本 OK"
+        == "1"
 
     )
 
-    test_5m = download_5m(
+    force_1545 = (
 
-        MARKET_TICKER
+        os.environ.get(
 
-    )
-
-    if test_5m is None:
-
-        raise RuntimeError(
-
-            "1306.T 5分足取得失敗"
+            "FORCE_1545"
 
         )
 
-    print(
-
-        f"1306.T 5分足 : "
-
-        f"{len(test_5m)}本 OK"
+        == "1"
 
     )
 
     # --------------------------------------------------------
 
-    # 現在が12:45前なら候補抽出はしない
+    # 12:45
+
+    # --------------------------------------------------------
+
+    if force_1245:
+
+        print(
+
+            "FORCE_1245=1"
+
+        )
+
+        run_1245()
+
+        return
+
+    # --------------------------------------------------------
+
+    # 15:45
+
+    # --------------------------------------------------------
+
+    if force_1545:
+
+        print(
+
+            "FORCE_1545=1"
+
+        )
+
+        run_1545()
+
+        return
+
+    # --------------------------------------------------------
+
+    # 通常時刻
 
     # --------------------------------------------------------
 
@@ -1228,87 +2648,41 @@ def main():
 
         now.hour == 12
 
-        and now.minute >= 45
+        and
+
+        40 <= now.minute <= 55
 
     ):
 
-        print()
+        run_1245()
 
-        print(
+        return
 
-            "12:45候補抽出を実行..."
+    if (
 
-        )
+        now.hour == 15
 
-        candidates = (
+        and
 
-            find_candidates()
+        40 <= now.minute <= 55
 
-        )
+    ):
 
-        print()
+        run_1545()
 
-        print(
-
-            "【候補上位20件】"
-
-        )
-
-        if not candidates:
-
-            print(
-
-                "候補なし"
-
-            )
-
-        else:
-
-            for c in candidates[:20]:
-
-                print(
-
-                    f"{c['side']:5s} "
-
-                    f"{c['ticker']:10s} "
-
-                    f"RS={c['rs']:5.1f} "
-
-                    f"Entry=¥{c['entry']:,.1f} "
-
-                    f"TP=¥{c['tp']:,.1f} "
-
-                    f"SL=¥{c['sl']:,.1f}"
-
-                )
-
-    else:
-
-        print()
-
-        print(
-
-            "現在は12:45候補抽出時間外"
-
-        )
-
-        print(
-
-            "Yahoo Finance接続テストのみ完了"
-
-        )
-
-    print()
-
-    print("=" * 80)
+        return
 
     print(
 
-        "v29.4 基礎テスト完了"
+        "実行時間外"
 
     )
 
-    print("=" * 80)
+# ============================================================
+
+# START
+
+# ============================================================
 
 if __name__ == "__main__":
 
