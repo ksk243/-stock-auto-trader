@@ -1,0 +1,75 @@
+name: Paper Trading
+
+on:
+
+  workflow_dispatch:
+
+  schedule:
+
+    - cron: "45 3 * * 1-5"
+
+    - cron: "45 6 * * 1-5"
+
+jobs:
+
+  paper_trade:
+
+    runs-on: ubuntu-latest
+
+    permissions:
+
+      contents: write
+
+    steps:
+
+      - name: Checkout
+
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+
+        uses: actions/setup-python@v5
+
+        with:
+
+          python-version: "3.11"
+
+      - name: Install packages
+
+        run: |
+
+          pip install -r requirements.txt
+
+      - name: Run paper trader
+
+        env:
+
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+
+        run: |
+
+          python paper_trader.py
+
+      - name: Commit paper trading data
+
+        run: |
+
+          git config user.name "github-actions[bot]"
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/portfolio.json
+
+          git add data/trades.csv
+
+          git diff --cached --quiet || git commit -m "Update paper trading"
+
+          git push
