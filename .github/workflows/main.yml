@@ -1,0 +1,17 @@
+name: v29.4 Paper Trader
+
+on:
+
+  workflow_dispatch:
+
+jobs:
+
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Test
+
+        run: echo "v29.4 workflow START OK"
