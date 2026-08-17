@@ -19,7 +19,7 @@ jobs:
           pip install yfinance pandas numpy
       - name: Run paper trader
         run: |
-          python paper_trader.py
+          FORCE_1245=1 python paper_trader.py
       - name: Save data
         run: |
           git config user.name "github-actions[bot]"
