@@ -1,22 +1,99 @@
+name: v29.4 Paper Trader
+
+on:
+
+  schedule:
+
+    - cron: "45 3 * * 1-5"
+
     - cron: "45 6 * * 1-5"
+
   workflow_dispatch:
+
+    inputs:
+
+      force_1245:
+
+        description: "12:45メールを強制テスト"
+
+        required: false
+
+        default: false
+
+        type: boolean
+
 jobs:
+
   run-paper-trader:
+
     runs-on: ubuntu-latest
+
     steps:
+
       - name: Checkout
+
         uses: actions/checkout@v4
+
       - name: Setup Python
+
         uses: actions/setup-python@v5
+
         with:
+
           python-version: "3.11"
+
       - name: Install dependencies
+
         run: |
+
           pip install yfinance pandas numpy
+
       - name: Run paper trader
+
+        env:
+
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+
+          FORCE_1245: ${{ inputs.force_1245 && '1' || '' }}
+
         run: |
-          FORCE_1245=1 python paper_trader.py
+
+          python paper_trader.py
+
       - name: Save data
+
         run: |
+
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if [ -d "data" ]; then
+
+            git add data/
+
+            if ! git diff --cached --quiet; then
+
+              git commit -m "Update v29.4 paper trading data"
+
+              git push
+
+            else
+
+              echo "No data changes"
+
+            fi
+
+          else
+
+            echo "data directory does not exist"
+
+          fi
