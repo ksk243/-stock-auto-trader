@@ -4,6 +4,8 @@ import os
 
 import json
 
+import time
+
 import smtplib
 
 from email.mime.text import MIMEText
@@ -314,7 +316,11 @@ def download_daily(ticker):
 
     except Exception as e:
 
-        print(f"{ticker} 日足取得失敗: {e}")
+        print(
+
+            f"{ticker} 日足取得失敗: {e}"
+
+        )
 
         return None
 
@@ -348,7 +354,11 @@ def download_5m(ticker):
 
     except Exception as e:
 
-        print(f"{ticker} 5分足取得失敗: {e}")
+        print(
+
+            f"{ticker} 5分足取得失敗: {e}"
+
+        )
 
         return None
 
@@ -366,13 +376,23 @@ def default_portfolio():
 
         "positions": [],
 
-        "realized_pnl": 0.0
+        "realized_pnl": 0.0,
+
+        "last_1245_date": None,
+
+        "last_1545_date": None
 
     }
 
 def load_portfolio():
 
-    os.makedirs("data", exist_ok=True)
+    os.makedirs(
+
+        "data",
+
+        exist_ok=True
+
+    )
 
     if not os.path.exists(PORTFOLIO_FILE):
 
@@ -394,11 +414,27 @@ def load_portfolio():
 
         ) as f:
 
-            return json.load(f)
+            portfolio = json.load(f)
+
+        # 旧ファイルとの互換性
+
+        if "last_1245_date" not in portfolio:
+
+            portfolio["last_1245_date"] = None
+
+        if "last_1545_date" not in portfolio:
+
+            portfolio["last_1545_date"] = None
+
+        return portfolio
 
     except Exception:
 
-        print("Portfolio読み込み失敗。初期資産から開始します。")
+        print(
+
+            "Portfolio読み込み失敗。初期資産から開始します。"
+
+        )
 
         portfolio = default_portfolio()
 
@@ -408,7 +444,13 @@ def load_portfolio():
 
 def save_portfolio(portfolio):
 
-    os.makedirs("data", exist_ok=True)
+    os.makedirs(
+
+        "data",
+
+        exist_ok=True
+
+    )
 
     with open(
 
@@ -440,27 +482,51 @@ def save_portfolio(portfolio):
 
 def calculate_equity(portfolio):
 
-    equity = float(portfolio["cash"])
+    equity = float(
+
+        portfolio["cash"]
+
+    )
 
     for p in portfolio["positions"]:
 
-        df = download_5m(p["ticker"])
+        df = download_5m(
+
+            p["ticker"]
+
+        )
 
         if df is None or df.empty:
 
             continue
 
-        close = float(df.iloc[-1]["close"])
+        close = float(
 
-        shares = int(p["shares"])
+            df.iloc[-1]["close"]
+
+        )
+
+        shares = int(
+
+            p["shares"]
+
+        )
 
         if p["side"] == "LONG":
 
-            equity += close * shares
+            equity += (
+
+                close * shares
+
+            )
 
         else:
 
-            equity -= close * shares
+            equity -= (
+
+                close * shares
+
+            )
 
     return float(equity)
 
@@ -496,9 +562,21 @@ def get_exposure(portfolio):
 
             short_exposure += value
 
-    return long_exposure, short_exposure
+    return (
 
-def count_positions(portfolio, side):
+        long_exposure,
+
+        short_exposure
+
+    )
+
+def count_positions(
+
+    portfolio,
+
+    side
+
+):
 
     return sum(
 
@@ -516,7 +594,11 @@ def count_positions(portfolio, side):
 
 def calculate_rs():
 
-    market = download_daily(MARKET_TICKER)
+    market = download_daily(
+
+        MARKET_TICKER
+
+    )
 
     if market is None:
 
@@ -546,7 +628,11 @@ def calculate_rs():
 
         /
 
-        market_close.shift(RS_LOOKBACK + 1)
+        market_close.shift(
+
+            RS_LOOKBACK + 1
+
+        )
 
         - 1
 
@@ -556,7 +642,11 @@ def calculate_rs():
 
     for ticker in UNIVERSE:
 
-        df = download_daily(ticker)
+        df = download_daily(
+
+            ticker
+
+        )
 
         if df is None:
 
@@ -590,7 +680,11 @@ def calculate_rs():
 
             /
 
-            close.shift(RS_LOOKBACK + 1)
+            close.shift(
+
+                RS_LOOKBACK + 1
+
+            )
 
             - 1
 
@@ -600,17 +694,39 @@ def calculate_rs():
 
         return {}
 
-    stocks = pd.DataFrame(returns)
+    stocks = pd.DataFrame(
 
-    common = stocks.index.intersection(
-
-        market_return.index
+        returns
 
     )
 
-    stocks = stocks.loc[common]
+    common = (
 
-    market_return = market_return.loc[common]
+        stocks.index
+
+        .intersection(
+
+            market_return.index
+
+        )
+
+    )
+
+    stocks = stocks.loc[
+
+        common
+
+    ]
+
+    market_return = (
+
+        market_return.loc[
+
+            common
+
+        ]
+
+    )
 
     relative = stocks.sub(
 
@@ -638,7 +754,11 @@ def calculate_rs():
 
     )
 
-    today = datetime.now(TZ).date()
+    today = datetime.now(
+
+        TZ
+
+    ).date()
 
     valid = rs[
 
@@ -668,7 +788,13 @@ def calculate_rs():
 
 # ============================================================
 
-def get_morning_levels(df, date):
+def get_morning_levels(
+
+    df,
+
+    date
+
+):
 
     day = df[
 
@@ -704,7 +830,13 @@ def get_morning_levels(df, date):
 
     )
 
-    return morning_high, morning_low
+    return (
+
+        morning_high,
+
+        morning_low
+
+    )
 
 # ============================================================
 
@@ -728,7 +860,11 @@ def check_positions_until(
 
 ):
 
-    today = datetime.now(TZ).date()
+    today = datetime.now(
+
+        TZ
+
+    ).date()
 
     closed = []
 
@@ -736,7 +872,11 @@ def check_positions_until(
 
     for p in portfolio["positions"]:
 
-        df = download_5m(p["ticker"])
+        df = download_5m(
+
+            p["ticker"]
+
+        )
 
         if df is None or df.empty:
 
@@ -758,7 +898,11 @@ def check_positions_until(
 
         day = day[
 
-            day.index.strftime("%H:%M") <= end_time
+            day.index.strftime(
+
+                "%H:%M"
+
+            ) <= end_time
 
         ]
 
@@ -768,9 +912,17 @@ def check_positions_until(
 
             continue
 
-        tp = float(p["tp"])
+        tp = float(
 
-        sl = float(p["sl"])
+            p["tp"]
+
+        )
+
+        sl = float(
+
+            p["sl"]
+
+        )
 
         exit_price = None
 
@@ -780,9 +932,17 @@ def check_positions_until(
 
         for timestamp, row in day.iterrows():
 
-            high = float(row["high"])
+            high = float(
 
-            low = float(row["low"])
+                row["high"]
+
+            )
+
+            low = float(
+
+                row["low"]
+
+            )
 
             if p["side"] == "LONG":
 
@@ -858,7 +1018,15 @@ def check_positions_until(
 
             1,
 
-            (today - entry_date).days
+            (
+
+                today
+
+                -
+
+                entry_date
+
+            ).days
 
         )
 
@@ -866,7 +1034,11 @@ def check_positions_until(
 
             gross_pnl = (
 
-                exit_price - entry_price
+                exit_price
+
+                -
+
+                entry_price
 
             ) * shares
 
@@ -884,7 +1056,15 @@ def check_positions_until(
 
             )
 
-            pnl = gross_pnl - interest
+            pnl = (
+
+                gross_pnl
+
+                -
+
+                interest
+
+            )
 
             portfolio["cash"] += (
 
@@ -896,7 +1076,11 @@ def check_positions_until(
 
             gross_pnl = (
 
-                entry_price - exit_price
+                entry_price
+
+                -
+
+                exit_price
 
             ) * shares
 
@@ -914,7 +1098,15 @@ def check_positions_until(
 
             )
 
-            pnl = gross_pnl - borrow
+            pnl = (
+
+                gross_pnl
+
+                -
+
+                borrow
+
+            )
 
             portfolio["cash"] -= (
 
@@ -942,7 +1134,11 @@ def check_positions_until(
 
             "holding_days": holding_days,
 
-            "exit_time": str(exit_time)
+            "exit_time": str(
+
+                exit_time
+
+            )
 
         })
 
@@ -958,7 +1154,11 @@ def check_positions_until(
 
 def find_candidates():
 
-    print("RS計算中...")
+    print(
+
+        "RS計算中..."
+
+    )
 
     rs = calculate_rs()
 
@@ -966,7 +1166,11 @@ def find_candidates():
 
         return []
 
-    today = datetime.now(TZ).date()
+    today = datetime.now(
+
+        TZ
+
+    ).date()
 
     candidates = []
 
@@ -984,21 +1188,27 @@ def find_candidates():
 
             continue
 
-        df = download_5m(ticker)
+        df = download_5m(
+
+            ticker
+
+        )
 
         if df is None:
 
             continue
 
-        morning_high, morning_low = (
+        (
 
-            get_morning_levels(
+            morning_high,
 
-                df,
+            morning_low
 
-                today
+        ) = get_morning_levels(
 
-            )
+            df,
+
+            today
 
         )
 
@@ -1026,9 +1236,11 @@ def find_candidates():
 
         available = day[
 
-            day.index.strftime("%H:%M")
+            day.index.strftime(
 
-            <= ENTRY_TIME
+                "%H:%M"
+
+            ) <= ENTRY_TIME
 
         ]
 
@@ -1058,17 +1270,29 @@ def find_candidates():
 
                 "side": "LONG",
 
-                "rs": float(rs_value),
+                "rs": float(
 
-                "morning_high": morning_high,
+                    rs_value
 
-                "morning_low": morning_low,
+                ),
+
+                "morning_high":
+
+                    morning_high,
+
+                "morning_low":
+
+                    morning_low,
 
                 "entry": price,
 
-                "tp": price * (1 + TP),
+                "tp":
 
-                "sl": price * (1 - SL)
+                    price * (1 + TP),
+
+                "sl":
+
+                    price * (1 - SL)
 
             })
 
@@ -1086,17 +1310,29 @@ def find_candidates():
 
                 "side": "SHORT",
 
-                "rs": float(rs_value),
+                "rs": float(
 
-                "morning_high": morning_high,
+                    rs_value
 
-                "morning_low": morning_low,
+                ),
+
+                "morning_high":
+
+                    morning_high,
+
+                "morning_low":
+
+                    morning_low,
 
                 "entry": price,
 
-                "tp": price * (1 - TP),
+                "tp":
 
-                "sl": price * (1 + SL)
+                    price * (1 - TP),
+
+                "sl":
+
+                    price * (1 + SL)
 
             })
 
@@ -1104,7 +1340,11 @@ def find_candidates():
 
         key=lambda x: (
 
-            0 if x["side"] == "LONG" else 1,
+            0
+
+            if x["side"] == "LONG"
+
+            else 1,
 
             -x["rs"]
 
@@ -1176,9 +1416,15 @@ def enter_positions(
 
     )
 
-    long_exposure, short_exposure = (
+    (
 
-        get_exposure(portfolio)
+        long_exposure,
+
+        short_exposure
+
+    ) = get_exposure(
+
+        portfolio
 
     )
 
@@ -1244,7 +1490,13 @@ def enter_positions(
 
         if c["side"] == "LONG":
 
-            if long_count >= MAX_LONG_POSITIONS:
+            if (
+
+                long_count
+
+                >= MAX_LONG_POSITIONS
+
+            ):
 
                 continue
 
@@ -1252,7 +1504,9 @@ def enter_positions(
 
                 long_limit
 
-                - long_exposure
+                -
+
+                long_exposure
 
             )
 
@@ -1264,9 +1518,19 @@ def enter_positions(
 
                 int(
 
-                    available / price / 100
+                    available
 
-                ) * 100
+                    /
+
+                    price
+
+                    /
+
+                    100
+
+                )
+
+                * 100
 
             )
 
@@ -1274,7 +1538,11 @@ def enter_positions(
 
                 continue
 
-            value = price * shares
+            value = (
+
+                price * shares
+
+            )
 
             portfolio["cash"] -= value
 
@@ -1290,7 +1558,13 @@ def enter_positions(
 
         else:
 
-            if short_count >= MAX_SHORT_POSITIONS:
+            if (
+
+                short_count
+
+                >= MAX_SHORT_POSITIONS
+
+            ):
 
                 continue
 
@@ -1298,7 +1572,9 @@ def enter_positions(
 
                 short_limit
 
-                - short_exposure
+                -
+
+                short_exposure
 
             )
 
@@ -1310,9 +1586,19 @@ def enter_positions(
 
                 int(
 
-                    available / price / 100
+                    available
 
-                ) * 100
+                    /
+
+                    price
+
+                    /
+
+                    100
+
+                )
+
+                * 100
 
             )
 
@@ -1320,7 +1606,11 @@ def enter_positions(
 
                 continue
 
-            value = price * shares
+            value = (
+
+                price * shares
+
+            )
 
             portfolio["cash"] += value
 
@@ -1334,33 +1624,51 @@ def enter_positions(
 
             "side": c["side"],
 
-            "entry_date": datetime.now(
+            "entry_date":
 
-                TZ
+                datetime.now(
 
-            ).date().isoformat(),
+                    TZ
+
+                ).date().isoformat(),
 
             "entry_price": price,
 
             "shares": int(shares),
 
-            "tp": float(c["tp"]),
+            "tp": float(
 
-            "sl": float(c["sl"]),
-
-            "rs": float(c["rs"]),
-
-            "morning_high": float(
-
-                c["morning_high"]
+                c["tp"]
 
             ),
 
-            "morning_low": float(
+            "sl": float(
 
-                c["morning_low"]
+                c["sl"]
 
-            )
+            ),
+
+            "rs": float(
+
+                c["rs"]
+
+            ),
+
+            "morning_high":
+
+                float(
+
+                    c["morning_high"]
+
+                ),
+
+            "morning_low":
+
+                float(
+
+                    c["morning_low"]
+
+                )
 
         }
 
@@ -1376,7 +1684,11 @@ def enter_positions(
 
         )
 
-        executed.append(position)
+        executed.append(
+
+            position
+
+        )
 
     return executed
 
@@ -1400,7 +1712,11 @@ def save_trades(trades):
 
     )
 
-    now = datetime.now(TZ).isoformat()
+    now = datetime.now(
+
+        TZ
+
+    ).isoformat()
 
     rows = []
 
@@ -1424,15 +1740,27 @@ def save_trades(trades):
 
             "reason": t["reason"],
 
-            "holding_days": t["holding_days"],
+            "holding_days":
 
-            "exit_time": t["exit_time"]
+                t["holding_days"],
+
+            "exit_time":
+
+                t["exit_time"]
 
         })
 
-    new = pd.DataFrame(rows)
+    new = pd.DataFrame(
 
-    if os.path.exists(TRADES_FILE):
+        rows
+
+    )
+
+    if os.path.exists(
+
+        TRADES_FILE
+
+    ):
 
         old = pd.read_csv(
 
@@ -1464,7 +1792,13 @@ def save_trades(trades):
 
 # ============================================================
 
-def send_email(subject, body):
+def send_email(
+
+    subject,
+
+    body
+
+):
 
     host = os.environ.get(
 
@@ -1562,7 +1896,11 @@ def send_email(subject, body):
 
         )
 
-        server.send_message(msg)
+        server.send_message(
+
+            msg
+
+        )
 
 # ============================================================
 
@@ -1574,6 +1912,40 @@ def run_1245():
 
     portfolio = load_portfolio()
 
+    today_str = datetime.now(
+
+        TZ
+
+    ).date().isoformat()
+
+    # --------------------------------------------------------
+
+    # 同日の12:45処理を二重実行しない
+
+    # --------------------------------------------------------
+
+    if (
+
+        portfolio.get(
+
+            "last_1245_date"
+
+        )
+
+        ==
+
+        today_str
+
+    ):
+
+        print(
+
+            "本日の12:45処理は既に実行済み"
+
+        )
+
+        return
+
     # --------------------------------------------------------
 
     # STEP 1
@@ -1581,12 +1953,6 @@ def run_1245():
     # 持越しポジションの午前中TP/SL確認
 
     # --------------------------------------------------------
-
-    before_count = len(
-
-        portfolio["positions"]
-
-    )
 
     closed_morning = check_positions_until(
 
@@ -1596,15 +1962,11 @@ def run_1245():
 
     )
 
-    after_count = len(
-
-        portfolio["positions"]
-
-    )
-
     print(
 
-        f"午前中決済: {len(closed_morning)}件"
+        f"午前中決済: "
+
+        f"{len(closed_morning)}件"
 
     )
 
@@ -1642,6 +2004,14 @@ def run_1245():
 
     )
 
+    # 12:45処理済みとして記録
+
+    portfolio[
+
+        "last_1245_date"
+
+    ] = today_str
+
     save_portfolio(
 
         portfolio
@@ -1662,9 +2032,15 @@ def run_1245():
 
     )
 
-    long_exposure, short_exposure = (
+    (
 
-        get_exposure(portfolio)
+        long_exposure,
+
+        short_exposure
+
+    ) = get_exposure(
+
+        portfolio
 
     )
 
@@ -1680,43 +2056,57 @@ def run_1245():
 
     lines.append(
 
-        f"初期資産 : ¥{INITIAL_CAPITAL:,.0f}"
+        f"初期資産 : "
+
+        f"¥{INITIAL_CAPITAL:,.0f}"
 
     )
 
     lines.append(
 
-        f"現在Equity : ¥{equity:,.0f}"
+        f"現在Equity : "
+
+        f"¥{equity:,.0f}"
 
     )
 
     lines.append(
 
-        f"LONG上限 : ¥{equity * LONG_LEVERAGE:,.0f}"
+        f"LONG上限 : "
+
+        f"¥{equity * LONG_LEVERAGE:,.0f}"
 
     )
 
     lines.append(
 
-        f"SHORT上限 : ¥{equity * SHORT_LEVERAGE:,.0f}"
+        f"SHORT上限 : "
+
+        f"¥{equity * SHORT_LEVERAGE:,.0f}"
 
     )
 
     lines.append(
 
-        f"LONG建玉 : ¥{long_exposure:,.0f}"
+        f"LONG建玉 : "
+
+        f"¥{long_exposure:,.0f}"
 
     )
 
     lines.append(
 
-        f"SHORT建玉 : ¥{short_exposure:,.0f}"
+        f"SHORT建玉 : "
+
+        f"¥{short_exposure:,.0f}"
 
     )
 
     lines.append(
 
-        f"合計建玉 : ¥{long_exposure + short_exposure:,.0f}"
+        f"合計建玉 : "
+
+        f"¥{long_exposure + short_exposure:,.0f}"
 
     )
 
@@ -1884,9 +2274,47 @@ def run_1545():
 
     portfolio = load_portfolio()
 
+    today_str = datetime.now(
+
+        TZ
+
+    ).date().isoformat()
+
+    # --------------------------------------------------------
+
+    # 同日の15:45処理を二重実行しない
+
+    # --------------------------------------------------------
+
+    if (
+
+        portfolio.get(
+
+            "last_1545_date"
+
+        )
+
+        ==
+
+        today_str
+
+    ):
+
+        print(
+
+            "本日の15:45処理は既に実行済み"
+
+        )
+
+        return
+
+    # --------------------------------------------------------
+
     # 当日の15:30までの5分足で
 
     # TP/SLを確認
+
+    # --------------------------------------------------------
 
     closed = check_positions_until(
 
@@ -1896,9 +2324,25 @@ def run_1545():
 
     )
 
-    save_trades(closed)
+    save_trades(
 
-    save_portfolio(portfolio)
+        closed
+
+    )
+
+    # 15:45処理済みとして記録
+
+    portfolio[
+
+        "last_1545_date"
+
+    ] = today_str
+
+    save_portfolio(
+
+        portfolio
+
+    )
 
     equity = calculate_equity(
 
@@ -1906,9 +2350,15 @@ def run_1545():
 
     )
 
-    long_exposure, short_exposure = (
+    (
 
-        get_exposure(portfolio)
+        long_exposure,
+
+        short_exposure
+
+    ) = get_exposure(
+
+        portfolio
 
     )
 
@@ -1924,7 +2374,9 @@ def run_1545():
 
     lines.append(
 
-        f"現在Equity : ¥{equity:,.0f}"
+        f"現在Equity : "
+
+        f"¥{equity:,.0f}"
 
     )
 
@@ -1938,13 +2390,17 @@ def run_1545():
 
     lines.append(
 
-        f"LONG建玉 : ¥{long_exposure:,.0f}"
+        f"LONG建玉 : "
+
+        f"¥{long_exposure:,.0f}"
 
     )
 
     lines.append(
 
-        f"SHORT建玉 : ¥{short_exposure:,.0f}"
+        f"SHORT建玉 : "
+
+        f"¥{short_exposure:,.0f}"
 
     )
 
@@ -2052,7 +2508,11 @@ def run_1545():
 
 def main():
 
-    now = datetime.now(TZ)
+    now = datetime.now(
+
+        TZ
+
+    )
 
     print("=" * 70)
 
@@ -2106,55 +2566,11 @@ def main():
 
     # ========================================================
 
-    # 12:45
-
-    # ========================================================
-
-    if (
-
-        now.hour == 12
-
-        and 40 <= now.minute <= 55
-
-    ):
-
-        print(
-
-            "12:45処理開始"
-
-        )
-
-        run_1245()
-
-        return
-
-    # ========================================================
-
-    # 15:45
-
-    # ========================================================
-
-    if (
-
-        now.hour == 15
-
-        and 40 <= now.minute <= 55
-
-    ):
-
-        print(
-
-            "15:45処理開始"
-
-        )
-
-        run_1545()
-
-        return
-
-    # ========================================================
-
     # 手動テスト
+
+    #
+
+    # FORCEを最優先
 
     # ========================================================
 
@@ -2183,6 +2599,134 @@ def main():
         print(
 
             "FORCE_1545=1"
+
+        )
+
+        run_1545()
+
+        return
+
+    # ========================================================
+
+    # 12:45
+
+    #
+
+    # 12:40〜12:44にGitHubが起動した場合
+
+    # 12:45まで待つ
+
+    #
+
+    # 12:45〜12:55に起動した場合
+
+    # すぐ12:45処理を実行
+
+    # ========================================================
+
+    if (
+
+        now.hour == 12
+
+        and 40 <= now.minute <= 55
+
+    ):
+
+        if now.minute < 45:
+
+            wait_seconds = (
+
+                45 - now.minute
+
+            ) * 60 - now.second
+
+            print(
+
+                f"12:45まで待機 "
+
+                f"{wait_seconds}秒"
+
+            )
+
+            time.sleep(
+
+                max(
+
+                    0,
+
+                    wait_seconds
+
+                )
+
+            )
+
+        print(
+
+            "12:45処理開始"
+
+        )
+
+        run_1245()
+
+        return
+
+    # ========================================================
+
+    # 15:45
+
+    #
+
+    # 15:40〜15:44に起動した場合
+
+    # 15:45まで待つ
+
+    #
+
+    # 15:45〜15:55に起動した場合
+
+    # すぐ15:45処理を実行
+
+    # ========================================================
+
+    if (
+
+        now.hour == 15
+
+        and 40 <= now.minute <= 55
+
+    ):
+
+        if now.minute < 45:
+
+            wait_seconds = (
+
+                45 - now.minute
+
+            ) * 60 - now.second
+
+            print(
+
+                f"15:45まで待機 "
+
+                f"{wait_seconds}秒"
+
+            )
+
+            time.sleep(
+
+                max(
+
+                    0,
+
+                    wait_seconds
+
+                )
+
+            )
+
+        print(
+
+            "15:45処理開始"
 
         )
 
