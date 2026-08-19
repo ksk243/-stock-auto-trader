@@ -1,20 +1,7 @@
 {
-  "cash": 88792.0,
-  "positions": [
-    {
-      "ticker": "7267.T",
-      "side": "LONG",
-      "entry_date": "2026-08-18",
-      "entry_price": 1715.0,
-      "shares": 600,
-      "tp": 1749.3,
-      "sl": 1689.2749999999999,
-      "rs": 76.49572649572649,
-      "morning_high": 1715.0,
-      "morning_low": 1673.0
-    }
-  ],
-  "realized_pnl": 0.0,
-  "last_1245_date": "2026-08-18",
+  "cash": 1102357.0,
+  "positions": [],
+  "realized_pnl": -15513.93698630145,
+  "last_1245_date": "2026-08-19",
   "last_1545_date": null
 }
