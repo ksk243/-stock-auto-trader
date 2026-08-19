@@ -1,16 +1,38 @@
-name: v29.5 Paper Trader
+name: v29.6 Paper Trader
 
 on:
 
+  # ==========================================================
+
+  # GitHub schedule
+
+  #
+
+  # 12:45の本番トリガーには依存しない
+
+  # 外部スケジューラからworkflow_dispatchする
+
+  #
+
+  # scheduleはバックアップ
+
+  # ==========================================================
+
   schedule:
 
-    # 日本時間 12:40
+    # 日本時間 12:45
 
-    - cron: "40 3 * * 1-5"
+    - cron: "45 3 * * 1-5"
 
-    # 日本時間 15:40
+    # 日本時間 15:45
 
-    - cron: "40 6 * * 1-5"
+    - cron: "45 6 * * 1-5"
+
+  # ==========================================================
+
+  # 外部スケジューラ / 手動実行
+
+  # ==========================================================
 
   workflow_dispatch:
 
@@ -26,6 +48,16 @@ on:
 
         type: boolean
 
+      force_1545:
+
+        description: "15:45メールを強制テスト"
+
+        required: false
+
+        default: false
+
+        type: boolean
+
 jobs:
 
   run-paper-trader:
@@ -34,9 +66,21 @@ jobs:
 
     steps:
 
+      # ======================================================
+
+      # Checkout
+
+      # ======================================================
+
       - name: Checkout
 
         uses: actions/checkout@v4
+
+      # ======================================================
+
+      # Python
+
+      # ======================================================
 
       - name: Setup Python
 
@@ -46,11 +90,23 @@ jobs:
 
           python-version: "3.11"
 
+      # ======================================================
+
+      # Dependencies
+
+      # ======================================================
+
       - name: Install dependencies
 
         run: |
 
           pip install yfinance pandas numpy
+
+      # ======================================================
+
+      # Paper Trader
+
+      # ======================================================
 
       - name: Run paper trader
 
@@ -68,9 +124,21 @@ jobs:
 
           FORCE_1245: ${{ inputs.force_1245 && '1' || '' }}
 
+          FORCE_1545: ${{ inputs.force_1545 && '1' || '' }}
+
         run: |
 
+          echo "UTC : $(date -u)"
+
+          echo "JST : $(TZ=Asia/Tokyo date)"
+
           python paper_trader.py
+
+      # ======================================================
+
+      # Save data
+
+      # ======================================================
 
       - name: Save data
 
@@ -78,7 +146,9 @@ jobs:
 
           git config user.name "github-actions[bot]"
 
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email \
+
+            "41898282+github-actions[bot]@users.noreply.github.com"
 
           if [ -d "data" ]; then
 
@@ -86,7 +156,9 @@ jobs:
 
             if ! git diff --cached --quiet; then
 
-              git commit -m "Update v29.5 paper trading data"
+              git commit \
+
+                -m "Update v29.6 paper trading data"
 
               git push
 
