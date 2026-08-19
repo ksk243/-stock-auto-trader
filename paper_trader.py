@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 
 import json
@@ -32,6 +30,14 @@ import yfinance as yf
 
 #
 
+# 12:40〜12:45に起動
+
+#   ↓
+
+# 12:45まで待機
+
+#   ↓
+
 # 12:45
 
 #   1. 持越しポジションの午前中TP/SL確認
@@ -41,6 +47,14 @@ import yfinance as yf
 #   3. 空いたLONG/SHORT枠だけ新規選定
 
 #
+
+# 15:40〜15:45に起動
+
+#   ↓
+
+# 15:45まで待機
+
+#   ↓
 
 # 15:45
 
@@ -246,7 +260,17 @@ def clean_yahoo(df):
 
     df.columns = [str(c).lower() for c in df.columns]
 
-    required = ["open", "high", "low", "close"]
+    required = [
+
+        "open",
+
+        "high",
+
+        "low",
+
+        "close"
+
+    ]
 
     if not all(c in df.columns for c in required):
 
@@ -262,7 +286,11 @@ def clean_yahoo(df):
 
         )
 
-    df = df.dropna(subset=required)
+    df = df.dropna(
+
+        subset=required
+
+    )
 
     if df.empty:
 
@@ -372,7 +400,11 @@ def default_portfolio():
 
     return {
 
-        "cash": float(INITIAL_CAPITAL),
+        "cash": float(
+
+            INITIAL_CAPITAL
+
+        ),
 
         "positions": [],
 
@@ -394,11 +426,19 @@ def load_portfolio():
 
     )
 
-    if not os.path.exists(PORTFOLIO_FILE):
+    if not os.path.exists(
+
+        PORTFOLIO_FILE
+
+    ):
 
         portfolio = default_portfolio()
 
-        save_portfolio(portfolio)
+        save_portfolio(
+
+            portfolio
+
+        )
 
         return portfolio
 
@@ -438,7 +478,11 @@ def load_portfolio():
 
         portfolio = default_portfolio()
 
-        save_portfolio(portfolio)
+        save_portfolio(
+
+            portfolio
+
+        )
 
         return portfolio
 
@@ -846,9 +890,15 @@ def get_morning_levels(
 
 # end_time:
 
+#
+
 #   12:40 → 12:45時点の確認
 
+#
+
 #   15:30 → 15:45時点の確認
+
+#
 
 # ============================================================
 
@@ -1256,7 +1306,11 @@ def find_candidates():
 
         )
 
+        # ====================================================
+
         # LONG
+
+        # ====================================================
 
         if side == "LONG":
 
@@ -1296,7 +1350,11 @@ def find_candidates():
 
             })
 
+        # ====================================================
+
         # SHORT
+
+        # ====================================================
 
         else:
 
@@ -1482,11 +1540,11 @@ def enter_positions(
 
             continue
 
-        # ==========================
+        # ====================================================
 
         # LONG
 
-        # ==========================
+        # ====================================================
 
         if c["side"] == "LONG":
 
@@ -1550,11 +1608,11 @@ def enter_positions(
 
             long_count += 1
 
-        # ==========================
+        # ====================================================
 
         # SHORT
 
-        # ==========================
+        # ====================================================
 
         else:
 
@@ -2612,15 +2670,19 @@ def main():
 
     #
 
-    # 12:40〜12:44にGitHubが起動した場合
+    # 12:40〜12:44にGitHub Actionsが起動した場合
 
     # 12:45まで待つ
 
     #
 
-    # 12:45〜12:55に起動した場合
+    # 12:45に起動した場合
 
     # すぐ12:45処理を実行
+
+    #
+
+    # 12:46以降は実行しない
 
     # ========================================================
 
@@ -2628,7 +2690,7 @@ def main():
 
         now.hour == 12
 
-        and 40 <= now.minute <= 55
+        and 40 <= now.minute <= 45
 
     ):
 
@@ -2636,9 +2698,11 @@ def main():
 
             wait_seconds = (
 
-                45 - now.minute
+                (45 - now.minute) * 60
 
-            ) * 60 - now.second
+                - now.second
+
+            )
 
             print(
 
@@ -2676,15 +2740,19 @@ def main():
 
     #
 
-    # 15:40〜15:44に起動した場合
+    # 15:40〜15:44にGitHub Actionsが起動した場合
 
     # 15:45まで待つ
 
     #
 
-    # 15:45〜15:55に起動した場合
+    # 15:45に起動した場合
 
     # すぐ15:45処理を実行
+
+    #
+
+    # 15:46以降は実行しない
 
     # ========================================================
 
@@ -2692,7 +2760,7 @@ def main():
 
         now.hour == 15
 
-        and 40 <= now.minute <= 55
+        and 40 <= now.minute <= 45
 
     ):
 
@@ -2700,9 +2768,11 @@ def main():
 
             wait_seconds = (
 
-                45 - now.minute
+                (45 - now.minute) * 60
 
-            ) * 60 - now.second
+                - now.second
+
+            )
 
             print(
 
