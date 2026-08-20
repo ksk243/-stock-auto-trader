@@ -58,13 +58,31 @@ jobs:
 
           gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
-      - name: Build and Push
+      - name: Build Docker Image
 
         run: |
 
-          docker build -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
+          docker build \
 
-          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
+            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest \
+
+            .
+
+      - name: Push Docker Image
+
+        run: |
+
+          docker push \
+
+            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
+
+      - name: Check Image
+
+        run: |
+
+          gcloud artifacts docker images list \
+
+            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader
 
       - name: Deploy Cloud Run Job
 
@@ -72,13 +90,13 @@ jobs:
 
           gcloud run jobs deploy v33-8-paper-trader \
 
-            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest \
+            --image asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest \
 
-            --region=asia-northeast1 \
+            --region asia-northeast1 \
 
-            --tasks=1 \
+            --tasks 1 \
 
-            --max-retries=1
+            --max-retries 1
 
       - name: Run Cloud Run Job
 
@@ -86,7 +104,7 @@ jobs:
 
           gcloud run jobs execute v33-8-paper-trader \
 
-            --region=asia-northeast1 \
+            --region asia-northeast1 \
 
             --wait
 
