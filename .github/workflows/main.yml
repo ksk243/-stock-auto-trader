@@ -18,94 +18,74 @@ jobs:
 
     permissions:
 
-      contents: write
+      contents: read
 
       id-token: write
 
     steps:
 
-      - name: Checkout
+    - name: Checkout
 
-        uses: actions/checkout@v4
+      uses: actions/checkout@v4
 
-      - name: Check GitHub Repository
+    - name: Google Cloud Auth
 
-        run: |
+      uses: google-github-actions/auth@v2
 
-          echo "Repository: ${{ github.repository }}"
+      with:
 
-          echo "Owner: ${{ github.repository_owner }}"
+        workload_identity_provider: "projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github"
 
-          echo "Ref: ${{ github.ref }}"
+        service_account:
 
-      - name: Google Cloud Auth
+          github-actions@stock-auto-trader-506100.iam.gserviceaccount.com
 
-        uses: google-github-actions/auth@v2
+    - name: Setup gcloud
 
-        with:
+      uses: google-github-actions/setup-gcloud@v2
 
-          workload_identity_provider: "projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github"
+    - name: Configure Docker
 
-          service_account: "github-actions@stock-auto-trader-506100.iam.gserviceaccount.com"
+      run: |
 
-      - name: Setup gcloud
+        gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
-        uses: google-github-actions/setup-gcloud@v2
+    - name: Build Image
 
-      - name: Configure Docker
+      run: |
 
-        run: |
+        docker build \
 
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+        -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
 
-      - name: Build Docker Image
+    - name: Push Image
 
-        run: |
+      run: |
 
-          docker build -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
+        docker push \
 
-      - name: Push Docker Image
+        asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
 
-        run: |
+    - name: Deploy Cloud Run Job
 
-          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
+      run: |
 
-      - name: Check Image
+        gcloud run jobs deploy v33-8-paper-trader \
 
-        run: |
+        --image asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest \
 
-          gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader
+        --region asia-northeast1 \
 
-      - name: Deploy Cloud Run Job
+        --tasks 1 \
 
-        run: |
+        --max-retries 1
 
-          gcloud run jobs deploy v33-8-paper-trader --image asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest --region asia-northeast1 --tasks 1 --max-retries 1
+    - name: Execute Job
 
-      - name: Run Cloud Run Job
+      run: |
 
-        run: |
+        gcloud run jobs execute v33-8-paper-trader \
 
-          gcloud run jobs execute v33-8-paper-trader --region asia-northeast1 --wait
+        --region asia-northeast1 \
 
-      - name: Save data
-
-        run: |
-
-          git config user.name "github-actions[bot]"
-
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add data/ *.csv 2>/dev/null || true
-
-          if ! git diff --cached --quiet; then
-
-            git commit -m "Update v33.8 paper trading data"
-
-            git push
-
-          else
-
-            echo "No changes"
-
-          fi
+        --wait
