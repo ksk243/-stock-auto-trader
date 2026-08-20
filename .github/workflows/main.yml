@@ -24,68 +24,74 @@ jobs:
 
     steps:
 
-    - name: Checkout
+      - name: Checkout
 
-      uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
-    - name: Google Cloud Auth
+      - name: Check files
 
-      uses: google-github-actions/auth@v2
+        run: |
 
-      with:
+          ls -la
 
-        workload_identity_provider: "projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github"
+          ls -la paper_trader.py
 
-        service_account:
+          ls -la Dockerfile
 
-          github-actions@stock-auto-trader-506100.iam.gserviceaccount.com
+          ls -la entrypoint.sh
 
-    - name: Setup gcloud
+      - name: Google Cloud Auth
 
-      uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/auth@v2
 
-    - name: Configure Docker
+        with:
 
-      run: |
+          workload_identity_provider: "projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github"
 
-        gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+          service_account: "github-actions@stock-auto-trader-506100.iam.gserviceaccount.com"
 
-    - name: Build Image
+      - name: Setup gcloud
 
-      run: |
+        uses: google-github-actions/setup-gcloud@v2
 
-        docker build \
+      - name: Configure Docker
 
-        -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
+        run: |
 
-    - name: Push Image
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
-      run: |
+      - name: Build Image
 
-        docker push \
+        run: |
 
-        asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
+          docker build -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
 
-    - name: Deploy Cloud Run Job
+      - name: Push Image
 
-      run: |
+        run: |
 
-        gcloud run jobs deploy v33-8-paper-trader \
+          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
 
-        --image asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest \
+      - name: Deploy Cloud Run Job
 
-        --region asia-northeast1 \
+        run: |
 
-        --tasks 1 \
+          gcloud run jobs deploy v33-8-paper-trader \
 
-        --max-retries 1
+            --image asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest \
 
-    - name: Execute Job
+            --region asia-northeast1 \
 
-      run: |
+            --tasks 1 \
 
-        gcloud run jobs execute v33-8-paper-trader \
+            --max-retries 1
 
-        --region asia-northeast1 \
+      - name: Execute Cloud Run Job
 
-        --wait
+        run: |
+
+          gcloud run jobs execute v33-8-paper-trader \
+
+            --region asia-northeast1 \
+
+            --wait
