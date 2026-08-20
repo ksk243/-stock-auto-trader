@@ -8,8 +8,10 @@ RUN apt-get update \
 
 RUN pip install --no-cache-dir yfinance pandas numpy
 
-COPY entrypoint.sh /entrypoint.sh
+WORKDIR /app
 
-RUN chmod +x /entrypoint.sh
+COPY . /app
 
-ENTRYPOINT ["/entrypoint.sh"]
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
