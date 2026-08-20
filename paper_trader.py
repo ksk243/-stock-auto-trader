@@ -1,28 +1,28 @@
 # ============================================================
 
-# v33.8 Cloud Run Paper Trader
+# v33.8 Cloud Paper Trader 改
 
-# LONG 1.0倍 + SHORT 1.0倍
+# Cache版
 
 #
 
+# LONG 1.0倍 + SHORT 1.0倍
+
 # 12:45判定
 
-# 12:50 OPEN約定
+# 12:50 OPEN
 
 # TP +2%
 
 # SL -1.5%
 
-# 持越しあり
-
 #
 
-# 完全No-Future
+# 5分足キャッシュ
 
-# Cloud Run常駐版
+# 前日データ再利用
 
-# Gmail通知対応
+# 当日分追加取得
 
 # ============================================================
 
@@ -34,13 +34,7 @@ import os
 
 import json
 
-import smtplib
-
 from datetime import datetime
-
-from email.mime.text import MIMEText
-
-from email.mime.multipart import MIMEMultipart
 
 import yfinance as yf
 
@@ -54,11 +48,17 @@ import numpy as np
 
 # ============================================================
 
-VERSION = "v33.8 Cloud"
+VERSION = "v33.8 Cache"
 
 INITIAL_CAPITAL = 1117792
 
 DATA_DIR = "data"
+
+CACHE_DIR = f"{DATA_DIR}/cache"
+
+INTRADAY_CACHE = f"{CACHE_DIR}/5m"
+
+DAILY_CACHE = f"{CACHE_DIR}/daily"
 
 PORTFOLIO_FILE = f"{DATA_DIR}/portfolio.json"
 
@@ -68,82 +68,19 @@ CANDIDATE_FILE = f"{DATA_DIR}/paper_candidates.csv"
 
 os.makedirs(
 
-    DATA_DIR,
+    INTRADAY_CACHE,
 
     exist_ok=True
 
 )
 
-# ============================================================
+os.makedirs(
 
-# Email
+    DAILY_CACHE,
 
-# ============================================================
+    exist_ok=True
 
-def send_email(subject, body):
-
-    smtp_user = os.environ.get("MAIL_USER")
-
-    smtp_pass = os.environ.get("MAIL_PASS")
-
-    mail_to = os.environ.get("MAIL_TO")
-
-    if not smtp_user or not smtp_pass or not mail_to:
-
-        raise RuntimeError(
-
-            "メール用GitHub Secretsが未設定です"
-
-        )
-
-    msg = MIMEMultipart()
-
-    msg["From"] = smtp_user
-
-    msg["To"] = mail_to
-
-    msg["Subject"] = subject
-
-    msg.attach(
-
-        MIMEText(
-
-            body,
-
-            "plain",
-
-            "utf-8"
-
-        )
-
-    )
-
-    with smtplib.SMTP(
-
-        "smtp.mail.me.com",
-
-        587
-
-    ) as server:
-
-        server.starttls()
-
-        server.login(
-
-            smtp_user,
-
-            smtp_pass
-
-        )
-
-        server.send_message(
-
-            msg
-
-        )
-
-    print("メール送信完了")
-    
+)
 
 # ============================================================
 
@@ -172,8 +109,6 @@ SL = 0.015
 DECISION_TIME = "12:45"
 
 ENTRY_TIME = "12:50"
-
-HOLD_OVERNIGHT = True
 
 # ============================================================
 
@@ -243,19 +178,319 @@ TICKERS = [
 
 # ============================================================
 
-# portfolio読み込み
+# Cache保存
+
+# ============================================================
+
+def save_cache(df, path):
+
+    df.to_csv(
+
+        path,
+
+        encoding="utf-8-sig"
+
+    )
+
+def load_cache(path):
+
+    if not os.path.exists(path):
+
+        return None
+
+    try:
+
+        df = pd.read_csv(
+
+            path,
+
+            index_col=0,
+
+            parse_dates=True
+
+        )
+
+        return df
+
+    except:
+
+        return None
+
+# ============================================================
+
+# 5分足取得（差分対応）
+
+# ============================================================
+
+def download_5m(ticker):
+
+    path = (
+
+        f"{INTRADAY_CACHE}/{ticker}.csv"
+
+    )
+
+    old = load_cache(path)
+
+    try:
+
+        new = yf.download(
+
+            ticker,
+
+            period="5d",
+
+            interval="5m",
+
+            auto_adjust=False,
+
+            progress=False,
+
+            threads=False
+
+        )
+
+        if new.empty:
+
+            return old
+
+        if isinstance(
+
+            new.columns,
+
+            pd.MultiIndex
+
+        ):
+
+            new.columns = (
+
+                new.columns
+
+                .get_level_values(0)
+
+            )
+
+        if new.index.tz is not None:
+
+            new.index = (
+
+                new.index
+
+                .tz_convert(
+
+                    "Asia/Tokyo"
+
+                )
+
+                .tz_localize(None)
+
+            )
+
+        new = new[
+
+            [
+
+                "Open",
+
+                "High",
+
+                "Low",
+
+                "Close",
+
+                "Volume"
+
+            ]
+
+        ].dropna()
+
+        if old is not None:
+
+            df = pd.concat(
+
+                [
+
+                    old,
+
+                    new
+
+                ]
+
+            )
+
+            df = (
+
+                df
+
+                .loc[
+
+                    ~df.index.duplicated()
+
+                ]
+
+                .sort_index()
+
+            )
+
+        else:
+
+            df = new
+
+        save_cache(
+
+            df,
+
+            path
+
+        )
+
+        return df
+
+    except Exception:
+
+        return old
+
+# ============================================================
+
+# Daily Cache
+
+# ============================================================
+
+def download_daily(ticker):
+
+    path = (
+
+        f"{DAILY_CACHE}/{ticker}.csv"
+
+    )
+
+    old = load_cache(path)
+
+    try:
+
+        new = yf.download(
+
+            ticker,
+
+            period="1mo",
+
+            interval="1d",
+
+            auto_adjust=False,
+
+            progress=False,
+
+            threads=False
+
+        )
+
+        if new.empty:
+
+            return old
+
+        if isinstance(
+
+            new.columns,
+
+            pd.MultiIndex
+
+        ):
+
+            new.columns = (
+
+                new.columns
+
+                .get_level_values(0)
+
+            )
+
+        new = new[
+
+            [
+
+                "Open",
+
+                "High",
+
+                "Low",
+
+                "Close",
+
+                "Volume"
+
+            ]
+
+        ].dropna()
+
+        if old is not None:
+
+            df = pd.concat(
+
+                [
+
+                    old,
+
+                    new
+
+                ]
+
+            )
+
+            df = (
+
+                df
+
+                .loc[
+
+                    ~df.index.duplicated()
+
+                ]
+
+                .sort_index()
+
+            )
+
+        else:
+
+            df = new
+
+        save_cache(
+
+            df,
+
+            path
+
+        )
+
+        return df
+
+    except Exception:
+
+        return old
+
+# ============================================================
+
+# portfolio
 
 # ============================================================
 
 def load_portfolio():
 
-    if not os.path.exists(PORTFOLIO_FILE):
+    if not os.path.exists(
+
+        PORTFOLIO_FILE
+
+    ):
 
         return {
 
-            "equity": INITIAL_CAPITAL,
+            "equity":
 
-            "positions": []
+                INITIAL_CAPITAL,
+
+            "positions":
+
+                []
 
         }
 
@@ -297,157 +532,9 @@ def save_portfolio(data):
 
 # ============================================================
 
-# データ取得
-
-# ============================================================
-
-def download_5m(ticker):
-
-    try:
-
-        df = yf.download(
-
-            ticker,
-
-            period="60d",
-
-            interval="5m",
-
-            auto_adjust=False,
-
-            progress=False,
-
-            threads=False
-
-        )
-
-        if df is None or df.empty:
-
-            return None
-
-        if isinstance(
-
-            df.columns,
-
-            pd.MultiIndex
-
-        ):
-
-            df.columns = (
-
-                df.columns
-
-                .get_level_values(0)
-
-            )
-
-        if df.index.tz is not None:
-
-            df.index = (
-
-                df.index
-
-                .tz_convert(
-
-                    "Asia/Tokyo"
-
-                )
-
-                .tz_localize(None)
-
-            )
-
-        df = df.sort_index()
-
-        return df[
-
-            [
-
-                "Open",
-
-                "High",
-
-                "Low",
-
-                "Close",
-
-                "Volume"
-
-            ]
-
-        ].dropna()
-
-    except Exception:
-
-        return None
-
-def download_daily(ticker):
-
-    try:
-
-        df = yf.download(
-
-            ticker,
-
-            period="1y",
-
-            interval="1d",
-
-            auto_adjust=False,
-
-            progress=False,
-
-            threads=False
-
-        )
-
-        if df is None or df.empty:
-
-            return None
-
-        if isinstance(
-
-            df.columns,
-
-            pd.MultiIndex
-
-        ):
-
-            df.columns = (
-
-                df.columns
-
-                .get_level_values(0)
-
-            )
-
-        return df[
-
-            [
-
-                "Open",
-
-                "High",
-
-                "Low",
-
-                "Close",
-
-                "Volume"
-
-            ]
-
-        ].dropna()
-
-    except Exception:
-
-        return None
-
-# ============================================================
-
 # RS計算
 
-# 完全No-Future
+# No Future
 
 # ============================================================
 
@@ -505,8 +592,6 @@ def calc_rs(
 
 # 候補作成
 
-# 12:45まで確定データのみ
-
 # ============================================================
 
 def make_candidate(
@@ -547,7 +632,7 @@ def make_candidate(
 
         day.index <= cutoff
 
-    ].copy()
+    ]
 
     if len(before) < 10:
 
@@ -595,21 +680,13 @@ def make_candidate(
 
         vwap = (
 
-            (
+            before["Close"]
 
-                before["Close"]
+            *
 
-                *
+            volume
 
-                volume
-
-            ).sum()
-
-            /
-
-            volume.sum()
-
-        )
+        ).sum() / volume.sum()
 
     else:
 
@@ -621,7 +698,11 @@ def make_candidate(
 
     past = daily[ticker][
 
-        daily[ticker].index.date < date.date()
+        daily[ticker].index.date
+
+        <
+
+        date.date()
 
     ]
 
@@ -665,19 +746,11 @@ def make_candidate(
 
         afternoon_return = (
 
-            float(
-
-                afternoon["Close"].iloc[-1]
-
-            )
+            afternoon["Close"].iloc[-1]
 
             /
 
-            float(
-
-                afternoon["Open"].iloc[0]
-
-            )
+            afternoon["Open"].iloc[0]
 
             - 1
 
@@ -693,19 +766,11 @@ def make_candidate(
 
         recent_return = (
 
-            float(
-
-                recent["Close"].iloc[-1]
-
-            )
+            recent["Close"].iloc[-1]
 
             /
 
-            float(
-
-                recent["Close"].iloc[0]
-
-            )
+            recent["Close"].iloc[0]
 
             - 1
 
@@ -731,25 +796,31 @@ def make_candidate(
 
         "day_return": day_return,
 
-        "afternoon_return": afternoon_return,
+        "afternoon_return":
 
-        "recent_return": recent_return,
+            afternoon_return,
 
-        "raw_rs": calc_rs(
+        "recent_return":
 
-            ticker,
+            recent_return,
 
-            daily,
+        "raw_rs":
 
-            date
+            calc_rs(
 
-        )
+                ticker,
+
+                daily,
+
+                date
+
+            )
 
     }
 
 # ============================================================
 
-# 今日候補選定
+# 候補選定
 
 # ============================================================
 
@@ -785,7 +856,7 @@ def select_candidates(
 
         )
 
-        if c is not None:
+        if c:
 
             rows.append(c)
 
@@ -809,12 +880,6 @@ def select_candidates(
 
         return df
 
-    # ------------------------------------------------
-
-    # 横断RS
-
-    # ------------------------------------------------
-
     df["RS"] = (
 
         df["raw_rs"]
@@ -831,29 +896,15 @@ def select_candidates(
 
     )
 
-    # ------------------------------------------------
-
-    # SCORE
-
-    # ------------------------------------------------
-
     df["score"] = (
 
-        df["RS"]
-
-        *
-
-        0.30
+        df["RS"] * 0.3
 
         +
 
         df["day_return"]
 
-        .rank(
-
-            pct=True
-
-        )
+        .rank(pct=True)
 
         *
 
@@ -861,17 +912,13 @@ def select_candidates(
 
         *
 
-        0.30
+        0.3
 
         +
 
         df["afternoon_return"]
 
-        .rank(
-
-            pct=True
-
-        )
+        .rank(pct=True)
 
         *
 
@@ -885,11 +932,7 @@ def select_candidates(
 
         df["recent_return"]
 
-        .rank(
-
-            pct=True
-
-        )
+        .rank(pct=True)
 
         *
 
@@ -903,21 +946,11 @@ def select_candidates(
 
     result = []
 
-    # ------------------------------------------------
-
-    # LONG
-
-    # ------------------------------------------------
-
     long = df[
 
-        df["RS"]
+        df["RS"] >= LONG_RS_THRESHOLD
 
-        >=
-
-        LONG_RS_THRESHOLD
-
-    ].copy()
+    ]
 
     long = long[
 
@@ -929,43 +962,25 @@ def select_candidates(
 
     ]
 
-    long = long.sort_values(
+    if not long.empty:
 
-        [
+        x = long.sort_values(
 
             "score",
 
-            "RS"
+            ascending=False
 
-        ],
-
-        ascending=False
-
-    )
-
-    if not long.empty:
-
-        x = long.iloc[0].to_dict()
+        ).iloc[0].to_dict()
 
         x["side"] = "LONG"
 
         result.append(x)
 
-    # ------------------------------------------------
-
-    # SHORT
-
-    # ------------------------------------------------
-
     short = df[
 
-        df["RS"]
+        df["RS"] <= SHORT_RS_THRESHOLD
 
-        <=
-
-        SHORT_RS_THRESHOLD
-
-    ].copy()
+    ]
 
     short = short[
 
@@ -977,23 +992,13 @@ def select_candidates(
 
     ]
 
-    short = short.sort_values(
-
-        [
-
-            "score",
-
-            "RS"
-
-        ],
-
-        ascending=True
-
-    )
-
     if not short.empty:
 
-        x = short.iloc[0].to_dict()
+        x = short.sort_values(
+
+            "score"
+
+        ).iloc[0].to_dict()
 
         x["side"] = "SHORT"
 
@@ -1004,8 +1009,6 @@ def select_candidates(
 # ============================================================
 
 # トレード実行
-
-# 12:50 OPEN
 
 # ============================================================
 
@@ -1065,31 +1068,15 @@ def execute_trade(
 
     if side == "LONG":
 
-        tp_price = entry_price * (
+        tp_price = entry_price * (1 + TP)
 
-            1 + TP
-
-        )
-
-        sl_price = entry_price * (
-
-            1 - SL
-
-        )
+        sl_price = entry_price * (1 - SL)
 
     else:
 
-        tp_price = entry_price * (
+        tp_price = entry_price * (1 - TP)
 
-            1 - TP
-
-        )
-
-        sl_price = entry_price * (
-
-            1 + SL
-
-        )
+        sl_price = entry_price * (1 + SL)
 
     exit_price = None
 
@@ -1153,9 +1140,9 @@ def execute_trade(
 
                 break
 
-              # ========================================================
+    # ========================================================
 
-    # 決済なし
+    # 持越し
 
     # ========================================================
 
@@ -1173,7 +1160,7 @@ def execute_trade(
 
     # ========================================================
 
-    # リターン計算
+    # リターン
 
     # ========================================================
 
@@ -1187,35 +1174,9 @@ def execute_trade(
 
             entry_price
 
-            -
-
-            1
+            - 1
 
         )
-
-    else:
-
-        ret = (
-
-            entry_price
-
-            /
-
-            exit_price
-
-            -
-
-            1
-
-        )
-
-    # ========================================================
-
-    # 損益
-
-    # ========================================================
-
-    if side == "LONG":
 
         pnl = (
 
@@ -1232,6 +1193,18 @@ def execute_trade(
         )
 
     else:
+
+        ret = (
+
+            entry_price
+
+            /
+
+            exit_price
+
+            - 1
+
+        )
 
         pnl = (
 
@@ -1345,21 +1318,47 @@ def save_csv(
 
 # ============================================================
 
+# メールなし結果保存
+
+# GitHub Actions側で通知
+
+# ============================================================
+
+def save_result_text(
+
+    text
+
+):
+
+    with open(
+
+        f"{DATA_DIR}/latest_result.txt",
+
+        "w",
+
+        encoding="utf-8"
+
+    ) as f:
+
+        f.write(text)
+
+# ============================================================
+
 # MAIN
 
 # ============================================================
 
 def main():
 
-    print("="*80)
+    print("=" * 80)
 
     print(
 
-        f"{VERSION} LONG + SHORT"
+        f"{VERSION} START"
 
     )
 
-    print("="*80)
+    print("=" * 80)
 
     portfolio = load_portfolio()
 
@@ -1371,9 +1370,15 @@ def main():
 
     )
 
+    # ========================================================
+
+    # データ取得
+
+    # ========================================================
+
     print(
 
-        "5分足取得中..."
+        "データ更新開始"
 
     )
 
@@ -1381,17 +1386,19 @@ def main():
 
     daily = {}
 
+    success = 0
+
     for ticker in TICKERS:
 
-        df = download_5m(
+        df5 = download_5m(
 
             ticker
 
         )
 
-        if df is not None:
+        if df5 is not None:
 
-            intraday[ticker] = df
+            intraday[ticker] = df5
 
         dd = download_daily(
 
@@ -1403,13 +1410,19 @@ def main():
 
             daily[ticker] = dd
 
+        success += 1
+
     print(
 
-        f"取得完了 "
-
-        f"{len(intraday)}銘柄"
+        f"取得完了 {len(intraday)}銘柄"
 
     )
+
+    # ========================================================
+
+    # 候補
+
+    # ========================================================
 
     candidates = select_candidates(
 
@@ -1421,29 +1434,37 @@ def main():
 
     if candidates.empty:
 
+        result_text = """
+
+v33.8 Cache
+
+候補なし
+
+"""
+
         print(
 
-            "候補なし"
+            result_text
 
         )
 
-        send_email(
+        save_result_text(
 
-            f"{VERSION} 候補なし",
-
-            "本日は候補なし"
+            result_text
 
         )
 
         return
 
-    print()
+    print("=" * 80)
 
-    print("="*80)
+    print(
 
-    print("12:45候補")
+        "12:45候補"
 
-    print("="*80)
+    )
+
+    print("=" * 80)
 
     print(
 
@@ -1465,29 +1486,19 @@ def main():
 
     )
 
+    # ========================================================
+
+    # 売買
+
+    # ========================================================
+
     trades = []
 
-    # --------------------------------------------------------
-
-    # LONG
-
-    # --------------------------------------------------------
-
-    long_candidates = candidates[
-
-        candidates["side"]
-
-        ==
-
-        "LONG"
-
-    ]
-
-    if not long_candidates.empty:
+    for _, row in candidates.iterrows():
 
         trade = execute_trade(
 
-            long_candidates.iloc[0],
+            row,
 
             intraday,
 
@@ -1497,41 +1508,13 @@ def main():
 
         if trade:
 
-            trades.append(trade)
+            trades.append(
 
-    # --------------------------------------------------------
+                trade
 
-    # SHORT
+            )
 
-    # --------------------------------------------------------
-
-    short_candidates = candidates[
-
-        candidates["side"]
-
-        ==
-
-        "SHORT"
-
-    ]
-
-    if not short_candidates.empty:
-
-        trade = execute_trade(
-
-            short_candidates.iloc[0],
-
-            intraday,
-
-            equity
-
-        )
-
-        if trade:
-
-            trades.append(trade)
-
-          # ========================================================
+    # ========================================================
 
     # 資産更新
 
@@ -1581,63 +1564,19 @@ def main():
 
     )
 
-    print()
+    # ========================================================
 
-    print("="*80)
-
-    print("結果")
-
-    print("="*80)
-
-    print(
-
-        f"前資産 : ¥{equity:,.0f}"
-
-    )
-
-    print(
-
-        f"損益   : ¥{total_pnl:,.0f}"
-
-    )
-
-    print(
-
-        f"現在資産: ¥{new_equity:,.0f}"
-
-    )
+    # GitHub Actions用結果
 
     # ========================================================
 
-    # メール本文
-
-    # ========================================================
-
-    if trades:
-
-        trade_text = pd.DataFrame(
-
-            trades
-
-        ).to_string(
-
-            index=False
-
-        )
-
-    else:
-
-        trade_text = "取引なし"
-
-    mail_body = f"""
+    result = f"""
 
 {VERSION}
 
-Paper Trader 結果
-
 日時:
 
-{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+{datetime.now()}
 
 前資産:
 
@@ -1657,35 +1596,31 @@ Paper Trader 結果
 
 取引:
 
-{trade_text}
+{pd.DataFrame(trades).to_string(index=False)
+
+ if trades else "なし"}
 
 """
 
-    send_email(
+    print(result)
 
-        subject=f"{VERSION} Paper Trader",
+    save_result_text(
 
-        body=mail_body
+        result
 
     )
 
     print(
 
-        "メール送信完了"
+        "保存完了"
 
     )
-
-    print()
-
-    print("="*80)
 
     print(
 
-        f"{VERSION} 完了"
+        "Cloud Run Paper Trader END"
 
     )
-
-    print("="*80)
 
 # ============================================================
 
