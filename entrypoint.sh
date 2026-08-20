@@ -2,6 +2,8 @@
 
 set -e
 
+cd /app
+
 export TZ=Asia/Tokyo
 
 export RUN_MODE=auto
