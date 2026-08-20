@@ -27,7 +27,15 @@ jobs:
       - name: Checkout
 
         uses: actions/checkout@v4
+      - name: Check GitHub Repository
 
+        run: |
+
+          echo "Repository: ${{ github.repository }}"
+
+          echo "Owner: ${{ github.repository_owner }}"
+
+          echo "Ref: ${{ github.ref }}"
       - name: Google Cloud Auth
 
         uses: google-github-actions/auth@v2
