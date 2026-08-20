@@ -82,23 +82,11 @@ os.makedirs(
 
 def send_email(subject, body):
 
-    smtp_user = os.environ.get(
+    smtp_user = os.environ.get("MAIL_USER")
 
-        "MAIL_USER"
+    smtp_pass = os.environ.get("MAIL_PASS")
 
-    )
-
-    smtp_pass = os.environ.get(
-
-        "MAIL_PASS"
-
-    )
-
-    mail_to = os.environ.get(
-
-        "MAIL_TO"
-
-    )
+    mail_to = os.environ.get("MAIL_TO")
 
     if not smtp_user or not smtp_pass or not mail_to:
 
@@ -130,13 +118,15 @@ def send_email(subject, body):
 
     )
 
-    with smtplib.SMTP_SSL(
+    with smtplib.SMTP(
 
-        "smtp.gmail.com",
+        "smtp.mail.me.com",
 
-        465
+        587
 
     ) as server:
+
+        server.starttls()
 
         server.login(
 
@@ -152,11 +142,8 @@ def send_email(subject, body):
 
         )
 
-    print(
-
-        "メール送信完了"
-
-    )
+    print("メール送信完了")
+    
 
 # ============================================================
 
