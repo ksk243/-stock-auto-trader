@@ -2,15 +2,23 @@ FROM python:3.11-slim
 
 RUN apt-get update \
 
-    && apt-get install -y --no-install-recommends git ca-certificates \
+    && apt-get install -y --no-install-recommends \
+
+    ca-certificates \
 
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir yfinance pandas numpy
+RUN pip install --no-cache-dir \
+
+    yfinance \
+
+    pandas \
+
+    numpy
 
 WORKDIR /app
 
-COPY paper_trader.py /app/
+COPY paper_trader.py /app/paper_trader.py
 
 COPY entrypoint.sh /entrypoint.sh
 
