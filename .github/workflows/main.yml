@@ -4,13 +4,23 @@ on:
 
   workflow_dispatch:
 
+  schedule:
+
+    - cron: "30 3 * * 1-5"
+
 jobs:
 
-  run-v33:
+  deploy-and-run:
 
     runs-on: ubuntu-latest
 
     timeout-minutes: 30
+
+    permissions:
+
+      contents: write
+
+      id-token: write
 
     steps:
 
@@ -18,31 +28,63 @@ jobs:
 
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Google Cloud Auth
 
-        uses: actions/setup-python@v5
+        uses: google-github-actions/auth@v2
 
         with:
 
-          python-version: "3.11"
+          workload_identity_provider: "projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github"
 
-      - name: Install
+          service_account: "github-actions@stock-auto-trader-506100.iam.gserviceaccount.com"
 
-        run: |
+      - name: Setup gcloud
 
-          pip install yfinance pandas numpy
+        uses: google-github-actions/setup-gcloud@v2
 
-      - name: Run v33.8
-
-        env:
-
-          TZ: Asia/Tokyo
-
-          RUN_MODE: "auto"
+      - name: Configure Docker
 
         run: |
 
-          python paper_trader.py
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+
+      - name: Build and Push
+
+        run: |
+
+          docker build \
+
+            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest \
+
+            .
+
+          docker push \
+
+            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
+
+      - name: Deploy Cloud Run Job
+
+        run: |
+
+          gcloud run jobs deploy v33-8-paper-trader \
+
+            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest \
+
+            --region=asia-northeast1 \
+
+            --tasks=1 \
+
+            --max-retries=1
+
+      - name: Run Cloud Run Job
+
+        run: |
+
+          gcloud run jobs execute v33-8-paper-trader \
+
+            --region=asia-northeast1 \
+
+            --wait
 
       - name: Save data
 
