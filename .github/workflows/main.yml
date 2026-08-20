@@ -27,6 +27,7 @@ jobs:
       - name: Checkout
 
         uses: actions/checkout@v4
+
       - name: Check GitHub Repository
 
         run: |
@@ -36,6 +37,7 @@ jobs:
           echo "Owner: ${{ github.repository_owner }}"
 
           echo "Ref: ${{ github.ref }}"
+
       - name: Google Cloud Auth
 
         uses: google-github-actions/auth@v2
@@ -60,15 +62,9 @@ jobs:
 
         run: |
 
-          docker build \
+          docker build -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
 
-            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest \
-
-            .
-
-          docker push \
-
-            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
+          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
 
       - name: Deploy Cloud Run Job
 
