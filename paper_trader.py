@@ -22,6 +22,8 @@
 
 # Cloud Run常駐版
 
+# Gmail通知対応
+
 # ============================================================
 
 import warnings
@@ -32,7 +34,13 @@ import os
 
 import json
 
+import smtplib
+
 from datetime import datetime
+
+from email.mime.text import MIMEText
+
+from email.mime.multipart import MIMEMultipart
 
 import yfinance as yf
 
@@ -58,7 +66,97 @@ TRADE_FILE = f"{DATA_DIR}/paper_trades.csv"
 
 CANDIDATE_FILE = f"{DATA_DIR}/paper_candidates.csv"
 
-os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(
+
+    DATA_DIR,
+
+    exist_ok=True
+
+)
+
+# ============================================================
+
+# Email
+
+# ============================================================
+
+def send_email(subject, body):
+
+    smtp_user = os.environ.get(
+
+        "MAIL_USER"
+
+    )
+
+    smtp_pass = os.environ.get(
+
+        "MAIL_PASS"
+
+    )
+
+    mail_to = os.environ.get(
+
+        "MAIL_TO"
+
+    )
+
+    if not smtp_user or not smtp_pass or not mail_to:
+
+        raise RuntimeError(
+
+            "メール用GitHub Secretsが未設定です"
+
+        )
+
+    msg = MIMEMultipart()
+
+    msg["From"] = smtp_user
+
+    msg["To"] = mail_to
+
+    msg["Subject"] = subject
+
+    msg.attach(
+
+        MIMEText(
+
+            body,
+
+            "plain",
+
+            "utf-8"
+
+        )
+
+    )
+
+    with smtplib.SMTP_SSL(
+
+        "smtp.gmail.com",
+
+        465
+
+    ) as server:
+
+        server.login(
+
+            smtp_user,
+
+            smtp_pass
+
+        )
+
+        server.send_message(
+
+            msg
+
+        )
+
+    print(
+
+        "メール送信完了"
+
+    )
 
 # ============================================================
 
@@ -152,31 +250,7 @@ TICKERS = [
 
 "7269.T","7270.T","7272.T","7309.T","7731.T",
 
-"7733.T","7735.T","7741.T","7751.T","7752.T",
-
-"7832.T","7911.T","7912.T","7951.T","7974.T",
-
-"8001.T","8002.T","8015.T","8031.T","8035.T",
-
-"8053.T","8058.T","8113.T","8233.T","8252.T",
-
-"8253.T","8267.T","8306.T","8308.T","8316.T",
-
-"8411.T","8591.T","8601.T","8604.T","8697.T",
-
-"8725.T","8750.T","8766.T","8795.T","8801.T",
-
-"8802.T","8830.T","9001.T","9005.T","9007.T",
-
-"9008.T","9009.T","9020.T","9021.T","9022.T",
-
-"9064.T","9101.T","9104.T","9107.T","9201.T",
-
-"9202.T","9432.T","9433.T","9434.T","9501.T",
-
-"9502.T","9503.T","9531.T","9532.T","9613.T",
-
-"9735.T","9766.T","9843.T","9983.T","9984.T"
+"7733.T","7735.T","7741.T","7751.T","7752.T"
 
 ]
 
@@ -260,7 +334,7 @@ def download_5m(ticker):
 
         )
 
-        if df.empty:
+        if df is None or df.empty:
 
             return None
 
@@ -272,17 +346,31 @@ def download_5m(ticker):
 
         ):
 
-            df.columns = df.columns.get_level_values(0)
+            df.columns = (
 
-        df.index = (
+                df.columns
 
-            df.index
+                .get_level_values(0)
 
-            .tz_convert("Asia/Tokyo")
+            )
 
-            .tz_localize(None)
+        if df.index.tz is not None:
 
-        )
+            df.index = (
+
+                df.index
+
+                .tz_convert(
+
+                    "Asia/Tokyo"
+
+                )
+
+                .tz_localize(None)
+
+            )
+
+        df = df.sort_index()
 
         return df[
 
@@ -302,7 +390,7 @@ def download_5m(ticker):
 
         ].dropna()
 
-    except:
+    except Exception:
 
         return None
 
@@ -326,7 +414,7 @@ def download_daily(ticker):
 
         )
 
-        if df.empty:
+        if df is None or df.empty:
 
             return None
 
@@ -338,7 +426,13 @@ def download_daily(ticker):
 
         ):
 
-            df.columns = df.columns.get_level_values(0)
+            df.columns = (
+
+                df.columns
+
+                .get_level_values(0)
+
+            )
 
         return df[
 
@@ -358,15 +452,13 @@ def download_daily(ticker):
 
         ].dropna()
 
-    except:
+    except Exception:
 
         return None
 
 # ============================================================
 
 # RS計算
-
-# 前営業日終値まで
 
 # 完全No-Future
 
@@ -406,7 +498,9 @@ def calc_rs(
 
     old = float(
 
-        past["Close"].iloc[-RS_LOOKBACK-1]
+        past["Close"]
+
+        .iloc[-RS_LOOKBACK-1]
 
     )
 
@@ -414,15 +508,17 @@ def calc_rs(
 
         return np.nan
 
-    return now / old - 1
+    return (
+
+        now / old - 1
+
+    )
 
 # ============================================================
 
 # 候補作成
 
-#
-
-# 12:45までの確定足のみ使用
+# 12:45まで確定データのみ
 
 # ============================================================
 
@@ -470,12 +566,6 @@ def make_candidate(
 
         return None
 
-    # -----------------------------
-
-    # 前場
-
-    # -----------------------------
-
     morning = before[
 
         before.index.time <
@@ -512,12 +602,6 @@ def make_candidate(
 
     )
 
-    # -----------------------------
-
-    # VWAP
-
-    # -----------------------------
-
     volume = before["Volume"].astype(float)
 
     if volume.sum() > 0:
@@ -544,21 +628,13 @@ def make_candidate(
 
         vwap = close_1245
 
-    # -----------------------------
-
-    # 前日終値
-
-    # -----------------------------
-
     if ticker not in daily:
 
         return None
 
-    dd = daily[ticker]
+    past = daily[ticker][
 
-    past = dd[
-
-        dd.index.date < date.date()
+        daily[ticker].index.date < date.date()
 
     ]
 
@@ -580,17 +656,9 @@ def make_candidate(
 
         prev_close
 
-        -
-
-        1
+        - 1
 
     )
-
-    # -----------------------------
-
-    # 後場
-
-    # -----------------------------
 
     afternoon = before[
 
@@ -624,21 +692,13 @@ def make_candidate(
 
             )
 
-            -
-
-            1
+            - 1
 
         )
 
     else:
 
         afternoon_return = 0
-
-    # -----------------------------
-
-    # 直近15分
-
-    # -----------------------------
 
     recent = before.tail(3)
 
@@ -660,9 +720,7 @@ def make_candidate(
 
             )
 
-            -
-
-            1
+            - 1
 
         )
 
@@ -690,17 +748,15 @@ def make_candidate(
 
         "recent_return": recent_return,
 
-        "raw_rs":
+        "raw_rs": calc_rs(
 
-            calc_rs(
+            ticker,
 
-                ticker,
+            daily,
 
-                daily,
+            date
 
-                date
-
-            )
+        )
 
     }
 
@@ -766,11 +822,11 @@ def select_candidates(
 
         return df
 
-    # -----------------------------
+    # ------------------------------------------------
 
     # 横断RS
 
-    # -----------------------------
+    # ------------------------------------------------
 
     df["RS"] = (
 
@@ -788,11 +844,11 @@ def select_candidates(
 
     )
 
-    # -----------------------------
+    # ------------------------------------------------
 
     # SCORE
 
-    # -----------------------------
+    # ------------------------------------------------
 
     df["score"] = (
 
@@ -806,7 +862,11 @@ def select_candidates(
 
         df["day_return"]
 
-        .rank(pct=True)
+        .rank(
+
+            pct=True
+
+        )
 
         *
 
@@ -820,7 +880,11 @@ def select_candidates(
 
         df["afternoon_return"]
 
-        .rank(pct=True)
+        .rank(
+
+            pct=True
+
+        )
 
         *
 
@@ -834,7 +898,11 @@ def select_candidates(
 
         df["recent_return"]
 
-        .rank(pct=True)
+        .rank(
+
+            pct=True
+
+        )
 
         *
 
@@ -848,15 +916,19 @@ def select_candidates(
 
     result = []
 
-    # -----------------------------
+    # ------------------------------------------------
 
     # LONG
 
-    # -----------------------------
+    # ------------------------------------------------
 
     long = df[
 
-        df["RS"] >= LONG_RS_THRESHOLD
+        df["RS"]
+
+        >=
+
+        LONG_RS_THRESHOLD
 
     ].copy()
 
@@ -872,7 +944,13 @@ def select_candidates(
 
     long = long.sort_values(
 
-        "score",
+        [
+
+            "score",
+
+            "RS"
+
+        ],
 
         ascending=False
 
@@ -886,15 +964,19 @@ def select_candidates(
 
         result.append(x)
 
-    # -----------------------------
+    # ------------------------------------------------
 
     # SHORT
 
-    # -----------------------------
+    # ------------------------------------------------
 
     short = df[
 
-        df["RS"] <= SHORT_RS_THRESHOLD
+        df["RS"]
+
+        <=
+
+        SHORT_RS_THRESHOLD
 
     ].copy()
 
@@ -910,7 +992,13 @@ def select_candidates(
 
     short = short.sort_values(
 
-        "score",
+        [
+
+            "score",
+
+            "RS"
+
+        ],
 
         ascending=True
 
@@ -930,11 +1018,7 @@ def select_candidates(
 
 # トレード実行
 
-#
-
-# 12:50 OPENで約定
-
-# 以降の5分足でTP/SL判定
+# 12:50 OPEN
 
 # ============================================================
 
@@ -986,59 +1070,37 @@ def execute_trade(
 
         return None
 
-    # 12:50 OPEN
-
     entry_price = float(
 
         entry_df.iloc[0]["Open"]
 
     )
 
-    if entry_price <= 0:
-
-        return None
-
     if side == "LONG":
 
-        tp_price = (
+        tp_price = entry_price * (
 
-            entry_price
-
-            *
-
-            (1 + TP)
+            1 + TP
 
         )
 
-        sl_price = (
+        sl_price = entry_price * (
 
-            entry_price
-
-            *
-
-            (1 - SL)
+            1 - SL
 
         )
 
     else:
 
-        tp_price = (
+        tp_price = entry_price * (
 
-            entry_price
-
-            *
-
-            (1 - TP)
+            1 - TP
 
         )
 
-        sl_price = (
+        sl_price = entry_price * (
 
-            entry_price
-
-            *
-
-            (1 + SL)
+            1 + SL
 
         )
 
@@ -1048,8 +1110,6 @@ def execute_trade(
 
     exit_time = None
 
-    # 12:50以降
-
     after = day[
 
         day.index > entry_time
@@ -1058,35 +1118,13 @@ def execute_trade(
 
     for idx, bar in after.iterrows():
 
-        high = float(
+        high = float(bar["High"])
 
-            bar["High"]
-
-        )
-
-        low = float(
-
-            bar["Low"]
-
-        )
+        low = float(bar["Low"])
 
         if side == "LONG":
 
-            hit_sl = (
-
-                low <= sl_price
-
-            )
-
-            hit_tp = (
-
-                high >= tp_price
-
-            )
-
-            # SL優先
-
-            if hit_sl:
+            if low <= sl_price:
 
                 exit_price = sl_price
 
@@ -1096,7 +1134,7 @@ def execute_trade(
 
                 break
 
-            if hit_tp:
+            if high >= tp_price:
 
                 exit_price = tp_price
 
@@ -1108,19 +1146,7 @@ def execute_trade(
 
         else:
 
-            hit_sl = (
-
-                high >= sl_price
-
-            )
-
-            hit_tp = (
-
-                low <= tp_price
-
-            )
-
-            if hit_sl:
+            if high >= sl_price:
 
                 exit_price = sl_price
 
@@ -1130,7 +1156,7 @@ def execute_trade(
 
                 break
 
-            if hit_tp:
+            if low <= tp_price:
 
                 exit_price = tp_price
 
@@ -1140,9 +1166,9 @@ def execute_trade(
 
                 break
 
-    # ========================================================
+              # ========================================================
 
-    # 決済なし → 引け持越し
+    # 決済なし
 
     # ========================================================
 
@@ -1160,7 +1186,7 @@ def execute_trade(
 
     # ========================================================
 
-    # 損益率
+    # リターン計算
 
     # ========================================================
 
@@ -1198,7 +1224,7 @@ def execute_trade(
 
     # ========================================================
 
-    # 資産反映
+    # 損益
 
     # ========================================================
 
@@ -1332,7 +1358,7 @@ def save_csv(
 
 # ============================================================
 
-# メイン処理
+# MAIN
 
 # ============================================================
 
@@ -1392,7 +1418,9 @@ def main():
 
     print(
 
-        f"取得完了 {len(intraday)}銘柄"
+        f"取得完了 "
+
+        f"{len(intraday)}銘柄"
 
     )
 
@@ -1412,19 +1440,15 @@ def main():
 
         )
 
+        send_email(
+
+            f"{VERSION} 候補なし",
+
+            "本日は候補なし"
+
+        )
+
         return
-
-# ============================================================
-
-# part4
-
-# LONG / SHORT 実行
-
-# portfolio更新
-
-# Cloud Run終了
-
-# ============================================================
 
     print()
 
@@ -1433,6 +1457,16 @@ def main():
     print("12:45候補")
 
     print("="*80)
+
+    print(
+
+        candidates.to_string(
+
+            index=False
+
+        )
+
+    )
 
     candidates.to_csv(
 
@@ -1446,15 +1480,19 @@ def main():
 
     trades = []
 
-    # ========================================================
+    # --------------------------------------------------------
 
-    # LONG 1銘柄
+    # LONG
 
-    # ========================================================
+    # --------------------------------------------------------
 
     long_candidates = candidates[
 
-        candidates["side"] == "LONG"
+        candidates["side"]
+
+        ==
+
+        "LONG"
 
     ]
 
@@ -1470,29 +1508,23 @@ def main():
 
         )
 
-        if trade is not None:
+        if trade:
 
             trades.append(trade)
 
-            print(
+    # --------------------------------------------------------
 
-                "LONG:",
+    # SHORT
 
-                trade["ticker"],
-
-                f'{trade["return"]:+.2%}'
-
-            )
-
-    # ========================================================
-
-    # SHORT 1銘柄
-
-    # ========================================================
+    # --------------------------------------------------------
 
     short_candidates = candidates[
 
-        candidates["side"] == "SHORT"
+        candidates["side"]
+
+        ==
+
+        "SHORT"
 
     ]
 
@@ -1508,21 +1540,11 @@ def main():
 
         )
 
-        if trade is not None:
+        if trade:
 
             trades.append(trade)
 
-            print(
-
-                "SHORT:",
-
-                trade["ticker"],
-
-                f'{trade["return"]:+.2%}'
-
-            )
-
-    # ========================================================
+          # ========================================================
 
     # 資産更新
 
@@ -1534,7 +1556,15 @@ def main():
 
         total_pnl += t["pnl"]
 
-    new_equity = equity + total_pnl
+    new_equity = (
+
+        equity
+
+        +
+
+        total_pnl
+
+    )
 
     portfolio["equity"] = new_equity
 
@@ -1568,11 +1598,7 @@ def main():
 
     print("="*80)
 
-    print(
-
-        "結果"
-
-    )
+    print("結果")
 
     print("="*80)
 
@@ -1594,25 +1620,85 @@ def main():
 
     )
 
+    # ========================================================
+
+    # メール本文
+
+    # ========================================================
+
+    if trades:
+
+        trade_text = pd.DataFrame(
+
+            trades
+
+        ).to_string(
+
+            index=False
+
+        )
+
+    else:
+
+        trade_text = "取引なし"
+
+    mail_body = f"""
+
+{VERSION}
+
+Paper Trader 結果
+
+日時:
+
+{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+前資産:
+
+¥{equity:,.0f}
+
+損益:
+
+¥{total_pnl:,.0f}
+
+現在資産:
+
+¥{new_equity:,.0f}
+
+候補:
+
+{candidates.to_string(index=False)}
+
+取引:
+
+{trade_text}
+
+"""
+
+    send_email(
+
+        subject=f"{VERSION} Paper Trader",
+
+        body=mail_body
+
+    )
+
+    print(
+
+        "メール送信完了"
+
+    )
+
     print()
 
-    print(
-
-        "保存完了"
-
-    )
+    print("="*80)
 
     print(
 
-        PORTFOLIO_FILE
+        f"{VERSION} 完了"
 
     )
 
-    print(
-
-        TRADE_FILE
-
-    )
+    print("="*80)
 
 # ============================================================
 
