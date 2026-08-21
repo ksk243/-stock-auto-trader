@@ -50,19 +50,39 @@ jobs:
 
         run: |
 
-          docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
+          docker build --no-cache \
 
-          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
+            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
+
+          docker push \
+
+            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
 
       - name: Deploy Cloud Run Job
 
-        run: gcloud run jobs deploy v33-8-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest --region=asia-northeast1 --tasks=1 --max-retries=1
+        run: |
+
+          gcloud run jobs deploy v33-8-paper-trader \
+
+            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest \
+
+            --region=asia-northeast1 \
+
+            --tasks=1 \
+
+            --max-retries=1
 
       - name: Run Cloud Run Job
 
-        run: gcloud run jobs execute v33-8-paper-trader --region=asia-northeast1 --wait
+        run: |
 
-      - name: Check Cloud Run logs
+          gcloud run jobs execute v33-8-paper-trader \
+
+            --region=asia-northeast1 \
+
+            --wait
+
+      - name: Get Cloud Run Result
 
         run: |
 
@@ -70,7 +90,9 @@ jobs:
 
             'resource.type="cloud_run_job" AND resource.labels.job_name="v33-8-paper-trader"' \
 
-            --limit=50 \
+            --limit=100 \
+
+            --order=desc \
 
             --format="value(textPayload)" \
 
@@ -79,6 +101,14 @@ jobs:
           echo "===== Cloud Run Result ====="
 
           cat cloud_run_result.txt
+
+          if [ ! -s cloud_run_result.txt ]; then
+
+            echo "ERROR: Cloud Run result is empty"
+
+            exit 1
+
+          fi
 
       - name: Save data
 
