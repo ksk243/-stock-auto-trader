@@ -20,6 +20,10 @@
 
 #
 
+# 取引単位 100株
+
+#
+
 # TP +2%
 
 # SL -1.5%
@@ -78,27 +82,7 @@ PENDING_FILE = f"{DATA_DIR}/pending_orders.json"
 
 RESULT_FILE = f"{DATA_DIR}/latest_result.txt"
 
-os.makedirs(
-
-    INTRADAY_CACHE,
-
-    exist_ok=True
-
-)
-
-os.makedirs(
-
-    DAILY_CACHE,
-
-    exist_ok=True
-
-)
-
-# ============================================================
-
-# 売買設定
-
-# ============================================================
+LOT_SIZE = 100
 
 LONG_LEVERAGE = 1.0
 
@@ -121,6 +105,22 @@ SL = 0.015
 DECISION_TIME = "12:45"
 
 ENTRY_TIME = "12:50"
+
+os.makedirs(
+
+    INTRADAY_CACHE,
+
+    exist_ok=True
+
+)
+
+os.makedirs(
+
+    DAILY_CACHE,
+
+    exist_ok=True
+
+)
 
 # ============================================================
 
@@ -258,7 +258,7 @@ def load_cache(
 
     try:
 
-        df = pd.read_csv(
+        return pd.read_csv(
 
             path,
 
@@ -267,8 +267,6 @@ def load_cache(
             parse_dates=True
 
         )
-
-        return df
 
     except Exception:
 
@@ -550,17 +548,11 @@ def load_portfolio():
 
         return {
 
-            "equity":
+            "equity": INITIAL_CAPITAL,
 
-                INITIAL_CAPITAL,
+            "positions": [],
 
-            "positions":
-
-                [],
-
-            "last_update":
-
-                None
+            "last_update": None
 
         }
 
@@ -698,7 +690,47 @@ def save_result_text(
 
 # ============================================================
 
-# RS計算
+# 購入可能株数
+
+# ============================================================
+
+def calc_order_quantity(
+
+    equity,
+
+    price,
+
+    leverage
+
+):
+
+    if price <= 0:
+
+        return 0
+
+    max_value = (
+
+        equity *
+
+        leverage
+
+    )
+
+    lots = int(
+
+        max_value
+
+        /
+
+        (price * LOT_SIZE)
+
+    )
+
+    return lots * LOT_SIZE
+
+# ============================================================
+
+# RS
 
 # ============================================================
 
@@ -886,13 +918,11 @@ def make_candidate(
 
     day_return = (
 
-        close_1245
+        close_1245 /
 
-        /
+        prev_close -
 
-        prev_close
-
-        - 1
+        1
 
     )
 
@@ -950,53 +980,33 @@ def make_candidate(
 
     return {
 
-        "ticker":
+        "ticker": ticker,
+
+        "date": str(date.date()),
+
+        "morning_high": morning_high,
+
+        "morning_low": morning_low,
+
+        "close_1245": close_1245,
+
+        "vwap": vwap,
+
+        "day_return": day_return,
+
+        "afternoon_return": afternoon_return,
+
+        "recent_return": recent_return,
+
+        "raw_rs": calc_rs(
 
             ticker,
 
-        "date":
+            daily,
 
-            str(date.date()),
+            date
 
-        "morning_high":
-
-            morning_high,
-
-        "morning_low":
-
-            morning_low,
-
-        "close_1245":
-
-            close_1245,
-
-        "vwap":
-
-            vwap,
-
-        "day_return":
-
-            day_return,
-
-        "afternoon_return":
-
-            afternoon_return,
-
-        "recent_return":
-
-            recent_return,
-
-        "raw_rs":
-
-            calc_rs(
-
-                ticker,
-
-                daily,
-
-                date
-
-            )
+        )
 
     }
 
@@ -1010,7 +1020,11 @@ def select_candidates(
 
     intraday,
 
-    daily
+    daily,
+
+    equity,
+
+    positions
 
 ):
 
@@ -1050,11 +1064,7 @@ def select_candidates(
 
     df = df.dropna(
 
-        subset=[
-
-            "raw_rs"
-
-        ]
+        subset=["raw_rs"]
 
     )
 
@@ -1066,11 +1076,7 @@ def select_candidates(
 
         df["raw_rs"]
 
-        .rank(
-
-            pct=True
-
-        )
+        .rank(pct=True)
 
         * 100
 
@@ -1114,6 +1120,32 @@ def select_candidates(
 
     result = []
 
+    long_count = sum(
+
+        1
+
+        for p in positions
+
+        if p["side"] == "LONG"
+
+    )
+
+    short_count = sum(
+
+        1
+
+        for p in positions
+
+        if p["side"] == "SHORT"
+
+    )
+
+    # ========================================================
+
+    # LONG
+
+    # ========================================================
+
     long = df[
 
         df["RS"] >=
@@ -1132,7 +1164,37 @@ def select_candidates(
 
     ]
 
-    if not long.empty:
+    # 12:45時点で100株買えるものだけ
+
+    long = long[
+
+        long["close_1245"].apply(
+
+            lambda x:
+
+            calc_order_quantity(
+
+                equity,
+
+                float(x),
+
+                LONG_LEVERAGE
+
+            ) >= LOT_SIZE
+
+        )
+
+    ]
+
+    if (
+
+        not long.empty
+
+        and
+
+        long_count < MAX_LONG_POSITIONS
+
+    ):
 
         x = (
 
@@ -1154,7 +1216,23 @@ def select_candidates(
 
         x["side"] = "LONG"
 
+        x["quantity"] = calc_order_quantity(
+
+            equity,
+
+            float(x["close_1245"]),
+
+            LONG_LEVERAGE
+
+        )
+
         result.append(x)
+
+    # ========================================================
+
+    # SHORT
+
+    # ========================================================
 
     short = df[
 
@@ -1174,7 +1252,37 @@ def select_candidates(
 
     ]
 
-    if not short.empty:
+    # 12:45時点で100株単位の建玉が可能なものだけ
+
+    short = short[
+
+        short["close_1245"].apply(
+
+            lambda x:
+
+            calc_order_quantity(
+
+                equity,
+
+                float(x),
+
+                SHORT_LEVERAGE
+
+            ) >= LOT_SIZE
+
+        )
+
+    ]
+
+    if (
+
+        not short.empty
+
+        and
+
+        short_count < MAX_SHORT_POSITIONS
+
+    ):
 
         x = (
 
@@ -1195,6 +1303,16 @@ def select_candidates(
         )
 
         x["side"] = "SHORT"
+
+        x["quantity"] = calc_order_quantity(
+
+            equity,
+
+            float(x["close_1245"]),
+
+            SHORT_LEVERAGE
+
+        )
 
         result.append(x)
 
@@ -1222,11 +1340,29 @@ def run_decision(
 
     date = now_jst().normalize()
 
+    equity = float(
+
+        portfolio["equity"]
+
+    )
+
+    positions = portfolio.get(
+
+        "positions",
+
+        []
+
+    )
+
     candidates = select_candidates(
 
         intraday,
 
-        daily
+        daily,
+
+        equity,
+
+        positions
 
     )
 
@@ -1250,87 +1386,19 @@ def run_decision(
 
         return
 
-    positions = portfolio.get(
-
-        "positions",
-
-        []
-
-    )
-
-    long_count = sum(
-
-        1
-
-        for p in positions
-
-        if p["side"] == "LONG"
-
-    )
-
-    short_count = sum(
-
-        1
-
-        for p in positions
-
-        if p["side"] == "SHORT"
-
-    )
-
-    selected = []
+    pending = []
 
     for _, row in candidates.iterrows():
 
-        side = row["side"]
+        quantity = int(
 
-        if side == "LONG":
-
-            if long_count >= MAX_LONG_POSITIONS:
-
-                continue
-
-            long_count += 1
-
-        else:
-
-            if short_count >= MAX_SHORT_POSITIONS:
-
-                continue
-
-            short_count += 1
-
-        selected.append(
-
-            row.to_dict()
+            row["quantity"]
 
         )
 
-    if not selected:
+        if quantity < LOT_SIZE:
 
-        result_text = (
-
-            f"{VERSION}\n\n"
-
-            f"12:45判定\n\n"
-
-            f"新規候補なし\n"
-
-            f"※既存ポジション保有中\n"
-
-        )
-
-        save_result_text(
-
-            result_text
-
-        )
-
-        return
-
-    pending = []
-
-    for row in selected:
+            continue
 
         pending.append({
 
@@ -1345,6 +1413,10 @@ def run_decision(
             "side":
 
                 row["side"],
+
+            "quantity":
+
+                quantity,
 
             "planned_entry_time":
 
@@ -1400,7 +1472,7 @@ def run_decision(
 
     lines.append(
 
-        "12:45判定"
+        "12:45確定足で判定"
 
     )
 
@@ -1414,13 +1486,23 @@ def run_decision(
 
     lines.append("")
 
+    if not pending:
+
+        lines.append(
+
+            "注文なし"
+
+        )
+
     for p in pending:
 
         lines.append(
 
             f'{p["side"]} '
 
-            f'{p["ticker"]}'
+            f'{p["ticker"]} '
+
+            f'{p["quantity"]}株'
 
         )
 
@@ -1429,6 +1511,14 @@ def run_decision(
             f'12:45価格: '
 
             f'{p["close_1245"]:,.1f}'
+
+        )
+
+        lines.append(
+
+            f'想定金額: '
+
+            f'¥{p["close_1245"] * p["quantity"]:,.0f}'
 
         )
 
@@ -1466,7 +1556,7 @@ def run_decision(
 
 # ============================================================
 
-# Find 12:50 Entry
+# 12:50 Entry Price
 
 # ============================================================
 
@@ -1524,7 +1614,7 @@ def get_entry_price(
 
 # ============================================================
 
-# Check Position
+# Position Check
 
 # ============================================================
 
@@ -1558,16 +1648,6 @@ def check_position(
 
         return None
 
-    df = intraday[ticker]
-
-    # --------------------------------------------------------
-
-    # 新規ポジションの場合
-
-    # 12:50から監視
-
-    # --------------------------------------------------------
-
     if entry_date.date() == date.date():
 
         start_time = pd.Timestamp(
@@ -1580,8 +1660,6 @@ def check_position(
 
     else:
 
-        # 持越しの場合
-
         start_time = pd.Timestamp(
 
             f"{date.strftime('%Y-%m-%d')} "
@@ -1589,6 +1667,8 @@ def check_position(
             f"09:00:00"
 
         )
+
+    df = intraday[ticker]
 
     day = df[
 
@@ -1774,9 +1854,11 @@ def run_result(
 
     trades = []
 
+    total_pnl = 0
+
     # ========================================================
 
-    # 12:45に保存した新規注文を12:50 OPEN
+    # 12:50 OPEN
 
     # ========================================================
 
@@ -1785,6 +1867,12 @@ def run_result(
         ticker = order["ticker"]
 
         side = order["side"]
+
+        quantity = int(
+
+            order["quantity"]
+
+        )
 
         entry_price = get_entry_price(
 
@@ -1800,6 +1888,12 @@ def run_result(
 
             continue
 
+        # ----------------------------------------------------
+
+        # 12:50実価格でも100株購入可能か確認
+
+        # ----------------------------------------------------
+
         leverage = (
 
             LONG_LEVERAGE
@@ -1809,6 +1903,46 @@ def run_result(
             else SHORT_LEVERAGE
 
         )
+
+        max_quantity = calc_order_quantity(
+
+            equity,
+
+            entry_price,
+
+            leverage
+
+        )
+
+        if max_quantity < LOT_SIZE:
+
+            print(
+
+                f"{ticker}: "
+
+                f"12:50価格では資金不足"
+
+            )
+
+            continue
+
+        quantity = min(
+
+            quantity,
+
+            max_quantity
+
+        )
+
+        quantity = (
+
+            quantity // LOT_SIZE
+
+        ) * LOT_SIZE
+
+        if quantity < LOT_SIZE:
+
+            continue
 
         position = {
 
@@ -1828,6 +1962,10 @@ def run_result(
 
                 entry_price,
 
+            "quantity":
+
+                quantity,
+
             "leverage":
 
                 leverage
@@ -1840,19 +1978,15 @@ def run_result(
 
         )
 
-    # 新規注文は処理済み
-
     save_pending([])
 
     # ========================================================
 
-    # 全ポジションをTP / SL確認
+    # TP / SL確認
 
     # ========================================================
 
     remaining = []
-
-    total_pnl = 0
 
     for position in positions:
 
@@ -1888,13 +2022,13 @@ def run_result(
 
         )
 
-        side = position["side"]
+        quantity = int(
 
-        leverage = float(
-
-            position["leverage"]
+            position["quantity"]
 
         )
+
+        side = position["side"]
 
         if side == "LONG":
 
@@ -1902,11 +2036,19 @@ def run_result(
 
                 exit_price /
 
-                entry_price
+                entry_price -
 
-                - 1
+                1
 
             )
+
+            pnl = (
+
+                exit_price -
+
+                entry_price
+
+            ) * quantity
 
         else:
 
@@ -1914,21 +2056,19 @@ def run_result(
 
                 entry_price /
 
-                exit_price
+                exit_price -
 
-                - 1
+                1
 
             )
 
-        pnl = (
+            pnl = (
 
-            equity *
+                entry_price -
 
-            leverage *
+                exit_price
 
-            ret
-
-        )
+            ) * quantity
 
         total_pnl += pnl
 
@@ -1945,6 +2085,10 @@ def run_result(
             "side":
 
                 side,
+
+            "quantity":
+
+                quantity,
 
             "entry":
 
@@ -2094,6 +2238,8 @@ def run_result(
 
                 f'{t["ticker"]} '
 
+                f'{t["quantity"]}株 '
+
                 f'{t["reason"]} '
 
                 f'{t["pnl"]:+,.0f}円'
@@ -2125,6 +2271,8 @@ def run_result(
                 f'{p["side"]} '
 
                 f'{p["ticker"]} '
+
+                f'{p["quantity"]}株 '
 
                 f'建値 '
 
@@ -2322,23 +2470,11 @@ def main():
 
     )
 
-    # ========================================================
-
-    # データ取得
-
-    # ========================================================
-
     intraday, daily = (
 
         load_all_data()
 
     )
-
-    # ========================================================
-
-    # 12:45
-
-    # ========================================================
 
     if mode == "decision":
 
@@ -2351,12 +2487,6 @@ def main():
             portfolio
 
         )
-
-    # ========================================================
-
-    # 15:45
-
-    # ========================================================
 
     else:
 
