@@ -34,7 +34,7 @@ jobs:
 
         with:
 
-          workload_identity_provider: "projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github"
+          workloadIdentityProvider: "projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github"
 
           service_account: "github-actions@stock-auto-trader-506100.iam.gserviceaccount.com"
 
@@ -61,6 +61,24 @@ jobs:
       - name: Run Cloud Run Job
 
         run: gcloud run jobs execute v33-8-paper-trader --region=asia-northeast1 --wait
+
+      - name: Check Cloud Run logs
+
+        run: |
+
+          gcloud logging read \
+
+            'resource.type="cloud_run_job" AND resource.labels.job_name="v33-8-paper-trader"' \
+
+            --limit=50 \
+
+            --format="value(textPayload)" \
+
+            > cloud_run_result.txt
+
+          echo "===== Cloud Run Result ====="
+
+          cat cloud_run_result.txt
 
       - name: Save data
 
@@ -104,4 +122,4 @@ jobs:
 
           from: ksk2823@icloud.com
 
-          body: file://data/latest_result.txt
+          body: file://cloud_run_result.txt
