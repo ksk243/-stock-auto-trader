@@ -48,25 +48,13 @@ jobs:
 
           gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
-            - name: Build and Push
+      - name: Build and Push
 
         run: |
 
           docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
 
           docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
-
-        run: |
-
-          docker build \
-
-            --no-cache \
-
-            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
-
-          docker push \
-
-            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
 
       - name: Deploy Cloud Run Job
 
@@ -96,4 +84,42 @@ jobs:
 
         run: |
 
-          git config user.name "github-actions[
+          git config user.name "github-actions[bot]"
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/ *.csv 2>/dev/null || true
+
+          if ! git diff --cached --quiet; then
+
+            git commit -m "Update v33.8 paper trading data"
+
+            git push
+
+          else
+
+            echo "No changes"
+
+          fi
+
+      - name: Send Email
+
+        uses: dawidd6/action-send-mail@v3
+
+        with:
+
+          server_address: smtp.mail.me.com
+
+          server_port: 587
+
+          username: ${{ secrets.MAIL_USER }}
+
+          password: ${{ secrets.MAIL_PASS }}
+
+          subject: "v33.8 Paper Trader"
+
+          to: ${{ secrets.MAIL_TO }}
+
+          from: ${{ secrets.MAIL_USER }}
+
+          body: file://data/latest_result.txt
