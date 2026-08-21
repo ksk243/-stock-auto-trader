@@ -34,7 +34,7 @@ jobs:
 
         with:
 
-          workloadIdentityProvider: "projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github"
+          workload_identity_provider: "projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github"
 
           service_account: "github-actions@stock-auto-trader-506100.iam.gserviceaccount.com"
 
