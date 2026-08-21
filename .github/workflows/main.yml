@@ -1,4 +1,4 @@
-name: v33.8 Paper Trader
+name: v33.9 Paper Trader
 
 on:
 
@@ -6,7 +6,13 @@ on:
 
   schedule:
 
-    - cron: "30 3 * * 1-5"
+    # 日本時間 12:45
+
+    - cron: "45 3 * * 1-5"
+
+    # 日本時間 15:45
+
+    - cron: "45 6 * * 1-5"
 
 jobs:
 
@@ -44,23 +50,41 @@ jobs:
 
       - name: Configure Docker
 
-        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+        run: |
+
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       - name: Build and Push
 
         run: |
 
-          docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
+          docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest .
 
-          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
+          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest
 
       - name: Deploy Cloud Run Job
 
-        run: gcloud run jobs deploy v33-8-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest --region=asia-northeast1 --tasks=1 --max-retries=1
+        run: |
+
+          gcloud run jobs deploy v33-9-paper-trader \
+
+            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest \
+
+            --region=asia-northeast1 \
+
+            --tasks=1 \
+
+            --max-retries=1
 
       - name: Run Cloud Run Job
 
-        run: gcloud run jobs execute v33-8-paper-trader --region=asia-northeast1 --wait
+        run: |
+
+          gcloud run jobs execute v33-9-paper-trader \
+
+            --region=asia-northeast1 \
+
+            --wait
 
       - name: Download Result
 
@@ -92,7 +116,7 @@ jobs:
 
           if ! git diff --cached --quiet; then
 
-            git commit -m "Update v33.8 paper trading data"
+            git commit -m "Update v33.9 paper trading data"
 
             git push
 
@@ -116,7 +140,7 @@ jobs:
 
           password: ${{ secrets.MAIL_PASS }}
 
-          subject: "v33.8 Paper Trader"
+          subject: "v33.9 Paper Trader"
 
           to: ${{ secrets.MAIL_TO }}
 
