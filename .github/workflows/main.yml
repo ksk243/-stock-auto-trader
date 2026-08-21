@@ -102,6 +102,6 @@ jobs:
 
           to: ${{ secrets.MAIL_TO }}
 
-          from: ${{ secrets.MAIL_USER }}
+          from: ksk2823@icloud.com
 
           body: file://data/latest_result.txt
