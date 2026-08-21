@@ -162,7 +162,7 @@ jobs:
 
       - name: Deploy Cloud Run Job
 
-        run: gcloud run jobs deploy v33-9-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest --region=asia-northeast1 --tasks=1 --max-retries=1 --set-env-vars=RUN_MODE=$RUN_MODE
+        run: gcloud run jobs deploy v33-9-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest --region=asia-northeast1 --project=stock-auto-trader-506100 --tasks=1 --max-retries=1 --set-env-vars=RUN_MODE=$RUN_MODE
 
       # =====================================================
 
@@ -172,11 +172,11 @@ jobs:
 
       - name: Run Cloud Run Job
 
-        run: gcloud run jobs execute v33-9-paper-trader --region=asia-northeast1 --wait
+        run: gcloud run jobs execute v33-9-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --wait
 
       # =====================================================
 
-      # Get Execution Name
+      # Get Latest Execution
 
       # =====================================================
 
@@ -186,19 +186,7 @@ jobs:
 
         run: |
 
-          EXECUTION_NAME=$(gcloud run jobs executions list \
-
-            --job=v33-9-paper-trader \
-
-            --region=asia-northeast1 \
-
-            --project=stock-auto-trader-506100 \
-
-            --sort-by="~createTime" \
-
-            --limit=1 \
-
-            --format="value(metadata.name)")
+          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-9-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
 
           echo "EXECUTION_NAME=$EXECUTION_NAME"
 
@@ -220,7 +208,7 @@ jobs:
 
           echo "================================"
 
-          echo "Cloud Run log"
+          echo "CLOUD RUN LOG"
 
           echo "================================"
 
@@ -230,7 +218,7 @@ jobs:
 
           echo "================================"
 
-          echo "Extracting result"
+          echo "EXTRACT RESULT"
 
           echo "================================"
 
@@ -298,7 +286,7 @@ jobs:
 
           echo "================================"
 
-          echo "latest_result.txt"
+          echo "LATEST RESULT"
 
           echo "================================"
 
@@ -312,13 +300,13 @@ jobs:
 
             echo ""
 
-            echo "Cloud Run output:"
-
-            cat data/cloud_run_raw.txt
+            echo "RUN_MODE=$RUN_MODE"
 
             echo ""
 
-            echo "RUN_MODE=$RUN_MODE"
+            echo "CLOUD RUN RAW LOG:"
+
+            cat data/cloud_run_raw.txt
 
             exit 1
 
