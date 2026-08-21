@@ -1,0 +1,176 @@
+['7207.T']: No data found, symbol may be delisted
+1 Failed download:
+$7207.T: No data found, symbol may be delisted
+['7207.T']: No data found, symbol may be delisted
+1 Failed download:
+$7207.T: No data found, symbol may be delisted
+['7206.T']: No data found, symbol may be delisted
+1 Failed download:
+$7206.T: No data found, symbol may be delisted
+['7206.T']: No data found, symbol may be delisted
+1 Failed download:
+$7206.T: No data found, symbol may be delisted
+['7205.T']: No data found, symbol may be delisted
+1 Failed download:
+$7205.T: No data found, symbol may be delisted
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 7205.T"}}}
+['7205.T']: No data found, symbol may be delisted
+1 Failed download:
+$7205.T: No data found, symbol may be delisted
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 7205.T"}}}
+================================
+Fri Aug 21 20:43:17 JST 2026
+Cloud Run Paper Trader START
+================================
+
+
+
+Container called exit(0).
+================================
+Fri Aug 21 20:38:14 JST 2026
+Cloud Run Paper Trader END
+================================
+================================================================================
+v33.9 END
+================================================================================
+持越し: なし
+決済: なし
+現在資産: ¥1,117,792
+損益: ¥0
+前資産: ¥1,117,792
+15:45 結果
+v33.9
+日足: 137銘柄
+5分足: 137銘柄
+データ更新開始
+現在資産: ¥1,117,792
+RUN MODE: result
+================================================================================
+v33.9 START
+================================================================================
+['7207.T']: No data found, symbol may be delisted
+1 Failed download:
+$7207.T: No data found, symbol may be delisted
+['7207.T']: No data found, symbol may be delisted
+1 Failed download:
+$7207.T: No data found, symbol may be delisted
+['7206.T']: No data found, symbol may be delisted
+1 Failed download:
+$7206.T: No data found, symbol may be delisted
+['7206.T']: No data found, symbol may be delisted
+1 Failed download:
+$7206.T: No data found, symbol may be delisted
+['7205.T']: No data found, symbol may be delisted
+1 Failed download:
+$7205.T: No data found, symbol may be delisted
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 7205.T"}}}
+['7205.T']: No data found, symbol may be delisted
+1 Failed download:
+$7205.T: No data found, symbol may be delisted
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 7205.T"}}}
+================================
+Fri Aug 21 20:35:46 JST 2026
+Cloud Run Paper Trader START
+================================
+
+
+
+Container called exit(0).
+================================
+Fri Aug 21 20:26:52 JST 2026
+Cloud Run Paper Trader END
+================================
+================================================================================
+v33.9 END
+================================================================================
+持越し: なし
+決済: なし
+現在資産: ¥1,117,792
+損益: ¥0
+前資産: ¥1,117,792
+15:45 結果
+v33.9
+日足: 137銘柄
+5分足: 137銘柄
+データ更新開始
+現在資産: ¥1,117,792
+RUN MODE: result
+================================================================================
+v33.9 START
+================================================================================
+['7207.T']: No data found, symbol may be delisted
+1 Failed download:
+$7207.T: No data found, symbol may be delisted
+['7207.T']: No data found, symbol may be delisted
+1 Failed download:
+$7207.T: No data found, symbol may be delisted
+['7206.T']: No data found, symbol may be delisted
+1 Failed download:
+$7206.T: No data found, symbol may be delisted
+['7206.T']: No data found, symbol may be delisted
+1 Failed download:
+$7206.T: No data found, symbol may be delisted
+['7205.T']: No data found, symbol may be delisted
+1 Failed download:
+$7205.T: No data found, symbol may be delisted
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 7205.T"}}}
+['7205.T']: No data found, symbol may be delisted
+1 Failed download:
+$7205.T: No data found, symbol may be delisted
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 7205.T"}}}
+================================
+Fri Aug 21 20:24:25 JST 2026
+Cloud Run Paper Trader START
+================================
+
+
+
+Container called exit(0).
+================================
+Fri Aug 21 20:20:45 JST 2026
+Cloud Run Paper Trader END
+================================
+================================================================================
+v33.9 END
+================================================================================
+持越し: なし
+決済: なし
+現在資産: ¥1,117,792
+損益: ¥0
+前資産: ¥1,117,792
+15:45 結果
+v33.9
+日足: 137銘柄
+5分足: 137銘柄
+データ更新開始
+現在資産: ¥1,117,792
+RUN MODE: result
+================================================================================
+v33.9 START
+================================================================================
+['7207.T']: No data found, symbol may be delisted
+1 Failed download:
+$7207.T: No data found, symbol may be delisted
+['7207.T']: No data found, symbol may be delisted
+1 Failed download:
+$7207.T: No data found, symbol may be delisted
+['7206.T']: No data found, symbol may be delisted
+1 Failed download:
+$7206.T: No data found, symbol may be delisted
+['7206.T']: No data found, symbol may be delisted
+1 Failed download:
+$7206.T: No data found, symbol may be delisted
+['7205.T']: No data found, symbol may be delisted
+1 Failed download:
+$7205.T: No data found, symbol may be delisted
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 7205.T"}}}
+['7205.T']: No data found, symbol may be delisted
+1 Failed download:
+$7205.T: No data found, symbol may be delisted
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 7205.T"}}}
+================================
+Fri Aug 21 20:18:17 JST 2026
+Cloud Run Paper Trader START
+================================
+
+
