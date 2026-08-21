@@ -1,16 +1,24 @@
 # ============================================================
 
-# v33.8 Cloud Paper Trader 改
+# v33.9 Cloud Paper Trader
 
-# Cache版
+#
+
+# 12:45判定
+
+# 12:50 OPEN
+
+# 15:45 結果確認
 
 #
 
 # LONG 1.0倍 + SHORT 1.0倍
 
-# 12:45判定
+# LONG 最大1銘柄
 
-# 12:50 OPEN
+# SHORT 最大1銘柄
+
+#
 
 # TP +2%
 
@@ -18,15 +26,11 @@
 
 #
 
-# 5分足キャッシュ
-
-# 前日データ再利用
-
-# 当日分追加取得
+# 持越しあり
 
 #
 
-# Cloud Storageへ結果保存
+# 12:45処理では未来データを使用しない
 
 # ============================================================
 
@@ -46,15 +50,13 @@ import pandas as pd
 
 import numpy as np
 
-from google.cloud import storage
-
 # ============================================================
 
 # 設定
 
 # ============================================================
 
-VERSION = "v33.8 Cache"
+VERSION = "v33.9"
 
 INITIAL_CAPITAL = 1117792
 
@@ -72,11 +74,9 @@ TRADE_FILE = f"{DATA_DIR}/paper_trades.csv"
 
 CANDIDATE_FILE = f"{DATA_DIR}/paper_candidates.csv"
 
-# Cloud Storage
+PENDING_FILE = f"{DATA_DIR}/pending_orders.json"
 
-GCS_BUCKET = "stock-auto-trader-506100-paper"
-
-GCS_RESULT_FILE = "latest_result.txt"
+RESULT_FILE = f"{DATA_DIR}/latest_result.txt"
 
 os.makedirs(
 
@@ -130,71 +130,113 @@ ENTRY_TIME = "12:50"
 
 TICKERS = [
 
-"1332.T","1605.T","1801.T","1802.T","1803.T",
+    "1332.T","1605.T","1801.T","1802.T","1803.T",
 
-"1925.T","1928.T","1963.T","2002.T","2267.T",
+    "1925.T","1928.T","1963.T","2002.T","2267.T",
 
-"2413.T","2502.T","2503.T","2801.T","2914.T",
+    "2413.T","2502.T","2503.T","2801.T","2914.T",
 
-"3086.T","3092.T","3099.T","3382.T","3401.T",
+    "3086.T","3092.T","3099.T","3382.T","3401.T",
 
-"3402.T","3407.T","3436.T","3659.T","3861.T",
+    "3402.T","3407.T","3436.T","3659.T","3861.T",
 
-"4004.T","4005.T","4021.T","4042.T","4061.T",
+    "4004.T","4005.T","4021.T","4042.T","4061.T",
 
-"4062.T","4183.T","4188.T","4208.T","4307.T",
+    "4062.T","4183.T","4188.T","4208.T","4307.T",
 
-"4324.T","4385.T","4452.T","4502.T","4503.T",
+    "4324.T","4385.T","4452.T","4502.T","4503.T",
 
-"4506.T","4507.T","4519.T","4523.T","4543.T",
+    "4506.T","4507.T","4519.T","4523.T","4543.T",
 
-"4568.T","4578.T","4661.T","4689.T","4704.T",
+    "4568.T","4578.T","4661.T","4689.T","4704.T",
 
-"4751.T","4755.T","4901.T","4911.T","5020.T",
+    "4751.T","4755.T","4901.T","4911.T","5020.T",
 
-"5101.T","5108.T","5201.T","5214.T","5232.T",
+    "5101.T","5108.T","5201.T","5214.T","5232.T",
 
-"5233.T","5301.T","5332.T","5333.T","5401.T",
+    "5233.T","5301.T","5332.T","5333.T","5401.T",
 
-"5406.T","5411.T","5631.T","5706.T","5711.T",
+    "5406.T","5411.T","5631.T","5706.T","5711.T",
 
-"5713.T","5714.T","5801.T","5802.T","5803.T",
+    "5713.T","5714.T","5801.T","5802.T","5803.T",
 
-"5831.T","6098.T","6103.T","6113.T","6301.T",
+    "5831.T","6098.T","6103.T","6113.T","6301.T",
 
-"6302.T","6305.T","6326.T","6361.T","6367.T",
+    "6302.T","6305.T","6326.T","6361.T","6367.T",
 
-"6471.T","6472.T","6473.T","6479.T","6501.T",
+    "6471.T","6472.T","6473.T","6479.T","6501.T",
 
-"6503.T","6504.T","6506.T","6526.T","6594.T",
+    "6503.T","6504.T","6506.T","6526.T","6594.T",
 
-"6645.T","6674.T","6701.T","6702.T","6723.T",
+    "6645.T","6674.T","6701.T","6702.T","6723.T",
 
-"6724.T","6752.T","6758.T","6762.T","6770.T",
+    "6724.T","6752.T","6758.T","6762.T","6770.T",
 
-"6841.T","6857.T","6861.T","6869.T","6902.T",
+    "6841.T","6857.T","6861.T","6869.T","6902.T",
 
-"6920.T","6952.T","6954.T","6971.T","6976.T",
+    "6920.T","6952.T","6954.T","6971.T","6976.T",
 
-"6981.T","7003.T","7004.T","7011.T","7012.T",
+    "6981.T","7003.T","7004.T","7011.T","7012.T",
 
-"7013.T","7182.T","7201.T","7202.T","7203.T",
+    "7013.T","7182.T","7201.T","7202.T","7203.T",
 
-"7205.T","7206.T","7207.T","7261.T","7267.T",
+    "7205.T","7206.T","7207.T","7261.T","7267.T",
 
-"7269.T","7270.T","7272.T","7309.T","7731.T",
+    "7269.T","7270.T","7272.T","7309.T","7731.T",
 
-"7733.T","7735.T","7741.T","7751.T"
+    "7733.T","7735.T","7741.T","7751.T","7752.T"
 
 ]
 
 # ============================================================
 
-# Cache保存
+# 時刻
 
 # ============================================================
 
-def save_cache(df, path):
+def now_jst():
+
+    return pd.Timestamp.now(
+
+        tz="Asia/Tokyo"
+
+    ).tz_localize(None)
+
+def get_run_mode():
+
+    env_mode = os.environ.get(
+
+        "RUN_MODE",
+
+        "auto"
+
+    )
+
+    if env_mode != "auto":
+
+        return env_mode
+
+    now = now_jst()
+
+    if now.hour < 14:
+
+        return "decision"
+
+    return "result"
+
+# ============================================================
+
+# Cache
+
+# ============================================================
+
+def save_cache(
+
+    df,
+
+    path
+
+):
 
     df.to_csv(
 
@@ -204,7 +246,11 @@ def save_cache(df, path):
 
     )
 
-def load_cache(path):
+def load_cache(
+
+    path
+
+):
 
     if not os.path.exists(path):
 
@@ -224,7 +270,7 @@ def load_cache(path):
 
         return df
 
-    except:
+    except Exception:
 
         return None
 
@@ -234,7 +280,11 @@ def load_cache(path):
 
 # ============================================================
 
-def download_5m(ticker):
+def download_5m(
+
+    ticker
+
+):
 
     path = (
 
@@ -368,7 +418,11 @@ def download_5m(ticker):
 
 # ============================================================
 
-def download_daily(ticker):
+def download_daily(
+
+    ticker
+
+):
 
     path = (
 
@@ -482,7 +536,7 @@ def download_daily(ticker):
 
 # ============================================================
 
-# portfolio
+# Portfolio
 
 # ============================================================
 
@@ -502,7 +556,11 @@ def load_portfolio():
 
             "positions":
 
-                []
+                [],
+
+            "last_update":
+
+                None
 
         }
 
@@ -516,9 +574,19 @@ def load_portfolio():
 
     ) as f:
 
-        return json.load(f)
+        data = json.load(f)
 
-def save_portfolio(data):
+    if "positions" not in data:
+
+        data["positions"] = []
+
+    return data
+
+def save_portfolio(
+
+    data
+
+):
 
     with open(
 
@@ -544,9 +612,93 @@ def save_portfolio(data):
 
 # ============================================================
 
-# RS計算
+# Pending Orders
 
-# No Future
+# ============================================================
+
+def load_pending():
+
+    if not os.path.exists(
+
+        PENDING_FILE
+
+    ):
+
+        return []
+
+    try:
+
+        with open(
+
+            PENDING_FILE,
+
+            "r",
+
+            encoding="utf-8"
+
+        ) as f:
+
+            return json.load(f)
+
+    except Exception:
+
+        return []
+
+def save_pending(
+
+    data
+
+):
+
+    with open(
+
+        PENDING_FILE,
+
+        "w",
+
+        encoding="utf-8"
+
+    ) as f:
+
+        json.dump(
+
+            data,
+
+            f,
+
+            ensure_ascii=False,
+
+            indent=2
+
+        )
+
+# ============================================================
+
+# Result
+
+# ============================================================
+
+def save_result_text(
+
+    text
+
+):
+
+    with open(
+
+        RESULT_FILE,
+
+        "w",
+
+        encoding="utf-8"
+
+    ) as f:
+
+        f.write(text)
+
+# ============================================================
+
+# RS計算
 
 # ============================================================
 
@@ -586,7 +738,7 @@ def calc_rs(
 
         past["Close"]
 
-        .iloc[-RS_LOOKBACK-1]
+        .iloc[-RS_LOOKBACK - 1]
 
     )
 
@@ -602,7 +754,7 @@ def calc_rs(
 
 # ============================================================
 
-# 候補作成
+# Candidate
 
 # ============================================================
 
@@ -636,7 +788,9 @@ def make_candidate(
 
     cutoff = pd.Timestamp(
 
-        f"{date.strftime('%Y-%m-%d')} {DECISION_TIME}:00"
+        f"{date.strftime('%Y-%m-%d')} "
+
+        f"{DECISION_TIME}:00"
 
     )
 
@@ -686,17 +840,19 @@ def make_candidate(
 
     )
 
-    volume = before["Volume"].astype(float)
+    volume = (
+
+        before["Volume"]
+
+        .astype(float)
+
+    )
 
     if volume.sum() > 0:
 
         vwap = (
 
-            before["Close"]
-
-            *
-
-            volume
+            before["Close"] * volume
 
         ).sum() / volume.sum()
 
@@ -800,7 +956,7 @@ def make_candidate(
 
         "date":
 
-            date,
+            str(date.date()),
 
         "morning_high":
 
@@ -846,7 +1002,7 @@ def make_candidate(
 
 # ============================================================
 
-# 候補選定
+# Candidate Selection
 
 # ============================================================
 
@@ -858,17 +1014,13 @@ def select_candidates(
 
 ):
 
-    today = pd.Timestamp.now(
-
-        tz="Asia/Tokyo"
-
-    ).tz_localize(None)
+    today = now_jst()
 
     date = today.normalize()
 
     rows = []
 
-    for ticker in intraday:
+    for ticker in TICKERS:
 
         c = make_candidate(
 
@@ -882,7 +1034,7 @@ def select_candidates(
 
         )
 
-        if c:
+        if c is not None:
 
             rows.append(c)
 
@@ -890,7 +1042,11 @@ def select_candidates(
 
         return pd.DataFrame()
 
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame(
+
+        rows
+
+    )
 
     df = df.dropna(
 
@@ -916,15 +1072,13 @@ def select_candidates(
 
         )
 
-        *
-
-        100
+        * 100
 
     )
 
     df["score"] = (
 
-        df["RS"] * 0.3
+        df["RS"] * 0.30
 
         +
 
@@ -932,13 +1086,9 @@ def select_candidates(
 
         .rank(pct=True)
 
-        *
+        * 100
 
-        100
-
-        *
-
-        0.3
+        * 0.30
 
         +
 
@@ -946,13 +1096,9 @@ def select_candidates(
 
         .rank(pct=True)
 
-        *
+        * 100
 
-        100
-
-        *
-
-        0.25
+        * 0.25
 
         +
 
@@ -960,13 +1106,9 @@ def select_candidates(
 
         .rank(pct=True)
 
-        *
+        * 100
 
-        100
-
-        *
-
-        0.15
+        * 0.15
 
     )
 
@@ -974,7 +1116,9 @@ def select_candidates(
 
     long = df[
 
-        df["RS"] >= LONG_RS_THRESHOLD
+        df["RS"] >=
+
+        LONG_RS_THRESHOLD
 
     ]
 
@@ -990,13 +1134,23 @@ def select_candidates(
 
     if not long.empty:
 
-        x = long.sort_values(
+        x = (
 
-            "score",
+            long
 
-            ascending=False
+            .sort_values(
 
-        ).iloc[0].to_dict()
+                "score",
+
+                ascending=False
+
+            )
+
+            .iloc[0]
+
+            .to_dict()
+
+        )
 
         x["side"] = "LONG"
 
@@ -1004,7 +1158,9 @@ def select_candidates(
 
     short = df[
 
-        df["RS"] <= SHORT_RS_THRESHOLD
+        df["RS"] <=
+
+        SHORT_RS_THRESHOLD
 
     ]
 
@@ -1020,39 +1176,309 @@ def select_candidates(
 
     if not short.empty:
 
-        x = short.sort_values(
+        x = (
 
-            "score"
+            short
 
-        ).iloc[0].to_dict()
+            .sort_values(
+
+                "score",
+
+                ascending=False
+
+            )
+
+            .iloc[0]
+
+            .to_dict()
+
+        )
 
         x["side"] = "SHORT"
 
         result.append(x)
 
-    return pd.DataFrame(result)
+    return pd.DataFrame(
+
+        result
+
+    )
 
 # ============================================================
 
-# トレード実行
+# 12:45 Decision
 
 # ============================================================
 
-def execute_trade(
-
-    candidate,
+def run_decision(
 
     intraday,
 
-    equity
+    daily,
+
+    portfolio
 
 ):
 
-    ticker = candidate["ticker"]
+    date = now_jst().normalize()
 
-    side = candidate["side"]
+    candidates = select_candidates(
 
-    date = candidate["date"]
+        intraday,
+
+        daily
+
+    )
+
+    if candidates.empty:
+
+        result_text = (
+
+            f"{VERSION}\n\n"
+
+            f"12:45判定\n\n"
+
+            f"候補なし\n"
+
+        )
+
+        save_result_text(
+
+            result_text
+
+        )
+
+        return
+
+    positions = portfolio.get(
+
+        "positions",
+
+        []
+
+    )
+
+    long_count = sum(
+
+        1
+
+        for p in positions
+
+        if p["side"] == "LONG"
+
+    )
+
+    short_count = sum(
+
+        1
+
+        for p in positions
+
+        if p["side"] == "SHORT"
+
+    )
+
+    selected = []
+
+    for _, row in candidates.iterrows():
+
+        side = row["side"]
+
+        if side == "LONG":
+
+            if long_count >= MAX_LONG_POSITIONS:
+
+                continue
+
+            long_count += 1
+
+        else:
+
+            if short_count >= MAX_SHORT_POSITIONS:
+
+                continue
+
+            short_count += 1
+
+        selected.append(
+
+            row.to_dict()
+
+        )
+
+    if not selected:
+
+        result_text = (
+
+            f"{VERSION}\n\n"
+
+            f"12:45判定\n\n"
+
+            f"新規候補なし\n"
+
+            f"※既存ポジション保有中\n"
+
+        )
+
+        save_result_text(
+
+            result_text
+
+        )
+
+        return
+
+    pending = []
+
+    for row in selected:
+
+        pending.append({
+
+            "date":
+
+                str(date.date()),
+
+            "ticker":
+
+                row["ticker"],
+
+            "side":
+
+                row["side"],
+
+            "planned_entry_time":
+
+                ENTRY_TIME,
+
+            "close_1245":
+
+                float(row["close_1245"]),
+
+            "morning_high":
+
+                float(row["morning_high"]),
+
+            "morning_low":
+
+                float(row["morning_low"]),
+
+            "RS":
+
+                float(row["RS"]),
+
+            "score":
+
+                float(row["score"])
+
+        })
+
+    save_pending(
+
+        pending
+
+    )
+
+    candidates.to_csv(
+
+        CANDIDATE_FILE,
+
+        index=False,
+
+        encoding="utf-8-sig"
+
+    )
+
+    lines = []
+
+    lines.append(
+
+        f"{VERSION}"
+
+    )
+
+    lines.append("")
+
+    lines.append(
+
+        "12:45判定"
+
+    )
+
+    lines.append("")
+
+    lines.append(
+
+        "12:50 OPEN予定"
+
+    )
+
+    lines.append("")
+
+    for p in pending:
+
+        lines.append(
+
+            f'{p["side"]} '
+
+            f'{p["ticker"]}'
+
+        )
+
+        lines.append(
+
+            f'12:45価格: '
+
+            f'{p["close_1245"]:,.1f}'
+
+        )
+
+        lines.append(
+
+            f'RS: '
+
+            f'{p["RS"]:.1f}'
+
+        )
+
+        lines.append(
+
+            f'Score: '
+
+            f'{p["score"]:.1f}'
+
+        )
+
+        lines.append("")
+
+    result_text = "\n".join(
+
+        lines
+
+    )
+
+    print(result_text)
+
+    save_result_text(
+
+        result_text
+
+    )
+
+# ============================================================
+
+# Find 12:50 Entry
+
+# ============================================================
+
+def get_entry_price(
+
+    ticker,
+
+    date,
+
+    intraday
+
+):
 
     if ticker not in intraday:
 
@@ -1062,7 +1488,9 @@ def execute_trade(
 
     day = df[
 
-        df.index.date == date.date()
+        df.index.date ==
+
+        date.date()
 
     ]
 
@@ -1072,7 +1500,9 @@ def execute_trade(
 
     entry_time = pd.Timestamp(
 
-        f"{date.strftime('%Y-%m-%d')} {ENTRY_TIME}:00"
+        f"{date.strftime('%Y-%m-%d')} "
+
+        f"{ENTRY_TIME}:00"
 
     )
 
@@ -1086,225 +1516,643 @@ def execute_trade(
 
         return None
 
-    entry_price = float(
+    return float(
 
         entry_df.iloc[0]["Open"]
 
     )
 
-    if side == "LONG":
+# ============================================================
 
-        tp_price = entry_price * (
+# Check Position
 
-            1 + TP
+# ============================================================
 
-        )
+def check_position(
 
-        sl_price = entry_price * (
+    position,
 
-            1 - SL
+    intraday,
+
+    date
+
+):
+
+    ticker = position["ticker"]
+
+    side = position["side"]
+
+    entry_price = float(
+
+        position["entry_price"]
+
+    )
+
+    entry_date = pd.Timestamp(
+
+        position["entry_date"]
+
+    )
+
+    if ticker not in intraday:
+
+        return None
+
+    df = intraday[ticker]
+
+    # --------------------------------------------------------
+
+    # 新規ポジションの場合
+
+    # 12:50から監視
+
+    # --------------------------------------------------------
+
+    if entry_date.date() == date.date():
+
+        start_time = pd.Timestamp(
+
+            f"{date.strftime('%Y-%m-%d')} "
+
+            f"{ENTRY_TIME}:00"
 
         )
 
     else:
 
-        tp_price = entry_price * (
+        # 持越しの場合
 
-            1 - TP
+        start_time = pd.Timestamp(
 
-        )
+            f"{date.strftime('%Y-%m-%d')} "
 
-        sl_price = entry_price * (
-
-            1 + SL
+            f"09:00:00"
 
         )
 
-    exit_price = None
+    day = df[
 
-    exit_reason = None
+        df.index.date ==
 
-    exit_time = None
-
-    after = day[
-
-        day.index > entry_time
+        date.date()
 
     ]
 
+    after = day[
+
+        day.index >= start_time
+
+    ]
+
+    if after.empty:
+
+        return None
+
+    if side == "LONG":
+
+        tp_price = (
+
+            entry_price *
+
+            (1 + TP)
+
+        )
+
+        sl_price = (
+
+            entry_price *
+
+            (1 - SL)
+
+        )
+
+    else:
+
+        tp_price = (
+
+            entry_price *
+
+            (1 - TP)
+
+        )
+
+        sl_price = (
+
+            entry_price *
+
+            (1 + SL)
+
+        )
+
     for idx, bar in after.iterrows():
 
-        high = float(bar["High"])
+        high = float(
 
-        low = float(bar["Low"])
+            bar["High"]
+
+        )
+
+        low = float(
+
+            bar["Low"]
+
+        )
 
         if side == "LONG":
 
             if low <= sl_price:
 
-                exit_price = sl_price
+                return {
 
-                exit_reason = "SL"
+                    "exit_price":
 
-                exit_time = idx
+                        sl_price,
 
-                break
+                    "exit_time":
+
+                        str(idx),
+
+                    "reason":
+
+                        "SL"
+
+                }
 
             if high >= tp_price:
 
-                exit_price = tp_price
+                return {
 
-                exit_reason = "TP"
+                    "exit_price":
 
-                exit_time = idx
+                        tp_price,
 
-                break
+                    "exit_time":
+
+                        str(idx),
+
+                    "reason":
+
+                        "TP"
+
+                }
 
         else:
 
             if high >= sl_price:
 
-                exit_price = sl_price
+                return {
 
-                exit_reason = "SL"
+                    "exit_price":
 
-                exit_time = idx
+                        sl_price,
 
-                break
+                    "exit_time":
+
+                        str(idx),
+
+                    "reason":
+
+                        "SL"
+
+                }
 
             if low <= tp_price:
 
-                exit_price = tp_price
+                return {
 
-                exit_reason = "TP"
+                    "exit_price":
 
-                exit_time = idx
+                        tp_price,
 
-                break
+                    "exit_time":
+
+                        str(idx),
+
+                    "reason":
+
+                        "TP"
+
+                }
+
+    return None
+
+# ============================================================
+
+# 15:45 Result
+
+# ============================================================
+
+def run_result(
+
+    intraday,
+
+    daily,
+
+    portfolio
+
+):
+
+    today = now_jst()
+
+    date = today.normalize()
+
+    equity = float(
+
+        portfolio["equity"]
+
+    )
+
+    positions = portfolio.get(
+
+        "positions",
+
+        []
+
+    )
+
+    pending = load_pending()
+
+    trades = []
 
     # ========================================================
 
-    # 持越し
+    # 12:45に保存した新規注文を12:50 OPEN
 
     # ========================================================
 
-    if exit_price is None:
+    for order in pending:
 
-        exit_price = float(
+        ticker = order["ticker"]
 
-            day["Close"].iloc[-1]
+        side = order["side"]
 
-        )
-
-        exit_time = day.index[-1]
-
-        exit_reason = "HOLD"
-
-    # ========================================================
-
-    # リターン
-
-    # ========================================================
-
-    if side == "LONG":
-
-        ret = (
-
-            exit_price
-
-            /
-
-            entry_price
-
-            - 1
-
-        )
-
-        pnl = (
-
-            equity
-
-            *
-
-            LONG_LEVERAGE
-
-            *
-
-            ret
-
-        )
-
-    else:
-
-        ret = (
-
-            entry_price
-
-            /
-
-            exit_price
-
-            - 1
-
-        )
-
-        pnl = (
-
-            equity
-
-            *
-
-            SHORT_LEVERAGE
-
-            *
-
-            ret
-
-        )
-
-    return {
-
-        "date":
-
-            str(date.date()),
-
-        "ticker":
+        entry_price = get_entry_price(
 
             ticker,
 
-        "side":
+            date,
 
-            side,
+            intraday
 
-        "entry":
+        )
 
-            entry_price,
+        if entry_price is None:
 
-        "exit":
+            continue
 
-            exit_price,
+        leverage = (
 
-        "return":
+            LONG_LEVERAGE
 
-            ret,
+            if side == "LONG"
 
-        "pnl":
+            else SHORT_LEVERAGE
 
-            pnl,
+        )
 
-        "reason":
+        position = {
 
-            exit_reason,
+            "ticker":
 
-        "entry_time":
+                ticker,
 
-            str(entry_time),
+            "side":
 
-        "exit_time":
+                side,
 
-            str(exit_time)
+            "entry_date":
 
-    }
+                str(date.date()),
+
+            "entry_price":
+
+                entry_price,
+
+            "leverage":
+
+                leverage
+
+        }
+
+        positions.append(
+
+            position
+
+        )
+
+    # 新規注文は処理済み
+
+    save_pending([])
+
+    # ========================================================
+
+    # 全ポジションをTP / SL確認
+
+    # ========================================================
+
+    remaining = []
+
+    total_pnl = 0
+
+    for position in positions:
+
+        result = check_position(
+
+            position,
+
+            intraday,
+
+            date
+
+        )
+
+        if result is None:
+
+            remaining.append(
+
+                position
+
+            )
+
+            continue
+
+        entry_price = float(
+
+            position["entry_price"]
+
+        )
+
+        exit_price = float(
+
+            result["exit_price"]
+
+        )
+
+        side = position["side"]
+
+        leverage = float(
+
+            position["leverage"]
+
+        )
+
+        if side == "LONG":
+
+            ret = (
+
+                exit_price /
+
+                entry_price
+
+                - 1
+
+            )
+
+        else:
+
+            ret = (
+
+                entry_price /
+
+                exit_price
+
+                - 1
+
+            )
+
+        pnl = (
+
+            equity *
+
+            leverage *
+
+            ret
+
+        )
+
+        total_pnl += pnl
+
+        trades.append({
+
+            "date":
+
+                str(date.date()),
+
+            "ticker":
+
+                position["ticker"],
+
+            "side":
+
+                side,
+
+            "entry":
+
+                entry_price,
+
+            "exit":
+
+                exit_price,
+
+            "return":
+
+                ret,
+
+            "pnl":
+
+                pnl,
+
+            "reason":
+
+                result["reason"],
+
+            "entry_date":
+
+                position["entry_date"],
+
+            "exit_time":
+
+                result["exit_time"]
+
+        })
+
+    # ========================================================
+
+    # 資産更新
+
+    # ========================================================
+
+    new_equity = (
+
+        equity +
+
+        total_pnl
+
+    )
+
+    portfolio["equity"] = (
+
+        new_equity
+
+    )
+
+    portfolio["positions"] = (
+
+        remaining
+
+    )
+
+    portfolio["last_update"] = (
+
+        datetime.now()
+
+        .strftime(
+
+            "%Y-%m-%d %H:%M:%S"
+
+        )
+
+    )
+
+    save_portfolio(
+
+        portfolio
+
+    )
+
+    save_csv(
+
+        TRADE_FILE,
+
+        trades
+
+    )
+
+    # ========================================================
+
+    # 結果
+
+    # ========================================================
+
+    lines = []
+
+    lines.append(
+
+        f"{VERSION}"
+
+    )
+
+    lines.append("")
+
+    lines.append(
+
+        "15:45 結果"
+
+    )
+
+    lines.append("")
+
+    lines.append(
+
+        f"前資産: "
+
+        f"¥{equity:,.0f}"
+
+    )
+
+    lines.append(
+
+        f"損益: "
+
+        f"¥{total_pnl:,.0f}"
+
+    )
+
+    lines.append(
+
+        f"現在資産: "
+
+        f"¥{new_equity:,.0f}"
+
+    )
+
+    lines.append("")
+
+    if trades:
+
+        lines.append(
+
+            "決済:"
+
+        )
+
+        for t in trades:
+
+            lines.append(
+
+                f'{t["side"]} '
+
+                f'{t["ticker"]} '
+
+                f'{t["reason"]} '
+
+                f'{t["pnl"]:+,.0f}円'
+
+            )
+
+    else:
+
+        lines.append(
+
+            "決済: なし"
+
+        )
+
+    lines.append("")
+
+    if remaining:
+
+        lines.append(
+
+            "持越し:"
+
+        )
+
+        for p in remaining:
+
+            lines.append(
+
+                f'{p["side"]} '
+
+                f'{p["ticker"]} '
+
+                f'建値 '
+
+                f'{float(p["entry_price"]):,.1f}'
+
+            )
+
+    else:
+
+        lines.append(
+
+            "持越し: なし"
+
+        )
+
+    result_text = "\n".join(
+
+        lines
+
+    )
+
+    print(result_text)
+
+    save_result_text(
+
+        result_text
+
+    )
 
 # ============================================================
 
@@ -1324,9 +2172,17 @@ def save_csv(
 
         return
 
-    new = pd.DataFrame(rows)
+    new = pd.DataFrame(
 
-    if os.path.exists(filename):
+        rows
+
+    )
+
+    if os.path.exists(
+
+        filename
+
+    ):
 
         old = pd.read_csv(
 
@@ -1360,63 +2216,73 @@ def save_csv(
 
 # ============================================================
 
-# 結果ファイル保存
+# Data Load
 
 # ============================================================
 
-def save_result_text(text):
+def load_all_data():
 
-    local_path = (
+    intraday = {}
 
-        f"{DATA_DIR}/latest_result.txt"
+    daily = {}
 
-    )
+    success_5m = 0
 
-    with open(
+    success_daily = 0
 
-        local_path,
+    print(
 
-        "w",
-
-        encoding="utf-8"
-
-    ) as f:
-
-        f.write(text)
-
-    # ========================================================
-
-    # Cloud Storageへアップロード
-
-    # ========================================================
-
-    client = storage.Client()
-
-    bucket = client.bucket(
-
-        GCS_BUCKET
+        "データ更新開始"
 
     )
 
-    blob = bucket.blob(
+    for ticker in TICKERS:
 
-        GCS_RESULT_FILE
+        df5 = download_5m(
 
-    )
+            ticker
 
-    blob.upload_from_filename(
+        )
 
-        local_path,
+        if df5 is not None:
 
-        content_type="text/plain; charset=utf-8"
+            intraday[ticker] = df5
+
+            success_5m += 1
+
+        dd = download_daily(
+
+            ticker
+
+        )
+
+        if dd is not None:
+
+            daily[ticker] = dd
+
+            success_daily += 1
+
+    print(
+
+        f"5分足: "
+
+        f"{success_5m}銘柄"
 
     )
 
     print(
 
-        "Cloud Storage保存完了:"
+        f"日足: "
 
-        f" gs://{GCS_BUCKET}/{GCS_RESULT_FILE}"
+        f"{success_daily}銘柄"
+
+    )
+
+    return (
+
+        intraday,
+
+        daily
 
     )
 
@@ -1438,13 +2304,21 @@ def main():
 
     print("=" * 80)
 
-    portfolio = load_portfolio()
-
-    equity = portfolio["equity"]
+    mode = get_run_mode()
 
     print(
 
-        f"現在資産: ¥{equity:,.0f}"
+        f"RUN MODE: {mode}"
+
+    )
+
+    portfolio = load_portfolio()
+
+    print(
+
+        f"現在資産: "
+
+        f"¥{float(portfolio['equity']):,.0f}"
 
     )
 
@@ -1454,247 +2328,57 @@ def main():
 
     # ========================================================
 
-    print(
+    intraday, daily = (
 
-        "データ更新開始"
-
-    )
-
-    intraday = {}
-
-    daily = {}
-
-    for ticker in TICKERS:
-
-        df5 = download_5m(
-
-            ticker
-
-        )
-
-        if df5 is not None:
-
-            intraday[ticker] = df5
-
-        dd = download_daily(
-
-            ticker
-
-        )
-
-        if dd is not None:
-
-            daily[ticker] = dd
-
-    print(
-
-        f"取得完了 {len(intraday)}銘柄"
+        load_all_data()
 
     )
 
     # ========================================================
 
-    # 候補
+    # 12:45
 
     # ========================================================
 
-    candidates = select_candidates(
+    if mode == "decision":
 
-        intraday,
-
-        daily
-
-    )
-
-    if candidates.empty:
-
-        result_text = """
-
-v33.8 Cache
-
-候補なし
-
-"""
-
-        print(
-
-            result_text
-
-        )
-
-        save_result_text(
-
-            result_text
-
-        )
-
-        return
-
-    print("=" * 80)
-
-    print(
-
-        "12:45候補"
-
-    )
-
-    print("=" * 80)
-
-    print(
-
-        candidates.to_string(
-
-            index=False
-
-        )
-
-    )
-
-    candidates.to_csv(
-
-        CANDIDATE_FILE,
-
-        index=False,
-
-        encoding="utf-8-sig"
-
-    )
-
-    # ========================================================
-
-    # 売買
-
-    # ========================================================
-
-    trades = []
-
-    for _, row in candidates.iterrows():
-
-        trade = execute_trade(
-
-            row,
+        run_decision(
 
             intraday,
 
-            equity
+            daily,
+
+            portfolio
 
         )
 
-        if trade:
+    # ========================================================
 
-            trades.append(
-
-                trade
-
-            )
+    # 15:45
 
     # ========================================================
 
-    # 資産更新
+    else:
 
-    # ========================================================
+        run_result(
 
-    total_pnl = 0
+            intraday,
 
-    for t in trades:
+            daily,
 
-        total_pnl += t["pnl"]
-
-    new_equity = (
-
-        equity
-
-        +
-
-        total_pnl
-
-    )
-
-    portfolio["equity"] = new_equity
-
-    portfolio["last_update"] = (
-
-        datetime.now()
-
-        .strftime(
-
-            "%Y-%m-%d %H:%M:%S"
+            portfolio
 
         )
 
-    )
-
-    save_portfolio(
-
-        portfolio
-
-    )
-
-    save_csv(
-
-        TRADE_FILE,
-
-        trades
-
-    )
-
-    # ========================================================
-
-    # GitHub Actions用結果
-
-    # ========================================================
-
-    result = f"""
-
-{VERSION}
-
-日時:
-
-{datetime.now()}
-
-前資産:
-
-¥{equity:,.0f}
-
-損益:
-
-¥{total_pnl:,.0f}
-
-現在資産:
-
-¥{new_equity:,.0f}
-
-候補:
-
-{candidates.to_string(index=False)}
-
-取引:
-
-{pd.DataFrame(trades).to_string(index=False)
-
- if trades else "なし"}
-
-"""
-
-    print(result)
-
-    save_result_text(
-
-        result
-
-    )
+    print("=" * 80)
 
     print(
 
-        "保存完了"
+        f"{VERSION} END"
 
     )
 
-    print(
-
-        "Cloud Run Paper Trader END"
-
-    )
+    print("=" * 80)
 
 # ============================================================
 
