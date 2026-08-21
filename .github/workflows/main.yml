@@ -74,19 +74,7 @@ jobs:
 
           mkdir -p data
 
-          gcloud logging read \
-
-            'resource.type="cloud_run_job" AND resource.labels.job_name="v33-9-paper-trader"' \
-
-            --project=stock-auto-trader-506100 \
-
-            --limit=200 \
-
-            --order=desc \
-
-            --format='value(textPayload)' \
-
-            > data/latest_result.txt
+          gcloud logging read 'resource.type="cloud_run_job" AND resource.labels.job_name="v33-9-paper-trader"' --project=stock-auto-trader-506100 --limit=200 --order=desc --format="value(textPayload)" > data/latest_result.txt
 
           if [ ! -s data/latest_result.txt ]; then
 
