@@ -24,11 +24,11 @@ on:
 
   schedule:
 
-    # 平日 12:45 JST
+    # 12:45 JST
 
     - cron: "45 3 * * 1-5"
 
-    # 平日 15:45 JST
+    # 15:45 JST
 
     - cron: "45 6 * * 1-5"
 
@@ -48,21 +48,21 @@ jobs:
 
     steps:
 
-      # ======================================================
+      # =====================================================
 
       # Checkout
 
-      # ======================================================
+      # =====================================================
 
       - name: Checkout
 
         uses: actions/checkout@v4
 
-      # ======================================================
+      # =====================================================
 
-      # RUN_MODE
+      # RUN MODE
 
-      # ======================================================
+      # =====================================================
 
       - name: Set RUN_MODE
 
@@ -98,11 +98,11 @@ jobs:
 
           echo "================================"
 
-      # ======================================================
+      # =====================================================
 
       # Google Cloud Auth
 
-      # ======================================================
+      # =====================================================
 
       - name: Google Cloud Auth
 
@@ -114,89 +114,71 @@ jobs:
 
           service_account: "github-actions@stock-auto-trader-506100.iam.gserviceaccount.com"
 
-      # ======================================================
+      # =====================================================
 
       # gcloud
 
-      # ======================================================
+      # =====================================================
 
       - name: Setup gcloud
 
         uses: google-github-actions/setup-gcloud@v2
 
-      # ======================================================
+      # =====================================================
 
-      # Docker
+      # Docker authentication
 
-      # ======================================================
+      # =====================================================
 
       - name: Configure Docker
 
-        run: |
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+      # =====================================================
 
-      # ======================================================
+      # Docker Build
 
-      # Build
-
-      # ======================================================
+      # =====================================================
 
       - name: Build Docker Image
 
-        run: |
+        run: docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest .
 
-          docker build \
+      # =====================================================
 
-            --no-cache \
+      # Docker Push
 
-            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest \
-
-            .
-
-      # ======================================================
-
-      # Push
-
-      # ======================================================
+      # =====================================================
 
       - name: Push Docker Image
 
-        run: |
+        run: docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest
 
-          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest
+      # =====================================================
 
-      # ======================================================
+      # Cloud Run Deploy
 
-      # Deploy
-
-      # ======================================================
+      # =====================================================
 
       - name: Deploy Cloud Run Job
 
         run: gcloud run jobs deploy v33-9-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest --region=asia-northeast1 --tasks=1 --max-retries=1 --set-env-vars=RUN_MODE=$RUN_MODE
 
-      # ======================================================
+      # =====================================================
 
-      # Execute
+      # Cloud Run Execute
 
-      # ======================================================
+      # =====================================================
 
       - name: Run Cloud Run Job
 
-        run: |
+        run: gcloud run jobs execute v33-9-paper-trader --region=asia-northeast1 --wait
 
-          gcloud run jobs execute v33-9-paper-trader \
+      # =====================================================
 
-            --region=asia-northeast1 \
+      # Get Execution Name
 
-            --wait
-
-      # ======================================================
-
-      # Get execution
-
-      # ======================================================
+      # =====================================================
 
       - name: Get Latest Execution
 
@@ -222,11 +204,11 @@ jobs:
 
           echo "EXECUTION_NAME=$EXECUTION_NAME" >> "$GITHUB_ENV"
 
-      # ======================================================
+      # =====================================================
 
       # Get Cloud Run Log
 
-      # ======================================================
+      # =====================================================
 
       - name: Get Cloud Run Result
 
@@ -242,19 +224,7 @@ jobs:
 
           echo "================================"
 
-          gcloud logging read \
-
-            "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-9-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" \
-
-            --project=stock-auto-trader-506100 \
-
-            --limit=1000 \
-
-            --order=asc \
-
-            --format="value(textPayload)" \
-
-            > data/cloud_run_raw.txt
+          gcloud logging read "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-9-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" --project=stock-auto-trader-506100 --limit=1000 --order=asc --format="value(textPayload)" > data/cloud_run_raw.txt
 
           cat data/cloud_run_raw.txt
 
@@ -314,11 +284,11 @@ jobs:
 
           fi
 
-      # ======================================================
+      # =====================================================
 
-      # Fallback
+      # Check Result
 
-      # ======================================================
+      # =====================================================
 
       - name: Check Result
 
@@ -354,11 +324,11 @@ jobs:
 
           fi
 
-      # ======================================================
+      # =====================================================
 
       # Save Result
 
-      # ======================================================
+      # =====================================================
 
       - name: Save Result
 
@@ -386,11 +356,11 @@ jobs:
 
           fi
 
-      # ======================================================
+      # =====================================================
 
       # Send Mail
 
-      # ======================================================
+      # =====================================================
 
       - name: Send Email
 
