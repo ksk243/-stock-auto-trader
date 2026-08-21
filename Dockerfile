@@ -14,7 +14,9 @@ RUN pip install --no-cache-dir \
 
     pandas \
 
-    numpy
+    numpy \
+
+    google-cloud-storage
 
 WORKDIR /app
 
