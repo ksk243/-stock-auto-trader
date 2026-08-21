@@ -6,7 +6,7 @@ on:
 
   schedule:
 
-    - cron: "45 3 * * 1-5"
+    - cron: "45 3 * * 1"
 
     - cron: "45 6 * * 1-5"
 
@@ -30,6 +30,26 @@ jobs:
 
         uses: actions/checkout@v4
 
+      - name: Set RUN_MODE
+
+        run: |
+
+          HOUR=$(TZ=Asia/Tokyo date +%H)
+
+          MINUTE=$(TZ=Asia/Tokyo date +%M)
+
+          if [ "$HOUR" = "12" ] && [ "$MINUTE" -ge "40" ] && [ "$MINUTE" -le "50" ]; then
+
+            echo "RUN_MODE=decision" >> "$GITHUB_ENV"
+
+          else
+
+            echo "RUN_MODE=result" >> "$GITHUB_ENV"
+
+          fi
+
+          echo "RUN_MODE=$RUN_MODE"
+
       - name: Google Cloud Auth
 
         uses: google-github-actions/auth@v2
@@ -48,7 +68,7 @@ jobs:
 
         run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
-      - name: Build and Push Docker Image
+      - name: Build Docker Image
 
         run: docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest .
 
@@ -58,11 +78,29 @@ jobs:
 
       - name: Deploy Cloud Run Job
 
-        run: gcloud run jobs deploy v33-9-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest --region=asia-northeast1 --tasks=1 --max-retries=1
+        run: |
+
+          gcloud run jobs deploy v33-9-paper-trader \
+
+            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest \
+
+            --region=asia-northeast1 \
+
+            --tasks=1 \
+
+            --max-retries=1 \
+
+            --set-env-vars=RUN_MODE=$RUN_MODE
 
       - name: Run Cloud Run Job
 
-        run: gcloud run jobs execute v33-9-paper-trader --region=asia-northeast1 --wait
+        run: |
+
+          gcloud run jobs execute v33-9-paper-trader \
+
+            --region=asia-northeast1 \
+
+            --wait
 
       - name: Get Latest Cloud Run Result
 
@@ -70,25 +108,43 @@ jobs:
 
           mkdir -p data
 
-          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-9-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
+          EXECUTION_NAME=$(gcloud run jobs executions list \
 
-          echo "Latest execution: $EXECUTION_NAME"
+            --job=v33-9-paper-trader \
 
-          gcloud logging read "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-9-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" --project=stock-auto-trader-506100 --limit=500 --order=asc --format="value(textPayload)" > data/cloud_run_raw.txt
+            --region=asia-northeast1 \
 
-          if grep -q "15:45 結果" data/cloud_run_raw.txt; then
+            --project=stock-auto-trader-506100 \
 
-            awk '
+            --sort-by="~createTime" \
 
-              /15:45 結果/ {found=1}
+            --limit=1 \
 
-              found {print}
+            --format="value(metadata.name)")
 
-              found && /Cloud Run Paper Trader END/ {exit}
+          echo "EXECUTION_NAME=$EXECUTION_NAME"
 
-            ' data/cloud_run_raw.txt > data/latest_result.txt
+          gcloud logging read \
 
-          elif grep -q "12:45 判定" data/cloud_run_raw.txt; then
+            "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-9-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" \
+
+            --project=stock-auto-trader-506100 \
+
+            --limit=500 \
+
+            --order=asc \
+
+            --format="value(textPayload)" \
+
+            > data/cloud_run_raw.txt
+
+          echo "===== CLOUD RUN LOG ====="
+
+          cat data/cloud_run_raw.txt
+
+          echo "===== EXTRACT RESULT ====="
+
+          if [ "$RUN_MODE" = "decision" ]; then
 
             awk '
 
@@ -96,13 +152,21 @@ jobs:
 
               found {print}
 
-              found && /Cloud Run Paper Trader END/ {exit}
+              found && /v33\.9 END/ {exit}
 
             ' data/cloud_run_raw.txt > data/latest_result.txt
 
           else
 
-            grep -E '^(12:45 判定|15:45 結果|v33\.9|LONG|SHORT|現在資産|前資産|損益|候補|取引|持越し|決済)' data/cloud_run_raw.txt > data/latest_result.txt || true
+            awk '
+
+              /15:45 結果/ {found=1}
+
+              found {print}
+
+              found && /v33\.9 END/ {exit}
+
+            ' data/cloud_run_raw.txt > data/latest_result.txt
 
           fi
 
@@ -112,11 +176,11 @@ jobs:
 
           fi
 
-          echo "===== MAIL RESULT ====="
+          echo "===== MAIL BODY ====="
 
           cat data/latest_result.txt
 
-      - name: Save data
+      - name: Save Result
 
         run: |
 
@@ -126,17 +190,17 @@ jobs:
 
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add data/ *.csv 2>/dev/null || true
+          git add data/latest_result.txt
 
           if ! git diff --cached --quiet; then
 
-            git commit -m "Update v33.9 paper trading data"
+            git commit -m "Update v33.9 result"
 
             git push
 
           else
 
-            echo "No changes"
+            echo "No result changes"
 
           fi
 
