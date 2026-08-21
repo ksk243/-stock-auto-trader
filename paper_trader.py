@@ -24,6 +24,10 @@
 
 # 当日分追加取得
 
+#
+
+# Cloud Storageへ結果保存
+
 # ============================================================
 
 import warnings
@@ -41,6 +45,8 @@ import yfinance as yf
 import pandas as pd
 
 import numpy as np
+
+from google.cloud import storage
 
 # ============================================================
 
@@ -65,6 +71,12 @@ PORTFOLIO_FILE = f"{DATA_DIR}/portfolio.json"
 TRADE_FILE = f"{DATA_DIR}/paper_trades.csv"
 
 CANDIDATE_FILE = f"{DATA_DIR}/paper_candidates.csv"
+
+# Cloud Storage
+
+GCS_BUCKET = "stock-auto-trader-506100-paper"
+
+GCS_RESULT_FILE = "latest_result.txt"
 
 os.makedirs(
 
@@ -172,7 +184,7 @@ TICKERS = [
 
 "7269.T","7270.T","7272.T","7309.T","7731.T",
 
-"7733.T","7735.T","7741.T","7751.T","7752.T"
+"7733.T","7735.T","7741.T","7751.T"
 
 ]
 
@@ -218,7 +230,7 @@ def load_cache(path):
 
 # ============================================================
 
-# 5分足取得（差分対応）
+# 5分足取得
 
 # ============================================================
 
@@ -782,19 +794,33 @@ def make_candidate(
 
     return {
 
-        "ticker": ticker,
+        "ticker":
 
-        "date": date,
+            ticker,
 
-        "morning_high": morning_high,
+        "date":
 
-        "morning_low": morning_low,
+            date,
 
-        "close_1245": close_1245,
+        "morning_high":
 
-        "vwap": vwap,
+            morning_high,
 
-        "day_return": day_return,
+        "morning_low":
+
+            morning_low,
+
+        "close_1245":
+
+            close_1245,
+
+        "vwap":
+
+            vwap,
+
+        "day_return":
+
+            day_return,
 
         "afternoon_return":
 
@@ -1068,15 +1094,31 @@ def execute_trade(
 
     if side == "LONG":
 
-        tp_price = entry_price * (1 + TP)
+        tp_price = entry_price * (
 
-        sl_price = entry_price * (1 - SL)
+            1 + TP
+
+        )
+
+        sl_price = entry_price * (
+
+            1 - SL
+
+        )
 
     else:
 
-        tp_price = entry_price * (1 - TP)
+        tp_price = entry_price * (
 
-        sl_price = entry_price * (1 + SL)
+            1 - TP
+
+        )
+
+        sl_price = entry_price * (
+
+            1 + SL
+
+        )
 
     exit_price = None
 
@@ -1318,21 +1360,21 @@ def save_csv(
 
 # ============================================================
 
-# メールなし結果保存
-
-# GitHub Actions側で通知
+# 結果ファイル保存
 
 # ============================================================
 
-def save_result_text(
+def save_result_text(text):
 
-    text
+    local_path = (
 
-):
+        f"{DATA_DIR}/latest_result.txt"
+
+    )
 
     with open(
 
-        f"{DATA_DIR}/latest_result.txt",
+        local_path,
 
         "w",
 
@@ -1341,6 +1383,42 @@ def save_result_text(
     ) as f:
 
         f.write(text)
+
+    # ========================================================
+
+    # Cloud Storageへアップロード
+
+    # ========================================================
+
+    client = storage.Client()
+
+    bucket = client.bucket(
+
+        GCS_BUCKET
+
+    )
+
+    blob = bucket.blob(
+
+        GCS_RESULT_FILE
+
+    )
+
+    blob.upload_from_filename(
+
+        local_path,
+
+        content_type="text/plain; charset=utf-8"
+
+    )
+
+    print(
+
+        "Cloud Storage保存完了:"
+
+        f" gs://{GCS_BUCKET}/{GCS_RESULT_FILE}"
+
+    )
 
 # ============================================================
 
@@ -1386,8 +1464,6 @@ def main():
 
     daily = {}
 
-    success = 0
-
     for ticker in TICKERS:
 
         df5 = download_5m(
@@ -1409,8 +1485,6 @@ def main():
         if dd is not None:
 
             daily[ticker] = dd
-
-        success += 1
 
     print(
 
