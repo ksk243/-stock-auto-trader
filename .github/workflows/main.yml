@@ -62,29 +62,19 @@ jobs:
 
         run: gcloud run jobs execute v33-8-paper-trader --region=asia-northeast1 --wait
 
-      - name: Get Cloud Run Result
+      - name: Download Result
 
         run: |
 
-          gcloud logging read \
+          gcloud storage cp gs://stock-auto-trader-506100-paper/latest_result.txt ./latest_result.txt
 
-            'resource.type="cloud_run_job" AND resource.labels.job_name="v33-8-paper-trader"' \
+          echo "===== Paper Trader Result ====="
 
-            --limit=100 \
+          cat latest_result.txt
 
-            --order=desc \
+          if [ ! -s latest_result.txt ]; then
 
-            --format="value(textPayload)" \
-
-            > cloud_run_result.txt
-
-          echo "===== Cloud Run Result ====="
-
-          cat cloud_run_result.txt
-
-          if [ ! -s cloud_run_result.txt ]; then
-
-            echo "ERROR: Cloud Run result is empty"
+            echo "ERROR: latest_result.txt is empty"
 
             exit 1
 
@@ -132,4 +122,4 @@ jobs:
 
           from: ksk2823@icloud.com
 
-          body: file://cloud_run_result.txt
+          body: file://latest_result.txt
