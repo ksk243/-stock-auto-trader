@@ -48,7 +48,13 @@ jobs:
 
           gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
-      - name: Build and Push
+            - name: Build and Push
+
+        run: |
+
+          docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest .
+
+          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-8:latest
 
         run: |
 
