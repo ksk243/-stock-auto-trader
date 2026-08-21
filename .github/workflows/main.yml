@@ -6,7 +6,7 @@ on:
 
   schedule:
 
-    - cron: "45 3 * * 1"
+    - cron: "45 3 * * 1-5"
 
     - cron: "45 6 * * 1-5"
 
@@ -42,13 +42,15 @@ jobs:
 
             echo "RUN_MODE=decision" >> "$GITHUB_ENV"
 
+            echo "RUN_MODE=decision"
+
           else
 
             echo "RUN_MODE=result" >> "$GITHUB_ENV"
 
-          fi
+            echo "RUN_MODE=result"
 
-          echo "RUN_MODE=$RUN_MODE"
+          fi
 
       - name: Google Cloud Auth
 
@@ -78,29 +80,11 @@ jobs:
 
       - name: Deploy Cloud Run Job
 
-        run: |
-
-          gcloud run jobs deploy v33-9-paper-trader \
-
-            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest \
-
-            --region=asia-northeast1 \
-
-            --tasks=1 \
-
-            --max-retries=1 \
-
-            --set-env-vars=RUN_MODE=$RUN_MODE
+        run: gcloud run jobs deploy v33-9-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest --region=asia-northeast1 --tasks=1 --max-retries=1 --set-env-vars=RUN_MODE=$RUN_MODE
 
       - name: Run Cloud Run Job
 
-        run: |
-
-          gcloud run jobs execute v33-9-paper-trader \
-
-            --region=asia-northeast1 \
-
-            --wait
+        run: gcloud run jobs execute v33-9-paper-trader --region=asia-northeast1 --wait
 
       - name: Get Latest Cloud Run Result
 
@@ -108,35 +92,11 @@ jobs:
 
           mkdir -p data
 
-          EXECUTION_NAME=$(gcloud run jobs executions list \
-
-            --job=v33-9-paper-trader \
-
-            --region=asia-northeast1 \
-
-            --project=stock-auto-trader-506100 \
-
-            --sort-by="~createTime" \
-
-            --limit=1 \
-
-            --format="value(metadata.name)")
+          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-9-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
 
           echo "EXECUTION_NAME=$EXECUTION_NAME"
 
-          gcloud logging read \
-
-            "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-9-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" \
-
-            --project=stock-auto-trader-506100 \
-
-            --limit=500 \
-
-            --order=asc \
-
-            --format="value(textPayload)" \
-
-            > data/cloud_run_raw.txt
+          gcloud logging read "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-9-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" --project=stock-auto-trader-506100 --limit=500 --order=asc --format="value(textPayload)" > data/cloud_run_raw.txt
 
           echo "===== CLOUD RUN LOG ====="
 
