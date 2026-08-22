@@ -98,10 +98,6 @@ jobs:
 
         run: gcloud run deploy paper-trader --image="${IMAGE}:latest" --region="${REGION}" --project="${PROJECT_ID}" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${GCS_BUCKET}" --timeout=900
 
-      - name: Grant Cloud Run Invoker
-
-        run: gcloud run services add-iam-policy-binding paper-trader --region="${REGION}" --project="${PROJECT_ID}" --member="serviceAccount:${SERVICE_ACCOUNT}" --role="roles/run.invoker"
-
       - name: Get Cloud Run URL
 
         id: cloudrun
