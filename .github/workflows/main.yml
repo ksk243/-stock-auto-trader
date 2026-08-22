@@ -160,6 +160,8 @@ jobs:
 
       - name: Push Docker Image
 
+        shell: bash
+
         run: |
 
           docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest
@@ -176,19 +178,7 @@ jobs:
 
         run: |
 
-          gcloud run jobs deploy v33-16-paper-trader \
-
-            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest \
-
-            --region=asia-northeast1 \
-
-            --project=stock-auto-trader-506100 \
-
-            --tasks=1 \
-
-            --max-retries=1 \
-
-            --set-env-vars="RUN_MODE=$RUN_MODE"
+          gcloud run jobs deploy v33-16-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest --region=asia-northeast1 --project=stock-auto-trader-506100 --tasks=1 --max-retries=1 --set-env-vars="RUN_MODE=$RUN_MODE"
 
       # =====================================================
 
@@ -197,6 +187,8 @@ jobs:
       # =====================================================
 
       - name: Run Cloud Run Job
+
+        shell: bash
 
         run: |
 
@@ -208,13 +200,7 @@ jobs:
 
           echo "================================"
 
-          gcloud run jobs execute v33-16-paper-trader \
-
-            --region=asia-northeast1 \
-
-            --project=stock-auto-trader-506100 \
-
-            --wait
+          gcloud run jobs execute v33-16-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --wait
 
       # =====================================================
 
@@ -228,23 +214,7 @@ jobs:
 
         run: |
 
-          EXECUTION_NAME=$(
-
-            gcloud run jobs executions list \
-
-              --job=v33-16-paper-trader \
-
-              --region=asia-northeast1 \
-
-              --project=stock-auto-trader-506100 \
-
-              --sort-by="~createTime" \
-
-              --limit=1 \
-
-              --format="value(metadata.name)"
-
-          )
+          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-16-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
 
           echo "EXECUTION_NAME=$EXECUTION_NAME"
 
@@ -270,19 +240,7 @@ jobs:
 
           echo "================================"
 
-          gcloud logging read \
-
-            "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-16-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" \
-
-            --project=stock-auto-trader-506100 \
-
-            --limit=1000 \
-
-            --order=asc \
-
-            --format="value(textPayload)" \
-
-            > data/cloud_run_raw.txt
+          gcloud logging read "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-16-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" --project=stock-auto-trader-506100 --limit=1000 --order=asc --format="value(textPayload)" > data/cloud_run_raw.txt
 
           cat data/cloud_run_raw.txt
 
@@ -314,9 +272,7 @@ jobs:
 
               }
 
-            ' data/cloud_run_raw.txt \
-
-            > data/latest_result.txt
+            ' data/cloud_run_raw.txt > data/latest_result.txt
 
           elif [ "$RUN_MODE" = "result" ]; then
 
@@ -340,9 +296,7 @@ jobs:
 
               }
 
-            ' data/cloud_run_raw.txt \
-
-            > data/latest_result.txt
+            ' data/cloud_run_raw.txt > data/latest_result.txt
 
           elif [ "$RUN_MODE" = "test" ]; then
 
@@ -366,9 +320,7 @@ jobs:
 
               }
 
-            ' data/cloud_run_raw.txt \
-
-            > data/latest_result.txt
+            ' data/cloud_run_raw.txt > data/latest_result.txt
 
           fi
 
@@ -415,10 +367,6 @@ jobs:
       # =====================================================
 
       # Save Result
-
-      #
-
-      # testでも判定結果を保存する
 
       # =====================================================
 
