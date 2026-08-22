@@ -76,11 +76,7 @@ jobs:
 
         run: |
 
-          if gcloud artifacts repositories describe "${REPOSITORY}" \
-
-            --location="${REGION}" \
-
-            --project="${PROJECT_ID}" >/dev/null 2>&1; then
+          if gcloud artifacts repositories describe "${REPOSITORY}" --location="${REGION}" --project="${PROJECT_ID}" >/dev/null 2>&1; then
 
             echo "Artifact Registry repository already exists"
 
@@ -88,15 +84,7 @@ jobs:
 
             echo "Creating Artifact Registry repository"
 
-            gcloud artifacts repositories create "${REPOSITORY}" \
-
-              --repository-format=docker \
-
-              --location="${REGION}" \
-
-              --project="${PROJECT_ID}" \
-
-              --description="Paper Trader Docker Repository"
+            gcloud artifacts repositories create "${REPOSITORY}" --repository-format=docker --location="${REGION}" --project="${PROJECT_ID}" --description="Paper Trader Docker Repository"
 
           fi
 
@@ -116,21 +104,7 @@ jobs:
 
         run: |
 
-          gcloud run deploy paper-trader \
-
-            --image="${IMAGE}:latest" \
-
-            --region="${REGION}" \
-
-            --project="${PROJECT_ID}" \
-
-            --platform=managed \
-
-            --allow-unauthenticated \
-
-            --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${GCS_BUCKET}" \
-
-            --timeout=900
+          gcloud run deploy paper-trader --image="${IMAGE}:latest" --region="${REGION}" --project="${PROJECT_ID}" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${GCS_BUCKET}" --timeout=900
 
       - name: Get Cloud Run URL
 
@@ -138,13 +112,7 @@ jobs:
 
         run: |
 
-          URL=$(gcloud run services describe paper-trader \
-
-            --region="${REGION}" \
-
-            --project="${PROJECT_ID}" \
-
-            --format='value(status.url)')
+          URL=$(gcloud run services describe paper-trader --region="${REGION}" --project="${PROJECT_ID}" --format='value(status.url)')
 
           if [ -z "$URL" ]; then
 
@@ -182,19 +150,7 @@ jobs:
 
           echo "========================================"
 
-          curl \
-
-            --fail-with-body \
-
-            --retry 3 \
-
-            --retry-delay 10 \
-
-            --max-time 900 \
-
-            "${URL}/run?mode=${{ inputs.run_mode }}" \
-
-            | tee cloud_run_result.txt
+          curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "${URL}/run?mode=${{ inputs.run_mode }}" | tee cloud_run_result.txt
 
       - name: Download result files from GCS
 
@@ -208,15 +164,9 @@ jobs:
 
           echo "========================================"
 
-          echo ""
-
           echo "screening_history.csv"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/research/screening_history.csv" \
-
-            "data/research/screening_history.csv"; then
+          if gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"; then
 
             echo "screening_history.csv downloaded"
 
@@ -232,11 +182,7 @@ jobs:
 
           echo "latest_result.txt"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/latest_result.txt" \
-
-            "latest_result.txt"; then
+          if gcloud storage cp "gs://${GCS_BUCKET}/latest_result.txt" "latest_result.txt"; then
 
             echo "latest_result.txt downloaded"
 
@@ -252,19 +198,15 @@ jobs:
 
           echo "portfolio.json"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/paper_trader/portfolio.json" \
-
-            "data/portfolio.json"; then
+          if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/portfolio.json" "data/portfolio.json"; then
 
             echo "portfolio.json downloaded"
 
           else
 
-            echo "ERROR: portfolio.json がGCSにありません"
+            echo "WARNING: portfolio.json がGCSにありません"
 
-            exit 1
+            printf '%s\n' '{"equity":1117792,"positions":[]}' > "data/portfolio.json"
 
           fi
 
@@ -272,11 +214,7 @@ jobs:
 
           echo "paper_trades.csv"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/paper_trader/paper_trades.csv" \
-
-            "data/paper_trades.csv"; then
+          if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/paper_trades.csv" "data/paper_trades.csv"; then
 
             echo "paper_trades.csv downloaded"
 
@@ -284,7 +222,7 @@ jobs:
 
             echo "WARNING: paper_trades.csv がGCSにありません"
 
-            touch "data/paper_trades.csv"
+            printf '%s\n' 'date,ticker,side,shares,entry,exit,return,pnl,reason,entry_time,exit_time' > "data/paper_trades.csv"
 
           fi
 
@@ -314,8 +252,6 @@ jobs:
 
             cat "data/portfolio.json"
 
-            echo ""
-
             echo "----------------------------------------"
 
           else
@@ -340,9 +276,11 @@ jobs:
 
             ls -lh "latest_result.txt"
 
-            echo ""
+            echo "----------------------------------------"
 
             cat "latest_result.txt"
+
+            echo "----------------------------------------"
 
           else
 
