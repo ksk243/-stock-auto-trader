@@ -1,44 +1,6 @@
 # ============================================================
 
-# v33.12 Cloud Run Paper Trader
-
-#
-
-# 目的:
-
-#   12:45確定5分足で判定
-
-#   ↓
-
-#   LONG 最大1銘柄
-
-#   SHORT 最大1銘柄
-
-#   ↓
-
-#   12:50 OPEN
-
-#   ↓
-
-#   TP / SL 到達時のみ決済
-
-#   ↓
-
-#   未到達なら持越し
-
-#
-
-# 高速化:
-
-#   ・5分足 period="1d"
-
-#   ・日足はキャッシュ利用
-
-#   ・Yahoo取得エラーを抑制
-
-#   ・不要なログ出力を削減
-
-#   ・100株未満の取引を禁止
+# v33.13 Cloud Run Paper Trader
 
 # ============================================================
 
@@ -66,7 +28,7 @@ import numpy as np
 
 # ============================================================
 
-VERSION = "v33.12"
+VERSION = "v33.13"
 
 # ============================================================
 
@@ -96,21 +58,9 @@ CACHE_DIR = os.path.join(
 
 )
 
-os.makedirs(
+os.makedirs(DATA_DIR, exist_ok=True)
 
-    DATA_DIR,
-
-    exist_ok=True
-
-)
-
-os.makedirs(
-
-    CACHE_DIR,
-
-    exist_ok=True
-
-)
+os.makedirs(CACHE_DIR, exist_ok=True)
 
 DAILY_CACHE_FILE = os.path.join(
 
@@ -264,7 +214,7 @@ TICKERS = list(
 
 # ============================================================
 
-# RESULT FILE
+# RESULT
 
 # ============================================================
 
@@ -374,7 +324,7 @@ def save_portfolio(data):
 
 # ============================================================
 
-# INDEX NORMALIZE
+# INDEX
 
 # ============================================================
 
@@ -418,228 +368,6 @@ def normalize_index(df):
 
 # ============================================================
 
-# 5MIN DATA
-
-#
-
-# 12:45判定なので1日分だけ取得
-
-# ============================================================
-
-def download_5m():
-
-    try:
-
-        data = yf.download(
-
-            tickers=TICKERS,
-
-            period="1d",
-
-            interval="5m",
-
-            auto_adjust=False,
-
-            progress=False,
-
-            threads=True,
-
-            group_by="ticker"
-
-        )
-
-    except Exception:
-
-        return {}
-
-    if data is None or data.empty:
-
-        return {}
-
-    data = normalize_index(
-
-        data
-
-    )
-
-    result = {}
-
-    if not isinstance(
-
-        data.columns,
-
-        pd.MultiIndex
-
-    ):
-
-        return result
-
-    level0 = set(
-
-        data.columns.get_level_values(0)
-
-    )
-
-    level1 = set(
-
-        data.columns.get_level_values(1)
-
-    )
-
-    required = [
-
-        "Open",
-
-        "High",
-
-        "Low",
-
-        "Close",
-
-        "Volume"
-
-    ]
-
-    # ========================================================
-
-    # tickerがlevel 0
-
-    # ========================================================
-
-    if any(
-
-        ticker in level0
-
-        for ticker in TICKERS
-
-    ):
-
-        for ticker in TICKERS:
-
-            if ticker not in level0:
-
-                continue
-
-            try:
-
-                df = data[
-
-                    ticker
-
-                ].copy()
-
-                if not all(
-
-                    c in df.columns
-
-                    for c in required
-
-                ):
-
-                    continue
-
-                df = df[
-
-                    required
-
-                ]
-
-                df = df.dropna(
-
-                    subset=[
-
-                        "Close"
-
-                    ]
-
-                )
-
-                if not df.empty:
-
-                    result[
-
-                        ticker
-
-                    ] = df
-
-            except Exception:
-
-                continue
-
-    # ========================================================
-
-    # tickerがlevel 1
-
-    # ========================================================
-
-    elif any(
-
-        ticker in level1
-
-        for ticker in TICKERS
-
-    ):
-
-        for ticker in TICKERS:
-
-            if ticker not in level1:
-
-                continue
-
-            try:
-
-                df = data.xs(
-
-                    ticker,
-
-                    axis=1,
-
-                    level=1
-
-                ).copy()
-
-                if not all(
-
-                    c in df.columns
-
-                    for c in required
-
-                ):
-
-                    continue
-
-                df = df[
-
-                    required
-
-                ]
-
-                df = df.dropna(
-
-                    subset=[
-
-                        "Close"
-
-                    ]
-
-                )
-
-                if not df.empty:
-
-                    result[
-
-                        ticker
-
-                    ] = df
-
-            except Exception:
-
-                continue
-
-    return result
-
-# ============================================================
-
 # DAILY CACHE
 
 # ============================================================
@@ -666,61 +394,13 @@ def load_daily_cache():
 
         return {}
 
-# ============================================================
-
-# 初回日足取得
-
-# ============================================================
-
 def create_daily_cache():
 
     cache = load_daily_cache()
 
-    # 既に十分なキャッシュがある場合
-
     if cache:
 
-        valid = True
-
-        for ticker in TICKERS:
-
-            if ticker not in cache:
-
-                valid = False
-
-                break
-
-            df = cache[
-
-                ticker
-
-            ]
-
-            if (
-
-                df is None
-
-                or df.empty
-
-                or len(df) <
-
-                RS_LOOKBACK + 5
-
-            ):
-
-                valid = False
-
-                break
-
-        if valid:
-
-            return cache
-
-    # --------------------------------------------------------
-
-    # 初回のみYahooから取得
-
-    # --------------------------------------------------------
+        return cache
 
     try:
 
@@ -744,19 +424,37 @@ def create_daily_cache():
 
     except Exception:
 
-        return cache
+        return {}
 
     if data is None or data.empty:
 
-        return cache
+        return {}
 
-    data = normalize_index(
+    data = normalize_index(data)
 
-        data
+    result = {}
+
+    if not isinstance(
+
+        data.columns,
+
+        pd.MultiIndex
+
+    ):
+
+        return {}
+
+    level0 = set(
+
+        data.columns.get_level_values(0)
 
     )
 
-    result = {}
+    level1 = set(
+
+        data.columns.get_level_values(1)
+
+    )
 
     required = [
 
@@ -772,33 +470,17 @@ def create_daily_cache():
 
     ]
 
-    if not isinstance(
+    # --------------------------------------------------------
 
-        data.columns,
+    # tickerがlevel 0
 
-        pd.MultiIndex
-
-    ):
-
-        return cache
-
-    level0 = set(
-
-        data.columns.get_level_values(0)
-
-    )
-
-    level1 = set(
-
-        data.columns.get_level_values(1)
-
-    )
+    # --------------------------------------------------------
 
     if any(
 
-        ticker in level0
+        t in level0
 
-        for ticker in TICKERS
+        for t in TICKERS
 
     ):
 
@@ -832,31 +514,29 @@ def create_daily_cache():
 
                 ].dropna(
 
-                    subset=[
-
-                        "Close"
-
-                    ]
+                    subset=["Close"]
 
                 )
 
                 if not df.empty:
 
-                    result[
-
-                        ticker
-
-                    ] = df
+                    result[ticker] = df
 
             except Exception:
 
                 continue
 
+    # --------------------------------------------------------
+
+    # tickerがlevel 1
+
+    # --------------------------------------------------------
+
     elif any(
 
-        ticker in level1
+        t in level1
 
-        for ticker in TICKERS
+        for t in TICKERS
 
     ):
 
@@ -894,21 +574,13 @@ def create_daily_cache():
 
                 ].dropna(
 
-                    subset=[
-
-                        "Close"
-
-                    ]
+                    subset=["Close"]
 
                 )
 
                 if not df.empty:
 
-                    result[
-
-                        ticker
-
-                    ] = df
+                    result[ticker] = df
 
             except Exception:
 
@@ -930,9 +602,7 @@ def create_daily_cache():
 
             pass
 
-        return result
-
-    return cache
+    return result
 
 # ============================================================
 
@@ -980,9 +650,7 @@ def calc_rs(
 
     old = float(
 
-        past["Close"]
-
-        .iloc[
+        past["Close"].iloc[
 
             -RS_LOOKBACK - 1
 
@@ -1002,7 +670,341 @@ def calc_rs(
 
 # ============================================================
 
-# 1銘柄判定
+# 動的購入可能額
+
+#
+
+# ★資産に連動
+
+# ============================================================
+
+def get_max_value(
+
+    equity,
+
+    side
+
+):
+
+    if side == "LONG":
+
+        return (
+
+            equity *
+
+            LONG_LEVERAGE
+
+        )
+
+    return (
+
+        equity *
+
+        SHORT_LEVERAGE
+
+    )
+
+# ============================================================
+
+# 100株で建てられる銘柄を先に絞る
+
+#
+
+# ★固定金額ではない
+
+# ★現在資産に連動
+
+# ============================================================
+
+def get_affordable_tickers(
+
+    daily,
+
+    equity
+
+):
+
+    affordable = []
+
+    long_limit = get_max_value(
+
+        equity,
+
+        "LONG"
+
+    )
+
+    short_limit = get_max_value(
+
+        equity,
+
+        "SHORT"
+
+    )
+
+    max_limit = max(
+
+        long_limit,
+
+        short_limit
+
+    )
+
+    for ticker in TICKERS:
+
+        df = daily.get(
+
+            ticker
+
+        )
+
+        if df is None or df.empty:
+
+            continue
+
+        try:
+
+            last_price = float(
+
+                df["Close"].iloc[-1]
+
+            )
+
+        except Exception:
+
+            continue
+
+        if last_price <= 0:
+
+            continue
+
+        required_value = (
+
+            last_price *
+
+            LOT_SIZE
+
+        )
+
+        if required_value <= max_limit:
+
+            affordable.append(
+
+                ticker
+
+            )
+
+    return affordable
+
+# ============================================================
+
+# 5分足取得
+
+#
+
+# ★日足RSで事前に絞った銘柄だけ
+
+# ============================================================
+
+def download_5m(
+
+    tickers
+
+):
+
+    if not tickers:
+
+        return {}
+
+    try:
+
+        data = yf.download(
+
+            tickers=tickers,
+
+            period="1d",
+
+            interval="5m",
+
+            auto_adjust=False,
+
+            progress=False,
+
+            threads=True,
+
+            group_by="ticker"
+
+        )
+
+    except Exception:
+
+        return {}
+
+    if data is None or data.empty:
+
+        return {}
+
+    data = normalize_index(data)
+
+    result = {}
+
+    required = [
+
+        "Open",
+
+        "High",
+
+        "Low",
+
+        "Close",
+
+        "Volume"
+
+    ]
+
+    if not isinstance(
+
+        data.columns,
+
+        pd.MultiIndex
+
+    ):
+
+        return {}
+
+    level0 = set(
+
+        data.columns.get_level_values(0)
+
+    )
+
+    level1 = set(
+
+        data.columns.get_level_values(1)
+
+    )
+
+    # --------------------------------------------------------
+
+    # tickerがlevel 0
+
+    # --------------------------------------------------------
+
+    if any(
+
+        t in level0
+
+        for t in tickers
+
+    ):
+
+        for ticker in tickers:
+
+            if ticker not in level0:
+
+                continue
+
+            try:
+
+                df = data[
+
+                    ticker
+
+                ].copy()
+
+                if not all(
+
+                    c in df.columns
+
+                    for c in required
+
+                ):
+
+                    continue
+
+                df = df[
+
+                    required
+
+                ].dropna(
+
+                    subset=["Close"]
+
+                )
+
+                if not df.empty:
+
+                    result[ticker] = df
+
+            except Exception:
+
+                continue
+
+    # --------------------------------------------------------
+
+    # tickerがlevel 1
+
+    # --------------------------------------------------------
+
+    elif any(
+
+        t in level1
+
+        for t in tickers
+
+    ):
+
+        for ticker in tickers:
+
+            if ticker not in level1:
+
+                continue
+
+            try:
+
+                df = data.xs(
+
+                    ticker,
+
+                    axis=1,
+
+                    level=1
+
+                ).copy()
+
+                if not all(
+
+                    c in df.columns
+
+                    for c in required
+
+                ):
+
+                    continue
+
+                df = df[
+
+                    required
+
+                ].dropna(
+
+                    subset=["Close"]
+
+                )
+
+                if not df.empty:
+
+                    result[ticker] = df
+
+            except Exception:
+
+                continue
+
+    return result
+
+# ============================================================
+
+# CANDIDATE
 
 # ============================================================
 
@@ -1048,12 +1050,6 @@ def make_candidate(
 
         return None
 
-    # --------------------------------------------------------
-
-    # 12:45確定
-
-    # --------------------------------------------------------
-
     decision_ts = pd.Timestamp(
 
         f"{target_date:%Y-%m-%d} "
@@ -1072,7 +1068,11 @@ def make_candidate(
 
         return None
 
-    # 12:45時点の最後の確定足
+    # --------------------------------------------------------
+
+    # 12:45確定足
+
+    # --------------------------------------------------------
 
     decision_bar = before.iloc[-1]
 
@@ -1302,9 +1302,13 @@ def make_candidate(
 
         "day_return": day_return,
 
-        "afternoon_return": afternoon_return,
+        "afternoon_return":
 
-        "recent_return": recent_return,
+            afternoon_return,
+
+        "recent_return":
+
+            recent_return,
 
         "raw_rs": raw_rs
 
@@ -1312,7 +1316,7 @@ def make_candidate(
 
 # ============================================================
 
-# 候補選択
+# SELECT
 
 # ============================================================
 
@@ -1320,7 +1324,9 @@ def select_candidates(
 
     intraday,
 
-    daily
+    daily,
+
+    equity
 
 ):
 
@@ -1334,7 +1340,33 @@ def select_candidates(
 
     rows = []
 
-    for ticker in TICKERS:
+    # --------------------------------------------------------
+
+    # ここでも価格上限を確認
+
+    # --------------------------------------------------------
+
+    max_value = max(
+
+        get_max_value(
+
+            equity,
+
+            "LONG"
+
+        ),
+
+        get_max_value(
+
+            equity,
+
+            "SHORT"
+
+        )
+
+    )
+
+    for ticker in intraday:
 
         try:
 
@@ -1350,9 +1382,29 @@ def select_candidates(
 
             )
 
-            if row is not None:
+            if row is None:
 
-                rows.append(row)
+                continue
+
+            # ------------------------------------------------
+
+            # 100株必要額
+
+            # ------------------------------------------------
+
+            required_value = (
+
+                row["close_1245"] *
+
+                LOT_SIZE
+
+            )
+
+            if required_value > max_value:
+
+                continue
+
+            rows.append(row)
 
         except Exception:
 
@@ -1362,49 +1414,15 @@ def select_candidates(
 
         return pd.DataFrame()
 
-    df = pd.DataFrame(
-
-        rows
-
-    )
+    df = pd.DataFrame(rows)
 
     if df.empty:
 
         return df
 
-    # ========================================================
-
-    # 100株買えない銘柄を除外
-
-    #
-
-    # LONG/SHORTともに1単元100株
-
-    # ========================================================
-
-    df = df[
-
-        (
-
-            df["close_1245"]
-
-            * LOT_SIZE
-
-        )
-
-        <= (
-
-            df["close_1245"]
-
-            * LOT_SIZE
-
-        )
-
-    ].copy()
-
     # --------------------------------------------------------
 
-    # RS
+    # RS順位
 
     # --------------------------------------------------------
 
@@ -1424,7 +1442,7 @@ def select_candidates(
 
     # --------------------------------------------------------
 
-    # 各スコア
+    # スコア
 
     # --------------------------------------------------------
 
@@ -1488,8 +1506,6 @@ def select_candidates(
 
     )
 
-    selected = []
-
     # ========================================================
 
     # LONG
@@ -1510,23 +1526,7 @@ def select_candidates(
 
         long_df["morning_high"]
 
-    ]
-
-    if not long_df.empty:
-
-        long_df = long_df.sort_values(
-
-            "score",
-
-            ascending=False
-
-        )
-
-        selected.append(
-
-            long_df.iloc[0]
-
-        )
+    ].copy()
 
     # ========================================================
 
@@ -1548,7 +1548,25 @@ def select_candidates(
 
         short_df["morning_low"]
 
-    ]
+    ].copy()
+
+    selected = []
+
+    if not long_df.empty:
+
+        long_df = long_df.sort_values(
+
+            "score",
+
+            ascending=False
+
+        )
+
+        x = long_df.iloc[0].copy()
+
+        x["side"] = "LONG"
+
+        selected.append(x)
 
     if not short_df.empty:
 
@@ -1560,11 +1578,11 @@ def select_candidates(
 
         )
 
-        selected.append(
+        x = short_df.iloc[0].copy()
 
-            short_df.iloc[0]
+        x["side"] = "SHORT"
 
-        )
+        selected.append(x)
 
     if not selected:
 
@@ -1628,12 +1646,6 @@ def create_positions(
 
         )
 
-        # ----------------------------------------------------
-
-        # 12:50のOPEN
-
-        # ----------------------------------------------------
-
         entry_rows = df[
 
             df.index >= entry_ts
@@ -1654,11 +1666,11 @@ def create_positions(
 
             continue
 
-        # ----------------------------------------------------
+        # ====================================================
 
-        # 100株単位
+        # 100株固定
 
-        # ----------------------------------------------------
+        # ====================================================
 
         shares = LOT_SIZE
 
@@ -1670,25 +1682,31 @@ def create_positions(
 
         )
 
-        # ----------------------------------------------------
+        max_value = get_max_value(
+
+            equity,
+
+            side
+
+        )
+
+        # ====================================================
+
+        # ★資産に応じて動的に判定
+
+        # ====================================================
+
+        if required_value > max_value:
+
+            continue
+
+        # ====================================================
 
         # LONG
 
-        # ----------------------------------------------------
+        # ====================================================
 
         if side == "LONG":
-
-            max_value = (
-
-                equity *
-
-                LONG_LEVERAGE
-
-            )
-
-            if required_value > max_value:
-
-                continue
 
             tp_price = (
 
@@ -1706,25 +1724,13 @@ def create_positions(
 
             )
 
-        # ----------------------------------------------------
+        # ====================================================
 
         # SHORT
 
-        # ----------------------------------------------------
+        # ====================================================
 
         else:
-
-            max_value = (
-
-                equity *
-
-                SHORT_LEVERAGE
-
-            )
-
-            if required_value > max_value:
-
-                continue
 
             tp_price = (
 
@@ -1778,7 +1784,7 @@ def create_positions(
 
 # ============================================================
 
-# TP / SL CHECK
+# TP / SL
 
 # ============================================================
 
@@ -1790,11 +1796,7 @@ def check_position(
 
 ):
 
-    ticker = position[
-
-        "ticker"
-
-    ]
+    ticker = position["ticker"]
 
     df = intraday.get(
 
@@ -1818,11 +1820,7 @@ def check_position(
 
     entry_time = pd.Timestamp(
 
-        position[
-
-            "entry_time"
-
-        ]
+        position["entry_time"]
 
     )
 
@@ -1846,29 +1844,17 @@ def check_position(
 
         )
 
-    side = position[
-
-        "side"
-
-    ]
+    side = position["side"]
 
     tp_price = float(
 
-        position[
-
-            "tp_price"
-
-        ]
+        position["tp_price"]
 
     )
 
     sl_price = float(
 
-        position[
-
-            "sl_price"
-
-        ]
+        position["sl_price"]
 
     )
 
@@ -1894,9 +1880,7 @@ def check_position(
 
             )
 
-            # 同一5分足で両方到達した場合
-
-            # 保守的にSL優先
+            # 同一足で両方ならSL優先
 
             if low <= sl_price:
 
@@ -1978,13 +1962,11 @@ def check_position(
 
     # ========================================================
 
-    # TP/SL未到達
+    # ★TP/SL未到達
 
-    #
+    # ★決済しない
 
-    # ★ここでは決済しない
-
-    # ★そのまま持越し
+    # ★持越し
 
     # ========================================================
 
@@ -2024,12 +2006,6 @@ def run_result():
 
     )
 
-    # --------------------------------------------------------
-
-    # ポジションなし
-
-    # --------------------------------------------------------
-
     if not positions:
 
         text = (
@@ -2052,21 +2028,33 @@ def run_result():
 
         )
 
-        write_result(
-
-            text
-
-        )
+        write_result(text)
 
         return
 
     # --------------------------------------------------------
 
-    # 既存ポジションだけ確認
+    # 持越しポジションだけ取得
 
     # --------------------------------------------------------
 
-    intraday = download_5m()
+    position_tickers = list(
+
+        dict.fromkeys(
+
+            p["ticker"]
+
+            for p in positions
+
+        )
+
+    )
+
+    intraday = download_5m(
+
+        position_tickers
+
+    )
 
     remaining = []
 
@@ -2088,17 +2076,11 @@ def run_result():
 
         )
 
-        # ====================================================
+        # ----------------------------------------------------
 
-        # TP/SL未到達
+        # ★未到達なら持越し
 
-        #
-
-        # ★決済しない
-
-        # ★持越し
-
-        # ====================================================
+        # ----------------------------------------------------
 
         if not hit:
 
@@ -2112,29 +2094,17 @@ def run_result():
 
         entry_price = float(
 
-            position[
-
-                "entry_price"
-
-            ]
+            position["entry_price"]
 
         )
 
         shares = int(
 
-            position[
-
-                "shares"
-
-            ]
+            position["shares"]
 
         )
 
-        side = position[
-
-            "side"
-
-        ]
+        side = position["side"]
 
         if side == "LONG":
 
@@ -2162,11 +2132,11 @@ def run_result():
 
         pnl = (
 
-            entry_price
+            entry_price *
 
-            * shares
+            shares *
 
-            * ret
+            ret
 
         )
 
@@ -2178,19 +2148,11 @@ def run_result():
 
                 "date":
 
-                    str(
-
-                        exit_time.date()
-
-                    ),
+                    str(exit_time.date()),
 
                 "ticker":
 
-                    position[
-
-                        "ticker"
-
-                    ],
+                    position["ticker"],
 
                 "side":
 
@@ -2222,19 +2184,11 @@ def run_result():
 
                 "entry_time":
 
-                    position[
-
-                        "entry_time"
-
-                    ],
+                    position["entry_time"],
 
                 "exit_time":
 
-                    str(
-
-                        exit_time
-
-                    )
+                    str(exit_time)
 
             }
 
@@ -2340,53 +2294,29 @@ def run_result():
 
     # --------------------------------------------------------
 
-    # MAIL BODY
+    # MAIL
 
     # --------------------------------------------------------
 
-    lines = []
+    lines = [
 
-    lines.append(
+        "15:45 結果",
 
-        "15:45 結果"
+        "",
 
-    )
+        f"前資産: ¥{old_equity:,.0f}",
 
-    lines.append("")
+        f"損益: ¥{total_pnl:,.0f}",
 
-    lines.append(
+        f"現在資産: ¥{new_equity:,.0f}",
 
-        f"前資産: ¥{old_equity:,.0f}"
+        ""
 
-    )
-
-    lines.append(
-
-        f"損益: ¥{total_pnl:,.0f}"
-
-    )
-
-    lines.append(
-
-        f"現在資産: ¥{new_equity:,.0f}"
-
-    )
-
-    lines.append("")
-
-    # --------------------------------------------------------
-
-    # 決済
-
-    # --------------------------------------------------------
+    ]
 
     if closed:
 
-        lines.append(
-
-            "決済:"
-
-        )
+        lines.append("決済:")
 
         for trade in closed:
 
@@ -2414,12 +2344,6 @@ def run_result():
 
     lines.append("")
 
-    # --------------------------------------------------------
-
-    # 持越し
-
-    # --------------------------------------------------------
-
     if remaining:
 
         lines.append(
@@ -2428,19 +2352,19 @@ def run_result():
 
         )
 
-        for position in remaining:
+        for p in remaining:
 
             lines.append(
 
-                f"{position['side']} "
+                f"{p['side']} "
 
-                f"{position['ticker']} "
+                f"{p['ticker']} "
 
-                f"{position['shares']}株 "
+                f"{p['shares']}株 "
 
                 f"建値 "
 
-                f"{position['entry_price']:,.1f}円"
+                f"{p['entry_price']:,.1f}円"
 
             )
 
@@ -2482,12 +2406,6 @@ def run_decision():
 
     )
 
-    # --------------------------------------------------------
-
-    # 既存ポジション数
-
-    # --------------------------------------------------------
-
     long_count = sum(
 
         1
@@ -2510,35 +2428,217 @@ def run_decision():
 
     # ========================================================
 
-    # 5分足
-
-    # ★ここが高速化の中心
-
-    # ★1日分だけ
-
-    # ========================================================
-
-    intraday = download_5m()
-
-    # ========================================================
-
-    # 日足
-
-    # ★キャッシュのみ
+    # 日足キャッシュ
 
     # ========================================================
 
     daily = load_daily_cache()
 
-    # キャッシュが無い初回だけ作成
-
     if not daily:
 
         daily = create_daily_cache()
 
+    if not daily:
+
+        write_result(
+
+            "12:45 判定\n\n"
+
+            "日足キャッシュを取得できませんでした。"
+
+        )
+
+        return
+
     # ========================================================
 
-    # 候補
+    # ★現在資産に応じて5分足取得対象を絞る
+
+    # ========================================================
+
+    affordable = get_affordable_tickers(
+
+        daily,
+
+        equity
+
+    )
+
+    # --------------------------------------------------------
+
+    # 価格だけでなくRSも事前に計算してさらに絞る
+
+    # --------------------------------------------------------
+
+    now = pd.Timestamp.now(
+
+        tz="Asia/Tokyo"
+
+    ).tz_localize(None)
+
+    target_date = now.normalize()
+
+    rs_rows = []
+
+    for ticker in affordable:
+
+        try:
+
+            rs = calc_rs(
+
+                daily.get(ticker),
+
+                target_date
+
+            )
+
+            if pd.isna(rs):
+
+                continue
+
+            rs_rows.append(
+
+                {
+
+                    "ticker": ticker,
+
+                    "rs_raw": rs
+
+                }
+
+            )
+
+        except Exception:
+
+            continue
+
+    rs_df = pd.DataFrame(
+
+        rs_rows
+
+    )
+
+    if rs_df.empty:
+
+        write_result(
+
+            "12:45 判定\n\n"
+
+            f"現在資産: ¥{equity:,.0f}\n"
+
+            "LONG: なし\n"
+
+            "SHORT: なし\n"
+
+            "新規取引: なし"
+
+        )
+
+        return
+
+    # ========================================================
+
+    # RS順位
+
+    # ========================================================
+
+    rs_df["RS"] = (
+
+        rs_df["rs_raw"]
+
+        .rank(
+
+            pct=True
+
+        )
+
+        * 100
+
+    )
+
+    # --------------------------------------------------------
+
+    # LONG候補
+
+    # --------------------------------------------------------
+
+    long_tickers = rs_df[
+
+        rs_df["RS"] >=
+
+        LONG_RS_THRESHOLD
+
+    ]["ticker"].tolist()
+
+    # --------------------------------------------------------
+
+    # SHORT候補
+
+    # --------------------------------------------------------
+
+    short_tickers = rs_df[
+
+        rs_df["RS"] <=
+
+        SHORT_RS_THRESHOLD
+
+    ]["ticker"].tolist()
+
+    # --------------------------------------------------------
+
+    # 既にLONG保有中ならLONG取得不要
+
+    # --------------------------------------------------------
+
+    if long_count >= MAX_LONG_POSITIONS:
+
+        long_tickers = []
+
+    # --------------------------------------------------------
+
+    # 既にSHORT保有中ならSHORT取得不要
+
+    # --------------------------------------------------------
+
+    if short_count >= MAX_SHORT_POSITIONS:
+
+        short_tickers = []
+
+    # ========================================================
+
+    # LONG + SHORT
+
+    # ========================================================
+
+    target_tickers = list(
+
+        dict.fromkeys(
+
+            long_tickers +
+
+            short_tickers
+
+        )
+
+    )
+
+    # ========================================================
+
+    # ★5分足取得
+
+    # ★必要候補だけ
+
+    # ========================================================
+
+    intraday = download_5m(
+
+        target_tickers
+
+    )
+
+    # ========================================================
+
+    # 候補選定
 
     # ========================================================
 
@@ -2546,85 +2646,11 @@ def run_decision():
 
         intraday,
 
-        daily
+        daily,
+
+        equity
 
     )
-
-    selected = []
-
-    if not candidates.empty:
-
-        # ----------------------------------------------------
-
-        # LONG
-
-        # ----------------------------------------------------
-
-        if (
-
-            long_count <
-
-            MAX_LONG_POSITIONS
-
-        ):
-
-            long_df = candidates[
-
-                candidates["side"] ==
-
-                "LONG"
-
-            ]
-
-            if not long_df.empty:
-
-                selected.append(
-
-                    long_df.iloc[0]
-
-                )
-
-        # ----------------------------------------------------
-
-        # SHORT
-
-        # ----------------------------------------------------
-
-        if (
-
-            short_count <
-
-            MAX_SHORT_POSITIONS
-
-        ):
-
-            short_df = candidates[
-
-                candidates["side"] ==
-
-                "SHORT"
-
-            ]
-
-            if not short_df.empty:
-
-                selected.append(
-
-                    short_df.iloc[0]
-
-                )
-
-    if selected:
-
-        selected_df = pd.DataFrame(
-
-            selected
-
-        )
-
-    else:
-
-        selected_df = pd.DataFrame()
 
     # ========================================================
 
@@ -2634,7 +2660,7 @@ def run_decision():
 
     new_positions = create_positions(
 
-        selected_df,
+        candidates,
 
         intraday,
 
@@ -2642,11 +2668,11 @@ def run_decision():
 
     )
 
-    # --------------------------------------------------------
+    # ========================================================
 
     # 既存ポジションに追加
 
-    # --------------------------------------------------------
+    # ========================================================
 
     if new_positions:
 
@@ -2682,11 +2708,11 @@ def run_decision():
 
     # ========================================================
 
-    if not selected_df.empty:
+    if not candidates.empty:
 
         try:
 
-            selected_df.to_csv(
+            candidates.to_csv(
 
                 CANDIDATE_FILE,
 
@@ -2722,13 +2748,29 @@ def run_decision():
 
     )
 
+    lines.append(
+
+        f"LONG上限: ¥"
+
+        f"{get_max_value(equity, 'LONG'):,.0f}"
+
+    )
+
+    lines.append(
+
+        f"SHORT上限: ¥"
+
+        f"{get_max_value(equity, 'SHORT'):,.0f}"
+
+    )
+
     lines.append("")
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # LONG
 
-    # ========================================================
+    # --------------------------------------------------------
 
     long_positions = [
 
@@ -2786,11 +2828,11 @@ def run_decision():
 
     lines.append("")
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # SHORT
 
-    # ========================================================
+    # --------------------------------------------------------
 
     short_positions = [
 
@@ -2944,17 +2986,11 @@ def main():
 
         error_text = (
 
-            f"{VERSION} ERROR\n"
+            f"{VERSION} ERROR\n\n"
 
-            "\n"
+            f"RUN MODE: {mode}\n\n"
 
-            f"RUN MODE: {mode}\n"
-
-            "\n"
-
-            f"{type(e).__name__}: {e}\n"
-
-            "\n"
+            f"{type(e).__name__}: {e}\n\n"
 
             f"{traceback.format_exc()}"
 
