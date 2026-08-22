@@ -90,13 +90,31 @@ jobs:
 
         run: sleep 10
 
+      - name: Get Cloud Run result
+
+        run: |
+
+          mkdir -p data
+
+          gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="paper-trader"' --project="$PROJECT_ID" --limit=500 --format="value(textPayload)" > data/cloud_run_log.txt || true
+
       - name: Download research data
 
-        run: mkdir -p data/research && gcloud storage cp "gs://$GCS_BUCKET/research/screening_history.csv" "data/research/screening_history.csv" || true
+        run: |
+
+          mkdir -p data/research
+
+          rm -f data/research/screening_history.csv
+
+          gcloud storage cp "gs://$GCS_BUCKET/research/screening_history.csv" "data/research/screening_history.csv" || true
 
       - name: Download latest result
 
-        run: gcloud storage cp "gs://$GCS_BUCKET/latest_result.txt" "latest_result.txt" || true
+        run: |
+
+          mkdir -p data
+
+          gcloud storage cp "gs://$GCS_BUCKET/latest_result.txt" "data/latest_result.txt" || true
 
       - name: Save research data to GitHub
 
@@ -106,13 +124,31 @@ jobs:
 
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add data/research/screening_history.csv latest_result.txt
+          git add -A data/
 
           git diff --cached --quiet || git commit -m "Update Paper Trader data"
 
           git push || true
 
-      - name: Send result email
+      - name: Prepare email
+
+        run: |
+
+          if [ -f data/latest_result.txt ]; then
+
+            cp data/latest_result.txt email_body.txt
+
+          elif [ -f data/cloud_run_log.txt ]; then
+
+            cp data/cloud_run_log.txt email_body.txt
+
+          else
+
+            echo "Paper Trader result not found." > email_body.txt
+
+          fi
+
+      - name: Send email
 
         uses: dawidd6/action-send-mail@v3
 
@@ -126,12 +162,24 @@ jobs:
 
           password: ${{ secrets.SMTP_PASSWORD }}
 
-          subject: "v33.20 Paper Trader ${{ inputs.run_mode }}"
+          subject: "v33.20 Paper Trader - ${{ inputs.run_mode }}"
 
           to: ${{ secrets.MAIL_TO }}
 
           from: ${{ secrets.MAIL_USER }}
 
-          secure: true
+          body: file://email_body.txt
 
-          body: file://latest_result.txt
+      - name: End
+
+        run: |
+
+          echo "================================"
+
+          echo "v33.20 Paper Trader END"
+
+          echo "================================"
+
+          echo "RUN_MODE: ${{ inputs.run_mode }}"
+
+          echo "================================"
