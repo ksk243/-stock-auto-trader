@@ -52,7 +52,7 @@ jobs:
 
       # =====================================================
 
-      # Checkout
+      # CHECKOUT
 
       # =====================================================
 
@@ -102,7 +102,7 @@ jobs:
 
       # =====================================================
 
-      # Google Cloud Auth
+      # GOOGLE CLOUD AUTH
 
       # =====================================================
 
@@ -118,7 +118,7 @@ jobs:
 
       # =====================================================
 
-      # Setup gcloud
+      # SETUP GCLOUD
 
       # =====================================================
 
@@ -128,7 +128,59 @@ jobs:
 
       # =====================================================
 
-      # Docker authentication
+      # CONFIG
+
+      # =====================================================
+
+      - name: Set Google Cloud Variables
+
+        shell: bash
+
+        run: |
+
+          echo "PROJECT_ID=stock-auto-trader-506100" >> "$GITHUB_ENV"
+
+          echo "REGION=asia-northeast1" >> "$GITHUB_ENV"
+
+          echo "REPOSITORY=stock-auto-trader" >> "$GITHUB_ENV"
+
+          echo "IMAGE_NAME=v33-18" >> "$GITHUB_ENV"
+
+          echo "JOB_NAME=v33-18-paper-trader" >> "$GITHUB_ENV"
+
+          echo "IMAGE=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest" >> "$GITHUB_ENV"
+
+      # =====================================================
+
+      # SHOW CONFIG
+
+      # =====================================================
+
+      - name: Show Configuration
+
+        shell: bash
+
+        run: |
+
+          echo "================================"
+
+          echo "PROJECT_ID=$PROJECT_ID"
+
+          echo "REGION=$REGION"
+
+          echo "REPOSITORY=$REPOSITORY"
+
+          echo "IMAGE=$IMAGE"
+
+          echo "JOB_NAME=$JOB_NAME"
+
+          echo "RUN_MODE=$RUN_MODE"
+
+          echo "================================"
+
+      # =====================================================
+
+      # DOCKER AUTH
 
       # =====================================================
 
@@ -142,7 +194,7 @@ jobs:
 
       # =====================================================
 
-      # Docker Build
+      # DOCKER BUILD
 
       # =====================================================
 
@@ -152,11 +204,17 @@ jobs:
 
         run: |
 
-          docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest .
+          echo "================================"
+
+          echo "DOCKER BUILD"
+
+          echo "================================"
+
+          docker build --no-cache -t "$IMAGE" .
 
       # =====================================================
 
-      # Docker Push
+      # DOCKER PUSH
 
       # =====================================================
 
@@ -166,11 +224,17 @@ jobs:
 
         run: |
 
-          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest
+          echo "================================"
+
+          echo "DOCKER PUSH"
+
+          echo "================================"
+
+          docker push "$IMAGE"
 
       # =====================================================
 
-      # Cloud Run Deploy
+      # CLOUD RUN DEPLOY
 
       # =====================================================
 
@@ -180,11 +244,37 @@ jobs:
 
         run: |
 
-          gcloud run jobs deploy v33-18-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest --region=asia-northeast1 --project=stock-auto-trader-506100 --tasks=1 --max-retries=1 --set-env-vars="RUN_MODE=$RUN_MODE"
+          echo "================================"
+
+          echo "CLOUD RUN DEPLOY"
+
+          echo "IMAGE=$IMAGE"
+
+          echo "JOB_NAME=$JOB_NAME"
+
+          echo "REGION=$REGION"
+
+          echo "RUN_MODE=$RUN_MODE"
+
+          echo "================================"
+
+          gcloud run jobs deploy "$JOB_NAME" \
+
+            --image="$IMAGE" \
+
+            --region="$REGION" \
+
+            --project="$PROJECT_ID" \
+
+            --tasks=1 \
+
+            --max-retries=1 \
+
+            --set-env-vars="RUN_MODE=$RUN_MODE"
 
       # =====================================================
 
-      # Cloud Run Execute
+      # CLOUD RUN EXECUTE
 
       # =====================================================
 
@@ -200,19 +290,23 @@ jobs:
 
           echo "RUN_MODE=$RUN_MODE"
 
+          echo "REGION=$REGION"
+
+          echo "JOB_NAME=$JOB_NAME"
+
           echo "================================"
 
-          gcloud run jobs execute v33-18-paper-trader \
+          gcloud run jobs execute "$JOB_NAME" \
 
-            --region=asia-northeast1 \
+            --region="$REGION" \
 
-            --project=stock-auto-trader-506100 \
+            --project="$PROJECT_ID" \
 
             --wait
 
       # =====================================================
 
-      # Get Latest Execution
+      # GET LATEST EXECUTION
 
       # =====================================================
 
@@ -222,11 +316,33 @@ jobs:
 
         run: |
 
-          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-18-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
+          echo "================================"
+
+          echo "GET LATEST EXECUTION"
+
+          echo "================================"
+
+          EXECUTION_NAME=$(
+
+            gcloud run jobs executions list \
+
+              --job="$JOB_NAME" \
+
+              --region="$REGION" \
+
+              --project="$PROJECT_ID" \
+
+              --sort-by="~createTime" \
+
+              --limit=1 \
+
+              --format="value(metadata.name)"
+
+          )
 
           if [ -z "$EXECUTION_NAME" ]; then
 
-            echo "Cloud Run execution が取得できませんでした。"
+            echo "ERROR: Execution not found."
 
             exit 1
 
@@ -238,7 +354,7 @@ jobs:
 
       # =====================================================
 
-      # Get Cloud Run Log
+      # GET CLOUD RUN LOG
 
       # =====================================================
 
@@ -258,9 +374,9 @@ jobs:
 
           gcloud logging read \
 
-            "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-18-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" \
+            "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"$JOB_NAME\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" \
 
-            --project=stock-auto-trader-506100 \
+            --project="$PROJECT_ID" \
 
             --limit=1000 \
 
@@ -277,6 +393,12 @@ jobs:
           echo "EXTRACT RESULT"
 
           echo "================================"
+
+          # -------------------------------------------------
+
+          # DECISION
+
+          # -------------------------------------------------
 
           if [ "$RUN_MODE" = "decision" ]; then
 
@@ -302,29 +424,11 @@ jobs:
 
             ' data/cloud_run_raw.txt > data/latest_result.txt
 
-          elif [ "$RUN_MODE" = "test" ]; then
+          # -------------------------------------------------
 
-            awk '
+          # RESULT
 
-              /12:45 TEST判定/ {
-
-                found=1
-
-              }
-
-              found {
-
-                print
-
-              }
-
-              found && /v33\.18 END/ {
-
-                exit
-
-              }
-
-            ' data/cloud_run_raw.txt > data/latest_result.txt
+          # -------------------------------------------------
 
           elif [ "$RUN_MODE" = "result" ]; then
 
@@ -350,17 +454,41 @@ jobs:
 
             ' data/cloud_run_raw.txt > data/latest_result.txt
 
-          else
+          # -------------------------------------------------
 
-            echo "未知のRUN_MODE: $RUN_MODE"
+          # TEST
 
-            exit 1
+          # -------------------------------------------------
+
+          elif [ "$RUN_MODE" = "test" ]; then
+
+            awk '
+
+              /12:45 TEST判定/ {
+
+                found=1
+
+              }
+
+              found {
+
+                print
+
+              }
+
+              found && /v33\.18 END/ {
+
+                exit
+
+              }
+
+            ' data/cloud_run_raw.txt > data/latest_result.txt
 
           fi
 
       # =====================================================
 
-      # Check Result
+      # CHECK RESULT
 
       # =====================================================
 
@@ -376,6 +504,10 @@ jobs:
 
           echo "================================"
 
+          echo "RUN_MODE=$RUN_MODE"
+
+          echo
+
           if [ -s data/latest_result.txt ]; then
 
             cat data/latest_result.txt
@@ -390,10 +522,6 @@ jobs:
 
             echo
 
-            echo "EXECUTION_NAME=$EXECUTION_NAME"
-
-            echo
-
             echo "CLOUD RUN RAW LOG:"
 
             cat data/cloud_run_raw.txt
@@ -402,9 +530,11 @@ jobs:
 
           fi
 
+          echo "================================"
+
       # =====================================================
 
-      # Save Result
+      # SAVE RESULT
 
       # =====================================================
 
@@ -436,7 +566,7 @@ jobs:
 
       # =====================================================
 
-      # Send Email
+      # SEND EMAIL
 
       # =====================================================
 
@@ -454,7 +584,7 @@ jobs:
 
           password: ${{ secrets.MAIL_PASS }}
 
-          subject: "v33.18 Paper Trader [$RUN_MODE]"
+          subject: "v33.18 Paper Trader"
 
           to: ${{ secrets.MAIL_TO }}
 
