@@ -96,23 +96,23 @@ jobs:
 
       - name: Deploy Cloud Run
 
-        run: |
+        run: >
 
-          gcloud run deploy paper-trader \
+          gcloud run deploy paper-trader
 
-            --image="${IMAGE}:latest" \
+          --image="${IMAGE}:latest"
 
-            --region="${REGION}" \
+          --region="${REGION}"
 
-            --project="${PROJECT_ID}" \
+          --project="${PROJECT_ID}"
 
-            --platform=managed \
+          --platform=managed
 
-            --allow-unauthenticated \
+          --allow-unauthenticated
 
-            --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${GCS_BUCKET}" \
+          --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${GCS_BUCKET}"
 
-            --timeout=900
+          --timeout=900
 
       - name: Get Cloud Run URL
 
