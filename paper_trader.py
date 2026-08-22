@@ -6,8 +6,6 @@ import warnings
 
 import traceback
 
-import subprocess
-
 from datetime import datetime
 
 from flask import Flask, jsonify, Response, request
@@ -19,6 +17,8 @@ import yfinance as yf
 import pandas as pd
 
 import numpy as np
+
+from google.cloud import storage
 
 VERSION = "v33.20"
 
@@ -222,6 +222,32 @@ if len(TICKERS) != 137:
 
     )
 
+def get_gcs_bucket():
+
+    if not GCS_BUCKET:
+
+        return None
+
+    try:
+
+        client = storage.Client()
+
+        return client.bucket(
+
+            GCS_BUCKET
+
+        )
+
+    except Exception as e:
+
+        print(
+
+            f"GCS client error: {e}"
+
+        )
+
+        return None
+
 def gcs_copy_to_local(
 
     gcs_path,
@@ -230,13 +256,37 @@ def gcs_copy_to_local(
 
 ):
 
-    if not GCS_BUCKET:
+    bucket = get_gcs_bucket()
+
+    if bucket is None:
 
         return False
 
     try:
 
-        parent = os.path.dirname(local_path)
+        blob = bucket.blob(
+
+            gcs_path
+
+        )
+
+        if not blob.exists():
+
+            print(
+
+                f"GCS restore skipped: "
+
+                f"gs://{GCS_BUCKET}/{gcs_path}"
+
+            )
+
+            return False
+
+        parent = os.path.dirname(
+
+            local_path
+
+        )
 
         if parent:
 
@@ -248,49 +298,21 @@ def gcs_copy_to_local(
 
             )
 
-        result = subprocess.run(
+        blob.download_to_filename(
 
-            [
-
-                "gcloud",
-
-                "storage",
-
-                "cp",
-
-                f"gs://{GCS_BUCKET}/{gcs_path}",
-
-                local_path
-
-            ],
-
-            capture_output=True,
-
-            text=True
+            local_path
 
         )
 
-        if result.returncode == 0:
-
-            print(
-
-                f"GCS restore completed: "
-
-                f"gs://{GCS_BUCKET}/{gcs_path}"
-
-            )
-
-            return True
-
         print(
 
-            f"GCS restore skipped: "
+            f"GCS restore completed: "
 
             f"gs://{GCS_BUCKET}/{gcs_path}"
 
         )
 
-        return False
+        return True
 
     except Exception as e:
 
@@ -310,16 +332,6 @@ def gcs_copy_from_local(
 
 ):
 
-    if not GCS_BUCKET:
-
-        print(
-
-            "GCS_BUCKET が未設定です"
-
-        )
-
-        return False
-
     if not os.path.exists(
 
         local_path
@@ -336,51 +348,35 @@ def gcs_copy_from_local(
 
         return False
 
+    bucket = get_gcs_bucket()
+
+    if bucket is None:
+
+        return False
+
     try:
 
-        result = subprocess.run(
+        blob = bucket.blob(
 
-            [
-
-                "gcloud",
-
-                "storage",
-
-                "cp",
-
-                local_path,
-
-                f"gs://{GCS_BUCKET}/{gcs_path}"
-
-            ],
-
-            capture_output=True,
-
-            text=True
+            gcs_path
 
         )
 
-        if result.returncode == 0:
+        blob.upload_from_filename(
 
-            print(
+            local_path
 
-                f"GCS upload completed: "
-
-                f"gs://{GCS_BUCKET}/{gcs_path}"
-
-            )
-
-            return True
+        )
 
         print(
 
-            f"GCS upload error: "
+            f"GCS upload completed: "
 
-            f"{result.stderr}"
+            f"gs://{GCS_BUCKET}/{gcs_path}"
 
         )
 
-        return False
+        return True
 
     except Exception as e:
 
@@ -536,7 +532,7 @@ def create_initial_portfolio():
 
 def load_portfolio():
 
-    gcs_restored = gcs_copy_to_local(
+    restored = gcs_copy_to_local(
 
         GCS_PORTFOLIO_PATH,
 
@@ -549,14 +545,6 @@ def load_portfolio():
         PORTFOLIO_FILE
 
     ):
-
-        print(
-
-            "portfolio.json がありません。"
-
-            "初期ポートフォリオを作成します。"
-
-        )
 
         return create_initial_portfolio()
 
@@ -574,33 +562,27 @@ def load_portfolio():
 
             data = json.load(f)
 
-    except Exception as e:
-
-        print(
-
-            f"portfolio.json 読込エラー: {e}"
-
-        )
+    except Exception:
 
         return create_initial_portfolio()
 
-    if "equity" not in data:
+    data.setdefault(
 
-        data["equity"] = INITIAL_CAPITAL
+        "equity",
 
-    if "positions" not in data:
+        INITIAL_CAPITAL
 
-        data["positions"] = []
+    )
 
-    if not gcs_restored:
+    data.setdefault(
 
-        print(
+        "positions",
 
-            "GCSにportfolio.jsonが無いため、"
+        []
 
-            "現在のローカルportfolio.jsonをGCSへ保存します。"
+    )
 
-        )
+    if not restored:
 
         save_portfolio(
 
@@ -632,13 +614,9 @@ def save_portfolio(data):
 
     )
 
-    data["last_update"] = (
+    data["last_update"] = datetime.now().strftime(
 
-        datetime.now().strftime(
-
-            "%Y-%m-%d %H:%M:%S"
-
-        )
+        "%Y-%m-%d %H:%M:%S"
 
     )
 
@@ -664,23 +642,13 @@ def save_portfolio(data):
 
         )
 
-    uploaded = gcs_copy_from_local(
+    gcs_copy_from_local(
 
         PORTFOLIO_FILE,
 
         GCS_PORTFOLIO_PATH
 
     )
-
-    if not uploaded:
-
-        print(
-
-            "WARNING: portfolio.json の"
-
-            "GCS保存に失敗しました"
-
-        )
 
 def normalize_index(df):
 
@@ -832,9 +800,7 @@ def download_5m():
 
                     required
 
-                ]
-
-                df = df.dropna(
+                ].dropna(
 
                     subset=["Close"]
 
@@ -892,9 +858,7 @@ def download_5m():
 
                     required
 
-                ]
-
-                df = df.dropna(
+                ].dropna(
 
                     subset=["Close"]
 
@@ -1322,9 +1286,7 @@ def make_candidate(
 
     before = day[
 
-        day.index
-
-        <= decision_ts
+        day.index <= decision_ts
 
     ]
 
@@ -1332,19 +1294,11 @@ def make_candidate(
 
         return None
 
-    decision_bar = before.iloc[
-
-        -1
-
-    ]
+    decision_bar = before.iloc[-1]
 
     close_1245 = float(
 
-        decision_bar[
-
-            "Close"
-
-        ]
+        decision_bar["Close"]
 
     )
 
@@ -1354,9 +1308,7 @@ def make_candidate(
 
         < pd.Timestamp(
 
-            f"{target_date:%Y-%m-%d} "
-
-            "12:00:00"
+            f"{target_date:%Y-%m-%d} 12:00:00"
 
         )
 
@@ -1368,31 +1320,19 @@ def make_candidate(
 
     morning_high = float(
 
-        morning[
-
-            "High"
-
-        ].max()
+        morning["High"].max()
 
     )
 
     morning_low = float(
 
-        morning[
-
-            "Low"
-
-        ].min()
+        morning["Low"].min()
 
     )
 
     volume = (
 
-        before[
-
-            "Volume"
-
-        ]
+        before["Volume"]
 
         .fillna(0)
 
@@ -1406,11 +1346,7 @@ def make_candidate(
 
             (
 
-                before[
-
-                    "Close"
-
-                ]
+                before["Close"]
 
                 * volume
 
@@ -1438,11 +1374,7 @@ def make_candidate(
 
     prev_close = float(
 
-        past[
-
-            "Close"
-
-        ].iloc[-1]
+        past["Close"].iloc[-1]
 
     )
 
@@ -1466,9 +1398,7 @@ def make_candidate(
 
         >= pd.Timestamp(
 
-            f"{target_date:%Y-%m-%d} "
-
-            "12:00:00"
+            f"{target_date:%Y-%m-%d} 12:00:00"
 
         )
 
@@ -1478,11 +1408,7 @@ def make_candidate(
 
         afternoon_open = float(
 
-            afternoon[
-
-                "Open"
-
-            ].iloc[0]
+            afternoon["Open"].iloc[0]
 
         )
 
@@ -1516,11 +1442,7 @@ def make_candidate(
 
         first_close = float(
 
-            recent[
-
-                "Close"
-
-            ].iloc[0]
+            recent["Close"].iloc[0]
 
         )
 
@@ -2314,9 +2236,7 @@ def prepare_research_rows(
 
                 ]["side"]
 
-                if ticker
-
-                in selected_map
+                if ticker in selected_map
 
                 else ""
 
@@ -2730,16 +2650,6 @@ def save_research_data(
 
     )
 
-    # ========================================================
-
-    # 重要:
-
-    # GCSに過去のscreening_history.csvがあれば
-
-    # 必ず先にローカルへ復元する
-
-    # ========================================================
-
     gcs_copy_to_local(
 
         GCS_RESEARCH_PATH,
@@ -2779,16 +2689,6 @@ def save_research_data(
             )
 
             old_df = pd.DataFrame()
-
-    # ========================================================
-
-    # 同じ日付を再実行した場合
-
-    # その日の137銘柄だけ差し替える
-
-    # 過去の日付は残す
-
-    # ========================================================
 
     if (
 
@@ -2852,27 +2752,11 @@ def save_research_data(
 
         f"研究CSV保存完了: "
 
-        f"{RESEARCH_FILE}"
+        f"{len(combined)}行"
 
     )
 
-    print(
-
-        f"今回保存: "
-
-        f"{len(research_df)}銘柄"
-
-    )
-
-    print(
-
-        f"研究CSV総行数: "
-
-        f"{len(combined)}"
-
-    )
-
-    upload_ok = gcs_copy_from_local(
+    uploaded = gcs_copy_from_local(
 
         RESEARCH_FILE,
 
@@ -2880,7 +2764,7 @@ def save_research_data(
 
     )
 
-    if upload_ok:
+    if uploaded:
 
         print(
 
@@ -2892,9 +2776,7 @@ def save_research_data(
 
     print(
 
-        "WARNING: 研究CSVの"
-
-        "GCS保存に失敗"
+        "WARNING: 研究CSV GCS保存失敗"
 
     )
 
@@ -2907,8 +2789,6 @@ def update_research_after_close(
     target_date
 
 ):
-
-    # GCSの最新研究CSVを先に復元
 
     gcs_copy_to_local(
 
@@ -3026,17 +2906,13 @@ def update_research_after_close(
 
             (
 
-                df.index
-
-                >= entry_ts
+                df.index >= entry_ts
 
             )
 
             & (
 
-                df.index
-
-                <= result_ts
+                df.index <= result_ts
 
             )
 
@@ -3164,9 +3040,7 @@ def update_research_after_close(
 
         ] = (
 
-            post_high
-
-            >= long_tp
+            post_high >= long_tp
 
         )
 
@@ -3178,9 +3052,7 @@ def update_research_after_close(
 
         ] = (
 
-            post_low
-
-            <= long_sl
+            post_low <= long_sl
 
         )
 
@@ -3192,9 +3064,7 @@ def update_research_after_close(
 
         ] = (
 
-            post_low
-
-            <= short_tp
+            post_low <= short_tp
 
         )
 
@@ -3206,9 +3076,7 @@ def update_research_after_close(
 
         ] = (
 
-            post_high
-
-            >= short_sl
+            post_high >= short_sl
 
         )
 
@@ -3380,15 +3248,11 @@ def run_result():
 
             "【資産】\n"
 
-            f"前資産　　"
-
-            f"¥{old_equity:,.0f}\n"
+            f"前資産　　¥{old_equity:,.0f}\n"
 
             "損益　　　¥0\n"
 
-            f"現在資産　"
-
-            f"¥{old_equity:,.0f}\n\n"
+            f"現在資産　¥{old_equity:,.0f}\n\n"
 
             "【決済】\n"
 
@@ -3940,13 +3804,9 @@ def run_decision(
 
             "━━━━━━━━━━━━━━━━━━━━\n\n"
 
-            f"判定日　　"
+            f"判定日　　{target_date:%Y-%m-%d}\n"
 
-            f"{target_date:%Y-%m-%d}\n"
-
-            f"現在資産　"
-
-            f"¥{equity:,.0f}\n\n"
+            f"現在資産　¥{equity:,.0f}\n\n"
 
             "LONG　　　なし\n"
 
