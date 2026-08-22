@@ -1,4 +1,4 @@
-name: v33.16 Paper Trader
+name: v33.9 Paper Trader
 
 on:
 
@@ -116,7 +116,7 @@ jobs:
 
       # =====================================================
 
-      # Setup gcloud
+      # gcloud
 
       # =====================================================
 
@@ -132,11 +132,7 @@ jobs:
 
       - name: Configure Docker
 
-        shell: bash
-
-        run: |
-
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       # =====================================================
 
@@ -146,23 +142,7 @@ jobs:
 
       - name: Build Docker Image
 
-        shell: bash
-
-        run: |
-
-          echo "================================"
-
-          echo "DOCKER BUILD START"
-
-          echo "================================"
-
-          docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest .
-
-          echo "================================"
-
-          echo "DOCKER BUILD COMPLETE"
-
-          echo "================================"
+        run: docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest .
 
       # =====================================================
 
@@ -172,23 +152,7 @@ jobs:
 
       - name: Push Docker Image
 
-        shell: bash
-
-        run: |
-
-          echo "================================"
-
-          echo "DOCKER PUSH START"
-
-          echo "================================"
-
-          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest
-
-          echo "================================"
-
-          echo "DOCKER PUSH COMPLETE"
-
-          echo "================================"
+        run: docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest
 
       # =====================================================
 
@@ -198,23 +162,7 @@ jobs:
 
       - name: Deploy Cloud Run Job
 
-        shell: bash
-
-        run: |
-
-          echo "================================"
-
-          echo "CLOUD RUN DEPLOY START"
-
-          echo "================================"
-
-          gcloud run jobs deploy v33-16-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest --region=asia-northeast1 --project=stock-auto-trader-506100 --tasks=1 --max-retries=1 --set-env-vars="RUN_MODE=$RUN_MODE"
-
-          echo "================================"
-
-          echo "CLOUD RUN DEPLOY COMPLETE"
-
-          echo "================================"
+        run: gcloud run jobs deploy v33-9-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest --region=asia-northeast1 --project=stock-auto-trader-506100 --tasks=1 --max-retries=1 --set-env-vars=RUN_MODE=$RUN_MODE
 
       # =====================================================
 
@@ -224,23 +172,7 @@ jobs:
 
       - name: Run Cloud Run Job
 
-        shell: bash
-
-        run: |
-
-          echo "================================"
-
-          echo "CLOUD RUN EXECUTE START"
-
-          echo "================================"
-
-          gcloud run jobs execute v33-16-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --wait
-
-          echo "================================"
-
-          echo "CLOUD RUN EXECUTE COMPLETE"
-
-          echo "================================"
+        run: gcloud run jobs execute v33-9-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --wait
 
       # =====================================================
 
@@ -254,7 +186,7 @@ jobs:
 
         run: |
 
-          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-16-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
+          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-9-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
 
           echo "EXECUTION_NAME=$EXECUTION_NAME"
 
@@ -280,7 +212,7 @@ jobs:
 
           echo "================================"
 
-          gcloud logging read "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-16-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" --project=stock-auto-trader-506100 --limit=1000 --order=asc --format="value(textPayload)" > data/cloud_run_raw.txt
+          gcloud logging read "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-9-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" --project=stock-auto-trader-506100 --limit=1000 --order=asc --format="value(textPayload)" > data/cloud_run_raw.txt
 
           cat data/cloud_run_raw.txt
 
@@ -306,7 +238,7 @@ jobs:
 
               }
 
-              found && /v33\.16 END/ {
+              found && /v33\.9 END/ {
 
                 exit
 
@@ -330,7 +262,7 @@ jobs:
 
               }
 
-              found && /v33\.16 END/ {
+              found && /v33\.9 END/ {
 
                 exit
 
@@ -402,7 +334,7 @@ jobs:
 
           if ! git diff --cached --quiet; then
 
-            git commit -m "Update v33.16 result"
+            git commit -m "Update v33.9 result"
 
             git push
 
@@ -432,7 +364,7 @@ jobs:
 
           password: ${{ secrets.MAIL_PASS }}
 
-          subject: "v33.16 Paper Trader"
+          subject: "v33.9 Paper Trader"
 
           to: ${{ secrets.MAIL_TO }}
 
