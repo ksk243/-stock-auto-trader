@@ -68,9 +68,7 @@ jobs:
 
       - name: Configure Docker
 
-        run: |
-
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       - name: Create Artifact Registry
 
@@ -90,45 +88,15 @@ jobs:
 
       - name: Docker Build
 
-        run: |
-
-          echo "========================================"
-
-          echo "Docker Build"
-
-          echo "========================================"
-
-          docker build -t "${IMAGE}:latest" .
+        run: docker build -t "${IMAGE}:latest" .
 
       - name: Docker Push
 
-        run: |
-
-          echo "========================================"
-
-          echo "Docker Push"
-
-          echo "========================================"
-
-          docker push "${IMAGE}:latest"
+        run: docker push "${IMAGE}:latest"
 
       - name: Deploy Cloud Run
 
         run: |
-
-          echo "========================================"
-
-          echo "Deploy Cloud Run"
-
-          echo "========================================"
-
-          echo "IMAGE: ${IMAGE}:latest"
-
-          echo "REGION: ${REGION}"
-
-          echo "RUN_MODE: ${{ inputs.run_mode }}"
-
-          echo "========================================"
 
           gcloud run deploy paper-trader --image="${IMAGE}:latest" --region="${REGION}" --project="${PROJECT_ID}" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${GCS_BUCKET}" --timeout=900
 
@@ -190,8 +158,6 @@ jobs:
 
           echo "========================================"
 
-          echo ""
-
           echo "screening_history.csv"
 
           if gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"; then
@@ -234,17 +200,7 @@ jobs:
 
             echo "WARNING: portfolio.json がGCSにありません"
 
-            printf '%s\n' \
-
-              '{' \
-
-              '  "equity": 1117792,' \
-
-              '  "positions": []' \
-
-              '}' \
-
-              > "data/portfolio.json"
+            printf '%s\n' '{"equity":1117792,"positions":[]}' > "data/portfolio.json"
 
           fi
 
@@ -260,11 +216,7 @@ jobs:
 
             echo "WARNING: paper_trades.csv がGCSにありません"
 
-            printf '%s\n' \
-
-              'date,ticker,side,shares,entry,exit,return,pnl,reason,entry_time,exit_time' \
-
-              > "data/paper_trades.csv"
+            printf '%s\n' 'date,ticker,side,shares,entry,exit,return,pnl,reason,entry_time,exit_time' > "data/paper_trades.csv"
 
           fi
 
@@ -294,8 +246,6 @@ jobs:
 
             cat "data/portfolio.json"
 
-            echo ""
-
             echo "----------------------------------------"
 
           else
@@ -320,9 +270,11 @@ jobs:
 
             ls -lh "latest_result.txt"
 
-            echo ""
+            echo "----------------------------------------"
 
             cat "latest_result.txt"
+
+            echo "----------------------------------------"
 
           else
 
@@ -452,7 +404,9 @@ jobs:
 
           from: ${{ secrets.MAIL_USER }}
 
-          secure: true
+          secure: false
+
+          starttls: true
 
           body: file://latest_result.txt
 
