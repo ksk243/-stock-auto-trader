@@ -14,6 +14,16 @@ on:
 
         default: "test"
 
+  schedule:
+
+    # 12:45 JST
+
+    - cron: "45 3 * * 1-5"
+
+    # 15:45 JST
+
+    - cron: "45 6 * * 1-5"
+
 permissions:
 
   contents: write
@@ -47,6 +57,40 @@ jobs:
       - name: Checkout
 
         uses: actions/checkout@v4
+
+      - name: Determine run mode
+
+        id: mode
+
+        run: |
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+
+            MODE="${{ inputs.run_mode }}"
+
+          elif [ "${{ github.event.schedule }}" = "45 3 * * 1-5" ]; then
+
+            MODE="decision"
+
+          elif [ "${{ github.event.schedule }}" = "45 6 * * 1-5" ]; then
+
+            MODE="result"
+
+          else
+
+            echo "ERROR: run mode could not be determined"
+
+            exit 1
+
+          fi
+
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+
+          echo "========================================"
+
+          echo "RUN MODE: $MODE"
+
+          echo "========================================"
 
       - name: Authenticate to Google Cloud
 
@@ -96,7 +140,7 @@ jobs:
 
       - name: Deploy Cloud Run
 
-        run: gcloud run deploy paper-trader --image="${IMAGE}:latest" --region="${REGION}" --project="${PROJECT_ID}" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${GCS_BUCKET}" --timeout=900
+        run: gcloud run deploy paper-trader --image="${IMAGE}:latest" --region="${REGION}" --project="${PROJECT_ID}" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ steps.mode.outputs.mode }},GCS_BUCKET=${GCS_BUCKET}" --timeout=900
 
       - name: Get Cloud Run URL
 
@@ -130,6 +174,8 @@ jobs:
 
           URL="${{ steps.cloudrun.outputs.url }}"
 
+          MODE="${{ steps.mode.outputs.mode }}"
+
           echo "========================================"
 
           echo "Run Paper Trader"
@@ -138,11 +184,11 @@ jobs:
 
           echo "URL: $URL"
 
-          echo "MODE: ${{ inputs.run_mode }}"
+          echo "MODE: $MODE"
 
           echo "========================================"
 
-          curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "${URL}/run?mode=${{ inputs.run_mode }}" | tee cloud_run_result.txt
+          curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "${URL}/run?mode=${MODE}" | tee cloud_run_result.txt
 
       - name: Use current Cloud Run result
 
@@ -238,15 +284,7 @@ jobs:
 
           if [ -f "data/portfolio.json" ]; then
 
-            echo "portfolio.json exists"
-
-            echo "----------------------------------------"
-
             cat "data/portfolio.json"
-
-            echo ""
-
-            echo "----------------------------------------"
 
           else
 
@@ -268,15 +306,7 @@ jobs:
 
           if [ -f "latest_result.txt" ]; then
 
-            ls -lh "latest_result.txt"
-
-            echo "----------------------------------------"
-
             cat "latest_result.txt"
-
-            echo ""
-
-            echo "----------------------------------------"
 
           else
 
@@ -372,18 +402,6 @@ jobs:
 
           fi
 
-          echo "SMTP_HOST: 設定済み"
-
-          echo "SMTP_PORT: 設定済み"
-
-          echo "SMTP_USER: 設定済み"
-
-          echo "SMTP_PASSWORD: 設定済み"
-
-          echo "MAIL_TO: 設定済み"
-
-          echo "MAIL_USER: 設定済み"
-
           echo "メール設定はすべて存在します"
 
       - name: Send result email
@@ -400,7 +418,7 @@ jobs:
 
           password: ${{ secrets.SMTP_PASSWORD }}
 
-          subject: "v33.20 Paper Trader ${{ inputs.run_mode }}"
+          subject: "v33.20 Paper Trader ${{ steps.mode.outputs.mode }}"
 
           to: ${{ secrets.MAIL_TO }}
 
@@ -422,8 +440,6 @@ jobs:
 
           echo "========================================"
 
-          echo "送信先: MAIL_TO"
-
-          echo "件名: v33.20 Paper Trader ${{ inputs.run_mode }}"
+          echo "件名: v33.20 Paper Trader ${{ steps.mode.outputs.mode }}"
 
           echo "========================================"
