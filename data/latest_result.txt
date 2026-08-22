@@ -1,12 +1,14 @@
 12:45 判定
 現在資産: ¥1,117,792
+LONG上限: ¥1,117,792
+SHORT上限: ¥1,117,792
 LONG: なし
 SHORT: なし
 新規取引: 0件
-v33.12 END
+v33.13 END
 ================================
 Cloud Run Paper Trader END
-Sat Aug 22 09:16:34 JST 2026
+Sat Aug 22 09:25:28 JST 2026
 ================================
 Container called exit(0).
 
