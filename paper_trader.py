@@ -94,29 +94,13 @@ GCS_BUCKET = os.environ.get(
 
 )
 
-GCS_RESEARCH_PATH = (
+GCS_RESEARCH_PATH = "research/screening_history.csv"
 
-    "research/screening_history.csv"
+GCS_RESULT_PATH = "latest_result.txt"
 
-)
+GCS_PORTFOLIO_PATH = "paper_trader/portfolio.json"
 
-GCS_RESULT_PATH = (
-
-    "latest_result.txt"
-
-)
-
-GCS_PORTFOLIO_PATH = (
-
-    "paper_trader/portfolio.json"
-
-)
-
-GCS_TRADES_PATH = (
-
-    "paper_trader/paper_trades.csv"
-
-)
+GCS_TRADES_PATH = "paper_trader/paper_trades.csv"
 
 INITIAL_CAPITAL = 1_117_792
 
@@ -138,7 +122,9 @@ TP = 0.020
 
 SL = 0.015
 
-LOT_SIZE = 100
+# 1株単位で仮想取引
+
+LOT_SIZE = 1
 
 DECISION_TIME = "12:45"
 
@@ -286,11 +272,7 @@ def gcs_copy_to_local(
 
         )
 
-        if result.returncode == 0:
-
-            return True
-
-        return False
+        return result.returncode == 0
 
     except Exception:
 
@@ -1152,7 +1134,9 @@ def make_candidate(
 
             (
 
-                before["Close"] * volume
+                before["Close"]
+
+                * volume
 
             ).sum()
 
@@ -1186,7 +1170,11 @@ def make_candidate(
 
     day_return = (
 
-        close_1245 / prev_close - 1
+        close_1245
+
+        / prev_close
+
+        - 1
 
     )
 
@@ -2614,9 +2602,7 @@ def run_result():
 
             "v33.20 Paper Trader\n"
 
-            f"{target_date:%Y-%m-%d} "
-
-            "15:45 結果\n"
+            f"{target_date:%Y-%m-%d} 15:45 結果\n"
 
             "━━━━━━━━━━━━━━━━━━━━\n\n"
 
@@ -2874,9 +2860,7 @@ def run_result():
 
     lines.append(
 
-        f"{target_date:%Y-%m-%d} "
-
-        "15:45 結果"
+        f"{target_date:%Y-%m-%d} 15:45 結果"
 
     )
 
@@ -2888,7 +2872,11 @@ def run_result():
 
     lines.append("")
 
-    lines.append("【資産】")
+    lines.append(
+
+        "【資産】"
+
+    )
 
     lines.append(
 
@@ -2916,25 +2904,21 @@ def run_result():
 
     if closed:
 
+        lines.append(
+
+            "【決済】"
+
+        )
+
+        lines.append("")
+
         for trade in closed:
 
             lines.append(
 
-                f"【{trade['side']}】"
-
-            )
-
-            lines.append(
+                f"{trade['side']} "
 
                 f"{trade['ticker']}"
-
-            )
-
-            lines.append(
-
-                f"約定　　　"
-
-                f"{trade['entry']:,.1f}円"
 
             )
 
@@ -2943,6 +2927,14 @@ def run_result():
                 f"株数　　　"
 
                 f"{trade['shares']}株"
+
+            )
+
+            lines.append(
+
+                f"建値　　　"
+
+                f"{trade['entry']:,.1f}円"
 
             )
 
@@ -2998,6 +2990,8 @@ def run_result():
 
         )
 
+        lines.append("")
+
         for position in remaining:
 
             lines.append(
@@ -3005,6 +2999,14 @@ def run_result():
                 f"{position['side']} "
 
                 f"{position['ticker']}"
+
+            )
+
+            lines.append(
+
+                f"株数　　　"
+
+                f"{position['shares']}株"
 
             )
 
@@ -3018,9 +3020,17 @@ def run_result():
 
             lines.append(
 
-                f"株数　　　"
+                f"TP　　　　"
 
-                f"{position['shares']}株"
+                f"{position['tp_price']:,.1f}円"
+
+            )
+
+            lines.append(
+
+                f"SL　　　　"
+
+                f"{position['sl_price']:,.1f}円"
 
             )
 
@@ -3140,27 +3150,23 @@ def run_decision(
 
         text = (
 
-            f"12:45 "
+            "━━━━━━━━━━━━━━━━━━━━\n"
 
-            f"{'TEST' if test_mode else ''}判定\n"
+            "v33.20 Paper Trader\n"
 
-            f"判定日: "
+            "12:45 TEST判定\n"
 
-            f"{target_date:%Y-%m-%d}\n"
+            "━━━━━━━━━━━━━━━━━━━━\n\n"
 
-            f"現在資産: "
+            f"判定日　　{target_date:%Y-%m-%d}\n"
 
-            f"¥{equity:,.0f}\n"
+            f"現在資産　¥{equity:,.0f}\n\n"
 
-            "LONG: なし\n"
+            "LONG　　　なし\n"
 
-            "SHORT: なし\n"
+            "SHORT　　 なし\n\n"
 
-            "新規取引: 0件\n"
-
-            "------------------------------\n"
-
-            "判定結果: 休場日\n"
+            "判定結果　休場日\n"
 
         )
 
@@ -3444,6 +3450,18 @@ def run_decision(
 
     lines.append(
 
+        "━━━━━━━━━━━━━━━━━━━━"
+
+    )
+
+    lines.append(
+
+        "v33.20 Paper Trader"
+
+    )
+
+    lines.append(
+
         "12:45 TEST判定"
 
         if test_mode
@@ -3452,13 +3470,9 @@ def run_decision(
 
     )
 
-    lines.append("")
-
     lines.append(
 
-        f"判定日: "
-
-        f"{target_date:%Y-%m-%d}"
+        "━━━━━━━━━━━━━━━━━━━━"
 
     )
 
@@ -3466,7 +3480,13 @@ def run_decision(
 
     lines.append(
 
-        f"現在資産: ¥{equity:,.0f}"
+        f"判定日　　{target_date:%Y-%m-%d}"
+
+    )
+
+    lines.append(
+
+        f"現在資産　¥{equity:,.0f}"
 
     )
 
@@ -3482,51 +3502,49 @@ def run_decision(
 
     ]
 
+    lines.append(
+
+        "【LONG】"
+
+    )
+
     if long_positions:
 
         p = long_positions[0]
 
         lines.append(
 
-            f"LONG: {p['ticker']}"
+            f"銘柄　　　{p['ticker']}"
 
         )
 
         lines.append(
 
-            f"12:50 OPEN: "
-
-            f"{p['entry_price']:,.1f}円"
+            f"12:50約定　{p['entry_price']:,.1f}円"
 
         )
 
         lines.append(
 
-            f"株数: {p['shares']}株"
+            f"株数　　　{p['shares']}株"
 
         )
 
         lines.append(
 
-            f"建玉金額: "
-
-            f"¥{p['entry_value']:,.0f}"
+            f"建玉金額　¥{p['entry_value']:,.0f}"
 
         )
 
         lines.append(
 
-            f"TP: "
-
-            f"{p['tp_price']:,.1f}円"
+            f"TP　　　　{p['tp_price']:,.1f}円"
 
         )
 
         lines.append(
 
-            f"SL: "
-
-            f"{p['sl_price']:,.1f}円"
+            f"SL　　　　{p['sl_price']:,.1f}円"
 
         )
 
@@ -3534,7 +3552,7 @@ def run_decision(
 
         lines.append(
 
-            "LONG: なし"
+            "なし"
 
         )
 
@@ -3550,219 +3568,51 @@ def run_decision(
 
     ]
 
+    lines.append(
+
+        "【SHORT】"
+
+    )
+
     if short_positions:
 
         p = short_positions[0]
 
         lines.append(
 
-            f"SHORT: {p['ticker']}"
+            f"銘柄　　　{p['ticker']}"
 
         )
 
         lines.append(
 
-            f"12:50 OPEN: "
-
-            f"{p['entry_price']:,.1f}円"
+            f"12:50約定　{p['entry_price']:,.1f}円"
 
         )
 
         lines.append(
 
-            f"株数: {p['shares']}株"
+            f"株数　　　{p['shares']}株"
 
         )
 
         lines.append(
 
-            f"建玉金額: "
-
-            f"¥{p['entry_value']:,.0f}"
+            f"建玉金額　¥{p['entry_value']:,.0f}"
 
         )
 
         lines.append(
 
-            f"TP: "
-
-            f"{p['tp_price']:,.1f}円"
+            f"TP　　　　{p['tp_price']:,.1f}円"
 
         )
 
         lines.append(
 
-            f"SL: "
-
-            f"{p['sl_price']:,.1f}円"
+            f"SL　　　　{p['sl_price']:,.1f}円"
 
         )
-
-    else:
-
-        lines.append(
-
-            "SHORT: なし"
-
-        )
-
-    lines.append("")
-
-    lines.append(
-
-        f"新規取引: "
-
-        f"{len(new_positions)}件"
-
-    )
-
-    lines.append(
-
-        "------------------------------"
-
-    )
-
-    lines.append(
-
-        "判定状況"
-
-    )
-
-    lines.append(
-
-        f"5分足取得: "
-
-        f"{len(intraday)}/{len(TICKERS)}"
-
-    )
-
-    lines.append(
-
-        f"日足取得: "
-
-        f"{len(daily)}/{len(TICKERS)}"
-
-    )
-
-    lines.append(
-
-        f"判定対象: "
-
-        f"{target_count}銘柄"
-
-    )
-
-    lines.append("")
-
-    lines.append(
-
-        "LONG"
-
-    )
-
-    lines.append(
-
-        f"RS70以上: "
-
-        f"{long_rs_count}"
-
-    )
-
-    lines.append(
-
-        f"前場高値突破: "
-
-        f"{long_breakout_count}"
-
-    )
-
-    lines.append(
-
-        f"最終候補: "
-
-        f"{long_candidate_count}"
-
-    )
-
-    lines.append("")
-
-    lines.append(
-
-        "SHORT"
-
-    )
-
-    lines.append(
-
-        f"RS30以下: "
-
-        f"{short_rs_count}"
-
-    )
-
-    lines.append(
-
-        f"前場安値割れ: "
-
-        f"{short_breakdown_count}"
-
-    )
-
-    lines.append(
-
-        f"最終候補: "
-
-        f"{short_candidate_count}"
-
-    )
-
-    lines.append("")
-
-    lines.append(
-
-        "LONG上位候補:"
-
-    )
-
-    if not all_df.empty:
-
-        long_top = (
-
-            all_df[
-
-                all_df["long_rs_ok"]
-
-            ]
-
-            .sort_values(
-
-                "RS",
-
-                ascending=False
-
-            )
-
-            .head(3)
-
-        )
-
-        for _, r in long_top.iterrows():
-
-            lines.append(
-
-                f"{r['ticker']} "
-
-                f"RS {r['RS']:.1f} "
-
-                f"12:45 "
-
-                f"{r['close_1245']:,.1f} "
-
-                f"前場高値 "
-
-                f"{r['morning_high']:,.1f}"
-
-            )
 
     else:
 
@@ -3776,57 +3626,41 @@ def run_decision(
 
     lines.append(
 
-        "SHORT上位候補:"
+        "【判定状況】"
 
     )
 
-    if not all_df.empty:
+    lines.append(
 
-        short_top = (
+        f"5分足　　 {len(intraday)}/{len(TICKERS)}"
 
-            all_df[
+    )
 
-                all_df["short_rs_ok"]
+    lines.append(
 
-            ]
+        f"日足　　　 {len(daily)}/{len(TICKERS)}"
 
-            .sort_values(
+    )
 
-                "RS",
+    lines.append(
 
-                ascending=True
+        f"判定対象　 {target_count}銘柄"
 
-            )
+    )
 
-            .head(3)
+    lines.append("")
 
-        )
+    lines.append(
 
-        for _, r in short_top.iterrows():
+        f"LONG候補　 {long_candidate_count}"
 
-            lines.append(
+    )
 
-                f"{r['ticker']} "
+    lines.append(
 
-                f"RS {r['RS']:.1f} "
+        f"SHORT候補　{short_candidate_count}"
 
-                f"12:45 "
-
-                f"{r['close_1245']:,.1f} "
-
-                f"前場安値 "
-
-                f"{r['morning_low']:,.1f}"
-
-            )
-
-    else:
-
-        lines.append(
-
-            "なし"
-
-        )
+    )
 
     lines.append("")
 
@@ -3834,9 +3668,7 @@ def run_decision(
 
         lines.append(
 
-            f"判定結果: "
-
-            f"{len(new_positions)}件取引"
+            f"判定結果　 {len(new_positions)}件取引"
 
         )
 
@@ -3844,9 +3676,7 @@ def run_decision(
 
         lines.append(
 
-            "判定結果: "
-
-            "判定対象データなし"
+            "判定結果　 判定対象データなし"
 
         )
 
@@ -3854,43 +3684,23 @@ def run_decision(
 
         lines.append(
 
-            "判定結果: 条件一致なし"
+            "判定結果　 条件一致なし"
 
         )
 
-    lines.append(
-
-        "------------------------------"
-
-    )
-
-    lines.append(
-
-        f"研究データ保存: "
-
-        f"{len(research_df)}銘柄"
-
-    )
+    lines.append("")
 
     if test_mode:
 
         lines.append(
 
-            "TESTモード"
+            "※ TESTモード"
 
         )
 
         lines.append(
 
-            "実際のポートフォリオには"
-
-            "取引を追加していません"
-
-        )
-
-        lines.append(
-
-            "最終営業日の判定を再現しました"
+            "実際のポートフォリオには追加していません"
 
         )
 
