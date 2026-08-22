@@ -1,29 +1,15 @@
 FROM python:3.11-slim
 
-RUN apt-get update \
-
-    && apt-get install -y --no-install-recommends \
-
-    ca-certificates \
-
-    && rm -rf /var/lib/apt/lists/*
-
-RUN pip install --no-cache-dir \
-
-    yfinance \
-
-    pandas \
-
-    numpy \
-
-    google-cloud-storage
-
 WORKDIR /app
 
-COPY paper_trader.py /app/paper_trader.py
+COPY requirements.txt .
 
-COPY entrypoint.sh /entrypoint.sh
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN chmod +x /entrypoint.sh
+COPY . .
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8080
+
+CMD exec gunicorn --bind :8080 --workers 1 --threads 8 --timeout 0 paper_trader:app
