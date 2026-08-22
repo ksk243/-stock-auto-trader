@@ -4,8 +4,6 @@ set -e
 
 export TZ=Asia/Tokyo
 
-export RUN_MODE=auto
-
 echo "================================"
 
 echo "Cloud Run Paper Trader START"
