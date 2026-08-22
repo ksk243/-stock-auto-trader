@@ -132,6 +132,8 @@ jobs:
 
       - name: Configure Docker
 
+        shell: bash
+
         run: |
 
           gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
@@ -150,7 +152,7 @@ jobs:
 
           echo "================================"
 
-          echo "DOCKER BUILD"
+          echo "DOCKER BUILD START"
 
           echo "================================"
 
@@ -176,7 +178,7 @@ jobs:
 
           echo "================================"
 
-          echo "DOCKER PUSH"
+          echo "DOCKER PUSH START"
 
           echo "================================"
 
@@ -200,19 +202,19 @@ jobs:
 
         run: |
 
-          gcloud run jobs deploy v33-16-paper-trader \
+          echo "================================"
 
-            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest \
+          echo "CLOUD RUN DEPLOY START"
 
-            --region=asia-northeast1 \
+          echo "================================"
 
-            --project=stock-auto-trader-506100 \
+          gcloud run jobs deploy v33-16-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest --region=asia-northeast1 --project=stock-auto-trader-506100 --tasks=1 --max-retries=1 --set-env-vars="RUN_MODE=$RUN_MODE"
 
-            --tasks=1 \
+          echo "================================"
 
-            --max-retries=1 \
+          echo "CLOUD RUN DEPLOY COMPLETE"
 
-            --set-env-vars="RUN_MODE=$RUN_MODE"
+          echo "================================"
 
       # =====================================================
 
@@ -228,21 +230,15 @@ jobs:
 
           echo "================================"
 
-          echo "CLOUD RUN EXECUTE"
+          echo "CLOUD RUN EXECUTE START"
 
           echo "================================"
 
-          gcloud run jobs execute v33-16-paper-trader \
-
-            --region=asia-northeast1 \
-
-            --project=stock-auto-trader-506100 \
-
-            --wait
+          gcloud run jobs execute v33-16-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --wait
 
           echo "================================"
 
-          echo "CLOUD RUN COMPLETE"
+          echo "CLOUD RUN EXECUTE COMPLETE"
 
           echo "================================"
 
@@ -258,23 +254,7 @@ jobs:
 
         run: |
 
-          EXECUTION_NAME=$(
-
-            gcloud run jobs executions list \
-
-              --job=v33-16-paper-trader \
-
-              --region=asia-northeast1 \
-
-              --project=stock-auto-trader-506100 \
-
-              --sort-by="~createTime" \
-
-              --limit=1 \
-
-              --format="value(metadata.name)"
-
-          )
+          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-16-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
 
           echo "EXECUTION_NAME=$EXECUTION_NAME"
 
@@ -300,19 +280,7 @@ jobs:
 
           echo "================================"
 
-          gcloud logging read \
-
-            "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-16-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" \
-
-            --project=stock-auto-trader-506100 \
-
-            --limit=1000 \
-
-            --order=asc \
-
-            --format="value(textPayload)" \
-
-            > data/cloud_run_raw.txt
+          gcloud logging read "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-16-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" --project=stock-auto-trader-506100 --limit=1000 --order=asc --format="value(textPayload)" > data/cloud_run_raw.txt
 
           cat data/cloud_run_raw.txt
 
