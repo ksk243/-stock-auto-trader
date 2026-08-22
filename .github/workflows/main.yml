@@ -148,13 +148,19 @@ jobs:
 
         run: |
 
-          docker build \
+          echo "================================"
 
-            --no-cache \
+          echo "DOCKER BUILD"
 
-            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest \
+          echo "================================"
 
-            .
+          docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest .
+
+          echo "================================"
+
+          echo "DOCKER BUILD COMPLETE"
+
+          echo "================================"
 
       # =====================================================
 
@@ -164,11 +170,23 @@ jobs:
 
       - name: Push Docker Image
 
+        shell: bash
+
         run: |
 
-          docker push \
+          echo "================================"
 
-            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest
+          echo "DOCKER PUSH"
+
+          echo "================================"
+
+          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest
+
+          echo "================================"
+
+          echo "DOCKER PUSH COMPLETE"
+
+          echo "================================"
 
       # =====================================================
 
@@ -204,7 +222,15 @@ jobs:
 
       - name: Run Cloud Run Job
 
+        shell: bash
+
         run: |
+
+          echo "================================"
+
+          echo "CLOUD RUN EXECUTE"
+
+          echo "================================"
 
           gcloud run jobs execute v33-16-paper-trader \
 
@@ -213,6 +239,12 @@ jobs:
             --project=stock-auto-trader-506100 \
 
             --wait
+
+          echo "================================"
+
+          echo "CLOUD RUN COMPLETE"
+
+          echo "================================"
 
       # =====================================================
 
