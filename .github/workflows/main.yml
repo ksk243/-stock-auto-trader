@@ -150,13 +150,7 @@ jobs:
 
         run: |
 
-          docker build \
-
-            --no-cache \
-
-            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest \
-
-            .
+          docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest .
 
       # =====================================================
 
@@ -168,9 +162,7 @@ jobs:
 
         run: |
 
-          docker push \
-
-            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest
+          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest
 
       # =====================================================
 
@@ -210,7 +202,7 @@ jobs:
 
           echo "================================"
 
-          echo "EXECUTING CLOUD RUN"
+          echo "CLOUD RUN EXECUTE"
 
           echo "RUN_MODE=$RUN_MODE"
 
@@ -300,12 +292,6 @@ jobs:
 
           echo "================================"
 
-          # =================================================
-
-          # decision
-
-          # =================================================
-
           if [ "$RUN_MODE" = "decision" ]; then
 
             awk '
@@ -332,12 +318,6 @@ jobs:
 
             > data/latest_result.txt
 
-          # =================================================
-
-          # result
-
-          # =================================================
-
           elif [ "$RUN_MODE" = "result" ]; then
 
             awk '
@@ -363,12 +343,6 @@ jobs:
             ' data/cloud_run_raw.txt \
 
             > data/latest_result.txt
-
-          # =================================================
-
-          # test
-
-          # =================================================
 
           elif [ "$RUN_MODE" = "test" ]; then
 
@@ -444,13 +418,11 @@ jobs:
 
       #
 
-      # testは実績データを変更しない
+      # testでも判定結果を保存する
 
       # =====================================================
 
       - name: Save Result
-
-        if: ${{ inputs.run_mode != 'test' || github.event_name != 'workflow_dispatch' }}
 
         shell: bash
 
