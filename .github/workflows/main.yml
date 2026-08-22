@@ -36,13 +36,15 @@ on:
 
 # ============================================================
 
-# GitHubへCSVを書き戻すため
+# GitHub Actions permissions
 
 # ============================================================
 
 permissions:
 
   contents: write
+
+  id-token: write
 
 # ============================================================
 
@@ -62,7 +64,13 @@ env:
 
   IMAGE: asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-20:latest
 
-  GCS_BUCKET: stock-auto-trader-506100-paper-data
+  GCS_BUCKET: stock-auto-trader-506100-paper
+
+# ============================================================
+
+# JOB
+
+# ============================================================
 
 jobs:
 
@@ -94,7 +102,9 @@ jobs:
 
       #
 
-      # ここは現在使用している認証方式に合わせる
+      # Workload Identity Federation
+
+      # GitHub Actions → Google Cloud
 
       # ======================================================
 
@@ -104,7 +114,9 @@ jobs:
 
         with:
 
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: projects/913714190884/locations/global/workloadIdentityPools/GitHub-pool/providers/github
+
+          service_account: 913714190884-compute@developer.gserviceaccount.com
 
       # ======================================================
 
@@ -184,10 +196,6 @@ jobs:
 
       # 7. GCS bucket確認
 
-      #
-
-      # 初回のみ作成
-
       # ======================================================
 
       - name: Ensure GCS bucket
@@ -220,10 +228,6 @@ jobs:
 
       # 8. Cloud Run Job Deploy
 
-      #
-
-      # --image を必ず明示
-
       # ======================================================
 
       - name: Deploy Cloud Run Job
@@ -239,6 +243,8 @@ jobs:
           echo "JOB_NAME=${JOB_NAME}"
 
           echo "REGION=${REGION}"
+
+          echo "GCS_BUCKET=${GCS_BUCKET}"
 
           echo "================================"
 
@@ -298,10 +304,6 @@ jobs:
 
       # 10. Cloud Run Job Execute
 
-      #
-
-      # --region を必ず指定
-
       # ======================================================
 
       - name: Execute Cloud Run Job
@@ -317,6 +319,8 @@ jobs:
           echo "REGION=${REGION}"
 
           echo "JOB_NAME=${JOB_NAME}"
+
+          echo "GCS_BUCKET=${GCS_BUCKET}"
 
           echo "================================"
 
