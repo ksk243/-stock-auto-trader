@@ -68,45 +68,173 @@ jobs:
 
       - name: Configure Docker
 
-        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+        run: |
+
+          gcloud auth configure-docker \
+
+            ${{ env.REGION }}-docker.pkg.dev \
+
+            --quiet
 
       - name: Create Artifact Registry
 
-        run: gcloud artifacts repositories describe "$REPOSITORY" --location="$REGION" --project="$PROJECT_ID" >/dev/null 2>&1 || gcloud artifacts repositories create "$REPOSITORY" --repository-format=docker --location="$REGION" --project="$PROJECT_ID" --description="Paper Trader Docker Repository"
+        run: |
+
+          gcloud artifacts repositories describe \
+
+            "$REPOSITORY" \
+
+            --location="$REGION" \
+
+            --project="$PROJECT_ID" \
+
+            >/dev/null 2>&1 || \
+
+          gcloud artifacts repositories create \
+
+            "$REPOSITORY" \
+
+            --repository-format=docker \
+
+            --location="$REGION" \
+
+            --project="$PROJECT_ID" \
+
+            --description="Paper Trader Docker Repository"
 
       - name: Docker Build
 
-        run: docker build -t "$IMAGE:latest" .
+        run: |
+
+          docker build \
+
+            -t "$IMAGE:latest" \
+
+            .
 
       - name: Docker Push
 
-        run: docker push "$IMAGE:latest"
+        run: |
 
-      - name: Deploy Cloud Run
+          docker push "$IMAGE:latest"
 
-        run: gcloud run deploy paper-trader --image="$IMAGE:latest" --region="$REGION" --project="$PROJECT_ID" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=$GCS_BUCKET"
+      - name: Create Cloud Run environment file
 
-      - name: Wait for Cloud Run
+        env:
 
-        run: sleep 10
+          RUN_MODE: ${{ inputs.run_mode }}
 
-      - name: Get Cloud Run result
+          GCS_BUCKET: ${{ env.GCS_BUCKET }}
+
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+
+          MAIL_TO: ${{ secrets.MAIL_TO }}
 
         run: |
 
-          mkdir -p data
+          cat > cloud-run-env.yaml <<EOF
 
-          gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="paper-trader"' --project="$PROJECT_ID" --limit=500 --format="value(textPayload)" > data/cloud_run_log.txt || true
+          RUN_MODE: "$RUN_MODE"
 
-      - name: Download research data
+          GCS_BUCKET: "$GCS_BUCKET"
+
+          SMTP_HOST: "$SMTP_HOST"
+
+          SMTP_PORT: "$SMTP_PORT"
+
+          SMTP_USER: "$SMTP_USER"
+
+          SMTP_PASSWORD: "$SMTP_PASSWORD"
+
+          MAIL_USER: "$MAIL_USER"
+
+          MAIL_PASS: "$MAIL_PASS"
+
+          MAIL_TO: "$MAIL_TO"
+
+          EOF
+
+      - name: Deploy Cloud Run
+
+        run: |
+
+          gcloud run deploy paper-trader \
+
+            --image="$IMAGE:latest" \
+
+            --region="$REGION" \
+
+            --project="$PROJECT_ID" \
+
+            --platform=managed \
+
+            --allow-unauthenticated \
+
+            --env-vars-file=cloud-run-env.yaml
+
+      - name: Get Cloud Run URL
+
+        id: cloudrun
+
+        run: |
+
+          URL=$(gcloud run services describe paper-trader \
+
+            --region="$REGION" \
+
+            --project="$PROJECT_ID" \
+
+            --format="value(status.url)")
+
+          echo "URL=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Run Paper Trader
+
+        run: |
+
+          URL="${{ steps.cloudrun.outputs.URL }}/run"
+
+          echo "Calling:"
+
+          echo "$URL"
+
+          curl \
+
+            --fail \
+
+            --show-error \
+
+            --silent \
+
+            --max-time 900 \
+
+            "$URL"
+
+          echo
+
+      - name: Download latest research data
 
         run: |
 
           mkdir -p data/research
 
-          rm -f data/research/screening_history.csv
+          gcloud storage cp \
 
-          gcloud storage cp "gs://$GCS_BUCKET/research/screening_history.csv" "data/research/screening_history.csv" || true
+            "gs://$GCS_BUCKET/research/screening_history.csv" \
+
+            "data/research/screening_history.csv" \
+
+            || true
 
       - name: Download latest result
 
@@ -114,7 +242,13 @@ jobs:
 
           mkdir -p data
 
-          gcloud storage cp "gs://$GCS_BUCKET/latest_result.txt" "data/latest_result.txt" || true
+          gcloud storage cp \
+
+            "gs://$GCS_BUCKET/latest_result.txt" \
+
+            "data/latest_result.txt" \
+
+            || true
 
       - name: Save research data to GitHub
 
@@ -124,62 +258,26 @@ jobs:
 
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add -A data/
+          if [ -f data/research/screening_history.csv ]; then
 
-          git diff --cached --quiet || git commit -m "Update Paper Trader data"
-
-          git push || true
-
-      - name: Prepare email
-
-        run: |
-
-          if [ -f data/latest_result.txt ]; then
-
-            cp data/latest_result.txt email_body.txt
-
-          elif [ -f data/cloud_run_log.txt ]; then
-
-            cp data/cloud_run_log.txt email_body.txt
-
-          else
-
-            echo "Paper Trader result not found." > email_body.txt
+            git add data/research/screening_history.csv
 
           fi
 
-      - name: Send email
+          if [ -f data/latest_result.txt ]; then
 
-        uses: dawidd6/action-send-mail@v3
+            git add data/latest_result.txt
 
-        with:
+          fi
 
-          server_address: ${{ secrets.SMTP_HOST }}
+          if git diff --cached --quiet; then
 
-          server_port: ${{ secrets.SMTP_PORT }}
+            echo "No data changes"
 
-          username: ${{ secrets.SMTP_USER }}
+          else
 
-          password: ${{ secrets.SMTP_PASSWORD }}
+            git commit -m "Update paper trader data"
 
-          subject: "v33.20 Paper Trader - ${{ inputs.run_mode }}"
+            git push
 
-          to: ${{ secrets.MAIL_TO }}
-
-          from: ${{ secrets.MAIL_USER }}
-
-          body: file://email_body.txt
-
-      - name: End
-
-        run: |
-
-          echo "================================"
-
-          echo "v33.20 Paper Trader END"
-
-          echo "================================"
-
-          echo "RUN_MODE: ${{ inputs.run_mode }}"
-
-          echo "================================"
+          fi
