@@ -145,11 +145,20 @@ jobs:
           echo "========================================"
 
           curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "${URL}/run?mode=${{ inputs.run_mode }}" | tee cloud_run_result.txt
-
-      - name: Download result files from GCS
+      - name: Use current Cloud Run result
 
         run: |
 
+          cp cloud_run_result.txt latest_result.txt
+
+          echo "========================================"
+
+          echo "Current result"
+
+          echo "========================================"
+
+          cat latest_result.txt    
+          
           mkdir -p data/research
 
           echo "========================================"
