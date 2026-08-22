@@ -1,4 +1,4 @@
-name: v33.18 Paper Trader
+name: v33.20 Paper Trader
 
 on:
 
@@ -8,9 +8,11 @@ on:
 
       run_mode:
 
-        description: "実行モード"
+        description: "decision / result / test"
 
         required: true
+
+        default: "test"
 
         type: choice
 
@@ -22,181 +24,125 @@ on:
 
           - test
 
-        default: decision
-
   schedule:
 
-    # 12:45 JST
+    # 12:45 JST = 03:45 UTC
 
     - cron: "45 3 * * 1-5"
 
-    # 15:45 JST
+    # 15:45 JST = 06:45 UTC
 
     - cron: "45 6 * * 1-5"
 
+# ============================================================
+
+# GitHubへCSVを書き戻すため
+
+# ============================================================
+
+permissions:
+
+  contents: write
+
+# ============================================================
+
+# ENV
+
+# ============================================================
+
+env:
+
+  PROJECT_ID: stock-auto-trader-506100
+
+  REGION: asia-northeast1
+
+  JOB_NAME: v33-20-paper-trader
+
+  REPOSITORY: stock-auto-trader
+
+  IMAGE: asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-20:latest
+
+  GCS_BUCKET: stock-auto-trader-506100-paper-data
+
 jobs:
 
-  deploy-and-run:
+  paper-trader:
 
     runs-on: ubuntu-latest
 
     timeout-minutes: 30
 
-    permissions:
-
-      contents: write
-
-      id-token: write
-
     steps:
 
-      # =====================================================
+      # ======================================================
 
-      # CHECKOUT
+      # 1. Checkout
 
-      # =====================================================
+      # ======================================================
 
-      - name: Checkout
+      - name: Checkout repository
 
-        uses: actions/checkout@v4
-
-      # =====================================================
-
-      # RUN MODE
-
-      # =====================================================
-
-      - name: Set RUN_MODE
-
-        shell: bash
-
-        run: |
-
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-
-            RUN_MODE="${{ inputs.run_mode }}"
-
-          else
-
-            HOUR=$(TZ=Asia/Tokyo date +%H)
-
-            if [ "$HOUR" = "12" ]; then
-
-              RUN_MODE="decision"
-
-            else
-
-              RUN_MODE="result"
-
-            fi
-
-          fi
-
-          echo "RUN_MODE=$RUN_MODE" >> "$GITHUB_ENV"
-
-          echo "================================"
-
-          echo "RUN_MODE=$RUN_MODE"
-
-          echo "================================"
-
-      # =====================================================
-
-      # GOOGLE CLOUD AUTH
-
-      # =====================================================
-
-      - name: Google Cloud Auth
-
-        uses: google-github-actions/auth@v2
+        uses: actions/checkout@v6
 
         with:
 
-          workload_identity_provider: "projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github"
+          fetch-depth: 0
 
-          service_account: "github-actions@stock-auto-trader-506100.iam.gserviceaccount.com"
+      # ======================================================
 
-      # =====================================================
+      # 2. Google Cloud Authentication
 
-      # SETUP GCLOUD
+      #
 
-      # =====================================================
+      # ここは現在使用している認証方式に合わせる
 
-      - name: Setup gcloud
+      # ======================================================
 
-        uses: google-github-actions/setup-gcloud@v2
+      - name: Authenticate to Google Cloud
 
-      # =====================================================
+        uses: google-github-actions/auth@v3
 
-      # GOOGLE CLOUD PROJECT
+        with:
 
-      # =====================================================
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Set Google Cloud Project
+      # ======================================================
 
-        shell: bash
+      # 3. Setup gcloud
 
-        run: |
+      # ======================================================
 
-          gcloud config set project stock-auto-trader-506100
+      - name: Setup Google Cloud CLI
 
-          echo "================================"
+        uses: google-github-actions/setup-gcloud@v3
 
-          echo "PROJECT"
+        with:
 
-          echo "================================"
+          project_id: ${{ env.PROJECT_ID }}
 
-          gcloud config get-value project
+      # ======================================================
 
-      # =====================================================
+      # 4. Docker authentication
 
-      # CHECK CLOUD RUN JOBS
-
-      # =====================================================
-
-      - name: Check Cloud Run Jobs
-
-        shell: bash
-
-        run: |
-
-          echo "================================"
-
-          echo "CLOUD RUN JOBS"
-
-          echo "================================"
-
-          gcloud run jobs list --region=asia-northeast1 --project=stock-auto-trader-506100
-
-      # =====================================================
-
-      # DOCKER AUTH
-
-      # =====================================================
+      # ======================================================
 
       - name: Configure Docker
 
-        shell: bash
-
         run: |
 
-          echo "================================"
+          gcloud auth configure-docker \
 
-          echo "DOCKER AUTH"
+            asia-northeast1-docker.pkg.dev \
 
-          echo "================================"
+            --quiet
 
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+      # ======================================================
 
-      # =====================================================
+      # 5. Docker build
 
-      # DOCKER BUILD
+      # ======================================================
 
-      # =====================================================
-
-      - name: Build Docker Image
-
-        shell: bash
+      - name: Build Docker image
 
         run: |
 
@@ -204,19 +150,23 @@ jobs:
 
           echo "DOCKER BUILD"
 
+          echo "IMAGE=${IMAGE}"
+
           echo "================================"
 
-          docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest .
+          docker build \
 
-      # =====================================================
+            -t "${IMAGE}" \
 
-      # DOCKER PUSH
+            .
 
-      # =====================================================
+      # ======================================================
 
-      - name: Push Docker Image
+      # 6. Docker push
 
-        shell: bash
+      # ======================================================
+
+      - name: Push Docker image
 
         run: |
 
@@ -224,39 +174,59 @@ jobs:
 
           echo "DOCKER PUSH"
 
+          echo "IMAGE=${IMAGE}"
+
           echo "================================"
 
-          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest
+          docker push "${IMAGE}"
 
-      # =====================================================
+      # ======================================================
 
-      # VERIFY IMAGE
+      # 7. GCS bucket確認
 
-      # =====================================================
+      #
 
-      - name: Verify Docker Image
+      # 初回のみ作成
 
-        shell: bash
+      # ======================================================
+
+      - name: Ensure GCS bucket
 
         run: |
 
-          echo "================================"
+          if gcloud storage buckets describe \
 
-          echo "VERIFY IMAGE"
+            "gs://${GCS_BUCKET}" \
 
-          echo "================================"
+            >/dev/null 2>&1; then
 
-          gcloud artifacts docker images describe asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest --project=stock-auto-trader-506100
+            echo "GCS bucket already exists."
 
-      # =====================================================
+          else
 
-      # CLOUD RUN DEPLOY
+            echo "Creating GCS bucket..."
 
-      # =====================================================
+            gcloud storage buckets create \
+
+              "gs://${GCS_BUCKET}" \
+
+              --location="${REGION}" \
+
+              --project="${PROJECT_ID}"
+
+          fi
+
+      # ======================================================
+
+      # 8. Cloud Run Job Deploy
+
+      #
+
+      # --image を必ず明示
+
+      # ======================================================
 
       - name: Deploy Cloud Run Job
-
-        shell: bash
 
         run: |
 
@@ -264,29 +234,77 @@ jobs:
 
           echo "CLOUD RUN DEPLOY"
 
-          echo "================================"
+          echo "IMAGE=${IMAGE}"
 
-          echo "JOB=v33-18-paper-trader"
+          echo "JOB_NAME=${JOB_NAME}"
 
-          echo "REGION=asia-northeast1"
-
-          echo "RUN_MODE=$RUN_MODE"
-
-          echo "IMAGE=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest"
+          echo "REGION=${REGION}"
 
           echo "================================"
 
-          gcloud run jobs deploy v33-18-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest --region=asia-northeast1 --project=stock-auto-trader-506100 --tasks=1 --max-retries=1 --set-env-vars="RUN_MODE=$RUN_MODE"
+          gcloud run jobs deploy "${JOB_NAME}" \
 
-      # =====================================================
+            --image="${IMAGE}" \
 
-      # CLOUD RUN EXECUTE
+            --region="${REGION}" \
 
-      # =====================================================
+            --project="${PROJECT_ID}" \
 
-      - name: Run Cloud Run Job
+            --set-env-vars="GCS_BUCKET=${GCS_BUCKET}"
+
+      # ======================================================
+
+      # 9. RUN_MODE決定
+
+      # ======================================================
+
+      - name: Determine RUN_MODE
+
+        id: mode
 
         shell: bash
+
+        run: |
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+
+            MODE="${{ github.event.inputs.run_mode }}"
+
+          else
+
+            HOUR=$(TZ=Asia/Tokyo date +%H)
+
+            MINUTE=$(TZ=Asia/Tokyo date +%M)
+
+            TOTAL=$((10#$HOUR * 60 + 10#$MINUTE))
+
+            if [ "$TOTAL" -lt 840 ]; then
+
+              MODE="decision"
+
+            else
+
+              MODE="result"
+
+            fi
+
+          fi
+
+          echo "RUN_MODE=${MODE}"
+
+          echo "run_mode=${MODE}" >> "$GITHUB_OUTPUT"
+
+      # ======================================================
+
+      # 10. Cloud Run Job Execute
+
+      #
+
+      # --region を必ず指定
+
+      # ======================================================
+
+      - name: Execute Cloud Run Job
 
         run: |
 
@@ -294,274 +312,166 @@ jobs:
 
           echo "RUNNING CLOUD RUN JOB"
 
-          echo "================================"
+          echo "RUN_MODE=${{ steps.mode.outputs.run_mode }}"
 
-          echo "RUN_MODE=$RUN_MODE"
+          echo "REGION=${REGION}"
 
-          echo "REGION=asia-northeast1"
-
-          echo "JOB=v33-18-paper-trader"
+          echo "JOB_NAME=${JOB_NAME}"
 
           echo "================================"
 
-          gcloud run jobs execute v33-18-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --wait
+          gcloud run jobs execute "${JOB_NAME}" \
 
-      # =====================================================
+            --region="${REGION}" \
 
-      # GET LATEST EXECUTION
+            --project="${PROJECT_ID}" \
 
-      # =====================================================
+            --update-env-vars="RUN_MODE=${{ steps.mode.outputs.run_mode }}" \
 
-      - name: Get Latest Execution
+            --wait
 
-        shell: bash
+      # ======================================================
+
+      # 11. GCSから研究CSV取得
+
+      # ======================================================
+
+      - name: Download research CSV
 
         run: |
 
           echo "================================"
 
-          echo "GET LATEST EXECUTION"
+          echo "DOWNLOAD RESEARCH CSV"
 
           echo "================================"
 
-          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-18-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
+          mkdir -p data/research
 
-          if [ -z "$EXECUTION_NAME" ]; then
+          if gcloud storage cp \
 
-            echo "ERROR: Execution not found."
+            "gs://${GCS_BUCKET}/research/screening_history.csv" \
 
-            exit 1
+            "data/research/screening_history.csv"; then
 
-          fi
-
-          echo "EXECUTION_NAME=$EXECUTION_NAME"
-
-          echo "EXECUTION_NAME=$EXECUTION_NAME" >> "$GITHUB_ENV"
-
-      # =====================================================
-
-      # GET CLOUD RUN LOG
-
-      # =====================================================
-
-      - name: Get Cloud Run Result
-
-        shell: bash
-
-        run: |
-
-          mkdir -p data
-
-          echo "================================"
-
-          echo "CLOUD RUN LOG"
-
-          echo "================================"
-
-          gcloud logging read "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-18-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" --project=stock-auto-trader-506100 --limit=1000 --order=asc --format="value(textPayload)" > data/cloud_run_raw.txt
-
-          cat data/cloud_run_raw.txt
-
-          echo "================================"
-
-          echo "EXTRACT RESULT"
-
-          echo "================================"
-
-          # =================================================
-
-          # DECISION
-
-          # =================================================
-
-          if [ "$RUN_MODE" = "decision" ]; then
-
-            awk '
-
-              /12:45 判定/ {
-
-                found=1
-
-              }
-
-              found {
-
-                print
-
-              }
-
-              found && /v33\.18 END/ {
-
-                exit
-
-              }
-
-            ' data/cloud_run_raw.txt > data/latest_result.txt
-
-          # =================================================
-
-          # RESULT
-
-          # =================================================
-
-          elif [ "$RUN_MODE" = "result" ]; then
-
-            awk '
-
-              /15:45 結果/ {
-
-                found=1
-
-              }
-
-              found {
-
-                print
-
-              }
-
-              found && /v33\.18 END/ {
-
-                exit
-
-              }
-
-            ' data/cloud_run_raw.txt > data/latest_result.txt
-
-          # =================================================
-
-          # TEST
-
-          # =================================================
-
-          elif [ "$RUN_MODE" = "test" ]; then
-
-            awk '
-
-              /12:45 TEST判定/ {
-
-                found=1
-
-              }
-
-              found {
-
-                print
-
-              }
-
-              found && /v33\.18 END/ {
-
-                exit
-
-              }
-
-            ' data/cloud_run_raw.txt > data/latest_result.txt
-
-          fi
-
-      # =====================================================
-
-      # CHECK RESULT
-
-      # =====================================================
-
-      - name: Check Result
-
-        shell: bash
-
-        run: |
-
-          echo "================================"
-
-          echo "LATEST RESULT"
-
-          echo "================================"
-
-          echo "RUN_MODE=$RUN_MODE"
-
-          echo
-
-          if [ -s data/latest_result.txt ]; then
-
-            cat data/latest_result.txt
+            echo "Research CSV downloaded."
 
           else
 
-            echo "結果を取得できませんでした。"
+            echo "Research CSV not found."
 
-            echo
+            echo "Creating empty CSV directory."
 
-            echo "RUN_MODE=$RUN_MODE"
+          fi
 
-            echo
+      # ======================================================
 
-            echo "CLOUD RUN RAW LOG:"
+      # 12. Git status
 
-            cat data/cloud_run_raw.txt
+      # ======================================================
 
-            exit 1
+      - name: Check generated data
+
+        run: |
+
+          echo "================================"
+
+          echo "GENERATED DATA"
+
+          echo "================================"
+
+          if [ -f data/research/screening_history.csv ]; then
+
+            echo "CSV exists."
+
+            wc -l data/research/screening_history.csv
+
+            ls -lh data/research/screening_history.csv
+
+          else
+
+            echo "CSV does not exist."
 
           fi
 
           echo "================================"
 
-      # =====================================================
+          echo "GIT STATUS"
 
-      # SAVE RESULT
+          echo "================================"
 
-      # =====================================================
+          git status --short
 
-      - name: Save Result
+      # ======================================================
 
-        shell: bash
+      # 13. GitHubへ保存
+
+      # ======================================================
+
+      - name: Commit research CSV
 
         run: |
 
-          rm -f data/cloud_run_raw.txt
+          echo "================================"
 
-          git config user.name "github-actions[bot]"
+          echo "SAVE RESEARCH DATA TO GITHUB"
 
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          echo "================================"
 
-          git add data/latest_result.txt
+          git config user.name \
 
-          if ! git diff --cached --quiet; then
+            "github-actions[bot]"
 
-            git commit -m "Update v33.18 result"
+          git config user.email \
+
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add \
+
+            data/research/screening_history.csv
+
+          if git diff --cached --quiet; then
+
+            echo "No research data changes."
+
+          else
+
+            git commit \
+
+              -m "data: update v33.20 screening history"
 
             git push
 
-          else
-
-            echo "No result changes"
+            echo "Research CSV committed to GitHub."
 
           fi
 
-      # =====================================================
+      # ======================================================
 
-      # SEND EMAIL
+      # 14. 終了
 
-      # =====================================================
+      # ======================================================
 
-      - name: Send Email
+      - name: Final status
 
-        uses: dawidd6/action-send-mail@v3
+        run: |
 
-        with:
+          echo "================================"
 
-          server_address: smtp.mail.me.com
+          echo "v33.20 PAPER TRADER END"
 
-          server_port: 587
+          echo "================================"
 
-          username: ${{ secrets.MAIL_USER }}
+          echo "RUN_MODE=${{ steps.mode.outputs.run_mode }}"
 
-          password: ${{ secrets.MAIL_PASS }}
+          echo "CSV:"
 
-          subject: "v33.18 Paper Trader"
+          echo "data/research/screening_history.csv"
 
-          to: ${{ secrets.MAIL_TO }}
+          if [ -f data/research/screening_history.csv ]; then
 
-          from: ${{ secrets.MAIL_USER }}
+            echo "Rows:"
 
-          body: file://data/latest_result.txt
+            wc -l data/research/screening_history.csv
+
+          fi
