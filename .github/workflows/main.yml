@@ -124,13 +124,61 @@ jobs:
 
           mkdir -p data/research
 
-          gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"
+          echo "========================================"
 
-          gcloud storage cp "gs://${GCS_BUCKET}/latest_result.txt" "latest_result.txt"
+          echo "GCS result files"
 
-          gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/portfolio.json" "data/portfolio.json"
+          echo "========================================"
 
-          gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/paper_trades.csv" "data/paper_trades.csv" || true
+          if gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"; then
+
+            echo "screening_history.csv: downloaded"
+
+          else
+
+            echo "WARNING: screening_history.csv がGCSにありません"
+
+            echo "空のファイルを作成して処理を継続します"
+
+            touch "data/research/screening_history.csv"
+
+          fi
+
+          if gcloud storage cp "gs://${GCS_BUCKET}/latest_result.txt" "latest_result.txt"; then
+
+            echo "latest_result.txt: downloaded"
+
+          else
+
+            echo "ERROR: latest_result.txt がGCSにありません"
+
+            exit 1
+
+          fi
+
+          if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/portfolio.json" "data/portfolio.json"; then
+
+            echo "portfolio.json: downloaded"
+
+          else
+
+            echo "ERROR: portfolio.json がGCSにありません"
+
+            exit 1
+
+          fi
+
+          if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/paper_trades.csv" "data/paper_trades.csv"; then
+
+            echo "paper_trades.csv: downloaded"
+
+          else
+
+            echo "WARNING: paper_trades.csv がGCSにありません"
+
+            touch "data/paper_trades.csv"
+
+          fi
 
       - name: Check result file
 
