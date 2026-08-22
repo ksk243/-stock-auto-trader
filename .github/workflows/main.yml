@@ -140,7 +140,9 @@ jobs:
 
       - name: Deploy Cloud Run
 
-        run: gcloud run deploy paper-trader --image="${IMAGE}:latest" --region="${REGION}" --project="${PROJECT_ID}" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ steps.mode.outputs.mode }},GCS_BUCKET=${GCS_BUCKET}" --timeout=900
+        run: |
+
+          gcloud run deploy paper-trader --image="${IMAGE}:latest" --region="${REGION}" --project="${PROJECT_ID}" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ steps.mode.outputs.mode }},GCS_BUCKET=${GCS_BUCKET}" --timeout=900
 
       - name: Get Cloud Run URL
 
@@ -234,6 +236,22 @@ jobs:
 
           echo ""
 
+          echo "intraday_history.csv"
+
+          if gcloud storage cp "gs://${GCS_BUCKET}/research/intraday_history.csv" "data/research/intraday_history.csv"; then
+
+            echo "intraday_history.csv downloaded"
+
+          else
+
+            echo "WARNING: intraday_history.csv がGCSにありません"
+
+            printf '%s\n' 'date,datetime,ticker,open,high,low,close,volume' > "data/research/intraday_history.csv"
+
+          fi
+
+          echo ""
+
           echo "portfolio.json"
 
           if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/portfolio.json" "data/portfolio.json"; then
@@ -271,6 +289,52 @@ jobs:
           echo "GCS download completed"
 
           echo "========================================"
+
+      - name: Check research files
+
+        run: |
+
+          echo "========================================"
+
+          echo "Research files"
+
+          echo "========================================"
+
+          echo ""
+
+          echo "screening_history.csv"
+
+          if [ -f "data/research/screening_history.csv" ]; then
+
+            wc -l "data/research/screening_history.csv"
+
+            ls -lh "data/research/screening_history.csv"
+
+          else
+
+            echo "ERROR: screening_history.csv が存在しません"
+
+            exit 1
+
+          fi
+
+          echo ""
+
+          echo "intraday_history.csv"
+
+          if [ -f "data/research/intraday_history.csv" ]; then
+
+            wc -l "data/research/intraday_history.csv"
+
+            ls -lh "data/research/intraday_history.csv"
+
+          else
+
+            echo "ERROR: intraday_history.csv が存在しません"
+
+            exit 1
+
+          fi
 
       - name: Check portfolio
 
@@ -325,6 +389,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add "data/research/screening_history.csv"
+
+          git add "data/research/intraday_history.csv"
 
           git add "data/portfolio.json"
 
@@ -402,7 +468,17 @@ jobs:
 
           fi
 
-          echo "メール設定はすべて存在します"
+          echo "SMTP_HOST: 設定済み"
+
+          echo "SMTP_PORT: 設定済み"
+
+          echo "SMTP_USER: 設定済み"
+
+          echo "SMTP_PASSWORD: 設定済み"
+
+          echo "MAIL_TO: 設定済み"
+
+          echo "MAIL_USER: 設定済み"
 
       - name: Send result email
 
