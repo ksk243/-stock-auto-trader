@@ -1,26 +1,3 @@
-  - name: Send result email
-
-        uses: dawidd6/action-send-mail@v3
-
-        with:
-
-          server_address: ${{ secrets.SMTP_HOST }}
-
-          server_port: ${{ secrets.SMTP_PORT }}
-
-          username: ${{ secrets.SMTP_USER }}
-
-          password: ${{ secrets.SMTP_PASSWORD }}
-
-          subject: "v33.20 Paper Trader ${{ inputs.run_mode }}"
-
-          to: ${{ secrets.MAIL_TO }}
-
-          from: ${{ secrets.MAIL_USER }}
-
-          secure: true
-
-          body: file://latest_result.txt
 import os
 
 import json
@@ -61,27 +38,85 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 
 os.makedirs(RESEARCH_DIR, exist_ok=True)
 
-DAILY_CACHE_FILE = os.path.join(CACHE_DIR, "daily_cache.pkl")
+DAILY_CACHE_FILE = os.path.join(
 
-PORTFOLIO_FILE = os.path.join(DATA_DIR, "portfolio.json")
+    CACHE_DIR,
 
-TRADE_FILE = os.path.join(DATA_DIR, "paper_trades.csv")
+    "daily_cache.pkl"
 
-CANDIDATE_FILE = os.path.join(DATA_DIR, "paper_candidates.csv")
+)
 
-RESULT_FILE = os.path.join(DATA_DIR, "latest_result.txt")
+PORTFOLIO_FILE = os.path.join(
 
-RESEARCH_FILE = os.path.join(RESEARCH_DIR, "screening_history.csv")
+    DATA_DIR,
 
-GCS_BUCKET = os.environ.get("GCS_BUCKET", "")
+    "portfolio.json"
 
-GCS_RESEARCH_PATH = "research/screening_history.csv"
+)
 
-GCS_RESULT_PATH = "latest_result.txt"
+TRADE_FILE = os.path.join(
 
-GCS_PORTFOLIO_PATH = "paper_trader/portfolio.json"
+    DATA_DIR,
 
-GCS_TRADES_PATH = "paper_trader/paper_trades.csv"
+    "paper_trades.csv"
+
+)
+
+CANDIDATE_FILE = os.path.join(
+
+    DATA_DIR,
+
+    "paper_candidates.csv"
+
+)
+
+RESULT_FILE = os.path.join(
+
+    DATA_DIR,
+
+    "latest_result.txt"
+
+)
+
+RESEARCH_FILE = os.path.join(
+
+    RESEARCH_DIR,
+
+    "screening_history.csv"
+
+)
+
+GCS_BUCKET = os.environ.get(
+
+    "GCS_BUCKET",
+
+    ""
+
+)
+
+GCS_RESEARCH_PATH = (
+
+    "research/screening_history.csv"
+
+)
+
+GCS_RESULT_PATH = (
+
+    "latest_result.txt"
+
+)
+
+GCS_PORTFOLIO_PATH = (
+
+    "paper_trader/portfolio.json"
+
+)
+
+GCS_TRADES_PATH = (
+
+    "paper_trader/paper_trades.csv"
+
+)
 
 INITIAL_CAPITAL = 1_117_792
 
@@ -113,61 +148,61 @@ RESULT_TIME = "15:45"
 
 TICKERS = [
 
-    "1332.T","1605.T","1801.T","1802.T","1803.T",
+    "1332.T", "1605.T", "1801.T", "1802.T", "1803.T",
 
-    "1925.T","1928.T","1963.T","2002.T","2267.T",
+    "1925.T", "1928.T", "1963.T", "2002.T", "2267.T",
 
-    "2413.T","2502.T","2503.T","2801.T","2914.T",
+    "2413.T", "2502.T", "2503.T", "2801.T", "2914.T",
 
-    "3086.T","3092.T","3099.T","3382.T","3401.T",
+    "3086.T", "3092.T", "3099.T", "3382.T", "3401.T",
 
-    "3402.T","3407.T","3436.T","3659.T","3861.T",
+    "3402.T", "3407.T", "3436.T", "3659.T", "3861.T",
 
-    "4004.T","4005.T","4021.T","4042.T","4061.T",
+    "4004.T", "4005.T", "4021.T", "4042.T", "4061.T",
 
-    "4062.T","4183.T","4188.T","4208.T","4307.T",
+    "4062.T", "4183.T", "4188.T", "4208.T", "4307.T",
 
-    "4324.T","4385.T","4452.T","4502.T","4503.T",
+    "4324.T", "4385.T", "4452.T", "4502.T", "4503.T",
 
-    "4506.T","4507.T","4519.T","4523.T","4543.T",
+    "4506.T", "4507.T", "4519.T", "4523.T", "4543.T",
 
-    "4568.T","4578.T","4661.T","4689.T","4704.T",
+    "4568.T", "4578.T", "4661.T", "4689.T", "4704.T",
 
-    "4751.T","4755.T","4901.T","4911.T","5020.T",
+    "4751.T", "4755.T", "4901.T", "4911.T", "5020.T",
 
-    "5101.T","5108.T","5201.T","5214.T","5232.T",
+    "5101.T", "5108.T", "5201.T", "5214.T", "5232.T",
 
-    "5233.T","5301.T","5332.T","5333.T","5401.T",
+    "5233.T", "5301.T", "5332.T", "5333.T", "5401.T",
 
-    "5406.T","5411.T","5631.T","5706.T","5711.T",
+    "5406.T", "5411.T", "5631.T", "5706.T", "5711.T",
 
-    "5713.T","5714.T","5801.T","5802.T","5803.T",
+    "5713.T", "5714.T", "5801.T", "5802.T", "5803.T",
 
-    "5831.T","6098.T","6103.T","6113.T","6301.T",
+    "5831.T", "6098.T", "6103.T", "6113.T", "6301.T",
 
-    "6302.T","6305.T","6326.T","6361.T","6367.T",
+    "6302.T", "6305.T", "6326.T", "6361.T", "6367.T",
 
-    "6471.T","6472.T","6473.T","6479.T","6501.T",
+    "6471.T", "6472.T", "6473.T", "6479.T", "6501.T",
 
-    "6503.T","6504.T","6506.T","6526.T","6594.T",
+    "6503.T", "6504.T", "6506.T", "6526.T", "6594.T",
 
-    "6645.T","6674.T","6701.T","6702.T","6723.T",
+    "6645.T", "6674.T", "6701.T", "6702.T", "6723.T",
 
-    "6724.T","6752.T","6758.T","6762.T","6770.T",
+    "6724.T", "6752.T", "6758.T", "6762.T", "6770.T",
 
-    "6841.T","6857.T","6861.T","6869.T","6902.T",
+    "6841.T", "6857.T", "6861.T", "6869.T", "6902.T",
 
-    "6920.T","6952.T","6954.T","6971.T","6976.T",
+    "6920.T", "6952.T", "6954.T", "6971.T", "6976.T",
 
-    "6981.T","7003.T","7004.T","7011.T","7012.T",
+    "6981.T", "7003.T", "7004.T", "7011.T", "7012.T",
 
-    "7013.T","7182.T","7201.T","7202.T","7203.T",
+    "7013.T", "7182.T", "7201.T", "7202.T", "7203.T",
 
-    "7206.T","7207.T","7261.T","7267.T","7269.T",
+    "7206.T", "7207.T", "7261.T", "7267.T", "7269.T",
 
-    "7270.T","7272.T","7309.T","7731.T","7733.T",
+    "7270.T", "7272.T", "7309.T", "7731.T", "7733.T",
 
-    "7735.T","7741.T","7751.T","7752.T"
+    "7735.T", "7741.T", "7751.T", "7752.T"
 
 ]
 
@@ -181,13 +216,19 @@ EXCLUDED_TICKERS = {
 
 }
 
-TICKERS = list(dict.fromkeys(
+TICKERS = list(
 
-    x for x in TICKERS
+    dict.fromkeys(
 
-    if x not in EXCLUDED_TICKERS
+        x
 
-))
+        for x in TICKERS
+
+        if x not in EXCLUDED_TICKERS
+
+    )
+
+)
 
 if len(TICKERS) != 137:
 
@@ -197,7 +238,13 @@ if len(TICKERS) != 137:
 
     )
 
-def gcs_copy_to_local(gcs_path, local_path):
+def gcs_copy_to_local(
+
+    gcs_path,
+
+    local_path
+
+):
 
     if not GCS_BUCKET:
 
@@ -205,7 +252,17 @@ def gcs_copy_to_local(gcs_path, local_path):
 
     try:
 
-        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+        parent = os.path.dirname(local_path)
+
+        if parent:
+
+            os.makedirs(
+
+                parent,
+
+                exist_ok=True
+
+            )
 
         result = subprocess.run(
 
@@ -229,13 +286,23 @@ def gcs_copy_to_local(gcs_path, local_path):
 
         )
 
-        return result.returncode == 0
+        if result.returncode == 0:
+
+            return True
+
+        return False
 
     except Exception:
 
         return False
 
-def gcs_copy_from_local(local_path, gcs_path):
+def gcs_copy_from_local(
+
+    local_path,
+
+    gcs_path
+
+):
 
     if not GCS_BUCKET:
 
@@ -271,7 +338,13 @@ def gcs_copy_from_local(local_path, gcs_path):
 
         if result.returncode == 0:
 
-            print(f"GCS upload completed: gs://{GCS_BUCKET}/{gcs_path}")
+            print(
+
+                f"GCS upload completed: "
+
+                f"gs://{GCS_BUCKET}/{gcs_path}"
+
+            )
 
             return True
 
@@ -281,7 +354,11 @@ def gcs_copy_from_local(local_path, gcs_path):
 
     except Exception as e:
 
-        print(f"GCS upload failed: {e}")
+        print(
+
+            f"GCS upload failed: {e}"
+
+        )
 
         return False
 
@@ -365,7 +442,11 @@ def load_portfolio():
 
     restore_persistent_files()
 
-    if not os.path.exists(PORTFOLIO_FILE):
+    if not os.path.exists(
+
+        PORTFOLIO_FILE
+
+    ):
 
         return {
 
@@ -457,7 +538,15 @@ def normalize_index(df):
 
     try:
 
-        if getattr(df.index, "tz", None) is not None:
+        if getattr(
+
+            df.index,
+
+            "tz",
+
+            None
+
+        ) is not None:
 
             df.index = (
 
@@ -499,7 +588,11 @@ def download_5m():
 
     except Exception as e:
 
-        print(f"5m download error: {e}")
+        print(
+
+            f"5m download error: {e}"
+
+        )
 
         return {}
 
@@ -725,7 +818,11 @@ def create_daily_cache():
 
     except Exception as e:
 
-        print(f"daily download error: {e}")
+        print(
+
+            f"daily download error: {e}"
+
+        )
 
         return cache
 
@@ -915,9 +1012,9 @@ def calc_rs(
 
     past = daily_df[
 
-        daily_df.index.date <
+        daily_df.index.date
 
-        target_date.date()
+        < target_date.date()
 
     ]
 
@@ -933,7 +1030,11 @@ def calc_rs(
 
     old = float(
 
-        past["Close"].iloc[-RS_LOOKBACK - 1]
+        past["Close"].iloc[
+
+            -RS_LOOKBACK - 1
+
+        ]
 
     )
 
@@ -983,7 +1084,9 @@ def make_candidate(
 
     decision_ts = pd.Timestamp(
 
-        f"{target_date:%Y-%m-%d} {DECISION_TIME}:00"
+        f"{target_date:%Y-%m-%d} "
+
+        f"{DECISION_TIME}:00"
 
     )
 
@@ -1111,7 +1214,11 @@ def make_candidate(
 
             afternoon_return = (
 
-                close_1245 / afternoon_open - 1
+                close_1245
+
+                / afternoon_open
+
+                - 1
 
             )
 
@@ -1137,7 +1244,11 @@ def make_candidate(
 
             recent_return = (
 
-                close_1245 / first_close - 1
+                close_1245
+
+                / first_close
+
+                - 1
 
             )
 
@@ -1289,9 +1400,9 @@ def select_candidates(
 
     df["long_breakout"] = (
 
-        df["close_1245"] >
+        df["close_1245"]
 
-        df["morning_high"]
+        > df["morning_high"]
 
     )
 
@@ -1311,9 +1422,9 @@ def select_candidates(
 
     df["short_breakdown"] = (
 
-        df["close_1245"] <
+        df["close_1245"]
 
-        df["morning_low"]
+        < df["morning_low"]
 
     )
 
@@ -1345,7 +1456,7 @@ def calculate_shares(
 
     max_value = equity * leverage
 
-    shares = int(
+    raw_shares = int(
 
         max_value // entry_price
 
@@ -1353,11 +1464,17 @@ def calculate_shares(
 
     shares = (
 
-        shares // LOT_SIZE
+        raw_shares // LOT_SIZE
 
     ) * LOT_SIZE
 
-    return max(shares, 0)
+    return max(
+
+        shares,
+
+        0
+
+    )
 
 def create_positions(
 
@@ -1391,7 +1508,9 @@ def create_positions(
 
         entry_ts = pd.Timestamp(
 
-            f"{target_date:%Y-%m-%d} {ENTRY_TIME}:00"
+            f"{target_date:%Y-%m-%d} "
+
+            f"{ENTRY_TIME}:00"
 
         )
 
@@ -1449,13 +1568,17 @@ def create_positions(
 
             tp_price = (
 
-                entry_price * (1 + TP)
+                entry_price
+
+                * (1 + TP)
 
             )
 
             sl_price = (
 
-                entry_price * (1 - SL)
+                entry_price
+
+                * (1 - SL)
 
             )
 
@@ -1463,13 +1586,17 @@ def create_positions(
 
             tp_price = (
 
-                entry_price * (1 - TP)
+                entry_price
+
+                * (1 - TP)
 
             )
 
             sl_price = (
 
-                entry_price * (1 + SL)
+                entry_price
+
+                * (1 + SL)
 
             )
 
@@ -1491,7 +1618,11 @@ def create_positions(
 
             "entry_time": str(entry_ts),
 
-            "entry_date": str(target_date.date())
+            "entry_date": str(
+
+                target_date.date()
+
+            )
 
         })
 
@@ -1553,11 +1684,31 @@ def check_position(
 
             if low <= sl_price:
 
-                return True, sl_price, "SL", idx
+                return (
+
+                    True,
+
+                    sl_price,
+
+                    "SL",
+
+                    idx
+
+                )
 
             if high >= tp_price:
 
-                return True, tp_price, "TP", idx
+                return (
+
+                    True,
+
+                    tp_price,
+
+                    "TP",
+
+                    idx
+
+                )
 
     else:
 
@@ -1569,11 +1720,31 @@ def check_position(
 
             if high >= sl_price:
 
-                return True, sl_price, "SL", idx
+                return (
+
+                    True,
+
+                    sl_price,
+
+                    "SL",
+
+                    idx
+
+                )
 
             if low <= tp_price:
 
-                return True, tp_price, "TP", idx
+                return (
+
+                    True,
+
+                    tp_price,
+
+                    "TP",
+
+                    idx
+
+                )
 
     return False, None, None, None
 
@@ -1625,9 +1796,17 @@ def prepare_research_rows(
 
             "day_return": row["day_return"],
 
-            "afternoon_return": row["afternoon_return"],
+            "afternoon_return": row[
 
-            "recent_return": row["recent_return"],
+                "afternoon_return"
+
+            ],
+
+            "recent_return": row[
+
+                "recent_return"
+
+            ],
 
             "raw_rs": row["raw_rs"],
 
@@ -1635,17 +1814,41 @@ def prepare_research_rows(
 
             "score": row["score"],
 
-            "long_rs_ok": bool(row["long_rs_ok"]),
+            "long_rs_ok": bool(
 
-            "long_breakout": bool(row["long_breakout"]),
+                row["long_rs_ok"]
 
-            "long_candidate": bool(row["long_candidate"]),
+            ),
 
-            "short_rs_ok": bool(row["short_rs_ok"]),
+            "long_breakout": bool(
 
-            "short_breakdown": bool(row["short_breakdown"]),
+                row["long_breakout"]
 
-            "short_candidate": bool(row["short_candidate"]),
+            ),
+
+            "long_candidate": bool(
+
+                row["long_candidate"]
+
+            ),
+
+            "short_rs_ok": bool(
+
+                row["short_rs_ok"]
+
+            ),
+
+            "short_breakdown": bool(
+
+                row["short_breakdown"]
+
+            ),
+
+            "short_candidate": bool(
+
+                row["short_candidate"]
+
+            ),
 
             "selected_side": (
 
@@ -1687,21 +1890,33 @@ def prepare_research_rows(
 
             entry_ts = pd.Timestamp(
 
-                f"{target_date:%Y-%m-%d} {ENTRY_TIME}:00"
+                f"{target_date:%Y-%m-%d} "
+
+                f"{ENTRY_TIME}:00"
 
             )
 
             result_ts = pd.Timestamp(
 
-                f"{target_date:%Y-%m-%d} {RESULT_TIME}:00"
+                f"{target_date:%Y-%m-%d} "
+
+                f"{RESULT_TIME}:00"
 
             )
 
             after_entry = stock_df[
 
-                (stock_df.index >= entry_ts)
+                (
 
-                & (stock_df.index <= result_ts)
+                    stock_df.index >= entry_ts
+
+                )
+
+                & (
+
+                    stock_df.index <= result_ts
+
+                )
 
             ]
 
@@ -1731,21 +1946,61 @@ def prepare_research_rows(
 
                 )
 
-                long_tp = entry_price * (1 + TP)
+                long_tp = (
 
-                long_sl = entry_price * (1 - SL)
+                    entry_price
 
-                short_tp = entry_price * (1 - TP)
+                    * (1 + TP)
 
-                short_sl = entry_price * (1 + SL)
+                )
 
-                long_tp_hit = post_high >= long_tp
+                long_sl = (
 
-                long_sl_hit = post_low <= long_sl
+                    entry_price
 
-                short_tp_hit = post_low <= short_tp
+                    * (1 - SL)
 
-                short_sl_hit = post_high >= short_sl
+                )
+
+                short_tp = (
+
+                    entry_price
+
+                    * (1 - TP)
+
+                )
+
+                short_sl = (
+
+                    entry_price
+
+                    * (1 + SL)
+
+                )
+
+                long_tp_hit = (
+
+                    post_high >= long_tp
+
+                )
+
+                long_sl_hit = (
+
+                    post_low <= long_sl
+
+                )
+
+                short_tp_hit = (
+
+                    post_low <= short_tp
+
+                )
+
+                short_sl_hit = (
+
+                    post_high >= short_sl
+
+                )
 
         item["entry_1250"] = entry_price
 
@@ -1763,39 +2018,71 @@ def prepare_research_rows(
 
         item["short_sl_hit"] = short_sl_hit
 
-        selected_side = item["selected_side"]
+        selected_side = item[
+
+            "selected_side"
+
+        ]
 
         if selected_side == "LONG":
 
             if long_sl_hit:
 
-                item["hypothetical_result"] = "SL"
+                item[
+
+                    "hypothetical_result"
+
+                ] = "SL"
 
             elif long_tp_hit:
 
-                item["hypothetical_result"] = "TP"
+                item[
+
+                    "hypothetical_result"
+
+                ] = "TP"
 
             else:
 
-                item["hypothetical_result"] = "HOLD"
+                item[
+
+                    "hypothetical_result"
+
+                ] = "HOLD"
 
         elif selected_side == "SHORT":
 
             if short_sl_hit:
 
-                item["hypothetical_result"] = "SL"
+                item[
+
+                    "hypothetical_result"
+
+                ] = "SL"
 
             elif short_tp_hit:
 
-                item["hypothetical_result"] = "TP"
+                item[
+
+                    "hypothetical_result"
+
+                ] = "TP"
 
             else:
 
-                item["hypothetical_result"] = "HOLD"
+                item[
+
+                    "hypothetical_result"
+
+                ] = "HOLD"
 
         else:
 
-            item["hypothetical_result"] = ""
+            item[
+
+                "hypothetical_result"
+
+            ] = ""
 
         if (
 
@@ -1807,23 +2094,47 @@ def prepare_research_rows(
 
         ):
 
-            item["long_return_1250_1545"] = (
+            item[
 
-                close_1545 / entry_price - 1
+                "long_return_1250_1545"
+
+            ] = (
+
+                close_1545
+
+                / entry_price
+
+                - 1
 
             )
 
-            item["short_return_1250_1545"] = (
+            item[
 
-                entry_price / close_1545 - 1
+                "short_return_1250_1545"
+
+            ] = (
+
+                entry_price
+
+                / close_1545
+
+                - 1
 
             )
 
         else:
 
-            item["long_return_1250_1545"] = np.nan
+            item[
 
-            item["short_return_1250_1545"] = np.nan
+                "long_return_1250_1545"
+
+            ] = np.nan
+
+            item[
+
+                "short_return_1250_1545"
+
+            ] = np.nan
 
         result.append(item)
 
@@ -1837,17 +2148,35 @@ def save_research_data(
 
 ):
 
-    if research_df is None or research_df.empty:
+    if (
+
+        research_df is None
+
+        or research_df.empty
+
+    ):
 
         return
 
-    date_str = target_date.strftime("%Y-%m-%d")
+    date_str = target_date.strftime(
 
-    if os.path.exists(RESEARCH_FILE):
+        "%Y-%m-%d"
+
+    )
+
+    if os.path.exists(
+
+        RESEARCH_FILE
+
+    ):
 
         try:
 
-            old_df = pd.read_csv(RESEARCH_FILE)
+            old_df = pd.read_csv(
+
+                RESEARCH_FILE
+
+            )
 
         except Exception:
 
@@ -1867,7 +2196,9 @@ def save_research_data(
 
         old_df = old_df[
 
-            old_df["date"].astype(str) != date_str
+            old_df["date"].astype(str)
+
+            != date_str
 
         ]
 
@@ -1911,13 +2242,21 @@ def update_research_after_close(
 
 ):
 
-    if not os.path.exists(RESEARCH_FILE):
+    if not os.path.exists(
+
+        RESEARCH_FILE
+
+    ):
 
         return
 
     try:
 
-        research = pd.read_csv(RESEARCH_FILE)
+        research = pd.read_csv(
+
+            RESEARCH_FILE
+
+        )
 
     except Exception:
 
@@ -1927,11 +2266,17 @@ def update_research_after_close(
 
         return
 
-    date_str = target_date.strftime("%Y-%m-%d")
+    date_str = target_date.strftime(
+
+        "%Y-%m-%d"
+
+    )
 
     mask = (
 
-        research["date"].astype(str) == date_str
+        research["date"].astype(str)
+
+        == date_str
 
     )
 
@@ -1941,7 +2286,13 @@ def update_research_after_close(
 
     for idx in research.index[mask]:
 
-        ticker = research.loc[idx, "ticker"]
+        ticker = research.loc[
+
+            idx,
+
+            "ticker"
+
+        ]
 
         df = intraday.get(ticker)
 
@@ -1951,13 +2302,17 @@ def update_research_after_close(
 
         entry_ts = pd.Timestamp(
 
-            f"{date_str} {ENTRY_TIME}:00"
+            f"{date_str} "
+
+            f"{ENTRY_TIME}:00"
 
         )
 
         result_ts = pd.Timestamp(
 
-            f"{date_str} {RESULT_TIME}:00"
+            f"{date_str} "
+
+            f"{RESULT_TIME}:00"
 
         )
 
@@ -2003,61 +2358,151 @@ def update_research_after_close(
 
             continue
 
-        research.loc[idx, "entry_1250"] = entry_price
+        research.loc[
 
-        research.loc[idx, "post_1250_high"] = post_high
+            idx,
 
-        research.loc[idx, "post_1250_low"] = post_low
+            "entry_1250"
 
-        research.loc[idx, "close_1545"] = close_price
+        ] = entry_price
 
-        long_tp = entry_price * (1 + TP)
+        research.loc[
 
-        long_sl = entry_price * (1 - SL)
+            idx,
 
-        short_tp = entry_price * (1 - TP)
+            "post_1250_high"
 
-        short_sl = entry_price * (1 + SL)
+        ] = post_high
 
-        research.loc[idx, "long_tp_hit"] = (
+        research.loc[
+
+            idx,
+
+            "post_1250_low"
+
+        ] = post_low
+
+        research.loc[
+
+            idx,
+
+            "close_1545"
+
+        ] = close_price
+
+        long_tp = (
+
+            entry_price * (1 + TP)
+
+        )
+
+        long_sl = (
+
+            entry_price * (1 - SL)
+
+        )
+
+        short_tp = (
+
+            entry_price * (1 - TP)
+
+        )
+
+        short_sl = (
+
+            entry_price * (1 + SL)
+
+        )
+
+        research.loc[
+
+            idx,
+
+            "long_tp_hit"
+
+        ] = (
 
             post_high >= long_tp
 
         )
 
-        research.loc[idx, "long_sl_hit"] = (
+        research.loc[
+
+            idx,
+
+            "long_sl_hit"
+
+        ] = (
 
             post_low <= long_sl
 
         )
 
-        research.loc[idx, "short_tp_hit"] = (
+        research.loc[
+
+            idx,
+
+            "short_tp_hit"
+
+        ] = (
 
             post_low <= short_tp
 
         )
 
-        research.loc[idx, "short_sl_hit"] = (
+        research.loc[
+
+            idx,
+
+            "short_sl_hit"
+
+        ] = (
 
             post_high >= short_sl
 
         )
 
-        research.loc[idx, "long_return_1250_1545"] = (
+        research.loc[
 
-            close_price / entry_price - 1
+            idx,
+
+            "long_return_1250_1545"
+
+        ] = (
+
+            close_price
+
+            / entry_price
+
+            - 1
 
         )
 
-        research.loc[idx, "short_return_1250_1545"] = (
+        research.loc[
 
-            entry_price / close_price - 1
+            idx,
+
+            "short_return_1250_1545"
+
+        ] = (
+
+            entry_price
+
+            / close_price
+
+            - 1
 
         )
 
         selected_side = str(
 
-            research.loc[idx, "selected_side"]
+            research.loc[
+
+                idx,
+
+                "selected_side"
+
+            ]
 
         )
 
@@ -2075,7 +2520,13 @@ def update_research_after_close(
 
                 result = "HOLD"
 
-            research.loc[idx, "hypothetical_result"] = result
+            research.loc[
+
+                idx,
+
+                "hypothetical_result"
+
+            ] = result
 
         elif selected_side == "SHORT":
 
@@ -2091,7 +2542,13 @@ def update_research_after_close(
 
                 result = "HOLD"
 
-            research.loc[idx, "hypothetical_result"] = result
+            research.loc[
+
+                idx,
+
+                "hypothetical_result"
+
+            ] = result
 
     research.to_csv(
 
@@ -2153,21 +2610,37 @@ def run_result():
 
         text = (
 
-            "15:45 結果\n\n"
+            "━━━━━━━━━━━━━━━━━━━━\n"
 
-            f"前資産: ¥{old_equity:,.0f}\n"
+            "v33.20 Paper Trader\n"
 
-            "損益: ¥0\n"
+            f"{target_date:%Y-%m-%d} "
 
-            f"現在資産: ¥{old_equity:,.0f}\n\n"
+            "15:45 結果\n"
 
-            "決済: なし\n"
+            "━━━━━━━━━━━━━━━━━━━━\n\n"
 
-            "持越し: なし\n\n"
+            "【資産】\n"
 
-            "研究データ更新: 完了\n"
+            f"前資産　　¥{old_equity:,.0f}\n"
 
-            f"保存: {len(TICKERS)}銘柄\n"
+            "損益　　　¥0\n"
+
+            f"現在資産　¥{old_equity:,.0f}\n\n"
+
+            "【決済】\n"
+
+            "なし\n\n"
+
+            "【持越し】\n"
+
+            "なし\n\n"
+
+            "━━━━━━━━━━━━━━━━━━━━\n"
+
+            "合計損益　¥0\n"
+
+            "━━━━━━━━━━━━━━━━━━━━"
 
         )
 
@@ -2185,17 +2658,25 @@ def run_result():
 
     for position in positions:
 
-        hit, exit_price, reason, exit_time = check_position(
+        hit, exit_price, reason, exit_time = (
 
-            position,
+            check_position(
 
-            intraday
+                position,
+
+                intraday
+
+            )
 
         )
 
         if not hit:
 
-            remaining.append(position)
+            remaining.append(
+
+                position
+
+            )
 
             continue
 
@@ -2217,7 +2698,11 @@ def run_result():
 
             ret = (
 
-                exit_price / entry_price - 1
+                exit_price
+
+                / entry_price
+
+                - 1
 
             )
 
@@ -2225,7 +2710,11 @@ def run_result():
 
             ret = (
 
-                entry_price / exit_price - 1
+                entry_price
+
+                / exit_price
+
+                - 1
 
             )
 
@@ -2243,9 +2732,17 @@ def run_result():
 
         closed.append({
 
-            "date": str(exit_time.date()),
+            "date": str(
 
-            "ticker": position["ticker"],
+                exit_time.date()
+
+            ),
+
+            "ticker": position[
+
+                "ticker"
+
+            ],
 
             "side": side,
 
@@ -2261,39 +2758,79 @@ def run_result():
 
             "reason": reason,
 
-            "entry_time": position["entry_time"],
+            "entry_time": position[
 
-            "exit_time": str(exit_time)
+                "entry_time"
+
+            ],
+
+            "exit_time": str(
+
+                exit_time
+
+            )
 
         })
 
-    new_equity = old_equity + total_pnl
+    new_equity = (
+
+        old_equity
+
+        + total_pnl
+
+    )
 
     portfolio["equity"] = new_equity
 
     portfolio["positions"] = remaining
 
-    portfolio["last_update"] = datetime.now().strftime(
+    portfolio["last_update"] = (
 
-        "%Y-%m-%d %H:%M:%S"
+        datetime.now().strftime(
+
+            "%Y-%m-%d %H:%M:%S"
+
+        )
 
     )
 
-    save_portfolio(portfolio)
+    save_portfolio(
+
+        portfolio
+
+    )
 
     if closed:
 
-        trade_df = pd.DataFrame(closed)
+        trade_df = pd.DataFrame(
 
-        if os.path.exists(TRADE_FILE):
+            closed
+
+        )
+
+        if os.path.exists(
+
+            TRADE_FILE
+
+        ):
 
             try:
 
-                old_df = pd.read_csv(TRADE_FILE)
+                old_df = pd.read_csv(
+
+                    TRADE_FILE
+
+                )
 
                 trade_df = pd.concat(
 
-                    [old_df, trade_df],
+                    [
+
+                        old_df,
+
+                        trade_df
+
+                    ],
 
                     ignore_index=True
 
@@ -2321,53 +2858,145 @@ def run_result():
 
         )
 
-    lines = [
+    lines = []
 
-        "15:45 結果",
+    lines.append(
 
-        "",
+        "━━━━━━━━━━━━━━━━━━━━"
 
-        f"前資産: ¥{old_equity:,.0f}",
+    )
 
-        f"損益: ¥{total_pnl:,.0f}",
+    lines.append(
 
-        f"現在資産: ¥{new_equity:,.0f}",
+        "v33.20 Paper Trader"
 
-        ""
+    )
 
-    ]
+    lines.append(
+
+        f"{target_date:%Y-%m-%d} "
+
+        "15:45 結果"
+
+    )
+
+    lines.append(
+
+        "━━━━━━━━━━━━━━━━━━━━"
+
+    )
+
+    lines.append("")
+
+    lines.append("【資産】")
+
+    lines.append(
+
+        f"前資産　　¥{old_equity:,.0f}"
+
+    )
+
+    lines.append(
+
+        f"損益　　　"
+
+        f"{'+' if total_pnl >= 0 else ''}"
+
+        f"¥{total_pnl:,.0f}"
+
+    )
+
+    lines.append(
+
+        f"現在資産　¥{new_equity:,.0f}"
+
+    )
+
+    lines.append("")
 
     if closed:
-
-        lines.append("決済:")
 
         for trade in closed:
 
             lines.append(
 
-                f"{trade['side']} "
+                f"【{trade['side']}】"
 
-                f"{trade['ticker']} "
+            )
 
-                f"{trade['shares']}株 "
+            lines.append(
 
-                f"{trade['reason']} "
+                f"{trade['ticker']}"
 
-                f"損益 "
+            )
+
+            lines.append(
+
+                f"約定　　　"
+
+                f"{trade['entry']:,.1f}円"
+
+            )
+
+            lines.append(
+
+                f"株数　　　"
+
+                f"{trade['shares']}株"
+
+            )
+
+            lines.append(
+
+                f"決済　　　"
+
+                f"{trade['exit']:,.1f}円"
+
+            )
+
+            lines.append(
+
+                f"損益　　　"
+
+                f"{'+' if trade['pnl'] >= 0 else ''}"
 
                 f"¥{trade['pnl']:,.0f}"
 
             )
 
+            lines.append(
+
+                f"結果　　　"
+
+                f"{trade['reason']}"
+
+            )
+
+            lines.append("")
+
     else:
 
-        lines.append("決済: なし")
+        lines.append(
 
-    lines.append("")
+            "【決済】"
+
+        )
+
+        lines.append(
+
+            "なし"
+
+        )
+
+        lines.append("")
 
     if remaining:
 
-        lines.append("持越し:")
+        lines.append(
+
+            "【持越し】"
+
+        )
 
         for position in remaining:
 
@@ -2375,27 +3004,71 @@ def run_result():
 
                 f"{position['side']} "
 
-                f"{position['ticker']} "
+                f"{position['ticker']}"
 
-                f"{position['shares']}株 "
+            )
 
-                f"建値 "
+            lines.append(
+
+                f"建値　　　"
 
                 f"{position['entry_price']:,.1f}円"
 
             )
 
+            lines.append(
+
+                f"株数　　　"
+
+                f"{position['shares']}株"
+
+            )
+
+            lines.append("")
+
     else:
 
-        lines.append("持越し: なし")
+        lines.append(
 
-    lines.append("")
+            "【持越し】"
 
-    lines.append("研究データ更新: 完了")
+        )
 
-    lines.append(f"保存: {len(TICKERS)}銘柄")
+        lines.append(
 
-    write_result("\n".join(lines))
+            "なし"
+
+        )
+
+        lines.append("")
+
+    lines.append(
+
+        "━━━━━━━━━━━━━━━━━━━━"
+
+    )
+
+    lines.append(
+
+        f"合計損益　"
+
+        f"{'+' if total_pnl >= 0 else ''}"
+
+        f"¥{total_pnl:,.0f}"
+
+    )
+
+    lines.append(
+
+        "━━━━━━━━━━━━━━━━━━━━"
+
+    )
+
+    write_result(
+
+        "\n".join(lines)
+
+    )
 
     save_persistent_files()
 
@@ -2471,9 +3144,13 @@ def run_decision(
 
             f"{'TEST' if test_mode else ''}判定\n"
 
-            f"判定日: {target_date:%Y-%m-%d}\n"
+            f"判定日: "
 
-            f"現在資産: ¥{equity:,.0f}\n"
+            f"{target_date:%Y-%m-%d}\n"
+
+            f"現在資産: "
+
+            f"¥{equity:,.0f}\n"
 
             "LONG: なし\n"
 
@@ -2501,13 +3178,21 @@ def run_decision(
 
     )
 
-    target_count = len(all_df)
+    target_count = len(
+
+        all_df
+
+    )
 
     if not all_df.empty:
 
         long_rs_count = int(
 
-            all_df["long_rs_ok"].sum()
+            all_df[
+
+                "long_rs_ok"
+
+            ].sum()
 
         )
 
@@ -2525,13 +3210,21 @@ def run_decision(
 
         long_candidate_count = int(
 
-            all_df["long_candidate"].sum()
+            all_df[
+
+                "long_candidate"
+
+            ].sum()
 
         )
 
         short_rs_count = int(
 
-            all_df["short_rs_ok"].sum()
+            all_df[
+
+                "short_rs_ok"
+
+            ].sum()
 
         )
 
@@ -2541,7 +3234,11 @@ def run_decision(
 
                 all_df["short_rs_ok"]
 
-                & all_df["short_breakdown"]
+                & all_df[
+
+                    "short_breakdown"
+
+                ]
 
             ).sum()
 
@@ -2549,7 +3246,11 @@ def run_decision(
 
         short_candidate_count = int(
 
-            all_df["short_candidate"].sum()
+            all_df[
+
+                "short_candidate"
+
+            ].sum()
 
         )
 
@@ -2573,7 +3274,9 @@ def run_decision(
 
         not all_df.empty
 
-        and long_count < MAX_LONG_POSITIONS
+        and long_count
+
+        < MAX_LONG_POSITIONS
 
     ):
 
@@ -2593,17 +3296,27 @@ def run_decision(
 
             )
 
-            row = long_df.iloc[0].copy()
+            row = long_df.iloc[
+
+                0
+
+            ].copy()
 
             row["side"] = "LONG"
 
-            selected_rows.append(row)
+            selected_rows.append(
+
+                row
+
+            )
 
     if (
 
         not all_df.empty
 
-        and short_count < MAX_SHORT_POSITIONS
+        and short_count
+
+        < MAX_SHORT_POSITIONS
 
     ):
 
@@ -2623,15 +3336,27 @@ def run_decision(
 
             )
 
-            row = short_df.iloc[0].copy()
+            row = short_df.iloc[
+
+                0
+
+            ].copy()
 
             row["side"] = "SHORT"
 
-            selected_rows.append(row)
+            selected_rows.append(
+
+                row
+
+            )
 
     selected_df = (
 
-        pd.DataFrame(selected_rows)
+        pd.DataFrame(
+
+            selected_rows
+
+        )
 
         if selected_rows
 
@@ -2675,7 +3400,11 @@ def run_decision(
 
         )
 
-        save_portfolio(portfolio)
+        save_portfolio(
+
+            portfolio
+
+        )
 
     research_df = prepare_research_rows(
 
@@ -2727,7 +3456,9 @@ def run_decision(
 
     lines.append(
 
-        f"判定日: {target_date:%Y-%m-%d}"
+        f"判定日: "
+
+        f"{target_date:%Y-%m-%d}"
 
     )
 
@@ -2743,7 +3474,9 @@ def run_decision(
 
     long_positions = [
 
-        p for p in new_positions
+        p
+
+        for p in new_positions
 
         if p["side"] == "LONG"
 
@@ -2775,31 +3508,43 @@ def run_decision(
 
         lines.append(
 
-            f"建玉金額: ¥{p['entry_value']:,.0f}"
+            f"建玉金額: "
+
+            f"¥{p['entry_value']:,.0f}"
 
         )
 
         lines.append(
 
-            f"TP: {p['tp_price']:,.1f}円"
+            f"TP: "
+
+            f"{p['tp_price']:,.1f}円"
 
         )
 
         lines.append(
 
-            f"SL: {p['sl_price']:,.1f}円"
+            f"SL: "
+
+            f"{p['sl_price']:,.1f}円"
 
         )
 
     else:
 
-        lines.append("LONG: なし")
+        lines.append(
+
+            "LONG: なし"
+
+        )
 
     lines.append("")
 
     short_positions = [
 
-        p for p in new_positions
+        p
+
+        for p in new_positions
 
         if p["side"] == "SHORT"
 
@@ -2831,31 +3576,43 @@ def run_decision(
 
         lines.append(
 
-            f"建玉金額: ¥{p['entry_value']:,.0f}"
+            f"建玉金額: "
+
+            f"¥{p['entry_value']:,.0f}"
 
         )
 
         lines.append(
 
-            f"TP: {p['tp_price']:,.1f}円"
+            f"TP: "
+
+            f"{p['tp_price']:,.1f}円"
 
         )
 
         lines.append(
 
-            f"SL: {p['sl_price']:,.1f}円"
+            f"SL: "
+
+            f"{p['sl_price']:,.1f}円"
 
         )
 
     else:
 
-        lines.append("SHORT: なし")
+        lines.append(
+
+            "SHORT: なし"
+
+        )
 
     lines.append("")
 
     lines.append(
 
-        f"新規取引: {len(new_positions)}件"
+        f"新規取引: "
+
+        f"{len(new_positions)}件"
 
     )
 
@@ -2865,7 +3622,11 @@ def run_decision(
 
     )
 
-    lines.append("判定状況")
+    lines.append(
+
+        "判定状況"
+
+    )
 
     lines.append(
 
@@ -2885,71 +3646,105 @@ def run_decision(
 
     lines.append(
 
-        f"判定対象: {target_count}銘柄"
+        f"判定対象: "
+
+        f"{target_count}銘柄"
 
     )
 
     lines.append("")
 
-    lines.append("LONG")
-
     lines.append(
 
-        f"RS70以上: {long_rs_count}"
+        "LONG"
 
     )
 
     lines.append(
 
-        f"前場高値突破: {long_breakout_count}"
+        f"RS70以上: "
+
+        f"{long_rs_count}"
 
     )
 
     lines.append(
 
-        f"最終候補: {long_candidate_count}"
+        f"前場高値突破: "
 
-    )
-
-    lines.append("")
-
-    lines.append("SHORT")
-
-    lines.append(
-
-        f"RS30以下: {short_rs_count}"
+        f"{long_breakout_count}"
 
     )
 
     lines.append(
 
-        f"前場安値割れ: {short_breakdown_count}"
+        f"最終候補: "
 
-    )
-
-    lines.append(
-
-        f"最終候補: {short_candidate_count}"
+        f"{long_candidate_count}"
 
     )
 
     lines.append("")
 
-    lines.append("LONG上位候補:")
+    lines.append(
+
+        "SHORT"
+
+    )
+
+    lines.append(
+
+        f"RS30以下: "
+
+        f"{short_rs_count}"
+
+    )
+
+    lines.append(
+
+        f"前場安値割れ: "
+
+        f"{short_breakdown_count}"
+
+    )
+
+    lines.append(
+
+        f"最終候補: "
+
+        f"{short_candidate_count}"
+
+    )
+
+    lines.append("")
+
+    lines.append(
+
+        "LONG上位候補:"
+
+    )
 
     if not all_df.empty:
 
-        long_top = all_df[
+        long_top = (
 
-            all_df["long_rs_ok"]
+            all_df[
 
-        ].sort_values(
+                all_df["long_rs_ok"]
 
-            "RS",
+            ]
 
-            ascending=False
+            .sort_values(
 
-        ).head(3)
+                "RS",
+
+                ascending=False
+
+            )
+
+            .head(3)
+
+        )
 
         for _, r in long_top.iterrows():
 
@@ -2971,25 +3766,41 @@ def run_decision(
 
     else:
 
-        lines.append("なし")
+        lines.append(
+
+            "なし"
+
+        )
 
     lines.append("")
 
-    lines.append("SHORT上位候補:")
+    lines.append(
+
+        "SHORT上位候補:"
+
+    )
 
     if not all_df.empty:
 
-        short_top = all_df[
+        short_top = (
 
-            all_df["short_rs_ok"]
+            all_df[
 
-        ].sort_values(
+                all_df["short_rs_ok"]
 
-            "RS",
+            ]
 
-            ascending=True
+            .sort_values(
 
-        ).head(3)
+                "RS",
+
+                ascending=True
+
+            )
+
+            .head(3)
+
+        )
 
         for _, r in short_top.iterrows():
 
@@ -3011,7 +3822,11 @@ def run_decision(
 
     else:
 
-        lines.append("なし")
+        lines.append(
+
+            "なし"
+
+        )
 
     lines.append("")
 
@@ -3029,7 +3844,9 @@ def run_decision(
 
         lines.append(
 
-            "判定結果: 判定対象データなし"
+            "判定結果: "
+
+            "判定対象データなし"
 
         )
 
@@ -3057,7 +3874,11 @@ def run_decision(
 
     if test_mode:
 
-        lines.append("TESTモード")
+        lines.append(
+
+            "TESTモード"
+
+        )
 
         lines.append(
 
@@ -3083,7 +3904,11 @@ def run_decision(
 
 def run_test():
 
-    target_date = get_last_business_day()
+    target_date = (
+
+        get_last_business_day()
+
+    )
 
     run_decision(
 
@@ -3129,11 +3954,23 @@ def get_run_mode():
 
 def execute_mode(mode):
 
-    print(f"{VERSION} START")
+    print(
 
-    print(f"RUN MODE: {mode}")
+        f"{VERSION} START"
 
-    print(f"UNIVERSE: {len(TICKERS)}")
+    )
+
+    print(
+
+        f"RUN MODE: {mode}"
+
+    )
+
+    print(
+
+        f"UNIVERSE: {len(TICKERS)}"
+
+    )
 
     if mode == "decision":
 
@@ -3155,9 +3992,17 @@ def execute_mode(mode):
 
         )
 
-    print(f"{VERSION} END")
+    print(
 
-    if os.path.exists(RESULT_FILE):
+        f"{VERSION} END"
+
+    )
+
+    if os.path.exists(
+
+        RESULT_FILE
+
+    ):
 
         with open(
 
@@ -3201,7 +4046,11 @@ def run_endpoint():
 
     try:
 
-        result = execute_mode(mode)
+        result = execute_mode(
+
+            mode
+
+        )
 
         return Response(
 
@@ -3209,7 +4058,11 @@ def run_endpoint():
 
             status=200,
 
-            mimetype="text/plain; charset=utf-8"
+            mimetype=(
+
+                "text/plain; charset=utf-8"
+
+            )
 
         )
 
@@ -3229,7 +4082,11 @@ def run_endpoint():
 
         try:
 
-            write_result(error_text)
+            write_result(
+
+                error_text
+
+            )
 
         except Exception:
 
@@ -3241,10 +4098,18 @@ def run_endpoint():
 
             status=500,
 
-            mimetype="text/plain; charset=utf-8"
+            mimetype=(
+
+                "text/plain; charset=utf-8"
+
+            )
 
         )
 
 if __name__ == "__main__":
 
-    execute_mode(get_run_mode())
+    execute_mode(
+
+        get_run_mode()
+
+    )
