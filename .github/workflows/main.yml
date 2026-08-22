@@ -128,11 +128,11 @@ jobs:
 
       # =====================================================
 
-      # SHOW GCLOUD
+      # GOOGLE CLOUD PROJECT
 
       # =====================================================
 
-      - name: Show gcloud config
+      - name: Set Google Cloud Project
 
         shell: bash
 
@@ -140,11 +140,33 @@ jobs:
 
           gcloud config set project stock-auto-trader-506100
 
+          echo "================================"
+
+          echo "PROJECT"
+
+          echo "================================"
+
           gcloud config get-value project
 
-          gcloud run jobs list \
+      # =====================================================
 
-            --region=asia-northeast1
+      # CHECK CLOUD RUN JOBS
+
+      # =====================================================
+
+      - name: Check Cloud Run Jobs
+
+        shell: bash
+
+        run: |
+
+          echo "================================"
+
+          echo "CLOUD RUN JOBS"
+
+          echo "================================"
+
+          gcloud run jobs list --region=asia-northeast1 --project=stock-auto-trader-506100
 
       # =====================================================
 
@@ -157,6 +179,12 @@ jobs:
         shell: bash
 
         run: |
+
+          echo "================================"
+
+          echo "DOCKER AUTH"
+
+          echo "================================"
 
           gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
@@ -218,11 +246,7 @@ jobs:
 
           echo "================================"
 
-          gcloud artifacts docker images describe \
-
-            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest \
-
-            --project=stock-auto-trader-506100
+          gcloud artifacts docker images describe asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest --project=stock-auto-trader-506100
 
       # =====================================================
 
@@ -252,7 +276,7 @@ jobs:
 
           echo "================================"
 
-          gcloud run jobs deploy v33-18-paper-trader --image asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest --region asia-northeast1 --project stock-auto-trader-506100 --tasks 1 --max-retries 1 --set-env-vars "RUN_MODE=$RUN_MODE"
+          gcloud run jobs deploy v33-18-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest --region=asia-northeast1 --project=stock-auto-trader-506100 --tasks=1 --max-retries=1 --set-env-vars="RUN_MODE=$RUN_MODE"
 
       # =====================================================
 
@@ -270,6 +294,8 @@ jobs:
 
           echo "RUNNING CLOUD RUN JOB"
 
+          echo "================================"
+
           echo "RUN_MODE=$RUN_MODE"
 
           echo "REGION=asia-northeast1"
@@ -278,7 +304,7 @@ jobs:
 
           echo "================================"
 
-          gcloud run jobs execute v33-18-paper-trader --region asia-northeast1 --project stock-auto-trader-506100 --wait
+          gcloud run jobs execute v33-18-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --wait
 
       # =====================================================
 
@@ -298,7 +324,7 @@ jobs:
 
           echo "================================"
 
-          EXECUTION_NAME=$(gcloud run jobs executions list --job v33-18-paper-trader --region asia-northeast1 --project stock-auto-trader-506100 --sort-by "~createTime" --limit 1 --format "value(metadata.name)")
+          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-18-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
 
           if [ -z "$EXECUTION_NAME" ]; then
 
@@ -332,7 +358,7 @@ jobs:
 
           echo "================================"
 
-          gcloud logging read "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-18-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" --project stock-auto-trader-506100 --limit 1000 --order asc --format "value(textPayload)" > data/cloud_run_raw.txt
+          gcloud logging read "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-18-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" --project=stock-auto-trader-506100 --limit=1000 --order=asc --format="value(textPayload)" > data/cloud_run_raw.txt
 
           cat data/cloud_run_raw.txt
 
@@ -341,6 +367,12 @@ jobs:
           echo "EXTRACT RESULT"
 
           echo "================================"
+
+          # =================================================
+
+          # DECISION
+
+          # =================================================
 
           if [ "$RUN_MODE" = "decision" ]; then
 
@@ -366,6 +398,12 @@ jobs:
 
             ' data/cloud_run_raw.txt > data/latest_result.txt
 
+          # =================================================
+
+          # RESULT
+
+          # =================================================
+
           elif [ "$RUN_MODE" = "result" ]; then
 
             awk '
@@ -376,7 +414,7 @@ jobs:
 
               }
 
-              found && !/15:45 結果/ {
+              found {
 
                 print
 
@@ -389,6 +427,12 @@ jobs:
               }
 
             ' data/cloud_run_raw.txt > data/latest_result.txt
+
+          # =================================================
+
+          # TEST
+
+          # =================================================
 
           elif [ "$RUN_MODE" = "test" ]; then
 
