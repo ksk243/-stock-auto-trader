@@ -390,7 +390,7 @@ jobs:
 
           echo "メール設定はすべて存在します"
 
-      - name: Send result email
+        - name: Send result email
 
         uses: dawidd6/action-send-mail@v3
 
@@ -410,10 +410,11 @@ jobs:
 
           from: ${{ secrets.MAIL_USER }}
 
-          secure: true
+          secure: false
+
+          starttls: true
 
           body: file://latest_result.txt
-
       - name: Email sent successfully
 
         run: |
