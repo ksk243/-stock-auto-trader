@@ -44,21 +44,9 @@ jobs:
 
     steps:
 
-      # ==========================================================
-
-      # Checkout
-
-      # ==========================================================
-
       - name: Checkout
 
         uses: actions/checkout@v4
-
-      # ==========================================================
-
-      # Google Cloud 認証
-
-      # ==========================================================
 
       - name: Authenticate to Google Cloud
 
@@ -70,12 +58,6 @@ jobs:
 
           service_account: ${{ env.SERVICE_ACCOUNT }}
 
-      # ==========================================================
-
-      # gcloud
-
-      # ==========================================================
-
       - name: Setup gcloud
 
         uses: google-github-actions/setup-gcloud@v3
@@ -84,75 +66,53 @@ jobs:
 
           project_id: ${{ env.PROJECT_ID }}
 
-      # ==========================================================
-
-      # Docker認証
-
-      # ==========================================================
-
       - name: Configure Docker
 
         run: |
 
           gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
-      # ==========================================================
-
-      # Artifact Registry
-
-      # ==========================================================
-
       - name: Create Artifact Registry
 
         run: |
 
-          gcloud artifacts repositories describe "$REPOSITORY" \
+          if ! gcloud artifacts repositories describe paper-trader \
 
-            --location="$REGION" \
+            --location=asia-northeast1 \
 
-            --project="$PROJECT_ID" \
+            --project=stock-auto-trader-506100 \
 
-            >/dev/null 2>&1 || \
+            >/dev/null 2>&1; then
 
-          gcloud artifacts repositories create "$REPOSITORY" \
+            gcloud artifacts repositories create paper-trader \
 
-            --repository-format=docker \
+              --repository-format=docker \
 
-            --location="$REGION" \
+              --location=asia-northeast1 \
 
-            --project="$PROJECT_ID" \
+              --project=stock-auto-trader-506100 \
 
-            --description="Paper Trader Docker Repository"
+              --description="Paper Trader Docker Repository"
 
-      # ==========================================================
-
-      # Docker Build
-
-      # ==========================================================
+          fi
 
       - name: Docker Build
 
         run: |
 
-          docker build -t "$IMAGE:latest" .
+          docker build \
 
-      # ==========================================================
+            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader:latest \
 
-      # Docker Push
-
-      # ==========================================================
+            .
 
       - name: Docker Push
 
         run: |
 
-          docker push "$IMAGE:latest"
+          docker push \
 
-      # ==========================================================
-
-      # Cloud Run Deploy
-
-      # ==========================================================
+            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader:latest
 
       - name: Deploy Cloud Run
 
@@ -160,35 +120,29 @@ jobs:
 
           gcloud run deploy paper-trader \
 
-            --image="$IMAGE:latest" \
+            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader:latest \
 
-            --region="$REGION" \
+            --region=asia-northeast1 \
 
-            --project="$PROJECT_ID" \
+            --project=stock-auto-trader-506100 \
 
             --platform=managed \
 
             --allow-unauthenticated \
 
-            --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=$GCS_BUCKET"
+            --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=stock-auto-trader-506100-paper"
 
-      # ==========================================================
-
-      # Cloud Run 実行待ち
-
-      # ==========================================================
-
-      - name: Wait for Paper Trader
+      - name: Wait for Cloud Run
 
         run: |
 
-          sleep 30
+          gcloud run services describe paper-trader \
 
-      # ==========================================================
+            --region=asia-northeast1 \
 
-      # latest_result.txt をGCSから取得
+            --project=stock-auto-trader-506100 \
 
-      # ==========================================================
+            --format="value(status.latestReadyRevisionName)"
 
       - name: Download latest result
 
@@ -198,17 +152,11 @@ jobs:
 
           gcloud storage cp \
 
-            "gs://$GCS_BUCKET/latest_result.txt" \
+            gs://stock-auto-trader-506100-paper/latest_result.txt \
 
-            "latest_result.txt"
+            ./latest_result.txt
 
-          echo "latest_result.txt downloaded"
-
-      # ==========================================================
-
-      # research CSV をGCSから取得
-
-      # ==========================================================
+          test -s latest_result.txt
 
       - name: Download research data
 
@@ -216,29 +164,19 @@ jobs:
 
           mkdir -p data/research
 
-          gcloud storage cp \
+          if gcloud storage cp \
 
-            "gs://$GCS_BUCKET/research/screening_history.csv" \
+            gs://stock-auto-trader-506100-paper/research/screening_history.csv \
 
-            "data/research/screening_history.csv" \
+            data/research/screening_history.csv; then
 
-            || true
-
-          if [ -f data/research/screening_history.csv ]; then
-
-            echo "research CSV downloaded"
+            echo "Research data downloaded"
 
           else
 
-            echo "research CSV not found"
+            echo "Research data not found in GCS"
 
           fi
-
-      # ==========================================================
-
-      # GitHubへ研究データ保存
-
-      # ==========================================================
 
       - name: Save research data to GitHub
 
@@ -252,31 +190,27 @@ jobs:
 
             git add data/research/screening_history.csv
 
-            if git diff --cached --quiet; then
-
-              echo "No research data changes"
-
-            else
+            if ! git diff --cached --quiet; then
 
               git commit -m "Update research data"
 
               git push
 
+            else
+
+              echo "No research data changes"
+
             fi
 
           else
 
-            echo "research CSV not found - skip GitHub update"
+            echo "No research CSV - skip GitHub save"
 
           fi
 
-      # ==========================================================
-
-      # メール送信
-
-      # ==========================================================
-
       - name: Send result email
+
+        if: always() && hashFiles('latest_result.txt') != ''
 
         uses: dawidd6/action-send-mail@v3
 
@@ -296,24 +230,6 @@ jobs:
 
           from: ${{ secrets.MAIL_USER }}
 
-          secure: true
-
           body: file://latest_result.txt
 
-      # ==========================================================
-
-      # 完了
-
-      # ==========================================================
-
-      - name: Finished
-
-        run: |
-
-          echo "================================"
-
-          echo "v33.20 Paper Trader END"
-
-          echo "RUN_MODE: ${{ inputs.run_mode }}"
-
-          echo "================================"
+          attachments: latest_result.txt
