@@ -24,11 +24,11 @@ on:
 
   schedule:
 
-    # 12:45 JST = 03:45 UTC
+    # 12:45 JST
 
     - cron: "45 3 * * 1-5"
 
-    # 15:45 JST = 06:45 UTC
+    # 15:45 JST
 
     - cron: "45 6 * * 1-5"
 
@@ -78,15 +78,7 @@ jobs:
 
             HOUR=$(TZ=Asia/Tokyo date +%H)
 
-            MINUTE=$(TZ=Asia/Tokyo date +%M)
-
-            CURRENT_MINUTES=$((10#$HOUR * 60 + 10#$MINUTE))
-
-            DECISION_MINUTES=$((12 * 60 + 45))
-
-            RESULT_MINUTES=$((15 * 60 + 45))
-
-            if [ "$CURRENT_MINUTES" -lt "$RESULT_MINUTES" ]; then
+            if [ "$HOUR" = "12" ]; then
 
               RUN_MODE="decision"
 
@@ -101,8 +93,6 @@ jobs:
           echo "RUN_MODE=$RUN_MODE" >> "$GITHUB_ENV"
 
           echo "================================"
-
-          echo "JST: $(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M:%S')"
 
           echo "RUN_MODE=$RUN_MODE"
 
@@ -126,7 +116,7 @@ jobs:
 
       # =====================================================
 
-      # gcloud
+      # Setup gcloud
 
       # =====================================================
 
@@ -154,13 +144,17 @@ jobs:
 
       - name: Build Docker Image
 
+        shell: bash
+
         run: |
 
           docker build \
 
             --no-cache \
 
-            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest .
+            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest \
+
+            .
 
       # =====================================================
 
@@ -183,6 +177,8 @@ jobs:
       # =====================================================
 
       - name: Deploy Cloud Run Job
+
+        shell: bash
 
         run: |
 
@@ -248,14 +244,6 @@ jobs:
 
           )
 
-          if [ -z "$EXECUTION_NAME" ]; then
-
-            echo "ERROR: Execution name not found."
-
-            exit 1
-
-          fi
-
           echo "EXECUTION_NAME=$EXECUTION_NAME"
 
           echo "EXECUTION_NAME=$EXECUTION_NAME" >> "$GITHUB_ENV"
@@ -302,8 +290,6 @@ jobs:
 
           echo "================================"
 
-          rm -f data/latest_result.txt
-
           if [ "$RUN_MODE" = "decision" ]; then
 
             awk '
@@ -320,7 +306,7 @@ jobs:
 
               }
 
-              found && /^新規取引:/ {
+              found && /v33\.16 END/ {
 
                 exit
 
@@ -344,13 +330,7 @@ jobs:
 
               }
 
-              found && /持越し: なし/ {
-
-                exit
-
-              }
-
-              found && /^持越し:/ {
+              found && /v33\.16 END/ {
 
                 exit
 
@@ -359,14 +339,6 @@ jobs:
             ' data/cloud_run_raw.txt > data/latest_result.txt
 
           fi
-
-          echo "================================"
-
-          echo "EXTRACTED RESULT"
-
-          echo "================================"
-
-          cat data/latest_result.txt || true
 
       # =====================================================
 
@@ -397,10 +369,6 @@ jobs:
             echo ""
 
             echo "RUN_MODE=$RUN_MODE"
-
-            echo ""
-
-            echo "EXECUTION_NAME=$EXECUTION_NAME"
 
             echo ""
 
