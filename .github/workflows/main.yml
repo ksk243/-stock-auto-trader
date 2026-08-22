@@ -14,6 +14,28 @@ on:
 
         default: "test"
 
+permissions:
+
+  contents: write
+
+  id-token: write
+
+env:
+
+  PROJECT_ID: stock-auto-trader-506100
+
+  REGION: asia-northeast1
+
+  REPOSITORY: paper-trader
+
+  IMAGE: asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader
+
+  SERVICE_ACCOUNT: 913714190884-compute@developer.gserviceaccount.com
+
+  WIF_PROVIDER: projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github
+
+  GCS_BUCKET: stock-auto-trader-506100-paper
+
 jobs:
 
   paper-trader:
@@ -28,4 +50,12 @@ jobs:
 
       - name: Test
 
-        run: echo "v33.20 Paper Trader OK"
+        run: |
+
+          echo "v33.20 Paper Trader OK"
+
+          echo "PROJECT_ID=$PROJECT_ID"
+
+          echo "REGION=$REGION"
+
+          echo "REPOSITORY=$REPOSITORY"
