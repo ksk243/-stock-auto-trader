@@ -134,13 +134,11 @@ jobs:
 
       - name: Configure Docker
 
+        shell: bash
+
         run: |
 
-          gcloud auth configure-docker \
-
-            asia-northeast1-docker.pkg.dev \
-
-            --quiet
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       # =====================================================
 
@@ -154,13 +152,7 @@ jobs:
 
         run: |
 
-          docker build \
-
-            --no-cache \
-
-            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest \
-
-            .
+          docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest .
 
       # =====================================================
 
@@ -174,9 +166,7 @@ jobs:
 
         run: |
 
-          docker push \
-
-            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest
+          docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-18:latest
 
       # =====================================================
 
@@ -244,23 +234,15 @@ jobs:
 
         run: |
 
-          EXECUTION_NAME=$(
+          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-18-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
 
-            gcloud run jobs executions list \
+          if [ -z "$EXECUTION_NAME" ]; then
 
-              --job=v33-18-paper-trader \
+            echo "Cloud Run execution が取得できませんでした。"
 
-              --region=asia-northeast1 \
+            exit 1
 
-              --project=stock-auto-trader-506100 \
-
-              --sort-by="~createTime" \
-
-              --limit=1 \
-
-              --format="value(metadata.name)"
-
-          )
+          fi
 
           echo "EXECUTION_NAME=$EXECUTION_NAME"
 
@@ -308,12 +290,6 @@ jobs:
 
           echo "================================"
 
-          # =================================================
-
-          # DECISION
-
-          # =================================================
-
           if [ "$RUN_MODE" = "decision" ]; then
 
             awk '
@@ -338,12 +314,6 @@ jobs:
 
             ' data/cloud_run_raw.txt > data/latest_result.txt
 
-          # =================================================
-
-          # TEST
-
-          # =================================================
-
           elif [ "$RUN_MODE" = "test" ]; then
 
             awk '
@@ -367,12 +337,6 @@ jobs:
               }
 
             ' data/cloud_run_raw.txt > data/latest_result.txt
-
-          # =================================================
-
-          # RESULT
-
-          # =================================================
 
           elif [ "$RUN_MODE" = "result" ]; then
 
@@ -464,21 +428,15 @@ jobs:
 
           rm -f data/cloud_run_raw.txt
 
-          git config user.name \
+          git config user.name "github-actions[bot]"
 
-            "github-actions[bot]"
-
-          git config user.email \
-
-            "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add data/latest_result.txt
 
           if ! git diff --cached --quiet; then
 
-            git commit \
-
-              -m "Update v33.18 result"
+            git commit -m "Update v33.18 result"
 
             git push
 
