@@ -72,46 +72,288 @@ jobs:
 
       - name: Create Artifact Registry
 
-        run: gcloud artifacts repositories describe paper-trader --location=asia-northeast1 --project=stock-auto-trader-506100 >/dev/null 2>&1 || gcloud artifacts repositories create paper-trader --repository-format=docker --location=asia-northeast1 --project=stock-auto-trader-506100 --description="Paper Trader Docker Repository"
+        run: |
+
+          gcloud artifacts repositories describe paper-trader \
+
+            --location=asia-northeast1 \
+
+            --project=stock-auto-trader-506100 \
+
+            >/dev/null 2>&1 || \
+
+          gcloud artifacts repositories create paper-trader \
+
+            --repository-format=docker \
+
+            --location=asia-northeast1 \
+
+            --project=stock-auto-trader-506100 \
+
+            --description="Paper Trader Docker Repository"
 
       - name: Docker Build
 
-        run: docker build -t "$IMAGE:latest" .
+        run: |
+
+          docker build -t "$IMAGE:latest" .
 
       - name: Docker Push
 
-        run: docker push "$IMAGE:latest"
+        run: |
+
+          docker push "$IMAGE:latest"
 
       - name: Deploy Cloud Run
 
-        run: gcloud run deploy paper-trader --image="$IMAGE:latest" --region=asia-northeast1 --project=stock-auto-trader-506100 --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=stock-auto-trader-506100-paper"
+        run: |
 
-      - name: Download research data
+          gcloud run deploy paper-trader \
+
+            --image="$IMAGE:latest" \
+
+            --region=asia-northeast1 \
+
+            --project=stock-auto-trader-506100 \
+
+            --platform=managed \
+
+            --allow-unauthenticated \
+
+            --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=stock-auto-trader-506100-paper" \
+
+            --timeout=900
+
+      - name: Get Cloud Run URL
+
+        id: cloudrun
+
+        run: |
+
+          URL=$(gcloud run services describe paper-trader \
+
+            --region=asia-northeast1 \
+
+            --project=stock-auto-trader-506100 \
+
+            --format='value(status.url)')
+
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+          echo "Cloud Run URL: $URL"
+
+      - name: Run Paper Trader
+
+        run: |
+
+          URL="${{ steps.cloudrun.outputs.url }}"
+
+          echo "Cloud Run URL: $URL"
+
+          curl \
+
+            --fail-with-body \
+
+            --retry 3 \
+
+            --retry-delay 10 \
+
+            --max-time 900 \
+
+            "$URL/run?mode=${{ inputs.run_mode }}" \
+
+            | tee cloud_run_result.txt
+
+      - name: Download result files from GCS
 
         run: |
 
           mkdir -p data/research
 
-          gcloud storage cp "gs://stock-auto-trader-506100-paper/research/screening_history.csv" "data/research/screening_history.csv" || true
+          gcloud storage cp \
 
-      - name: Save research data to GitHub
+            "gs://${GCS_BUCKET}/research/screening_history.csv" \
+
+            "data/research/screening_history.csv"
+
+          gcloud storage cp \
+
+            "gs://${GCS_BUCKET}/latest_result.txt" \
+
+            "latest_result.txt"
+
+          gcloud storage cp \
+
+            "gs://${GCS_BUCKET}/paper_trader/portfolio.json" \
+
+            "data/portfolio.json"
+
+          gcloud storage cp \
+
+            "gs://${GCS_BUCKET}/paper_trader/paper_trades.csv" \
+
+            "data/paper_trades.csv" || true
+
+      - name: Check result file
 
         run: |
 
-          if [ -f data/research/screening_history.csv ]; then
+          echo "========================================"
 
-            git config user.name "github-actions[bot]"
+          echo "latest_result.txt"
 
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          echo "========================================"
 
-            git add data/research/screening_history.csv
+          if [ -f latest_result.txt ]; then
 
-            git diff --cached --quiet || git commit -m "Update research data"
+            ls -lh latest_result.txt
 
-            git push
+            cat latest_result.txt
 
           else
 
-            echo "research CSV not found - skip"
+            echo "ERROR: latest_result.txt が存在しません"
+
+            exit 1
 
           fi
+
+      - name: Save data to GitHub
+
+        run: |
+
+          git config user.name "github-actions[bot]"
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/research/screening_history.csv
+
+          git add data/portfolio.json
+
+          git add data/paper_trades.csv
+
+          git add latest_result.txt
+
+          if git diff --cached --quiet; then
+
+            echo "No data changes"
+
+          else
+
+            git commit -m "Update paper trader data"
+
+            git push
+
+          fi
+
+      - name: Check mail settings
+
+        run: |
+
+          echo "========================================"
+
+          echo "メール設定確認"
+
+          echo "========================================"
+
+          if [ -z "${{ secrets.SMTP_HOST }}" ]; then
+
+            echo "ERROR: SMTP_HOST が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.SMTP_PORT }}" ]; then
+
+            echo "ERROR: SMTP_PORT が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.SMTP_USER }}" ]; then
+
+            echo "ERROR: SMTP_USER が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.SMTP_PASSWORD }}" ]; then
+
+            echo "ERROR: SMTP_PASSWORD が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.MAIL_TO }}" ]; then
+
+            echo "ERROR: MAIL_TO が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.MAIL_USER }}" ]; then
+
+            echo "ERROR: MAIL_USER が未設定です"
+
+            exit 1
+
+          fi
+
+          echo "SMTP_HOST: 設定済み"
+
+          echo "SMTP_PORT: 設定済み"
+
+          echo "SMTP_USER: 設定済み"
+
+          echo "SMTP_PASSWORD: 設定済み"
+
+          echo "MAIL_TO: 設定済み"
+
+          echo "MAIL_USER: 設定済み"
+
+          echo "メール設定はすべて存在します"
+
+      - name: Send result email
+
+        uses: dawidd6/action-send-mail@v3
+
+        with:
+
+          server_address: ${{ secrets.SMTP_HOST }}
+
+          server_port: ${{ secrets.SMTP_PORT }}
+
+          username: ${{ secrets.SMTP_USER }}
+
+          password: ${{ secrets.SMTP_PASSWORD }}
+
+          subject: "v33.20 Paper Trader ${{ inputs.run_mode }}"
+
+          to: ${{ secrets.MAIL_TO }}
+
+          from: ${{ secrets.MAIL_USER }}
+
+          secure: true
+
+          body: file://latest_result.txt
+
+      - name: Email sent successfully
+
+        run: |
+
+          echo "========================================"
+
+          echo "メール送信成功"
+
+          echo "========================================"
+
+          echo "送信先: MAIL_TO"
+
+          echo "件名: v33.20 Paper Trader ${{ inputs.run_mode }}"
+
+          echo "========================================"
