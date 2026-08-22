@@ -1,4 +1,4 @@
-name: v33.9 Paper Trader
+name: v33.16 Paper Trader
 
 on:
 
@@ -24,11 +24,11 @@ on:
 
   schedule:
 
-    # 12:45 JST
+    # 12:45 JST = 03:45 UTC
 
     - cron: "45 3 * * 1-5"
 
-    # 15:45 JST
+    # 15:45 JST = 06:45 UTC
 
     - cron: "45 6 * * 1-5"
 
@@ -78,7 +78,15 @@ jobs:
 
             HOUR=$(TZ=Asia/Tokyo date +%H)
 
-            if [ "$HOUR" = "12" ]; then
+            MINUTE=$(TZ=Asia/Tokyo date +%M)
+
+            CURRENT_MINUTES=$((10#$HOUR * 60 + 10#$MINUTE))
+
+            DECISION_MINUTES=$((12 * 60 + 45))
+
+            RESULT_MINUTES=$((15 * 60 + 45))
+
+            if [ "$CURRENT_MINUTES" -lt "$RESULT_MINUTES" ]; then
 
               RUN_MODE="decision"
 
@@ -93,6 +101,8 @@ jobs:
           echo "RUN_MODE=$RUN_MODE" >> "$GITHUB_ENV"
 
           echo "================================"
+
+          echo "JST: $(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M:%S')"
 
           echo "RUN_MODE=$RUN_MODE"
 
@@ -132,7 +142,9 @@ jobs:
 
       - name: Configure Docker
 
-        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+        run: |
+
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       # =====================================================
 
@@ -142,7 +154,13 @@ jobs:
 
       - name: Build Docker Image
 
-        run: docker build --no-cache -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest .
+        run: |
+
+          docker build \
+
+            --no-cache \
+
+            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest .
 
       # =====================================================
 
@@ -152,7 +170,11 @@ jobs:
 
       - name: Push Docker Image
 
-        run: docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest
+        run: |
+
+          docker push \
+
+            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest
 
       # =====================================================
 
@@ -162,7 +184,21 @@ jobs:
 
       - name: Deploy Cloud Run Job
 
-        run: gcloud run jobs deploy v33-9-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-9:latest --region=asia-northeast1 --project=stock-auto-trader-506100 --tasks=1 --max-retries=1 --set-env-vars=RUN_MODE=$RUN_MODE
+        run: |
+
+          gcloud run jobs deploy v33-16-paper-trader \
+
+            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest \
+
+            --region=asia-northeast1 \
+
+            --project=stock-auto-trader-506100 \
+
+            --tasks=1 \
+
+            --max-retries=1 \
+
+            --set-env-vars="RUN_MODE=$RUN_MODE"
 
       # =====================================================
 
@@ -172,7 +208,15 @@ jobs:
 
       - name: Run Cloud Run Job
 
-        run: gcloud run jobs execute v33-9-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --wait
+        run: |
+
+          gcloud run jobs execute v33-16-paper-trader \
+
+            --region=asia-northeast1 \
+
+            --project=stock-auto-trader-506100 \
+
+            --wait
 
       # =====================================================
 
@@ -186,7 +230,31 @@ jobs:
 
         run: |
 
-          EXECUTION_NAME=$(gcloud run jobs executions list --job=v33-9-paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --sort-by="~createTime" --limit=1 --format="value(metadata.name)")
+          EXECUTION_NAME=$(
+
+            gcloud run jobs executions list \
+
+              --job=v33-16-paper-trader \
+
+              --region=asia-northeast1 \
+
+              --project=stock-auto-trader-506100 \
+
+              --sort-by="~createTime" \
+
+              --limit=1 \
+
+              --format="value(metadata.name)"
+
+          )
+
+          if [ -z "$EXECUTION_NAME" ]; then
+
+            echo "ERROR: Execution name not found."
+
+            exit 1
+
+          fi
 
           echo "EXECUTION_NAME=$EXECUTION_NAME"
 
@@ -212,7 +280,19 @@ jobs:
 
           echo "================================"
 
-          gcloud logging read "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-9-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" --project=stock-auto-trader-506100 --limit=1000 --order=asc --format="value(textPayload)" > data/cloud_run_raw.txt
+          gcloud logging read \
+
+            "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-16-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" \
+
+            --project=stock-auto-trader-506100 \
+
+            --limit=1000 \
+
+            --order=asc \
+
+            --format="value(textPayload)" \
+
+            > data/cloud_run_raw.txt
 
           cat data/cloud_run_raw.txt
 
@@ -221,6 +301,8 @@ jobs:
           echo "EXTRACT RESULT"
 
           echo "================================"
+
+          rm -f data/latest_result.txt
 
           if [ "$RUN_MODE" = "decision" ]; then
 
@@ -238,7 +320,7 @@ jobs:
 
               }
 
-              found && /v33\.9 END/ {
+              found && /^新規取引:/ {
 
                 exit
 
@@ -262,7 +344,13 @@ jobs:
 
               }
 
-              found && /v33\.9 END/ {
+              found && /持越し: なし/ {
+
+                exit
+
+              }
+
+              found && /^持越し:/ {
 
                 exit
 
@@ -271,6 +359,14 @@ jobs:
             ' data/cloud_run_raw.txt > data/latest_result.txt
 
           fi
+
+          echo "================================"
+
+          echo "EXTRACTED RESULT"
+
+          echo "================================"
+
+          cat data/latest_result.txt || true
 
       # =====================================================
 
@@ -304,6 +400,10 @@ jobs:
 
             echo ""
 
+            echo "EXECUTION_NAME=$EXECUTION_NAME"
+
+            echo ""
+
             echo "CLOUD RUN RAW LOG:"
 
             cat data/cloud_run_raw.txt
@@ -334,7 +434,7 @@ jobs:
 
           if ! git diff --cached --quiet; then
 
-            git commit -m "Update v33.9 result"
+            git commit -m "Update v33.16 result"
 
             git push
 
@@ -364,7 +464,7 @@ jobs:
 
           password: ${{ secrets.MAIL_PASS }}
 
-          subject: "v33.9 Paper Trader"
+          subject: "v33.16 Paper Trader"
 
           to: ${{ secrets.MAIL_TO }}
 
