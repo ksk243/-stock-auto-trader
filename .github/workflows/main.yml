@@ -68,95 +68,23 @@ jobs:
 
       - name: Configure Docker
 
-        run: |
-
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       - name: Create Artifact Registry
 
-        run: |
-
-          if ! gcloud artifacts repositories describe paper-trader \
-
-            --location=asia-northeast1 \
-
-            --project=stock-auto-trader-506100 \
-
-            >/dev/null 2>&1; then
-
-            gcloud artifacts repositories create paper-trader \
-
-              --repository-format=docker \
-
-              --location=asia-northeast1 \
-
-              --project=stock-auto-trader-506100 \
-
-              --description="Paper Trader Docker Repository"
-
-          fi
+        run: gcloud artifacts repositories describe paper-trader --location=asia-northeast1 --project=stock-auto-trader-506100 >/dev/null 2>&1 || gcloud artifacts repositories create paper-trader --repository-format=docker --location=asia-northeast1 --project=stock-auto-trader-506100 --description="Paper Trader Docker Repository"
 
       - name: Docker Build
 
-        run: |
-
-          docker build \
-
-            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader:latest \
-
-            .
+        run: docker build -t "$IMAGE:latest" .
 
       - name: Docker Push
 
-        run: |
-
-          docker push \
-
-            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader:latest
+        run: docker push "$IMAGE:latest"
 
       - name: Deploy Cloud Run
 
-        run: |
-
-          gcloud run deploy paper-trader \
-
-            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader:latest \
-
-            --region=asia-northeast1 \
-
-            --project=stock-auto-trader-506100 \
-
-            --platform=managed \
-
-            --allow-unauthenticated \
-
-            --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=stock-auto-trader-506100-paper"
-
-      - name: Wait for Cloud Run
-
-        run: |
-
-          gcloud run services describe paper-trader \
-
-            --region=asia-northeast1 \
-
-            --project=stock-auto-trader-506100 \
-
-            --format="value(status.latestReadyRevisionName)"
-
-      - name: Download latest result
-
-        run: |
-
-          rm -f latest_result.txt
-
-          gcloud storage cp \
-
-            gs://stock-auto-trader-506100-paper/latest_result.txt \
-
-            ./latest_result.txt
-
-          test -s latest_result.txt
+        run: gcloud run deploy paper-trader --image="$IMAGE:latest" --region=asia-northeast1 --project=stock-auto-trader-506100 --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=stock-auto-trader-506100-paper"
 
       - name: Download research data
 
@@ -164,19 +92,7 @@ jobs:
 
           mkdir -p data/research
 
-          if gcloud storage cp \
-
-            gs://stock-auto-trader-506100-paper/research/screening_history.csv \
-
-            data/research/screening_history.csv; then
-
-            echo "Research data downloaded"
-
-          else
-
-            echo "Research data not found in GCS"
-
-          fi
+          gcloud storage cp "gs://stock-auto-trader-506100-paper/research/screening_history.csv" "data/research/screening_history.csv" || true
 
       - name: Save research data to GitHub
 
@@ -190,46 +106,12 @@ jobs:
 
             git add data/research/screening_history.csv
 
-            if ! git diff --cached --quiet; then
+            git diff --cached --quiet || git commit -m "Update research data"
 
-              git commit -m "Update research data"
-
-              git push
-
-            else
-
-              echo "No research data changes"
-
-            fi
+            git push
 
           else
 
-            echo "No research CSV - skip GitHub save"
+            echo "research CSV not found - skip"
 
           fi
-
-      - name: Send result email
-
-        if: always() && hashFiles('latest_result.txt') != ''
-
-        uses: dawidd6/action-send-mail@v3
-
-        with:
-
-          server_address: ${{ secrets.SMTP_HOST }}
-
-          server_port: ${{ secrets.SMTP_PORT }}
-
-          username: ${{ secrets.SMTP_USER }}
-
-          password: ${{ secrets.SMTP_PASSWORD }}
-
-          subject: "v33.20 Paper Trader - ${{ inputs.run_mode }}"
-
-          to: ${{ secrets.MAIL_TO }}
-
-          from: ${{ secrets.MAIL_USER }}
-
-          body: file://latest_result.txt
-
-          attachments: latest_result.txt
