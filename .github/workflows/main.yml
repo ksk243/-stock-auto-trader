@@ -68,9 +68,7 @@ jobs:
 
       - name: Configure Docker
 
-        run: |
-
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       - name: Create Artifact Registry
 
@@ -90,15 +88,11 @@ jobs:
 
       - name: Docker Build
 
-        run: |
-
-          docker build -t "${IMAGE}:latest" .
+        run: docker build -t "${IMAGE}:latest" .
 
       - name: Docker Push
 
-        run: |
-
-          docker push "${IMAGE}:latest"
+        run: docker push "${IMAGE}:latest"
 
       - name: Deploy Cloud Run
 
@@ -390,7 +384,7 @@ jobs:
 
           echo "メール設定はすべて存在します"
 
-        - name: Send result email
+      - name: Send result email
 
         uses: dawidd6/action-send-mail@v3
 
@@ -415,6 +409,7 @@ jobs:
           starttls: true
 
           body: file://latest_result.txt
+
       - name: Email sent successfully
 
         run: |
