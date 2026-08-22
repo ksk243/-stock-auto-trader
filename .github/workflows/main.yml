@@ -34,6 +34,8 @@ env:
 
   WIF_PROVIDER: projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github
 
+  GCS_BUCKET: stock-auto-trader-506100-paper
+
 jobs:
 
   paper-trader:
@@ -82,32 +84,34 @@ jobs:
 
       - name: Deploy Cloud Run
 
-        run: gcloud run deploy paper-trader --image="$IMAGE:latest" --region="$REGION" --project="$PROJECT_ID" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }}"
+        run: gcloud run deploy paper-trader --image="$IMAGE:latest" --region="$REGION" --project="$PROJECT_ID" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=$GCS_BUCKET"
 
-      - name: Download research data from Cloud Run
-
-        run: |
-
-          gcloud run jobs execute paper-trader --region="$REGION" --project="$PROJECT_ID" || true
-
-      - name: Save research data to GitHub
+      - name: Download research data
 
         run: |
 
           mkdir -p data/research
 
-          if [ ! -f data/research/screening_history.csv ]; then
+          gcloud storage cp "gs://$GCS_BUCKET/research/screening_history.csv" "data/research/screening_history.csv" || true
 
-            echo "date,ticker" > data/research/screening_history.csv
+      - name: Save research data to GitHub
+
+        run: |
+
+          if [ -f data/research/screening_history.csv ]; then
+
+            git config user.name "github-actions[bot]"
+
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+            git add data/research/screening_history.csv
+
+            git diff --cached --quiet || git commit -m "Update research data"
+
+            git push
+
+          else
+
+            echo "research CSV not found"
 
           fi
-
-          git config user.name "github-actions[bot]"
-
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add data/research/screening_history.csv
-
-          git diff --cached --quiet || git commit -m "Update research data"
-
-          git push
