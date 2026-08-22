@@ -144,7 +144,7 @@ jobs:
 
           echo "========================================"
 
-          curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 -H "Authorization: Bearer ${TOKEN}" "${URL}/run?mode=${{ inputs.run_mode }}" | tee cloud_run_result.txt
+          curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "${URL}/run?mode=${{ inputs.run_mode }}" | tee cloud_run_result.txt
 
       - name: Use current Cloud Run result
 
