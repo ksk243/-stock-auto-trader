@@ -114,9 +114,13 @@ jobs:
 
         with:
 
+          project_id: ${{ env.PROJECT_ID }}
+
           workload_identity_provider: projects/913714190884/locations/global/workloadIdentityPools/GitHub-pool/providers/github
 
           service_account: 913714190884-compute@developer.gserviceaccount.com
+
+          audience: https://iam.googleapis.com/projects/913714190884/locations/global/workloadIdentityPools/GitHub-pool/providers/github
 
       # ======================================================
 
