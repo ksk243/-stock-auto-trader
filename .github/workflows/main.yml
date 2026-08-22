@@ -68,7 +68,9 @@ jobs:
 
       - name: Configure Docker
 
-        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+        run: |
+
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       - name: Create Artifact Registry
 
@@ -88,31 +90,47 @@ jobs:
 
       - name: Docker Build
 
-        run: docker build -t "${IMAGE}:latest" .
+        run: |
+
+          echo "========================================"
+
+          echo "Docker Build"
+
+          echo "========================================"
+
+          docker build -t "${IMAGE}:latest" .
 
       - name: Docker Push
 
-        run: docker push "${IMAGE}:latest"
+        run: |
+
+          echo "========================================"
+
+          echo "Docker Push"
+
+          echo "========================================"
+
+          docker push "${IMAGE}:latest"
 
       - name: Deploy Cloud Run
 
-        run: >
+        run: |
 
-          gcloud run deploy paper-trader
+          echo "========================================"
 
-          --image="${IMAGE}:latest"
+          echo "Deploy Cloud Run"
 
-          --region="${REGION}"
+          echo "========================================"
 
-          --project="${PROJECT_ID}"
+          echo "IMAGE: ${IMAGE}:latest"
 
-          --platform=managed
+          echo "REGION: ${REGION}"
 
-          --allow-unauthenticated
+          echo "RUN_MODE: ${{ inputs.run_mode }}"
 
-          --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${GCS_BUCKET}"
+          echo "========================================"
 
-          --timeout=900
+          gcloud run deploy paper-trader --image="${IMAGE}:latest" --region="${REGION}" --project="${PROJECT_ID}" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${GCS_BUCKET}" --timeout=900
 
       - name: Get Cloud Run URL
 
@@ -434,7 +452,7 @@ jobs:
 
           from: ${{ secrets.MAIL_USER }}
 
-          secure: false
+          secure: true
 
           body: file://latest_result.txt
 
