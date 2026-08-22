@@ -26,15 +26,15 @@ env:
 
   REGION: asia-northeast1
 
-  SERVICE_NAME: stock-paper-trader
-
   REPOSITORY: paper-trader
 
   IMAGE_NAME: paper-trader
 
-  GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+  SERVICE_NAME: stock-paper-trader
 
   SERVICE_ACCOUNT: 913714190884-compute@developer.gserviceaccount.com
+
+  GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
 
 jobs:
 
@@ -66,6 +66,10 @@ jobs:
 
           project_id: stock-auto-trader-506100
 
+      - name: Create Artifact Registry
+
+        run: gcloud artifacts repositories describe paper-trader --location=asia-northeast1 >/dev/null 2>&1 || gcloud artifacts repositories create paper-trader --repository-format=docker --location=asia-northeast1 --description="Paper Trader Docker Repository"
+
       - name: Configure Docker
 
         run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
@@ -80,13 +84,9 @@ jobs:
 
       - name: Deploy Cloud Run
 
-        run: gcloud run deploy stock-paper-trader --image asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader:latest --region asia-northeast1 --platform managed --no-allow-unauthenticated --service-account 913714190884-compute@developer.gserviceaccount.com --set-env-vars RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${{ secrets.GCS_BUCKET }}
+        run: gcloud run deploy stock-paper-trader --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader:latest --region=asia-northeast1 --platform=managed --no-allow-unauthenticated --service-account=913714190884-compute@developer.gserviceaccount.com --set-env-vars=RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${{ secrets.GCS_BUCKET }}
 
-      - name: Run Cloud Run
-
-        run: gcloud run services proxy stock-paper-trader --region asia-northeast1 --port 8080 > /tmp/cloudrun.log 2>&1 & sleep 5; curl -f -X POST http://127.0.0.1:8080/run
-
-      - name: Download research CSV from GCS
+      - name: Download research CSV
 
         run: mkdir -p data/research; if gcloud storage ls "gs://${GCS_BUCKET}/research/screening_history.csv" >/dev/null 2>&1; then gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"; else echo "Research CSV not found in GCS"; fi
 
