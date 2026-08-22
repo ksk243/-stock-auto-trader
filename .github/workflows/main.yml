@@ -14,43 +14,11 @@ on:
 
         default: "test"
 
-        type: choice
-
-        options:
-
-          - decision
-
-          - result
-
-          - test
-
-  schedule:
-
-    # 12:45 JST = 03:45 UTC
-
-    - cron: "45 3 * * 1-5"
-
-    # 15:45 JST = 06:45 UTC
-
-    - cron: "45 6 * * 1-5"
-
-# ============================================================
-
-# GitHub Actions permissions
-
-# ============================================================
-
 permissions:
 
   contents: write
 
   id-token: write
-
-# ============================================================
-
-# ENV
-
-# ============================================================
 
 env:
 
@@ -58,19 +26,15 @@ env:
 
   REGION: asia-northeast1
 
-  JOB_NAME: v33-20-paper-trader
+  SERVICE_NAME: stock-paper-trader
 
-  REPOSITORY: stock-auto-trader
+  REPOSITORY: paper-trader
 
-  IMAGE: asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-20:latest
+  IMAGE_NAME: paper-trader
 
-  GCS_BUCKET: stock-auto-trader-506100-paper
+  GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
 
-# ============================================================
-
-# JOB
-
-# ============================================================
+  SERVICE_ACCOUNT: 913714190884-compute@developer.gserviceaccount.com
 
 jobs:
 
@@ -78,31 +42,13 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    timeout-minutes: 30
-
     steps:
 
-      # ======================================================
+      - name: Checkout
 
-      # 1. Checkout
+        uses: actions/checkout@v4
 
-      # ======================================================
-
-      - name: Checkout repository
-
-        uses: actions/checkout@v6
-
-        with:
-
-          fetch-depth: 0
-
-      # ======================================================
-
-      # 2. Google Cloud Authentication
-
-      # ======================================================
-
-      - name: Authenticate to Google Cloud
+      - name: Authenticate Google Cloud
 
         uses: google-github-actions/auth@v3
 
@@ -112,322 +58,44 @@ jobs:
 
           service_account: 913714190884-compute@developer.gserviceaccount.com
 
-          create_credentials_file: true
-
-          export_environment_variables: true
-
-      # ======================================================
-
-      # 3. Setup gcloud
-
-      # ======================================================
-
-      - name: Setup Google Cloud CLI
+      - name: Setup gcloud
 
         uses: google-github-actions/setup-gcloud@v3
 
         with:
 
-          project_id: ${{ env.PROJECT_ID }}
-
-      # ======================================================
-
-      # 4. Docker authentication
-
-      # ======================================================
+          project_id: stock-auto-trader-506100
 
       - name: Configure Docker
 
-        run: |
-
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
-
-      # ======================================================
-
-      # 5. Docker build
-
-      # ======================================================
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       - name: Build Docker image
 
-        run: |
-
-          echo "================================"
-
-          echo "DOCKER BUILD"
-
-          echo "IMAGE=${IMAGE}"
-
-          echo "================================"
-
-          docker build -t "${IMAGE}" .
-
-      # ======================================================
-
-      # 6. Docker push
-
-      # ======================================================
+        run: docker build -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader:latest .
 
       - name: Push Docker image
 
-        run: |
+        run: docker push asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader:latest
 
-          echo "================================"
+      - name: Deploy Cloud Run
 
-          echo "DOCKER PUSH"
+        run: gcloud run deploy stock-paper-trader --image asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader:latest --region asia-northeast1 --platform managed --no-allow-unauthenticated --service-account 913714190884-compute@developer.gserviceaccount.com --set-env-vars RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=${{ secrets.GCS_BUCKET }}
 
-          echo "IMAGE=${IMAGE}"
+      - name: Run Cloud Run
 
-          echo "================================"
+        run: gcloud run services proxy stock-paper-trader --region asia-northeast1 --port 8080 > /tmp/cloudrun.log 2>&1 & sleep 5; curl -f -X POST http://127.0.0.1:8080/run
 
-          docker push "${IMAGE}"
+      - name: Download research CSV from GCS
 
-      # ======================================================
+        run: mkdir -p data/research; if gcloud storage ls "gs://${GCS_BUCKET}/research/screening_history.csv" >/dev/null 2>&1; then gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"; else echo "Research CSV not found in GCS"; fi
 
-      # 7. GCS bucket確認
+      - name: Save research data to GitHub
 
-      # ======================================================
+        run: git add data/research/screening_history.csv data/portfolio.json data/paper_trades.csv data/paper_candidates.csv data/latest_result.txt 2>/dev/null || true; git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"; git diff --cached --quiet || git commit -m "Update paper trader research data"; git push
 
-      - name: Ensure GCS bucket
+      - name: Show result
 
-        run: |
+        if: always()
 
-          if gcloud storage buckets describe "gs://${GCS_BUCKET}" >/dev/null 2>&1; then
-
-            echo "GCS bucket already exists."
-
-          else
-
-            echo "Creating GCS bucket..."
-
-            gcloud storage buckets create "gs://${GCS_BUCKET}" --location="${REGION}" --project="${PROJECT_ID}"
-
-          fi
-
-      # ======================================================
-
-      # 8. Cloud Run Job Deploy
-
-      # ======================================================
-
-      - name: Deploy Cloud Run Job
-
-        run: |
-
-          echo "================================"
-
-          echo "CLOUD RUN DEPLOY"
-
-          echo "IMAGE=${IMAGE}"
-
-          echo "JOB_NAME=${JOB_NAME}"
-
-          echo "REGION=${REGION}"
-
-          echo "GCS_BUCKET=${GCS_BUCKET}"
-
-          echo "================================"
-
-          gcloud run jobs deploy "${JOB_NAME}" --image="${IMAGE}" --region="${REGION}" --project="${PROJECT_ID}" --set-env-vars="GCS_BUCKET=${GCS_BUCKET}"
-
-      # ======================================================
-
-      # 9. RUN_MODE決定
-
-      # ======================================================
-
-      - name: Determine RUN_MODE
-
-        id: mode
-
-        shell: bash
-
-        run: |
-
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-
-            MODE="${{ github.event.inputs.run_mode }}"
-
-          else
-
-            HOUR=$(TZ=Asia/Tokyo date +%H)
-
-            MINUTE=$(TZ=Asia/Tokyo date +%M)
-
-            TOTAL=$((10#$HOUR * 60 + 10#$MINUTE))
-
-            if [ "$TOTAL" -lt 840 ]; then
-
-              MODE="decision"
-
-            else
-
-              MODE="result"
-
-            fi
-
-          fi
-
-          echo "RUN_MODE=${MODE}"
-
-          echo "run_mode=${MODE}" >> "$GITHUB_OUTPUT"
-
-      # ======================================================
-
-      # 10. Cloud Run Job Execute
-
-      # ======================================================
-
-      - name: Execute Cloud Run Job
-
-        run: |
-
-          echo "================================"
-
-          echo "RUNNING CLOUD RUN JOB"
-
-          echo "RUN_MODE=${{ steps.mode.outputs.run_mode }}"
-
-          echo "REGION=${REGION}"
-
-          echo "JOB_NAME=${JOB_NAME}"
-
-          echo "GCS_BUCKET=${GCS_BUCKET}"
-
-          echo "================================"
-
-          gcloud run jobs execute "${JOB_NAME}" --region="${REGION}" --project="${PROJECT_ID}" --update-env-vars="RUN_MODE=${{ steps.mode.outputs.run_mode }}" --wait
-
-      # ======================================================
-
-      # 11. GCSから研究CSV取得
-
-      # ======================================================
-
-      - name: Download research CSV
-
-        run: |
-
-          echo "================================"
-
-          echo "DOWNLOAD RESEARCH CSV"
-
-          echo "================================"
-
-          mkdir -p data/research
-
-          if gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"; then
-
-            echo "Research CSV downloaded."
-
-          else
-
-            echo "Research CSV not found."
-
-            echo "Creating empty CSV directory."
-
-          fi
-
-      # ======================================================
-
-      # 12. Git status
-
-      # ======================================================
-
-      - name: Check generated data
-
-        run: |
-
-          echo "================================"
-
-          echo "GENERATED DATA"
-
-          echo "================================"
-
-          if [ -f data/research/screening_history.csv ]; then
-
-            echo "CSV exists."
-
-            wc -l data/research/screening_history.csv
-
-            ls -lh data/research/screening_history.csv
-
-          else
-
-            echo "CSV does not exist."
-
-          fi
-
-          echo "================================"
-
-          echo "GIT STATUS"
-
-          echo "================================"
-
-          git status --short
-
-      # ======================================================
-
-      # 13. GitHubへ保存
-
-      # ======================================================
-
-      - name: Commit research CSV
-
-        run: |
-
-          echo "================================"
-
-          echo "SAVE RESEARCH DATA TO GITHUB"
-
-          echo "================================"
-
-          git config user.name "github-actions[bot]"
-
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add data/research/screening_history.csv
-
-          if git diff --cached --quiet; then
-
-            echo "No research data changes."
-
-          else
-
-            git commit -m "data: update v33.20 screening history"
-
-            git push
-
-            echo "Research CSV committed to GitHub."
-
-          fi
-
-      # ======================================================
-
-      # 14. 終了
-
-      # ======================================================
-
-      - name: Final status
-
-        run: |
-
-          echo "================================"
-
-          echo "v33.20 PAPER TRADER END"
-
-          echo "================================"
-
-          echo "RUN_MODE=${{ steps.mode.outputs.run_mode }}"
-
-          echo "CSV:"
-
-          echo "data/research/screening_history.csv"
-
-          if [ -f data/research/screening_history.csv ]; then
-
-            echo "Rows:"
-
-            wc -l data/research/screening_history.csv
-
-          fi
+        run: cat data/latest_result.txt 2>/dev/null || true
