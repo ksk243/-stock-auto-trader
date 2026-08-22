@@ -100,12 +100,6 @@ jobs:
 
       # 2. Google Cloud Authentication
 
-      #
-
-      # Workload Identity Federation
-
-      # GitHub Actions → Google Cloud
-
       # ======================================================
 
       - name: Authenticate to Google Cloud
@@ -146,11 +140,7 @@ jobs:
 
         run: |
 
-          gcloud auth configure-docker \
-
-            asia-northeast1-docker.pkg.dev \
-
-            --quiet
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       # ======================================================
 
@@ -170,11 +160,7 @@ jobs:
 
           echo "================================"
 
-          docker build \
-
-            -t "${IMAGE}" \
-
-            .
+          docker build -t "${IMAGE}" .
 
       # ======================================================
 
@@ -206,11 +192,7 @@ jobs:
 
         run: |
 
-          if gcloud storage buckets describe \
-
-            "gs://${GCS_BUCKET}" \
-
-            >/dev/null 2>&1; then
+          if gcloud storage buckets describe "gs://${GCS_BUCKET}" >/dev/null 2>&1; then
 
             echo "GCS bucket already exists."
 
@@ -218,13 +200,7 @@ jobs:
 
             echo "Creating GCS bucket..."
 
-            gcloud storage buckets create \
-
-              "gs://${GCS_BUCKET}" \
-
-              --location="${REGION}" \
-
-              --project="${PROJECT_ID}"
+            gcloud storage buckets create "gs://${GCS_BUCKET}" --location="${REGION}" --project="${PROJECT_ID}"
 
           fi
 
@@ -252,15 +228,7 @@ jobs:
 
           echo "================================"
 
-          gcloud run jobs deploy "${JOB_NAME}" \
-
-            --image="${IMAGE}" \
-
-            --region="${REGION}" \
-
-            --project="${PROJECT_ID}" \
-
-            --set-env-vars="GCS_BUCKET=${GCS_BUCKET}"
+          gcloud run jobs deploy "${JOB_NAME}" --image="${IMAGE}" --region="${REGION}" --project="${PROJECT_ID}" --set-env-vars="GCS_BUCKET=${GCS_BUCKET}"
 
       # ======================================================
 
@@ -328,15 +296,7 @@ jobs:
 
           echo "================================"
 
-          gcloud run jobs execute "${JOB_NAME}" \
-
-            --region="${REGION}" \
-
-            --project="${PROJECT_ID}" \
-
-            --update-env-vars="RUN_MODE=${{ steps.mode.outputs.run_mode }}" \
-
-            --wait
+          gcloud run jobs execute "${JOB_NAME}" --region="${REGION}" --project="${PROJECT_ID}" --update-env-vars="RUN_MODE=${{ steps.mode.outputs.run_mode }}" --wait
 
       # ======================================================
 
@@ -356,11 +316,7 @@ jobs:
 
           mkdir -p data/research
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/research/screening_history.csv" \
-
-            "data/research/screening_history.csv"; then
+          if gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"; then
 
             echo "Research CSV downloaded."
 
@@ -426,17 +382,11 @@ jobs:
 
           echo "================================"
 
-          git config user.name \
+          git config user.name "github-actions[bot]"
 
-            "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git config user.email \
-
-            "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add \
-
-            data/research/screening_history.csv
+          git add data/research/screening_history.csv
 
           if git diff --cached --quiet; then
 
@@ -444,9 +394,7 @@ jobs:
 
           else
 
-            git commit \
-
-              -m "data: update v33.20 screening history"
+            git commit -m "data: update v33.20 screening history"
 
             git push
 
