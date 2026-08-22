@@ -183,22 +183,6 @@ jobs:
 
           echo ""
 
-          echo "latest_result.txt"
-
-          if gcloud storage cp "gs://${GCS_BUCKET}/latest_result.txt" "latest_result.txt"; then
-
-            echo "latest_result.txt downloaded"
-
-          else
-
-            echo "ERROR: latest_result.txt がGCSにありません"
-
-            exit 1
-
-          fi
-
-          echo ""
-
           echo "portfolio.json"
 
           if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/portfolio.json" "data/portfolio.json"; then
