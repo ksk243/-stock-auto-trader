@@ -68,23 +68,13 @@ jobs:
 
       - name: Configure Docker
 
-        run: |
-
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       - name: Create Artifact Registry
 
         run: |
 
-          if gcloud artifacts repositories describe "${REPOSITORY}" \
-
-            --location="${REGION}" \
-
-            --project="${PROJECT_ID}" \
-
-            >/dev/null 2>&1
-
-          then
+          if gcloud artifacts repositories describe "${REPOSITORY}" --location="${REGION}" --project="${PROJECT_ID}" >/dev/null 2>&1; then
 
             echo "Artifact Registry repository already exists"
 
@@ -92,33 +82,17 @@ jobs:
 
             echo "Creating Artifact Registry repository"
 
-            gcloud artifacts repositories create "${REPOSITORY}" \
-
-              --repository-format=docker \
-
-              --location="${REGION}" \
-
-              --project="${PROJECT_ID}" \
-
-              --description="Paper Trader Docker Repository"
+            gcloud artifacts repositories create "${REPOSITORY}" --repository-format=docker --location="${REGION}" --project="${PROJECT_ID}" --description="Paper Trader Docker Repository"
 
           fi
 
       - name: Docker Build
 
-        run: |
-
-          docker build \
-
-            -t "${IMAGE}:latest" \
-
-            .
+        run: docker build -t "${IMAGE}:latest" .
 
       - name: Docker Push
 
-        run: |
-
-          docker push "${IMAGE}:latest"
+        run: docker push "${IMAGE}:latest"
 
       - name: Deploy Cloud Run
 
@@ -146,13 +120,7 @@ jobs:
 
         run: |
 
-          URL=$(gcloud run services describe paper-trader \
-
-            --region="${REGION}" \
-
-            --project="${PROJECT_ID}" \
-
-            --format='value(status.url)')
+          URL=$(gcloud run services describe paper-trader --region="${REGION}" --project="${PROJECT_ID}" --format='value(status.url)')
 
           if [ -z "$URL" ]; then
 
@@ -190,19 +158,7 @@ jobs:
 
           echo "========================================"
 
-          curl \
-
-            --fail-with-body \
-
-            --retry 3 \
-
-            --retry-delay 10 \
-
-            --max-time 900 \
-
-            "${URL}/run?mode=${{ inputs.run_mode }}" \
-
-            | tee cloud_run_result.txt
+          curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "${URL}/run?mode=${{ inputs.run_mode }}" | tee cloud_run_result.txt
 
       - name: Download result files from GCS
 
@@ -220,13 +176,7 @@ jobs:
 
           echo "screening_history.csv"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/research/screening_history.csv" \
-
-            "data/research/screening_history.csv"
-
-          then
+          if gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"; then
 
             echo "screening_history.csv downloaded"
 
@@ -242,13 +192,7 @@ jobs:
 
           echo "latest_result.txt"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/latest_result.txt" \
-
-            "latest_result.txt"
-
-          then
+          if gcloud storage cp "gs://${GCS_BUCKET}/latest_result.txt" "latest_result.txt"; then
 
             echo "latest_result.txt downloaded"
 
@@ -264,13 +208,7 @@ jobs:
 
           echo "portfolio.json"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/paper_trader/portfolio.json" \
-
-            "data/portfolio.json"
-
-          then
+          if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/portfolio.json" "data/portfolio.json"; then
 
             echo "portfolio.json downloaded"
 
@@ -296,13 +234,7 @@ jobs:
 
           echo "paper_trades.csv"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/paper_trader/paper_trades.csv" \
-
-            "data/paper_trades.csv"
-
-          then
+          if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/paper_trades.csv" "data/paper_trades.csv"; then
 
             echo "paper_trades.csv downloaded"
 
@@ -468,7 +400,17 @@ jobs:
 
           fi
 
-          echo "SMTP設定: OK"
+          echo "SMTP_HOST: 設定済み"
+
+          echo "SMTP_PORT: 設定済み"
+
+          echo "SMTP_USER: 設定済み"
+
+          echo "SMTP_PASSWORD: 設定済み"
+
+          echo "MAIL_TO: 設定済み"
+
+          echo "MAIL_USER: 設定済み"
 
           echo "メール設定はすべて存在します"
 
