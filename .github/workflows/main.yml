@@ -82,6 +82,20 @@ jobs:
 
         run: docker push "$IMAGE:latest"
 
+      - name: Deploy Cloud Run
+
+        run: gcloud run deploy paper-trader --image="$IMAGE:latest" --region=asia-northeast1 --project=stock-auto-trader-506100 --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=stock-auto-trader-506100-paper" --timeout=900
+
+      - name: Get Cloud Run URL
+
+        id: cloudrun
+
+        run: URL=$(gcloud run services describe paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --format='value(status.url)'); echo "url=$URL" >> "$GITHUB_OUTPUT"; echo "Cloud Run URL: $URL"
+
+      - name: Run Paper Trader
+
+        run: URL="${{ steps.cloudrun.outputs.url }}"; echo "Cloud Run URL: $URL"; curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "$URL/run?mode=${{ inputs.run_mode }}" | tee cloud_run_result.txt
+
       - name: Test
 
         run: |
@@ -90,10 +104,8 @@ jobs:
 
           echo "v33.20 Paper Trader"
 
-          echo "Artifact Registry OK"
+          echo "Cloud Run Deploy OK"
 
-          echo "Docker Build OK"
-
-          echo "Docker Push OK"
+          echo "Cloud Run execution OK"
 
           echo "========================================"
