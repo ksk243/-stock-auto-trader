@@ -2698,13 +2698,57 @@ def save_research_data(
 
     ):
 
-        return
+        print(
+
+            "WARNING: research_df is empty"
+
+        )
+
+        return False
+
+    os.makedirs(
+
+        RESEARCH_DIR,
+
+        exist_ok=True
+
+    )
 
     date_str = target_date.strftime(
 
         "%Y-%m-%d"
 
     )
+
+    print(
+
+        f"研究データ保存開始: "
+
+        f"{date_str} / "
+
+        f"{len(research_df)}銘柄"
+
+    )
+
+    # ========================================================
+
+    # 重要:
+
+    # GCSに過去のscreening_history.csvがあれば
+
+    # 必ず先にローカルへ復元する
+
+    # ========================================================
+
+    gcs_copy_to_local(
+
+        GCS_RESEARCH_PATH,
+
+        RESEARCH_FILE
+
+    )
+
+    old_df = pd.DataFrame()
 
     if os.path.exists(
 
@@ -2714,19 +2758,37 @@ def save_research_data(
 
         try:
 
-            old_df = pd.read_csv(
+            if os.path.getsize(
 
                 RESEARCH_FILE
 
-            )
+            ) > 0:
 
-        except Exception:
+                old_df = pd.read_csv(
+
+                    RESEARCH_FILE
+
+                )
+
+        except Exception as e:
+
+            print(
+
+                f"既存研究CSV読込エラー: {e}"
+
+            )
 
             old_df = pd.DataFrame()
 
-    else:
+    # ========================================================
 
-        old_df = pd.DataFrame()
+    # 同じ日付を再実行した場合
+
+    # その日の137銘柄だけ差し替える
+
+    # 過去の日付は残す
+
+    # ========================================================
 
     if (
 
@@ -2786,13 +2848,57 @@ def save_research_data(
 
     )
 
-    gcs_copy_from_local(
+    print(
+
+        f"研究CSV保存完了: "
+
+        f"{RESEARCH_FILE}"
+
+    )
+
+    print(
+
+        f"今回保存: "
+
+        f"{len(research_df)}銘柄"
+
+    )
+
+    print(
+
+        f"研究CSV総行数: "
+
+        f"{len(combined)}"
+
+    )
+
+    upload_ok = gcs_copy_from_local(
 
         RESEARCH_FILE,
 
         GCS_RESEARCH_PATH
 
     )
+
+    if upload_ok:
+
+        print(
+
+            "研究CSV GCS保存完了"
+
+        )
+
+        return True
+
+    print(
+
+        "WARNING: 研究CSVの"
+
+        "GCS保存に失敗"
+
+    )
+
+    return False
 
 def update_research_after_close(
 
@@ -2802,11 +2908,29 @@ def update_research_after_close(
 
 ):
 
+    # GCSの最新研究CSVを先に復元
+
+    gcs_copy_to_local(
+
+        GCS_RESEARCH_PATH,
+
+        RESEARCH_FILE
+
+    )
+
     if not os.path.exists(
 
         RESEARCH_FILE
 
     ):
+
+        return
+
+    if os.path.getsize(
+
+        RESEARCH_FILE
+
+    ) == 0:
 
         return
 
@@ -2823,6 +2947,10 @@ def update_research_after_close(
         return
 
     if research.empty:
+
+        return
+
+    if "date" not in research.columns:
 
         return
 
@@ -4040,9 +4168,11 @@ def run_decision(
 
     )
 
+    research_saved = False
+
     if not research_df.empty:
 
-        save_research_data(
+        research_saved = save_research_data(
 
             research_df,
 
@@ -4359,6 +4489,26 @@ def run_decision(
             "判定結果　 "
 
             "条件一致なし"
+
+        )
+
+    lines.append("")
+
+    if research_saved:
+
+        lines.append(
+
+            f"研究データ保存　"
+
+            f"{len(research_df)}銘柄"
+
+        )
+
+    else:
+
+        lines.append(
+
+            "研究データ保存　失敗"
 
         )
 
