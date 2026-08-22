@@ -86,32 +86,52 @@ jobs:
 
         run: gcloud run deploy paper-trader --image="$IMAGE:latest" --region="$REGION" --project="$PROJECT_ID" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=$GCS_BUCKET"
 
+      - name: Wait for Cloud Run
+
+        run: sleep 10
+
       - name: Download research data
 
-        run: |
+        run: mkdir -p data/research && gcloud storage cp "gs://$GCS_BUCKET/research/screening_history.csv" "data/research/screening_history.csv" || true
 
-          mkdir -p data/research
+      - name: Download latest result
 
-          gcloud storage cp "gs://$GCS_BUCKET/research/screening_history.csv" "data/research/screening_history.csv" || true
+        run: gcloud storage cp "gs://$GCS_BUCKET/latest_result.txt" "latest_result.txt" || true
 
       - name: Save research data to GitHub
 
         run: |
 
-          if [ -f data/research/screening_history.csv ]; then
+          git config user.name "github-actions[bot]"
 
-            git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/research/screening_history.csv latest_result.txt
 
-            git add data/research/screening_history.csv
+          git diff --cached --quiet || git commit -m "Update Paper Trader data"
 
-            git diff --cached --quiet || git commit -m "Update research data"
+          git push || true
 
-            git push
+      - name: Send result email
 
-          else
+        uses: dawidd6/action-send-mail@v3
 
-            echo "research CSV not found"
+        with:
 
-          fi
+          server_address: ${{ secrets.SMTP_HOST }}
+
+          server_port: ${{ secrets.SMTP_PORT }}
+
+          username: ${{ secrets.SMTP_USER }}
+
+          password: ${{ secrets.SMTP_PASSWORD }}
+
+          subject: "v33.20 Paper Trader ${{ inputs.run_mode }}"
+
+          to: ${{ secrets.MAIL_TO }}
+
+          from: ${{ secrets.MAIL_USER }}
+
+          secure: true
+
+          body: file://latest_result.txt
