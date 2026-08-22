@@ -130,8 +130,6 @@ jobs:
 
           URL="${{ steps.cloudrun.outputs.url }}"
 
-          TOKEN=$(gcloud auth print-identity-token)
-
           echo "========================================"
 
           echo "Run Paper Trader"
@@ -200,7 +198,7 @@ jobs:
 
             echo "WARNING: portfolio.json がGCSにありません"
 
-            python -c 'import json; json.dump({"equity":1117792,"positions":[]}, open("data/portfolio.json","w",encoding="utf-8"), ensure_ascii=False, indent=2)'
+            python -c 'import json; json.dump(dict(equity=1117792, positions=[]), open("data/portfolio.json","w",encoding="utf-8"), ensure_ascii=False, indent=2)'
 
           fi
 
@@ -216,7 +214,7 @@ jobs:
 
             echo "WARNING: paper_trades.csv がGCSにありません"
 
-            python -c 'open("data/paper_trades.csv","w",encoding="utf-8").write("date,ticker,side,shares,entry,exit,return,pnl,reason,entry_time,exit_time\n")'
+            printf '%s\n' 'date,ticker,side,shares,entry,exit,return,pnl,reason,entry_time,exit_time' > "data/paper_trades.csv"
 
           fi
 
@@ -240,7 +238,15 @@ jobs:
 
           if [ -f "data/portfolio.json" ]; then
 
+            echo "portfolio.json exists"
+
+            echo "----------------------------------------"
+
             cat "data/portfolio.json"
+
+            echo ""
+
+            echo "----------------------------------------"
 
           else
 
@@ -262,7 +268,15 @@ jobs:
 
           if [ -f "latest_result.txt" ]; then
 
+            ls -lh "latest_result.txt"
+
+            echo "----------------------------------------"
+
             cat "latest_result.txt"
+
+            echo ""
+
+            echo "----------------------------------------"
 
           else
 
@@ -358,6 +372,18 @@ jobs:
 
           fi
 
+          echo "SMTP_HOST: 設定済み"
+
+          echo "SMTP_PORT: 設定済み"
+
+          echo "SMTP_USER: 設定済み"
+
+          echo "SMTP_PASSWORD: 設定済み"
+
+          echo "MAIL_TO: 設定済み"
+
+          echo "MAIL_USER: 設定済み"
+
           echo "メール設定はすべて存在します"
 
       - name: Send result email
@@ -395,6 +421,8 @@ jobs:
           echo "メール送信成功"
 
           echo "========================================"
+
+          echo "送信先: MAIL_TO"
 
           echo "件名: v33.20 Paper Trader ${{ inputs.run_mode }}"
 
