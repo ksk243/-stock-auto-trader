@@ -4,6 +4,16 @@ on:
 
   workflow_dispatch:
 
+    inputs:
+
+      run_mode:
+
+        description: "decision / result / test"
+
+        required: true
+
+        default: "test"
+
 jobs:
 
   paper-trader:
