@@ -1,10 +1,36 @@
+━━━━━━━━━━━━━━━━━━━━
+v33.20 Paper Trader
+12:45 TEST判定
+━━━━━━━━━━━━━━━━━━━━
 
-<html><head>
-<meta http-equiv="content-type" content="text/html;charset=utf-8">
-<title>401 Unauthorized</title>
-</head>
-<body text=#000000 bgcolor=#ffffff>
-<h1>Error: Unauthorized</h1>
-<h2>Your client does not have permission to the requested URL <code>/run?mode=test</code>.</h2>
-<h2></h2>
-</body></html>
+判定日　　2026-08-21
+現在資産　¥1,117,792
+
+【LONG】
+銘柄　　　6861.T
+12:50約定　79,950.0円
+株数　　　13株
+建玉金額　¥1,039,350
+TP　　　　81,549.0円
+SL　　　　78,750.8円
+
+【SHORT】
+銘柄　　　1802.T
+12:50約定　2,928.5円
+株数　　　381株
+建玉金額　¥1,115,758
+TP　　　　2,869.9円
+SL　　　　2,972.4円
+
+【判定状況】
+5分足　　 137/137
+日足　　　 137/137
+判定対象　 137銘柄
+
+LONG候補　 1
+SHORT候補　4
+
+判定結果　 2件取引
+
+※ TESTモード
+実際のポートフォリオには追加していません
