@@ -118,16 +118,180 @@ jobs:
 
           curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "$URL/run?mode=${{ inputs.run_mode }}" | tee cloud_run_result.txt
 
-      - name: Test
+      - name: Download result files from GCS
+
+        run: |
+
+          mkdir -p data/research
+
+          gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"
+
+          gcloud storage cp "gs://${GCS_BUCKET}/latest_result.txt" "latest_result.txt"
+
+          gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/portfolio.json" "data/portfolio.json"
+
+          gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/paper_trades.csv" "data/paper_trades.csv" || true
+
+      - name: Check result file
 
         run: |
 
           echo "========================================"
 
-          echo "v33.20 Paper Trader"
+          echo "latest_result.txt"
 
-          echo "Cloud Run Deploy OK"
+          echo "========================================"
 
-          echo "Cloud Run execution OK"
+          if [ -f latest_result.txt ]; then
+
+            ls -lh latest_result.txt
+
+            cat latest_result.txt
+
+          else
+
+            echo "ERROR: latest_result.txt が存在しません"
+
+            exit 1
+
+          fi
+
+      - name: Save data to GitHub
+
+        run: |
+
+          git config user.name "github-actions[bot]"
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/research/screening_history.csv
+
+          git add data/portfolio.json
+
+          git add data/paper_trades.csv
+
+          git add latest_result.txt
+
+          if git diff --cached --quiet; then
+
+            echo "No data changes"
+
+          else
+
+            git commit -m "Update paper trader data"
+
+            git push
+
+          fi
+
+      - name: Check mail settings
+
+        run: |
+
+          echo "========================================"
+
+          echo "メール設定確認"
+
+          echo "========================================"
+
+          if [ -z "${{ secrets.SMTP_HOST }}" ]; then
+
+            echo "ERROR: SMTP_HOST が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.SMTP_PORT }}" ]; then
+
+            echo "ERROR: SMTP_PORT が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.SMTP_USER }}" ]; then
+
+            echo "ERROR: SMTP_USER が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.SMTP_PASSWORD }}" ]; then
+
+            echo "ERROR: SMTP_PASSWORD が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.MAIL_TO }}" ]; then
+
+            echo "ERROR: MAIL_TO が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.MAIL_USER }}" ]; then
+
+            echo "ERROR: MAIL_USER が未設定です"
+
+            exit 1
+
+          fi
+
+          echo "SMTP_HOST: 設定済み"
+
+          echo "SMTP_PORT: 設定済み"
+
+          echo "SMTP_USER: 設定済み"
+
+          echo "SMTP_PASSWORD: 設定済み"
+
+          echo "MAIL_TO: 設定済み"
+
+          echo "MAIL_USER: 設定済み"
+
+          echo "メール設定はすべて存在します"
+
+      - name: Send result email
+
+        uses: dawidd6/action-send-mail@v3
+
+        with:
+
+          server_address: ${{ secrets.SMTP_HOST }}
+
+          server_port: ${{ secrets.SMTP_PORT }}
+
+          username: ${{ secrets.SMTP_USER }}
+
+          password: ${{ secrets.SMTP_PASSWORD }}
+
+          subject: "v33.20 Paper Trader ${{ inputs.run_mode }}"
+
+          to: ${{ secrets.MAIL_TO }}
+
+          from: ${{ secrets.MAIL_USER }}
+
+          secure: true
+
+          body: file://latest_result.txt
+
+      - name: Email sent successfully
+
+        run: |
+
+          echo "========================================"
+
+          echo "メール送信成功"
+
+          echo "========================================"
+
+          echo "送信先: MAIL_TO"
+
+          echo "件名: v33.20 Paper Trader ${{ inputs.run_mode }}"
 
           echo "========================================"
