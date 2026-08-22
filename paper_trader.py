@@ -1,6 +1,6 @@
 # ============================================================
 
-# v33.16 Cloud Run Paper Trader
+# v33.14 Cloud Run Paper Trader
 
 # ============================================================
 
@@ -11,8 +11,6 @@ import json
 import traceback
 
 import warnings
-
-import time
 
 from datetime import datetime
 
@@ -30,7 +28,7 @@ import numpy as np
 
 # ============================================================
 
-VERSION = "v33.16"
+VERSION = "v33.14"
 
 # ============================================================
 
@@ -166,9 +164,11 @@ ENTRY_TIME = "12:50"
 
 #
 
-# LONG 15
+# LONG 15銘柄
 
-# SHORT 15
+# SHORT 15銘柄
+
+#
 
 # 最大30銘柄
 
@@ -236,69 +236,19 @@ TICKERS = [
 
     "7013.T","7182.T","7201.T","7202.T","7203.T",
 
-    "7261.T","7267.T","7269.T","7270.T","7272.T",
+    "7205.T","7206.T","7207.T","7261.T","7267.T",
 
-    "7309.T","7731.T","7733.T","7735.T","7741.T",
+    "7269.T","7270.T","7272.T","7309.T","7731.T",
 
-    "7751.T","7752.T"
-
-]
-
-# ============================================================
-
-# 除外銘柄
-
-#
-
-# Yahoo Financeで404 / No dataが発生する銘柄
-
-# ============================================================
-
-INVALID_TICKERS = {
-
-    "7205.T",
-
-    "7206.T",
-
-    "7207.T"
-
-}
-
-TICKERS = [
-
-    t
-
-    for t in dict.fromkeys(TICKERS)
-
-    if t not in INVALID_TICKERS
+    "7733.T","7735.T","7741.T","7751.T","7752.T"
 
 ]
 
-# ============================================================
+TICKERS = list(
 
-# TIME LOGGER
+    dict.fromkeys(TICKERS)
 
-# ============================================================
-
-def log_time(label, start, total_start):
-
-    elapsed = time.perf_counter() - start
-
-    total = time.perf_counter() - total_start
-
-    print(
-
-        f"[TIME] {label}: "
-
-        f"{elapsed:.2f}秒 "
-
-        f"(累積 {total:.2f}秒)",
-
-        flush=True
-
-    )
-
-    return elapsed
+)
 
 # ============================================================
 
@@ -320,13 +270,7 @@ def write_result(text):
 
         f.write(text)
 
-    print(
-
-        text,
-
-        flush=True
-
-    )
+    print(text)
 
 # ============================================================
 
@@ -484,21 +428,11 @@ def download_daily():
 
             threads=True,
 
-            group_by="ticker",
-
-            timeout=15
+            group_by="ticker"
 
         )
 
-    except Exception as e:
-
-        print(
-
-            f"[DAILY ERROR] {type(e).__name__}: {e}",
-
-            flush=True
-
-        )
+    except Exception:
 
         return {}
 
@@ -546,11 +480,11 @@ def download_daily():
 
     ]
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # ticker = level 0
 
-    # ========================================================
+    # --------------------------------------------------------
 
     if any(
 
@@ -602,11 +536,11 @@ def download_daily():
 
                 continue
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # ticker = level 1
 
-    # ========================================================
+    # --------------------------------------------------------
 
     elif any(
 
@@ -702,6 +636,20 @@ def get_daily_data():
 
     ).date()
 
+    # --------------------------------------------------------
+
+    # キャッシュがあり、
+
+    # 最終日が今日以前なら利用
+
+    #
+
+    # 12:45のRSには当日足を使わないため、
+
+    # 前営業日までのデータがあれば十分
+
+    # --------------------------------------------------------
+
     if cache:
 
         valid = False
@@ -718,9 +666,7 @@ def get_daily_data():
 
                 if last_date >= (
 
-                    today -
-
-                    pd.Timedelta(days=5)
+                    today - pd.Timedelta(days=5)
 
                 ).date():
 
@@ -734,43 +680,17 @@ def get_daily_data():
 
         if valid:
 
-            # ------------------------------------------------
-
-            # 古いキャッシュから除外銘柄を削除
-
-            # ------------------------------------------------
-
-            cache = {
-
-                k: v
-
-                for k, v in cache.items()
-
-                if k in TICKERS
-
-            }
-
             return cache
+
+    # --------------------------------------------------------
+
+    # キャッシュがなければ取得
+
+    # --------------------------------------------------------
 
     data = download_daily()
 
     if data:
-
-        # ----------------------------------------------------
-
-        # 実際に取得できた銘柄だけ保存
-
-        # ----------------------------------------------------
-
-        data = {
-
-            k: v
-
-            for k, v in data.items()
-
-            if k in TICKERS
-
-        }
 
         try:
 
@@ -1048,6 +968,12 @@ def get_intraday_candidates(
 
     ].copy()
 
+    # --------------------------------------------------------
+
+    # 保有中なら新規取得しない
+
+    # --------------------------------------------------------
+
     if long_count >= MAX_LONG_POSITIONS:
 
         long_df = pd.DataFrame()
@@ -1055,6 +981,12 @@ def get_intraday_candidates(
     if short_count >= MAX_SHORT_POSITIONS:
 
         short_df = pd.DataFrame()
+
+    # --------------------------------------------------------
+
+    # RS上位から最大15
+
+    # --------------------------------------------------------
 
     if not long_df.empty:
 
@@ -1069,6 +1001,12 @@ def get_intraday_candidates(
             MAX_LONG_INTRADAY
 
         )
+
+    # --------------------------------------------------------
+
+    # RS下位から最大15
+
+    # --------------------------------------------------------
 
     if not short_df.empty:
 
@@ -1142,34 +1080,6 @@ def download_5m(
 
         return {}
 
-    # --------------------------------------------------------
-
-    # 除外銘柄を念のため再チェック
-
-    # --------------------------------------------------------
-
-    tickers = [
-
-        t
-
-        for t in tickers
-
-        if t not in INVALID_TICKERS
-
-    ]
-
-    if not tickers:
-
-        return {}
-
-    print(
-
-        f"[5M] 取得開始: {len(tickers)}銘柄",
-
-        flush=True
-
-    )
-
     try:
 
         data = yf.download(
@@ -1186,21 +1096,11 @@ def download_5m(
 
             threads=True,
 
-            group_by="ticker",
-
-            timeout=15
+            group_by="ticker"
 
         )
 
-    except Exception as e:
-
-        print(
-
-            f"[5M ERROR] {type(e).__name__}: {e}",
-
-            flush=True
-
-        )
+    except Exception:
 
         return {}
 
@@ -1352,14 +1252,6 @@ def download_5m(
 
                 continue
 
-    print(
-
-        f"[5M] 取得完了: {len(result)}/{len(tickers)}銘柄",
-
-        flush=True
-
-    )
-
     return result
 
 # ============================================================
@@ -1428,6 +1320,12 @@ def make_candidate(
 
         return None
 
+    # ========================================================
+
+    # 12:45確定足
+
+    # ========================================================
+
     decision_bar = before.iloc[-1]
 
     close_1245 = float(
@@ -1435,6 +1333,12 @@ def make_candidate(
         decision_bar["Close"]
 
     )
+
+    # ========================================================
+
+    # 前場
+
+    # ========================================================
 
     morning = day[
 
@@ -1464,6 +1368,12 @@ def make_candidate(
 
     )
 
+    # ========================================================
+
+    # VWAP
+
+    # ========================================================
+
     volume = (
 
         before["Volume"]
@@ -1480,9 +1390,9 @@ def make_candidate(
 
             (
 
-                before["Close"] *
+                before["Close"]
 
-                volume
+                * volume
 
             ).sum()
 
@@ -1495,6 +1405,12 @@ def make_candidate(
     else:
 
         vwap = close_1245
+
+    # ========================================================
+
+    # 前日終値
+
+    # ========================================================
 
     past = daily[
 
@@ -1527,6 +1443,12 @@ def make_candidate(
         - 1
 
     )
+
+    # ========================================================
+
+    # 後場
+
+    # ========================================================
 
     afternoon = before[
 
@@ -1567,6 +1489,12 @@ def make_candidate(
     else:
 
         afternoon_return = 0.0
+
+    # ========================================================
+
+    # 直近15分
+
+    # ========================================================
 
     recent = before.tail(3)
 
@@ -1712,6 +1640,12 @@ def select_candidates(
 
         return df
 
+    # ========================================================
+
+    # RS順位
+
+    # ========================================================
+
     df["RS"] = (
 
         df["raw_rs"]
@@ -1725,6 +1659,12 @@ def select_candidates(
         * 100
 
     )
+
+    # ========================================================
+
+    # スコア
+
+    # ========================================================
 
     day_score = (
 
@@ -1964,6 +1904,12 @@ def create_positions(
 
             continue
 
+        # ====================================================
+
+        # 12:50 OPEN
+
+        # ====================================================
+
         entry_price = float(
 
             entry_rows.iloc[0]["Open"]
@@ -2000,9 +1946,21 @@ def create_positions(
 
         )
 
+        # ====================================================
+
+        # 資金不足なら除外
+
+        # ====================================================
+
         if required_value > max_value:
 
             continue
+
+        # ====================================================
+
+        # TP / SL
+
+        # ====================================================
 
         if side == "LONG":
 
@@ -2150,6 +2108,12 @@ def check_position(
 
     )
 
+    # ========================================================
+
+    # LONG
+
+    # ========================================================
+
     if side == "LONG":
 
         for idx, bar in after.iterrows():
@@ -2193,6 +2157,12 @@ def check_position(
                     idx
 
                 )
+
+    # ========================================================
+
+    # SHORT
+
+    # ========================================================
 
     else:
 
@@ -2238,6 +2208,12 @@ def check_position(
 
                 )
 
+    # ========================================================
+
+    # 未到達 → 持越し
+
+    # ========================================================
+
     return (
 
         False,
@@ -2257,8 +2233,6 @@ def check_position(
 # ============================================================
 
 def run_result():
-
-    total_start = time.perf_counter()
 
     portfolio = load_portfolio()
 
@@ -2310,21 +2284,9 @@ def run_result():
 
     )
 
-    t = time.perf_counter()
-
     intraday = download_5m(
 
         tickers
-
-    )
-
-    log_time(
-
-        "結果5分足取得",
-
-        t,
-
-        total_start
 
     )
 
@@ -2347,6 +2309,12 @@ def run_result():
             )
 
         )
+
+        # ====================================================
+
+        # 未到達 → 持越し
+
+        # ====================================================
 
         if not hit:
 
@@ -2466,9 +2434,17 @@ def run_result():
 
     )
 
-    portfolio["equity"] = new_equity
+    portfolio["equity"] = (
 
-    portfolio["positions"] = remaining
+        new_equity
+
+    )
+
+    portfolio["positions"] = (
+
+        remaining
+
+    )
 
     portfolio["last_update"] = (
 
@@ -2485,6 +2461,12 @@ def run_result():
         portfolio
 
     )
+
+    # ========================================================
+
+    # SAVE TRADES
+
+    # ========================================================
 
     if closed:
 
@@ -2536,6 +2518,12 @@ def run_result():
 
         )
 
+    # ========================================================
+
+    # MAIL
+
+    # ========================================================
+
     lines = [
 
         "15:45 結果",
@@ -2554,11 +2542,7 @@ def run_result():
 
     if closed:
 
-        lines.append(
-
-            "決済:"
-
-        )
+        lines.append("決済:")
 
         for trade in closed:
 
@@ -2624,16 +2608,6 @@ def run_result():
 
     )
 
-    log_time(
-
-        "結果処理合計",
-
-        total_start,
-
-        total_start
-
-    )
-
 # ============================================================
 
 # DECISION MODE
@@ -2641,16 +2615,6 @@ def run_result():
 # ============================================================
 
 def run_decision():
-
-    total_start = time.perf_counter()
-
-    # ========================================================
-
-    # 初期処理
-
-    # ========================================================
-
-    t = time.perf_counter()
 
     portfolio = load_portfolio()
 
@@ -2668,49 +2632,13 @@ def run_decision():
 
     )
 
-    log_time(
-
-        "初期処理",
-
-        t,
-
-        total_start
-
-    )
-
-    # ========================================================
-
-    # 日付
-
-    # ========================================================
-
-    now = pd.Timestamp.now(
-
-        tz="Asia/Tokyo"
-
-    ).tz_localize(None)
-
-    target_date = now.normalize()
-
     # ========================================================
 
     # 日足
 
     # ========================================================
 
-    t = time.perf_counter()
-
     daily = get_daily_data()
-
-    log_time(
-
-        "日足取得",
-
-        t,
-
-        total_start
-
-    )
 
     if not daily:
 
@@ -2724,29 +2652,19 @@ def run_decision():
 
         return
 
-    # ========================================================
+    now = pd.Timestamp.now(
 
-    # 実際に取得できた銘柄だけに限定
+        tz="Asia/Tokyo"
 
-    # ========================================================
+    ).tz_localize(None)
 
-    daily = {
-
-        k: v
-
-        for k, v in daily.items()
-
-        if k in TICKERS
-
-    }
+    target_date = now.normalize()
 
     # ========================================================
 
-    # 100株購入可能銘柄
+    # 資産に応じて100株購入可能銘柄を抽出
 
     # ========================================================
-
-    t = time.perf_counter()
 
     affordable = get_affordable_tickers(
 
@@ -2756,23 +2674,11 @@ def run_decision():
 
     )
 
-    log_time(
-
-        "100株購入可能銘柄抽出",
-
-        t,
-
-        total_start
-
-    )
-
     # ========================================================
 
-    # RS
+    # RS計算
 
     # ========================================================
-
-    t = time.perf_counter()
 
     rs_df = make_rs_table(
 
@@ -2781,16 +2687,6 @@ def run_decision():
         affordable,
 
         target_date
-
-    )
-
-    log_time(
-
-        "RS計算",
-
-        t,
-
-        total_start
 
     )
 
@@ -2814,11 +2710,9 @@ def run_decision():
 
     # ========================================================
 
-    # 5分足候補抽出
+    # ★ここで5分足取得対象を絞る
 
     # ========================================================
-
-    t = time.perf_counter()
 
     (
 
@@ -2836,45 +2730,27 @@ def run_decision():
 
     )
 
-    log_time(
+    print(
 
-        "候補絞り込み",
-
-        t,
-
-        total_start
+        f"日足対象: {len(affordable)}"
 
     )
 
     print(
 
-        f"日足対象: {len(affordable)}",
-
-        flush=True
+        f"5分足対象: {len(target_tickers)}"
 
     )
 
     print(
 
-        f"5分足対象: {len(target_tickers)}",
-
-        flush=True
+        f"LONG候補: {len(long_tickers)}"
 
     )
 
     print(
 
-        f"LONG候補: {len(long_tickers)}",
-
-        flush=True
-
-    )
-
-    print(
-
-        f"SHORT候補: {len(short_tickers)}",
-
-        flush=True
+        f"SHORT候補: {len(short_tickers)}"
 
     )
 
@@ -2884,21 +2760,9 @@ def run_decision():
 
     # ========================================================
 
-    t = time.perf_counter()
-
     intraday = download_5m(
 
         target_tickers
-
-    )
-
-    log_time(
-
-        "5分足取得",
-
-        t,
-
-        total_start
 
     )
 
@@ -2907,8 +2771,6 @@ def run_decision():
     # 最終判定
 
     # ========================================================
-
-    t = time.perf_counter()
 
     candidates = select_candidates(
 
@@ -2922,23 +2784,11 @@ def run_decision():
 
     )
 
-    log_time(
-
-        "5分足判定",
-
-        t,
-
-        total_start
-
-    )
-
     # ========================================================
 
     # 12:50 OPEN
 
     # ========================================================
-
-    t = time.perf_counter()
 
     new_positions = create_positions(
 
@@ -2950,23 +2800,11 @@ def run_decision():
 
     )
 
-    log_time(
-
-        "ポジション作成",
-
-        t,
-
-        total_start
-
-    )
-
     # ========================================================
 
     # 保存
 
     # ========================================================
-
-    t = time.perf_counter()
 
     if new_positions:
 
@@ -3014,23 +2852,11 @@ def run_decision():
 
             pass
 
-    log_time(
-
-        "保存",
-
-        t,
-
-        total_start
-
-    )
-
     # ========================================================
 
     # MAIL
 
     # ========================================================
-
-    t = time.perf_counter()
 
     lines = [
 
@@ -3180,56 +3006,6 @@ def run_decision():
 
     )
 
-    log_time(
-
-        "メール本文生成",
-
-        t,
-
-        total_start
-
-    )
-
-    # ========================================================
-
-    # TOTAL
-
-    # ========================================================
-
-    total = (
-
-        time.perf_counter()
-
-        -
-
-        total_start
-
-    )
-
-    print(
-
-        "================================",
-
-        flush=True
-
-    )
-
-    print(
-
-        f"[TIME] 合計: {total:.2f}秒",
-
-        flush=True
-
-    )
-
-    print(
-
-        "================================",
-
-        flush=True
-
-    )
-
 # ============================================================
 
 # MODE
@@ -3276,55 +3052,29 @@ def get_run_mode():
 
 def main():
 
-    main_start = time.perf_counter()
-
     mode = get_run_mode()
 
     print(
 
-        "================================",
-
-        flush=True
+        "================================"
 
     )
 
     print(
 
-        f"{VERSION} START",
-
-        flush=True
+        f"{VERSION} START"
 
     )
 
     print(
 
-        f"RUN MODE: {mode}",
-
-        flush=True
+        f"RUN MODE: {mode}"
 
     )
 
     print(
 
-        "================================",
-
-        flush=True
-
-    )
-
-    print(
-
-        f"対象銘柄数: {len(TICKERS)}",
-
-        flush=True
-
-    )
-
-    print(
-
-        "除外: 7205.T / 7206.T / 7207.T",
-
-        flush=True
+        "================================"
 
     )
 
@@ -3370,47 +3120,21 @@ def main():
 
     finally:
 
-        total = (
+        print(
 
-            time.perf_counter()
-
-            -
-
-            main_start
+            "================================"
 
         )
 
         print(
 
-            "================================",
-
-            flush=True
+            f"{VERSION} END"
 
         )
 
         print(
 
-            f"[TIME] Cloud Run実処理合計: "
-
-            f"{total:.2f}秒",
-
-            flush=True
-
-        )
-
-        print(
-
-            f"{VERSION} END",
-
-            flush=True
-
-        )
-
-        print(
-
-            "================================",
-
-            flush=True
+            "================================"
 
         )
 
