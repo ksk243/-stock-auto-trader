@@ -1,4 +1,4 @@
-name: v33.16 Paper Trader
+    name: v33.16 Paper Trader
 
 on:
 
@@ -19,6 +19,8 @@ on:
           - decision
 
           - result
+
+          - test
 
         default: decision
 
@@ -206,6 +208,14 @@ jobs:
 
         run: |
 
+          echo "================================"
+
+          echo "EXECUTING CLOUD RUN"
+
+          echo "RUN_MODE=$RUN_MODE"
+
+          echo "================================"
+
           gcloud run jobs execute v33-16-paper-trader \
 
             --region=asia-northeast1 \
@@ -290,6 +300,12 @@ jobs:
 
           echo "================================"
 
+          # =================================================
+
+          # decision
+
+          # =================================================
+
           if [ "$RUN_MODE" = "decision" ]; then
 
             awk '
@@ -312,9 +328,17 @@ jobs:
 
               }
 
-            ' data/cloud_run_raw.txt > data/latest_result.txt
+            ' data/cloud_run_raw.txt \
 
-          else
+            > data/latest_result.txt
+
+          # =================================================
+
+          # result
+
+          # =================================================
+
+          elif [ "$RUN_MODE" = "result" ]; then
 
             awk '
 
@@ -336,7 +360,41 @@ jobs:
 
               }
 
-            ' data/cloud_run_raw.txt > data/latest_result.txt
+            ' data/cloud_run_raw.txt \
+
+            > data/latest_result.txt
+
+          # =================================================
+
+          # test
+
+          # =================================================
+
+          elif [ "$RUN_MODE" = "test" ]; then
+
+            awk '
+
+              /12:45 判定/ {
+
+                found=1
+
+              }
+
+              found {
+
+                print
+
+              }
+
+              found && /v33\.16 END/ {
+
+                exit
+
+              }
+
+            ' data/cloud_run_raw.txt \
+
+            > data/latest_result.txt
 
           fi
 
@@ -384,9 +442,15 @@ jobs:
 
       # Save Result
 
+      #
+
+      # testは実績データを変更しない
+
       # =====================================================
 
       - name: Save Result
+
+        if: ${{ inputs.run_mode != 'test' || github.event_name != 'workflow_dispatch' }}
 
         shell: bash
 
@@ -414,7 +478,7 @@ jobs:
 
       # =====================================================
 
-      # Send Mail
+      # Send Email
 
       # =====================================================
 
@@ -432,7 +496,7 @@ jobs:
 
           password: ${{ secrets.MAIL_PASS }}
 
-          subject: "v33.16 Paper Trader"
+          subject: "v33.16 Paper Trader [$RUN_MODE]"
 
           to: ${{ secrets.MAIL_TO }}
 
