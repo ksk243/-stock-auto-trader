@@ -68,33 +68,55 @@ jobs:
 
       - name: Configure Docker
 
-        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+        run: |
+
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       - name: Create Artifact Registry
 
-        run: gcloud artifacts repositories describe paper-trader --location=asia-northeast1 --project=stock-auto-trader-506100 >/dev/null 2>&1 || gcloud artifacts repositories create paper-trader --repository-format=docker --location=asia-northeast1 --project=stock-auto-trader-506100 --description="Paper Trader Docker Repository"
+        run: |
+
+          gcloud artifacts repositories describe paper-trader --location=asia-northeast1 --project=stock-auto-trader-506100 >/dev/null 2>&1 || gcloud artifacts repositories create paper-trader --repository-format=docker --location=asia-northeast1 --project=stock-auto-trader-506100 --description="Paper Trader Docker Repository"
 
       - name: Docker Build
 
-        run: docker build -t "$IMAGE:latest" .
+        run: |
+
+          docker build -t "$IMAGE:latest" .
 
       - name: Docker Push
 
-        run: docker push "$IMAGE:latest"
+        run: |
+
+          docker push "$IMAGE:latest"
 
       - name: Deploy Cloud Run
 
-        run: gcloud run deploy paper-trader --image="$IMAGE:latest" --region=asia-northeast1 --project=stock-auto-trader-506100 --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=stock-auto-trader-506100-paper" --timeout=900
+        run: |
+
+          gcloud run deploy paper-trader --image="$IMAGE:latest" --region=asia-northeast1 --project=stock-auto-trader-506100 --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=stock-auto-trader-506100-paper" --timeout=900
 
       - name: Get Cloud Run URL
 
         id: cloudrun
 
-        run: URL=$(gcloud run services describe paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --format='value(status.url)'); echo "url=$URL" >> "$GITHUB_OUTPUT"; echo "Cloud Run URL: $URL"
+        run: |
+
+          URL=$(gcloud run services describe paper-trader --region=asia-northeast1 --project=stock-auto-trader-506100 --format='value(status.url)')
+
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+          echo "Cloud Run URL: $URL"
 
       - name: Run Paper Trader
 
-        run: URL="${{ steps.cloudrun.outputs.url }}"; echo "Cloud Run URL: $URL"; curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "$URL/run?mode=${{ inputs.run_mode }}" | tee cloud_run_result.txt
+        run: |
+
+          URL="${{ steps.cloudrun.outputs.url }}"
+
+          echo "Cloud Run URL: $URL"
+
+          curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "$URL/run?mode=${{ inputs.run_mode }}" | tee cloud_run_result.txt
 
       - name: Test
 
