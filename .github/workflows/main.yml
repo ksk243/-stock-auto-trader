@@ -1,4 +1,4 @@
-name: v33 Paper Trader
+name: v33.16 Paper Trader
 
 on:
 
@@ -12,8 +12,6 @@ on:
 
         required: true
 
-        default: "decision"
-
         type: choice
 
         options:
@@ -22,7 +20,17 @@ on:
 
           - result
 
-          - test
+        default: decision
+
+  schedule:
+
+    # 12:45 JST
+
+    - cron: "45 3 * * 1-5"
+
+    # 15:45 JST
+
+    - cron: "45 6 * * 1-5"
 
 jobs:
 
@@ -30,15 +38,19 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    timeout-minutes: 30
+
     permissions:
 
-      contents: read
+      contents: write
+
+      id-token: write
 
     steps:
 
       # =====================================================
 
-      # CHECKOUT
+      # Checkout
 
       # =====================================================
 
@@ -48,21 +60,63 @@ jobs:
 
       # =====================================================
 
-      # GOOGLE AUTH
+      # RUN MODE
 
       # =====================================================
 
-      - name: Authenticate to Google Cloud
+      - name: Set RUN_MODE
+
+        shell: bash
+
+        run: |
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+
+            RUN_MODE="${{ inputs.run_mode }}"
+
+          else
+
+            HOUR=$(TZ=Asia/Tokyo date +%H)
+
+            if [ "$HOUR" = "12" ]; then
+
+              RUN_MODE="decision"
+
+            else
+
+              RUN_MODE="result"
+
+            fi
+
+          fi
+
+          echo "RUN_MODE=$RUN_MODE" >> "$GITHUB_ENV"
+
+          echo "================================"
+
+          echo "RUN_MODE=$RUN_MODE"
+
+          echo "================================"
+
+      # =====================================================
+
+      # Google Cloud Auth
+
+      # =====================================================
+
+      - name: Google Cloud Auth
 
         uses: google-github-actions/auth@v2
 
         with:
 
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: "projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github"
+
+          service_account: "github-actions@stock-auto-trader-506100.iam.gserviceaccount.com"
 
       # =====================================================
 
-      # SETUP GCLOUD
+      # Setup gcloud
 
       # =====================================================
 
@@ -72,59 +126,229 @@ jobs:
 
       # =====================================================
 
-      # BUILD
+      # Docker authentication
 
       # =====================================================
 
-      - name: Build Docker image
+      - name: Configure Docker
 
         run: |
 
-          gcloud builds submit \
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
-            --tag asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/paper-trader/paper-trader:latest \
+      # =====================================================
+
+      # Docker Build
+
+      # =====================================================
+
+      - name: Build Docker Image
+
+        shell: bash
+
+        run: |
+
+          docker build \
+
+            --no-cache \
+
+            -t asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest \
 
             .
 
       # =====================================================
 
-      # RUN CLOUD RUN JOB
+      # Docker Push
+
+      # =====================================================
+
+      - name: Push Docker Image
+
+        run: |
+
+          docker push \
+
+            asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest
+
+      # =====================================================
+
+      # Cloud Run Deploy
+
+      # =====================================================
+
+      - name: Deploy Cloud Run Job
+
+        shell: bash
+
+        run: |
+
+          gcloud run jobs deploy v33-16-paper-trader \
+
+            --image=asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/stock-auto-trader/v33-16:latest \
+
+            --region=asia-northeast1 \
+
+            --project=stock-auto-trader-506100 \
+
+            --tasks=1 \
+
+            --max-retries=1 \
+
+            --set-env-vars="RUN_MODE=$RUN_MODE"
+
+      # =====================================================
+
+      # Cloud Run Execute
 
       # =====================================================
 
       - name: Run Cloud Run Job
 
-        env:
-
-          RUN_MODE: ${{ inputs.run_mode }}
-
         run: |
 
-          echo "================================"
-
-          echo "RUN MODE = ${RUN_MODE}"
-
-          echo "================================"
-
-          gcloud run jobs execute paper-trader \
+          gcloud run jobs execute v33-16-paper-trader \
 
             --region=asia-northeast1 \
 
-            --update-env-vars="RUN_MODE=${RUN_MODE}" \
+            --project=stock-auto-trader-506100 \
 
             --wait
 
       # =====================================================
 
-      # GET RESULT
+      # Get Latest Execution
 
       # =====================================================
 
-      - name: Get latest result
+      - name: Get Latest Execution
 
-        env:
+        shell: bash
 
-          RUN_MODE: ${{ inputs.run_mode }}
+        run: |
+
+          EXECUTION_NAME=$(
+
+            gcloud run jobs executions list \
+
+              --job=v33-16-paper-trader \
+
+              --region=asia-northeast1 \
+
+              --project=stock-auto-trader-506100 \
+
+              --sort-by="~createTime" \
+
+              --limit=1 \
+
+              --format="value(metadata.name)"
+
+          )
+
+          echo "EXECUTION_NAME=$EXECUTION_NAME"
+
+          echo "EXECUTION_NAME=$EXECUTION_NAME" >> "$GITHUB_ENV"
+
+      # =====================================================
+
+      # Get Cloud Run Log
+
+      # =====================================================
+
+      - name: Get Cloud Run Result
+
+        shell: bash
+
+        run: |
+
+          mkdir -p data
+
+          echo "================================"
+
+          echo "CLOUD RUN LOG"
+
+          echo "================================"
+
+          gcloud logging read \
+
+            "resource.type=\"cloud_run_job\" AND resource.labels.job_name=\"v33-16-paper-trader\" AND labels.\"run.googleapis.com/execution_name\"=\"$EXECUTION_NAME\"" \
+
+            --project=stock-auto-trader-506100 \
+
+            --limit=1000 \
+
+            --order=asc \
+
+            --format="value(textPayload)" \
+
+            > data/cloud_run_raw.txt
+
+          cat data/cloud_run_raw.txt
+
+          echo "================================"
+
+          echo "EXTRACT RESULT"
+
+          echo "================================"
+
+          if [ "$RUN_MODE" = "decision" ]; then
+
+            awk '
+
+              /12:45 判定/ {
+
+                found=1
+
+              }
+
+              found {
+
+                print
+
+              }
+
+              found && /v33\.16 END/ {
+
+                exit
+
+              }
+
+            ' data/cloud_run_raw.txt > data/latest_result.txt
+
+          else
+
+            awk '
+
+              /15:45 結果/ {
+
+                found=1
+
+              }
+
+              found {
+
+                print
+
+              }
+
+              found && /v33\.16 END/ {
+
+                exit
+
+              }
+
+            ' data/cloud_run_raw.txt > data/latest_result.txt
+
+          fi
+
+      # =====================================================
+
+      # Check Result
+
+      # =====================================================
+
+      - name: Check Result
+
+        shell: bash
 
         run: |
 
@@ -134,20 +358,84 @@ jobs:
 
           echo "================================"
 
-          echo "RUN_MODE=${RUN_MODE}"
+          if [ -s data/latest_result.txt ]; then
 
-          echo
+            cat data/latest_result.txt
 
-          gcloud logging read \
+          else
 
-            'resource.type="cloud_run_job" AND resource.labels.job_name="paper-trader"' \
+            echo "結果を取得できませんでした。"
 
-            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            echo ""
 
-            --limit=100 \
+            echo "RUN_MODE=$RUN_MODE"
 
-            --format='value(textPayload)' \
+            echo ""
 
-            | tail -n 200
+            echo "CLOUD RUN RAW LOG:"
 
-          echo "================================"
+            cat data/cloud_run_raw.txt
+
+            exit 1
+
+          fi
+
+      # =====================================================
+
+      # Save Result
+
+      # =====================================================
+
+      - name: Save Result
+
+        shell: bash
+
+        run: |
+
+          rm -f data/cloud_run_raw.txt
+
+          git config user.name "github-actions[bot]"
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/latest_result.txt
+
+          if ! git diff --cached --quiet; then
+
+            git commit -m "Update v33.16 result"
+
+            git push
+
+          else
+
+            echo "No result changes"
+
+          fi
+
+      # =====================================================
+
+      # Send Mail
+
+      # =====================================================
+
+      - name: Send Email
+
+        uses: dawidd6/action-send-mail@v3
+
+        with:
+
+          server_address: smtp.mail.me.com
+
+          server_port: 587
+
+          username: ${{ secrets.MAIL_USER }}
+
+          password: ${{ secrets.MAIL_PASS }}
+
+          subject: "v33.16 Paper Trader"
+
+          to: ${{ secrets.MAIL_TO }}
+
+          from: ${{ secrets.MAIL_USER }}
+
+          body: file://data/latest_result.txt
