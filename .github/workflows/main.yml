@@ -44,9 +44,21 @@ jobs:
 
     steps:
 
+      # ==========================================================
+
+      # Checkout
+
+      # ==========================================================
+
       - name: Checkout
 
         uses: actions/checkout@v4
+
+      # ==========================================================
+
+      # Google Cloud 認証
+
+      # ==========================================================
 
       - name: Authenticate to Google Cloud
 
@@ -58,6 +70,12 @@ jobs:
 
           service_account: ${{ env.SERVICE_ACCOUNT }}
 
+      # ==========================================================
+
+      # gcloud
+
+      # ==========================================================
+
       - name: Setup gcloud
 
         uses: google-github-actions/setup-gcloud@v3
@@ -66,23 +84,29 @@ jobs:
 
           project_id: ${{ env.PROJECT_ID }}
 
+      # ==========================================================
+
+      # Docker認証
+
+      # ==========================================================
+
       - name: Configure Docker
 
         run: |
 
-          gcloud auth configure-docker \
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
-            ${{ env.REGION }}-docker.pkg.dev \
+      # ==========================================================
 
-            --quiet
+      # Artifact Registry
+
+      # ==========================================================
 
       - name: Create Artifact Registry
 
         run: |
 
-          gcloud artifacts repositories describe \
-
-            "$REPOSITORY" \
+          gcloud artifacts repositories describe "$REPOSITORY" \
 
             --location="$REGION" \
 
@@ -90,9 +114,7 @@ jobs:
 
             >/dev/null 2>&1 || \
 
-          gcloud artifacts repositories create \
-
-            "$REPOSITORY" \
+          gcloud artifacts repositories create "$REPOSITORY" \
 
             --repository-format=docker \
 
@@ -102,15 +124,23 @@ jobs:
 
             --description="Paper Trader Docker Repository"
 
+      # ==========================================================
+
+      # Docker Build
+
+      # ==========================================================
+
       - name: Docker Build
 
         run: |
 
-          docker build \
+          docker build -t "$IMAGE:latest" .
 
-            -t "$IMAGE:latest" \
+      # ==========================================================
 
-            .
+      # Docker Push
+
+      # ==========================================================
 
       - name: Docker Push
 
@@ -118,51 +148,11 @@ jobs:
 
           docker push "$IMAGE:latest"
 
-      - name: Create Cloud Run environment file
+      # ==========================================================
 
-        env:
+      # Cloud Run Deploy
 
-          RUN_MODE: ${{ inputs.run_mode }}
-
-          GCS_BUCKET: ${{ env.GCS_BUCKET }}
-
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-
-          MAIL_USER: ${{ secrets.MAIL_USER }}
-
-          MAIL_PASS: ${{ secrets.MAIL_PASS }}
-
-          MAIL_TO: ${{ secrets.MAIL_TO }}
-
-        run: |
-
-          cat > cloud-run-env.yaml <<EOF
-
-          RUN_MODE: "$RUN_MODE"
-
-          GCS_BUCKET: "$GCS_BUCKET"
-
-          SMTP_HOST: "$SMTP_HOST"
-
-          SMTP_PORT: "$SMTP_PORT"
-
-          SMTP_USER: "$SMTP_USER"
-
-          SMTP_PASSWORD: "$SMTP_PASSWORD"
-
-          MAIL_USER: "$MAIL_USER"
-
-          MAIL_PASS: "$MAIL_PASS"
-
-          MAIL_TO: "$MAIL_TO"
-
-          EOF
+      # ==========================================================
 
       - name: Deploy Cloud Run
 
@@ -180,49 +170,47 @@ jobs:
 
             --allow-unauthenticated \
 
-            --env-vars-file=cloud-run-env.yaml
+            --set-env-vars="RUN_MODE=${{ inputs.run_mode }},GCS_BUCKET=$GCS_BUCKET"
 
-      - name: Get Cloud Run URL
+      # ==========================================================
 
-        id: cloudrun
+      # Cloud Run 実行待ち
 
-        run: |
+      # ==========================================================
 
-          URL=$(gcloud run services describe paper-trader \
-
-            --region="$REGION" \
-
-            --project="$PROJECT_ID" \
-
-            --format="value(status.url)")
-
-          echo "URL=$URL" >> "$GITHUB_OUTPUT"
-
-      - name: Run Paper Trader
+      - name: Wait for Paper Trader
 
         run: |
 
-          URL="${{ steps.cloudrun.outputs.URL }}/run"
+          sleep 30
 
-          echo "Calling:"
+      # ==========================================================
 
-          echo "$URL"
+      # latest_result.txt をGCSから取得
 
-          curl \
+      # ==========================================================
 
-            --fail \
+      - name: Download latest result
 
-            --show-error \
+        run: |
 
-            --silent \
+          rm -f latest_result.txt
 
-            --max-time 900 \
+          gcloud storage cp \
 
-            "$URL"
+            "gs://$GCS_BUCKET/latest_result.txt" \
 
-          echo
+            "latest_result.txt"
 
-      - name: Download latest research data
+          echo "latest_result.txt downloaded"
+
+      # ==========================================================
+
+      # research CSV をGCSから取得
+
+      # ==========================================================
+
+      - name: Download research data
 
         run: |
 
@@ -236,48 +224,96 @@ jobs:
 
             || true
 
-      - name: Download latest result
+          if [ -f data/research/screening_history.csv ]; then
 
-        run: |
+            echo "research CSV downloaded"
 
-          mkdir -p data
+          else
 
-          gcloud storage cp \
+            echo "research CSV not found"
 
-            "gs://$GCS_BUCKET/latest_result.txt" \
+          fi
 
-            "data/latest_result.txt" \
+      # ==========================================================
 
-            || true
+      # GitHubへ研究データ保存
+
+      # ==========================================================
 
       - name: Save research data to GitHub
 
         run: |
 
-          git config user.name "github-actions[bot]"
-
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           if [ -f data/research/screening_history.csv ]; then
+
+            git config user.name "github-actions[bot]"
+
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
             git add data/research/screening_history.csv
 
-          fi
+            if git diff --cached --quiet; then
 
-          if [ -f data/latest_result.txt ]; then
+              echo "No research data changes"
 
-            git add data/latest_result.txt
+            else
 
-          fi
+              git commit -m "Update research data"
 
-          if git diff --cached --quiet; then
+              git push
 
-            echo "No data changes"
+            fi
 
           else
 
-            git commit -m "Update paper trader data"
-
-            git push
+            echo "research CSV not found - skip GitHub update"
 
           fi
+
+      # ==========================================================
+
+      # メール送信
+
+      # ==========================================================
+
+      - name: Send result email
+
+        uses: dawidd6/action-send-mail@v3
+
+        with:
+
+          server_address: ${{ secrets.SMTP_HOST }}
+
+          server_port: ${{ secrets.SMTP_PORT }}
+
+          username: ${{ secrets.SMTP_USER }}
+
+          password: ${{ secrets.SMTP_PASSWORD }}
+
+          subject: "v33.20 Paper Trader - ${{ inputs.run_mode }}"
+
+          to: ${{ secrets.MAIL_TO }}
+
+          from: ${{ secrets.MAIL_USER }}
+
+          secure: true
+
+          body: file://latest_result.txt
+
+      # ==========================================================
+
+      # 完了
+
+      # ==========================================================
+
+      - name: Finished
+
+        run: |
+
+          echo "================================"
+
+          echo "v33.20 Paper Trader END"
+
+          echo "RUN_MODE: ${{ inputs.run_mode }}"
+
+          echo "================================"
