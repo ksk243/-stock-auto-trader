@@ -1,6 +1,6 @@
 # ============================================================
 
-# v33.13 Cloud Run Paper Trader
+# v33.14 Cloud Run Paper Trader
 
 #
 
@@ -8,45 +8,41 @@
 
 #   12:45確定5分足で判定
 
+#
+
 #   ↓
+
+#
 
 #   LONG 最大1銘柄
 
 #   SHORT 最大1銘柄
 
+#
+
 #   ↓
+
+#
 
 #   12:50 OPEN
 
+#
+
 #   ↓
+
+#
 
 #   TP / SL 到達時のみ決済
 
+#
+
 #   ↓
+
+#
 
 #   未到達なら持越し
 
 #
-
-# v33.13 修正:
-
-#   ・LONG/SHORT候補にsideを正しく設定
-
-#   ・100株購入可能判定を修正
-
-#   ・判定診断情報をメール末尾に追加
-
-#   ・5分足取得数を表示
-
-#   ・日足取得数を表示
-
-#   ・RS条件通過数を表示
-
-#   ・ブレイク条件通過数を表示
-
-#   ・上位候補を表示
-
-#   ・取引なしの理由を表示
 
 # ============================================================
 
@@ -74,7 +70,7 @@ import numpy as np
 
 # ============================================================
 
-VERSION = "v33.13"
+VERSION = "v33.14"
 
 # ============================================================
 
@@ -194,7 +190,13 @@ SL = 0.015
 
 LOT_SIZE = 100
 
-DECISION_TIME = "12:45"
+# 12:45に確定している5分足
+
+# → 12:40～12:45の足
+
+DECISION_BAR_TIME = "12:40"
+
+# 実際のエントリー
 
 ENTRY_TIME = "12:50"
 
@@ -260,7 +262,7 @@ TICKERS = [
 
     "7269.T","7270.T","7272.T","7309.T","7731.T",
 
-    "7733.T","7735.T","7741.T","7751.T","7752.T"
+    "7733.T","7735.T","7741.T","7751.T"
 
 ]
 
@@ -500,11 +502,11 @@ def download_5m():
 
     ]
 
-    # ========================================================
+    # --------------------------------------------------------
 
-    # tickerがlevel 0
+    # ticker = level 0
 
-    # ========================================================
+    # --------------------------------------------------------
 
     if any(
 
@@ -566,11 +568,11 @@ def download_5m():
 
                 continue
 
-    # ========================================================
+    # --------------------------------------------------------
 
-    # tickerがlevel 1
+    # ticker = level 1
 
-    # ========================================================
+    # --------------------------------------------------------
 
     elif any(
 
@@ -640,6 +642,52 @@ def download_5m():
 
 # ============================================================
 
+# LATEST TRADING DATE
+
+#
+
+# 実行日が土日・祝日でも、
+
+# 取得できた5分足の最新営業日を使用
+
+# ============================================================
+
+def get_latest_trading_date(intraday):
+
+    dates = []
+
+    for ticker, df in intraday.items():
+
+        if df is None or df.empty:
+
+            continue
+
+        try:
+
+            latest = df.index.max()
+
+            if pd.isna(latest):
+
+                continue
+
+            dates.append(
+
+                latest.date()
+
+            )
+
+        except Exception:
+
+            continue
+
+    if not dates:
+
+        return None
+
+    return max(dates)
+
+# ============================================================
+
 # DAILY CACHE
 
 # ============================================================
@@ -668,7 +716,7 @@ def load_daily_cache():
 
 # ============================================================
 
-# 初回日足取得
+# CREATE DAILY CACHE
 
 # ============================================================
 
@@ -688,7 +736,11 @@ def create_daily_cache():
 
                 break
 
-            df = cache[ticker]
+            df = cache[
+
+                ticker
+
+            ]
 
             if (
 
@@ -696,7 +748,9 @@ def create_daily_cache():
 
                 or df.empty
 
-                or len(df) < RS_LOOKBACK + 5
+                or len(df) <
+
+                RS_LOOKBACK + 5
 
             ):
 
@@ -776,12 +830,6 @@ def create_daily_cache():
 
     )
 
-    # ========================================================
-
-    # tickerがlevel 0
-
-    # ========================================================
-
     if any(
 
         ticker in level0
@@ -839,12 +887,6 @@ def create_daily_cache():
             except Exception:
 
                 continue
-
-    # ========================================================
-
-    # tickerがlevel 1
-
-    # ========================================================
 
     elif any(
 
@@ -954,7 +996,7 @@ def calc_rs(
 
         daily_df.index.date <
 
-        target_date.date()
+        target_date
 
     ]
 
@@ -974,9 +1016,7 @@ def calc_rs(
 
     old = float(
 
-        past["Close"]
-
-        .iloc[
+        past["Close"].iloc[
 
             -RS_LOOKBACK - 1
 
@@ -1028,13 +1068,11 @@ def make_candidate(
 
         return None
 
-    target = target_date.date()
-
     day = intraday[
 
         intraday.index.date ==
 
-        target
+        target_date
 
     ]
 
@@ -1042,17 +1080,17 @@ def make_candidate(
 
         return None
 
-    # ========================================================
+    # --------------------------------------------------------
 
-    # 12:45確定足
+    # 12:45に確定している12:40足
 
-    # ========================================================
+    # --------------------------------------------------------
 
     decision_ts = pd.Timestamp(
 
-        f"{target_date:%Y-%m-%d} "
+        f"{target_date} "
 
-        f"{DECISION_TIME}:00"
+        f"{DECISION_BAR_TIME}:00"
 
     )
 
@@ -1074,11 +1112,11 @@ def make_candidate(
 
     )
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # 前場
 
-    # ========================================================
+    # --------------------------------------------------------
 
     morning = day[
 
@@ -1086,7 +1124,7 @@ def make_candidate(
 
         pd.Timestamp(
 
-            f"{target_date:%Y-%m-%d} 12:00:00"
+            f"{target_date} 12:00:00"
 
         )
 
@@ -1108,11 +1146,11 @@ def make_candidate(
 
     )
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # VWAP
 
-    # ========================================================
+    # --------------------------------------------------------
 
     volume = (
 
@@ -1146,17 +1184,17 @@ def make_candidate(
 
         vwap = close_1245
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # 前日終値
 
-    # ========================================================
+    # --------------------------------------------------------
 
     past = daily[
 
         daily.index.date <
 
-        target
+        target_date
 
     ]
 
@@ -1184,11 +1222,11 @@ def make_candidate(
 
     )
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # 後場
 
-    # ========================================================
+    # --------------------------------------------------------
 
     afternoon = before[
 
@@ -1196,7 +1234,7 @@ def make_candidate(
 
         pd.Timestamp(
 
-            f"{target_date:%Y-%m-%d} 12:00:00"
+            f"{target_date} 12:00:00"
 
         )
 
@@ -1230,11 +1268,11 @@ def make_candidate(
 
         afternoon_return = 0.0
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # 直近15分
 
-    # ========================================================
+    # --------------------------------------------------------
 
     recent = before.tail(3)
 
@@ -1266,11 +1304,11 @@ def make_candidate(
 
         recent_return = 0.0
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # RS
 
-    # ========================================================
+    # --------------------------------------------------------
 
     raw_rs = calc_rs(
 
@@ -1288,39 +1326,23 @@ def make_candidate(
 
         "ticker": ticker,
 
-        "date": str(target),
+        "date": str(target_date),
 
-        "morning_high":
+        "morning_high": morning_high,
 
-            morning_high,
+        "morning_low": morning_low,
 
-        "morning_low":
+        "close_1245": close_1245,
 
-            morning_low,
+        "vwap": vwap,
 
-        "close_1245":
+        "day_return": day_return,
 
-            close_1245,
+        "afternoon_return": afternoon_return,
 
-        "vwap":
+        "recent_return": recent_return,
 
-            vwap,
-
-        "day_return":
-
-            day_return,
-
-        "afternoon_return":
-
-            afternoon_return,
-
-        "recent_return":
-
-            recent_return,
-
-        "raw_rs":
-
-            raw_rs
+        "raw_rs": raw_rs
 
     }
 
@@ -1328,27 +1350,17 @@ def make_candidate(
 
 # 候補選択
 
-#
-
-# ★診断情報も返す
-
 # ============================================================
 
 def select_candidates(
 
     intraday,
 
-    daily
+    daily,
+
+    target_date
 
 ):
-
-    now = pd.Timestamp.now(
-
-        tz="Asia/Tokyo"
-
-    ).tz_localize(None)
-
-    target_date = now.normalize()
 
     rows = []
 
@@ -1376,135 +1388,39 @@ def select_candidates(
 
             continue
 
-    # ========================================================
-
-    # 診断
-
-    # ========================================================
-
-    diagnostics = {
-
-        "ticker_total":
-
-            len(TICKERS),
-
-        "intraday_count":
-
-            len(intraday),
-
-        "daily_count":
-
-            len(daily),
-
-        "valid_count":
-
-            len(rows),
-
-        "rs70_count":
-
-            0,
-
-        "rs30_count":
-
-            0,
-
-        "long_break_count":
-
-            0,
-
-        "short_break_count":
-
-            0,
-
-        "long_candidate_count":
-
-            0,
-
-        "short_candidate_count":
-
-            0,
-
-        "top_long": [],
-
-        "top_short": []
-
-    }
-
     if not rows:
 
-        return pd.DataFrame(), diagnostics
+        return (
+
+            pd.DataFrame(),
+
+            {}
+
+        )
 
     df = pd.DataFrame(rows)
 
     if df.empty:
 
-        return df, diagnostics
+        return df, {}
 
-    # ========================================================
+    # --------------------------------------------------------
 
-    # 100株購入可能判定
-
-    #
-
-    # 旧コード:
-
-    #   A <= A
+    # 100株固定
 
     #
 
-    # これは常にTrueだったため修正
+    # 今回は全銘柄100株固定なので、
 
-    # ========================================================
+    # ここでは価格条件による除外はしない。
 
-    long_max_value = (
+    # --------------------------------------------------------
 
-        INITIAL_CAPITAL *
-
-        LONG_LEVERAGE
-
-    )
-
-    short_max_value = (
-
-        INITIAL_CAPITAL *
-
-        SHORT_LEVERAGE
-
-    )
-
-    df["lot_value"] = (
-
-        df["close_1245"] *
-
-        LOT_SIZE
-
-    )
-
-    # ここでは最低限100株買えるかを確認
-
-    df = df[
-
-        df["lot_value"] <=
-
-        max(
-
-            long_max_value,
-
-            short_max_value
-
-        )
-
-    ].copy()
-
-    if df.empty:
-
-        return df, diagnostics
-
-    # ========================================================
+    # --------------------------------------------------------
 
     # RS
 
-    # ========================================================
+    # --------------------------------------------------------
 
     df["RS"] = (
 
@@ -1520,11 +1436,11 @@ def select_candidates(
 
     )
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # 各スコア
 
-    # ========================================================
+    # --------------------------------------------------------
 
     day_score = (
 
@@ -1588,11 +1504,97 @@ def select_candidates(
 
     # ========================================================
 
-    # RS条件
+    # 判定状況
 
     # ========================================================
 
-    long_rs = df[
+    status = {}
+
+    status["対象"] = len(df)
+
+    status["LONG_RS"] = int(
+
+        (
+
+            df["RS"] >=
+
+            LONG_RS_THRESHOLD
+
+        ).sum()
+
+    )
+
+    status["LONG_BREAK"] = int(
+
+        (
+
+            (
+
+                df["RS"] >=
+
+                LONG_RS_THRESHOLD
+
+            )
+
+            &
+
+            (
+
+                df["close_1245"] >
+
+                df["morning_high"]
+
+            )
+
+        ).sum()
+
+    )
+
+    status["SHORT_RS"] = int(
+
+        (
+
+            df["RS"] <=
+
+            SHORT_RS_THRESHOLD
+
+        ).sum()
+
+    )
+
+    status["SHORT_BREAK"] = int(
+
+        (
+
+            (
+
+                df["RS"] <=
+
+                SHORT_RS_THRESHOLD
+
+            )
+
+            &
+
+            (
+
+                df["close_1245"] <
+
+                df["morning_low"]
+
+            )
+
+        ).sum()
+
+    )
+
+    # ========================================================
+
+    # LONG候補
+
+    # ========================================================
+
+    long_df = df[
 
         df["RS"] >=
 
@@ -1600,181 +1602,13 @@ def select_candidates(
 
     ].copy()
 
-    short_rs = df[
+    long_df = long_df[
 
-        df["RS"] <=
+        long_df["close_1245"] >
 
-        SHORT_RS_THRESHOLD
+        long_df["morning_high"]
 
-    ].copy()
-
-    diagnostics[
-
-        "rs70_count"
-
-    ] = len(long_rs)
-
-    diagnostics[
-
-        "rs30_count"
-
-    ] = len(short_rs)
-
-    # ========================================================
-
-    # LONG
-
-    # ========================================================
-
-    long_df = long_rs[
-
-        long_rs["close_1245"] >
-
-        long_rs["morning_high"]
-
-    ].copy()
-
-    diagnostics[
-
-        "long_break_count"
-
-    ] = len(long_df)
-
-    # ========================================================
-
-    # SHORT
-
-    # ========================================================
-
-    short_df = short_rs[
-
-        short_rs["close_1245"] <
-
-        short_rs["morning_low"]
-
-    ].copy()
-
-    diagnostics[
-
-        "short_break_count"
-
-    ] = len(short_df)
-
-    # ========================================================
-
-    # 上位候補
-
-    #
-
-    # ブレイク前も含めて
-
-    # RS上位を確認できるようにする
-
-    # ========================================================
-
-    top_long_df = (
-
-        long_rs
-
-        .sort_values(
-
-            "score",
-
-            ascending=False
-
-        )
-
-        .head(3)
-
-    )
-
-    top_short_df = (
-
-        short_rs
-
-        .sort_values(
-
-            "score",
-
-            ascending=True
-
-        )
-
-        .head(3)
-
-    )
-
-    for _, row in top_long_df.iterrows():
-
-        diagnostics[
-
-            "top_long"
-
-        ].append({
-
-            "ticker":
-
-                row["ticker"],
-
-            "RS":
-
-                float(row["RS"]),
-
-            "score":
-
-                float(row["score"]),
-
-            "close":
-
-                float(row["close_1245"]),
-
-            "morning_high":
-
-                float(row["morning_high"])
-
-        })
-
-    for _, row in top_short_df.iterrows():
-
-        diagnostics[
-
-            "top_short"
-
-        ].append({
-
-            "ticker":
-
-                row["ticker"],
-
-            "RS":
-
-                float(row["RS"]),
-
-            "score":
-
-                float(row["score"]),
-
-            "close":
-
-                float(row["close_1245"]),
-
-            "morning_low":
-
-                float(row["morning_low"])
-
-        })
-
-    selected = []
-
-    # ========================================================
-
-    # LONG
-
-    #
-
-    # ★sideをここで明示
-
-    # ========================================================
+    ]
 
     if not long_df.empty:
 
@@ -1786,31 +1620,29 @@ def select_candidates(
 
         )
 
-        long_row = (
-
-            long_df.iloc[0]
-
-            .copy()
-
-        )
-
-        long_row["side"] = "LONG"
-
-        selected.append(
-
-            long_row
-
-        )
+        long_df["side"] = "LONG"
 
     # ========================================================
 
-    # SHORT
-
-    #
-
-    # ★sideをここで明示
+    # SHORT候補
 
     # ========================================================
+
+    short_df = df[
+
+        df["RS"] <=
+
+        SHORT_RS_THRESHOLD
+
+    ].copy()
+
+    short_df = short_df[
+
+        short_df["close_1245"] <
+
+        short_df["morning_low"]
+
+    ]
 
     if not short_df.empty:
 
@@ -1822,43 +1654,73 @@ def select_candidates(
 
         )
 
-        short_row = (
+        short_df["side"] = "SHORT"
 
-            short_df.iloc[0]
+    # ========================================================
 
-            .copy()
+    # 最終候補
 
-        )
+    # ========================================================
 
-        short_row["side"] = "SHORT"
+    selected = []
+
+    if not long_df.empty:
 
         selected.append(
 
-            short_row
+            long_df.iloc[0]
 
         )
 
-    diagnostics[
+    if not short_df.empty:
 
-        "long_candidate_count"
+        selected.append(
 
-    ] = len(long_df)
+            short_df.iloc[0]
 
-    diagnostics[
-
-        "short_candidate_count"
-
-    ] = len(short_df)
+        )
 
     if not selected:
 
-        return pd.DataFrame(), diagnostics
+        return (
+
+            pd.DataFrame(),
+
+            {
+
+                **status,
+
+                "LONG_FINAL": 0,
+
+                "SHORT_FINAL": 0
+
+            }
+
+        )
+
+    selected_df = pd.DataFrame(
+
+        selected
+
+    )
+
+    status["LONG_FINAL"] = (
+
+        1 if not long_df.empty else 0
+
+    )
+
+    status["SHORT_FINAL"] = (
+
+        1 if not short_df.empty else 0
+
+    )
 
     return (
 
-        pd.DataFrame(selected),
+        selected_df,
 
-        diagnostics
+        status
 
     )
 
@@ -1914,11 +1776,11 @@ def create_positions(
 
         )
 
-        # ====================================================
+        # ----------------------------------------------------
 
         # 12:50 OPEN
 
-        # ====================================================
+        # ----------------------------------------------------
 
         entry_rows = df[
 
@@ -1940,11 +1802,11 @@ def create_positions(
 
             continue
 
-        # ====================================================
+        # ----------------------------------------------------
 
         # 100株
 
-        # ====================================================
+        # ----------------------------------------------------
 
         shares = LOT_SIZE
 
@@ -1956,11 +1818,11 @@ def create_positions(
 
         )
 
-        # ====================================================
+        # ----------------------------------------------------
 
         # LONG
 
-        # ====================================================
+        # ----------------------------------------------------
 
         if side == "LONG":
 
@@ -1992,11 +1854,11 @@ def create_positions(
 
             )
 
-        # ====================================================
+        # ----------------------------------------------------
 
         # SHORT
 
-        # ====================================================
+        # ----------------------------------------------------
 
         else:
 
@@ -2028,41 +1890,37 @@ def create_positions(
 
             )
 
-        positions.append({
+        positions.append(
 
-            "ticker":
+            {
 
-                ticker,
+                "ticker": ticker,
 
-            "side":
+                "side": side,
 
-                side,
+                "shares": shares,
 
-            "shares":
+                "entry_price": entry_price,
 
-                shares,
+                "tp_price": tp_price,
 
-            "entry_price":
+                "sl_price": sl_price,
 
-                entry_price,
+                "entry_time": str(
 
-            "tp_price":
+                    entry_ts
 
-                tp_price,
+                ),
 
-            "sl_price":
+                "entry_date": str(
 
-                sl_price,
+                    target_date.date()
 
-            "entry_time":
+                )
 
-                str(entry_ts),
+            }
 
-            "entry_date":
-
-                str(target_date.date())
-
-        })
+        )
 
     return positions
 
@@ -2184,7 +2042,7 @@ def check_position(
 
             )
 
-            # 同一足で両方到達した場合
+            # 同一5分足で両方到達
 
             # 保守的にSL優先
 
@@ -2308,11 +2166,11 @@ def run_result():
 
     )
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # ポジションなし
 
-    # ========================================================
+    # --------------------------------------------------------
 
     if not positions:
 
@@ -2340,11 +2198,11 @@ def run_result():
 
         return
 
-    # ========================================================
+    # --------------------------------------------------------
 
-    # 既存ポジション確認
+    # 5分足
 
-    # ========================================================
+    # --------------------------------------------------------
 
     intraday = download_5m()
 
@@ -2440,75 +2298,79 @@ def run_result():
 
         total_pnl += pnl
 
-        closed.append({
+        closed.append(
 
-            "date":
+            {
 
-                str(
+                "date":
 
-                    exit_time.date()
+                    str(
 
-                ),
+                        exit_time.date()
 
-            "ticker":
+                    ),
 
-                position[
+                "ticker":
 
-                    "ticker"
+                    position[
 
-                ],
+                        "ticker"
 
-            "side":
+                    ],
 
-                side,
+                "side":
 
-            "shares":
+                    side,
 
-                shares,
+                "shares":
 
-            "entry":
+                    shares,
 
-                entry_price,
+                "entry":
 
-            "exit":
+                    entry_price,
 
-                exit_price,
+                "exit":
 
-            "return":
+                    exit_price,
 
-                ret,
+                "return":
 
-            "pnl":
+                    ret,
 
-                pnl,
+                "pnl":
 
-            "reason":
+                    pnl,
 
-                reason,
+                "reason":
 
-            "entry_time":
+                    reason,
 
-                position[
+                "entry_time":
 
-                    "entry_time"
+                    position[
 
-                ],
+                        "entry_time"
 
-            "exit_time":
+                    ],
 
-                str(
+                "exit_time":
 
-                    exit_time
+                    str(
 
-                )
+                        exit_time
 
-        })
+                    )
 
-    # ========================================================
+            }
+
+        )
+
+    # --------------------------------------------------------
 
     # 資産更新
 
-    # ========================================================
+    # --------------------------------------------------------
 
     new_equity = (
 
@@ -2546,11 +2408,11 @@ def run_result():
 
     )
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # Trade保存
 
-    # ========================================================
+    # --------------------------------------------------------
 
     if closed:
 
@@ -2602,11 +2464,11 @@ def run_result():
 
         )
 
-    # ========================================================
+    # --------------------------------------------------------
 
-    # MAIL BODY
+    # MAIL
 
-    # ========================================================
+    # --------------------------------------------------------
 
     lines = []
 
@@ -2638,11 +2500,11 @@ def run_result():
 
     lines.append("")
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # 決済
 
-    # ========================================================
+    # --------------------------------------------------------
 
     if closed:
 
@@ -2678,11 +2540,11 @@ def run_result():
 
     lines.append("")
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # 持越し
 
-    # ========================================================
+    # --------------------------------------------------------
 
     if remaining:
 
@@ -2746,11 +2608,11 @@ def run_decision():
 
     )
 
-    # ========================================================
+    # --------------------------------------------------------
 
-    # 既存ポジション数
+    # 既存ポジション
 
-    # ========================================================
+    # --------------------------------------------------------
 
     long_count = sum(
 
@@ -2780,6 +2642,30 @@ def run_decision():
 
     intraday = download_5m()
 
+    intraday_count = len(
+
+        intraday
+
+    )
+
+    # ========================================================
+
+    # 判定日
+
+    #
+
+    # 実行日ではなく、
+
+    # 取得できた5分足の最新営業日
+
+    # ========================================================
+
+    target_date = get_latest_trading_date(
+
+        intraday
+
+    )
+
     # ========================================================
 
     # 日足
@@ -2792,21 +2678,75 @@ def run_decision():
 
         daily = create_daily_cache()
 
+    daily_count = len(
+
+        daily
+
+    )
+
     # ========================================================
 
-    # 候補
+    # データなし
 
     # ========================================================
 
-    candidates, diagnostics = (
+    if target_date is None:
 
-        select_candidates(
+        text = (
 
-            intraday,
+            "12:45 判定\n"
 
-            daily
+            "\n"
+
+            f"現在資産: ¥{equity:,.0f}\n"
+
+            "LONG: なし\n"
+
+            "SHORT: なし\n"
+
+            "新規取引: 0件\n"
+
+            "------------------------------\n"
+
+            "判定状況\n"
+
+            f"5分足取得: "
+
+            f"{intraday_count}/{len(TICKERS)}\n"
+
+            f"日足取得: "
+
+            f"{daily_count}/{len(TICKERS)}\n"
+
+            "判定対象: 0銘柄\n"
+
+            "\n"
+
+            "判定結果: "
+
+            "5分足データなし\n"
+
+            "------------------------------"
 
         )
+
+        write_result(text)
+
+        return
+
+    # ========================================================
+
+    # 候補判定
+
+    # ========================================================
+
+    candidates, status = select_candidates(
+
+        intraday,
+
+        daily,
+
+        target_date
 
     )
 
@@ -2818,15 +2758,15 @@ def run_decision():
 
     # ========================================================
 
-    if not candidates.empty:
+    if (
 
-        if (
+        long_count <
 
-            long_count <
+        MAX_LONG_POSITIONS
 
-            MAX_LONG_POSITIONS
+    ):
 
-        ):
+        if not candidates.empty:
 
             long_df = candidates[
 
@@ -2844,19 +2784,21 @@ def run_decision():
 
                 )
 
-        # ====================================================
+    # ========================================================
 
-        # SHORT
+    # SHORT
 
-        # ====================================================
+    # ========================================================
 
-        if (
+    if (
 
-            short_count <
+        short_count <
 
-            MAX_SHORT_POSITIONS
+        MAX_SHORT_POSITIONS
 
-        ):
+    ):
+
+        if not candidates.empty:
 
             short_df = candidates[
 
@@ -2902,11 +2844,11 @@ def run_decision():
 
     )
 
-    # ========================================================
+    # --------------------------------------------------------
 
     # 既存ポジションに追加
 
-    # ========================================================
+    # --------------------------------------------------------
 
     if new_positions:
 
@@ -2975,6 +2917,12 @@ def run_decision():
     )
 
     lines.append("")
+
+    lines.append(
+
+        f"判定日: {target_date}"
+
+    )
 
     lines.append(
 
@@ -3118,35 +3066,25 @@ def run_decision():
 
     # ========================================================
 
-    # 判定診断
+    # 判定状況
 
     #
 
-    # ★メール最下部
+    # メールの一番下
 
     # ========================================================
 
     lines.append("")
 
-    lines.append(
+    lines.append("------------------------------")
 
-        "------------------------------"
-
-    )
-
-    lines.append(
-
-        "判定状況"
-
-    )
+    lines.append("判定状況")
 
     lines.append(
 
         f"5分足取得: "
 
-        f"{diagnostics['intraday_count']}/"
-
-        f"{diagnostics['ticker_total']}"
+        f"{intraday_count}/{len(TICKERS)}"
 
     )
 
@@ -3154,9 +3092,13 @@ def run_decision():
 
         f"日足取得: "
 
-        f"{diagnostics['daily_count']}/"
+        f"{daily_count}/{len(TICKERS)}"
 
-        f"{diagnostics['ticker_total']}"
+    )
+
+    lines.append(
+
+        f"判定日: {target_date}"
 
     )
 
@@ -3164,77 +3106,75 @@ def run_decision():
 
         f"判定対象: "
 
-        f"{diagnostics['valid_count']}銘柄"
+        f"{status.get('対象', 0)}銘柄"
 
     )
 
     lines.append("")
 
+    lines.append("LONG")
+
     lines.append(
 
-        "LONG"
+        f" RS70以上: "
+
+        f"{status.get('LONG_RS', 0)}"
 
     )
 
     lines.append(
 
-        f"  RS70以上: "
+        f" 前場高値突破: "
 
-        f"{diagnostics['rs70_count']}"
-
-    )
-
-    lines.append(
-
-        f"  前場高値突破: "
-
-        f"{diagnostics['long_break_count']}"
+        f"{status.get('LONG_BREAK', 0)}"
 
     )
 
     lines.append(
 
-        f"  最終候補: "
+        f" 最終候補: "
 
-        f"{diagnostics['long_candidate_count']}"
+        f"{status.get('LONG_FINAL', 0)}"
 
     )
 
     lines.append("")
 
+    lines.append("SHORT")
+
     lines.append(
 
-        "SHORT"
+        f" RS30以下: "
+
+        f"{status.get('SHORT_RS', 0)}"
 
     )
 
     lines.append(
 
-        f"  RS30以下: "
+        f" 前場安値割れ: "
 
-        f"{diagnostics['rs30_count']}"
-
-    )
-
-    lines.append(
-
-        f"  前場安値割れ: "
-
-        f"{diagnostics['short_break_count']}"
+        f"{status.get('SHORT_BREAK', 0)}"
 
     )
 
     lines.append(
 
-        f"  最終候補: "
+        f" 最終候補: "
 
-        f"{diagnostics['short_candidate_count']}"
+        f"{status.get('SHORT_FINAL', 0)}"
 
     )
 
     # ========================================================
 
-    # 上位LONG
+    # 上位候補
+
+    #
+
+    # 最終候補がなくても、
+
+    # RS上位/下位を表示して判定状況を確認できる
 
     # ========================================================
 
@@ -3246,37 +3186,95 @@ def run_decision():
 
     )
 
-    if diagnostics["top_long"]:
+    # 全判定対象からLONG側上位を作る
 
-        for item in diagnostics["top_long"]:
+    try:
 
-            lines.append(
+        all_rows = []
 
-                f"  {item['ticker']} "
+        for ticker in TICKERS:
 
-                f"RS={item['RS']:.1f} "
+            row = make_candidate(
 
-                f"Score={item['score']:.1f} "
+                ticker,
 
-                f"現在={item['close']:,.1f} "
+                intraday.get(ticker),
 
-                f"前場高値={item['morning_high']:,.1f}"
+                daily.get(ticker),
+
+                target_date
 
             )
 
-    else:
+            if row is not None:
+
+                all_rows.append(row)
+
+        if all_rows:
+
+            debug_df = pd.DataFrame(
+
+                all_rows
+
+            )
+
+            debug_df["RS"] = (
+
+                debug_df["raw_rs"]
+
+                .rank(
+
+                    pct=True
+
+                )
+
+                * 100
+
+            )
+
+            debug_df["score"] = (
+
+                debug_df["RS"]
+
+            )
+
+            top_long = debug_df.sort_values(
+
+                "RS",
+
+                ascending=False
+
+            ).head(3)
+
+            for _, r in top_long.iterrows():
+
+                lines.append(
+
+                    f" {r['ticker']} "
+
+                    f"RS {r['RS']:.1f} "
+
+                    f"12:45 {r['close_1245']:,.1f} "
+
+                    f"前場高値 {r['morning_high']:,.1f}"
+
+                )
+
+        else:
+
+            lines.append(
+
+                " なし"
+
+            )
+
+    except Exception:
 
         lines.append(
 
-            "  なし"
+            " 取得不可"
 
         )
-
-    # ========================================================
-
-    # 上位SHORT
-
-    # ========================================================
 
     lines.append("")
 
@@ -3286,49 +3284,57 @@ def run_decision():
 
     )
 
-    if diagnostics["top_short"]:
+    try:
 
-        for item in diagnostics["top_short"]:
+        if all_rows:
+
+            top_short = debug_df.sort_values(
+
+                "RS",
+
+                ascending=True
+
+            ).head(3)
+
+            for _, r in top_short.iterrows():
+
+                lines.append(
+
+                    f" {r['ticker']} "
+
+                    f"RS {r['RS']:.1f} "
+
+                    f"12:45 {r['close_1245']:,.1f} "
+
+                    f"前場安値 {r['morning_low']:,.1f}"
+
+                )
+
+        else:
 
             lines.append(
 
-                f"  {item['ticker']} "
-
-                f"RS={item['RS']:.1f} "
-
-                f"Score={item['score']:.1f} "
-
-                f"現在={item['close']:,.1f} "
-
-                f"前場安値={item['morning_low']:,.1f}"
+                " なし"
 
             )
 
-    else:
+    except Exception:
 
         lines.append(
 
-            "  なし"
+            " 取得不可"
 
         )
 
     # ========================================================
 
-    # 最終判定理由
+    # 最終判定
 
     # ========================================================
 
     lines.append("")
 
-    if len(new_positions) > 0:
-
-        lines.append(
-
-            "判定結果: 取引実行"
-
-        )
-
-    elif diagnostics["valid_count"] == 0:
+    if status.get("対象", 0) == 0:
 
         lines.append(
 
@@ -3336,35 +3342,11 @@ def run_decision():
 
         )
 
-    elif (
-
-        diagnostics["long_break_count"] == 0
-
-        and
-
-        diagnostics["short_break_count"] == 0
-
-    ):
+    elif len(new_positions) > 0:
 
         lines.append(
 
-            "判定結果: ブレイク条件該当なし"
-
-        )
-
-    elif (
-
-        diagnostics["long_candidate_count"] == 0
-
-        and
-
-        diagnostics["short_candidate_count"] == 0
-
-    ):
-
-        lines.append(
-
-            "判定結果: 最終候補なし"
+            "判定結果: 取引実行"
 
         )
 
@@ -3372,7 +3354,7 @@ def run_decision():
 
         lines.append(
 
-            "判定結果: OPEN条件確認"
+            "判定結果: 条件一致なし"
 
         )
 
