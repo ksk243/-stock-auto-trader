@@ -70,6 +70,18 @@ jobs:
 
         run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
+      - name: Create Artifact Registry
+
+        run: gcloud artifacts repositories describe paper-trader --location=asia-northeast1 --project=stock-auto-trader-506100 >/dev/null 2>&1 || gcloud artifacts repositories create paper-trader --repository-format=docker --location=asia-northeast1 --project=stock-auto-trader-506100 --description="Paper Trader Docker Repository"
+
+      - name: Docker Build
+
+        run: docker build -t "$IMAGE:latest" .
+
+      - name: Docker Push
+
+        run: docker push "$IMAGE:latest"
+
       - name: Test
 
         run: |
@@ -78,8 +90,10 @@ jobs:
 
           echo "v33.20 Paper Trader"
 
-          echo "Google Cloud authentication OK"
+          echo "Artifact Registry OK"
 
-          echo "Docker configuration OK"
+          echo "Docker Build OK"
+
+          echo "Docker Push OK"
 
           echo "========================================"
