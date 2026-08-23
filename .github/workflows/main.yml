@@ -220,8 +220,6 @@ jobs:
 
       #
 
-      # 重要:
-
       # ここは改行しない
 
       # =====================================================
@@ -266,13 +264,95 @@ jobs:
 
       # =====================================================
 
+      # メール設定を先に確認
+
+      #
+
+      # 判定後の時間を使わない
+
+      # =====================================================
+
+      - name: Check mail settings
+
+        shell: bash
+
+        run: |
+
+          echo "========================================"
+
+          echo "メール設定確認"
+
+          echo "========================================"
+
+          if [ -z "${{ secrets.SMTP_HOST }}" ]; then
+
+            echo "ERROR: SMTP_HOST が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.SMTP_PORT }}" ]; then
+
+            echo "ERROR: SMTP_PORT が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.SMTP_USER }}" ]; then
+
+            echo "ERROR: SMTP_USER が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.SMTP_PASSWORD }}" ]; then
+
+            echo "ERROR: SMTP_PASSWORD が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.MAIL_TO }}" ]; then
+
+            echo "ERROR: MAIL_TO が未設定です"
+
+            exit 1
+
+          fi
+
+          if [ -z "${{ secrets.MAIL_USER }}" ]; then
+
+            echo "ERROR: MAIL_USER が未設定です"
+
+            exit 1
+
+          fi
+
+          echo "SMTP_HOST: 設定済み"
+
+          echo "SMTP_PORT: 設定済み"
+
+          echo "SMTP_USER: 設定済み"
+
+          echo "SMTP_PASSWORD: 設定済み"
+
+          echo "MAIL_TO: 設定済み"
+
+          echo "MAIL_USER: 設定済み"
+
+      # =====================================================
+
       # Wait until 12:45 JST
 
       #
 
-      # decision の場合だけ12:45まで待つ
+      # decisionだけ待つ
 
-      # test / result は待たない
+      # test / resultは待たない
 
       # =====================================================
 
@@ -344,7 +424,11 @@ jobs:
 
       # =====================================================
 
-      # Run Paper Trader
+      # Paper Trader実行
+
+      #
+
+      # 12:45に開始
 
       # =====================================================
 
@@ -374,11 +458,11 @@ jobs:
 
       # =====================================================
 
-      # Current Cloud Run result
+      # 現在の判定結果を即メール用ファイルへ
 
       # =====================================================
 
-      - name: Use current Cloud Run result
+      - name: Prepare immediate email
 
         shell: bash
 
@@ -388,11 +472,77 @@ jobs:
 
           echo "========================================"
 
-          echo "Current Cloud Run result"
+          echo "EMAIL RESULT"
 
           echo "========================================"
 
           cat latest_result.txt
+
+      # =====================================================
+
+      # ★ 最優先でメール送信
+
+      #
+
+      # CSV download
+
+      # GitHub commit
+
+      # 等より先に送る
+
+      # =====================================================
+
+      - name: Send result email immediately
+
+        uses: dawidd6/action-send-mail@v3
+
+        with:
+
+          server_address: ${{ secrets.SMTP_HOST }}
+
+          server_port: ${{ secrets.SMTP_PORT }}
+
+          username: ${{ secrets.SMTP_USER }}
+
+          password: ${{ secrets.SMTP_PASSWORD }}
+
+          subject: "v33.20 Paper Trader ${{ steps.mode.outputs.mode }}"
+
+          to: ${{ secrets.MAIL_TO }}
+
+          from: ${{ secrets.MAIL_USER }}
+
+          secure: false
+
+          starttls: true
+
+          body: file://latest_result.txt
+
+      - name: Email sent
+
+        shell: bash
+
+        run: |
+
+          echo "========================================"
+
+          echo "メール送信完了"
+
+          echo "========================================"
+
+          echo "MODE: ${{ steps.mode.outputs.mode }}"
+
+          echo "========================================"
+
+      # =====================================================
+
+      # ↓↓↓ ここから後処理
+
+      #
+
+      # メールはすでに送信済み
+
+      # =====================================================
 
       # =====================================================
 
@@ -642,11 +792,11 @@ jobs:
 
       # =====================================================
 
-      # Check mail settings
+      # Finish
 
       # =====================================================
 
-      - name: Check mail settings
+      - name: Completed
 
         shell: bash
 
@@ -654,120 +804,10 @@ jobs:
 
           echo "========================================"
 
-          echo "メール設定確認"
+          echo "v33.20 Paper Trader completed"
 
           echo "========================================"
 
-          if [ -z "${{ secrets.SMTP_HOST }}" ]; then
-
-            echo "ERROR: SMTP_HOST が未設定です"
-
-            exit 1
-
-          fi
-
-          if [ -z "${{ secrets.SMTP_PORT }}" ]; then
-
-            echo "ERROR: SMTP_PORT が未設定です"
-
-            exit 1
-
-          fi
-
-          if [ -z "${{ secrets.SMTP_USER }}" ]; then
-
-            echo "ERROR: SMTP_USER が未設定です"
-
-            exit 1
-
-          fi
-
-          if [ -z "${{ secrets.SMTP_PASSWORD }}" ]; then
-
-            echo "ERROR: SMTP_PASSWORD が未設定です"
-
-            exit 1
-
-          fi
-
-          if [ -z "${{ secrets.MAIL_TO }}" ]; then
-
-            echo "ERROR: MAIL_TO が未設定です"
-
-            exit 1
-
-          fi
-
-          if [ -z "${{ secrets.MAIL_USER }}" ]; then
-
-            echo "ERROR: MAIL_USER が未設定です"
-
-            exit 1
-
-          fi
-
-          echo "SMTP_HOST: 設定済み"
-
-          echo "SMTP_PORT: 設定済み"
-
-          echo "SMTP_USER: 設定済み"
-
-          echo "SMTP_PASSWORD: 設定済み"
-
-          echo "MAIL_TO: 設定済み"
-
-          echo "MAIL_USER: 設定済み"
-
-      # =====================================================
-
-      # Send result email
-
-      # =====================================================
-
-      - name: Send result email
-
-        uses: dawidd6/action-send-mail@v3
-
-        with:
-
-          server_address: ${{ secrets.SMTP_HOST }}
-
-          server_port: ${{ secrets.SMTP_PORT }}
-
-          username: ${{ secrets.SMTP_USER }}
-
-          password: ${{ secrets.SMTP_PASSWORD }}
-
-          subject: "v33.20 Paper Trader ${{ steps.mode.outputs.mode }}"
-
-          to: ${{ secrets.MAIL_TO }}
-
-          from: ${{ secrets.MAIL_USER }}
-
-          secure: false
-
-          starttls: true
-
-          body: file://latest_result.txt
-
-      # =====================================================
-
-      # Email success
-
-      # =====================================================
-
-      - name: Email sent successfully
-
-        shell: bash
-
-        run: |
-
-          echo "========================================"
-
-          echo "メール送信成功"
-
-          echo "========================================"
-
-          echo "件名: v33.20 Paper Trader ${{ steps.mode.outputs.mode }}"
+          echo "MODE: ${{ steps.mode.outputs.mode }}"
 
           echo "========================================"
