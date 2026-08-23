@@ -72,6 +72,8 @@ GCS_BUCKET = os.environ.get(
 
 )
 
+GCS_DAILY_CACHE_PATH = "paper_trader/daily_cache.pkl"
+
 GCS_RESEARCH_PATH = "research/screening_history.csv"
 
 GCS_INTRADAY_HISTORY_PATH = "research/intraday_history.csv"
@@ -226,13 +228,7 @@ def get_gcs_bucket():
 
         return None
 
-def gcs_copy_to_local(
-
-    gcs_path,
-
-    local_path
-
-):
+def gcs_copy_to_local(gcs_path, local_path):
 
     bucket = get_gcs_bucket()
 
@@ -268,11 +264,7 @@ def gcs_copy_to_local(
 
             )
 
-        blob.download_to_filename(
-
-            local_path
-
-        )
+        blob.download_to_filename(local_path)
 
         print(
 
@@ -290,23 +282,9 @@ def gcs_copy_to_local(
 
         return False
 
-def gcs_copy_from_local(
-
-    local_path,
-
-    gcs_path
-
-):
+def gcs_copy_from_local(local_path, gcs_path):
 
     if not os.path.exists(local_path):
-
-        print(
-
-            f"Upload source missing: "
-
-            f"{local_path}"
-
-        )
 
         return False
 
@@ -320,11 +298,7 @@ def gcs_copy_from_local(
 
         blob = bucket.blob(gcs_path)
 
-        blob.upload_from_filename(
-
-            local_path
-
-        )
+        blob.upload_from_filename(local_path)
 
         print(
 
@@ -341,82 +315,6 @@ def gcs_copy_from_local(
         print(f"GCS upload failed: {e}")
 
         return False
-
-def restore_persistent_files():
-
-    gcs_copy_to_local(
-
-        GCS_RESEARCH_PATH,
-
-        RESEARCH_FILE
-
-    )
-
-    gcs_copy_to_local(
-
-        GCS_INTRADAY_HISTORY_PATH,
-
-        INTRADAY_HISTORY_FILE
-
-    )
-
-    gcs_copy_to_local(
-
-        GCS_PORTFOLIO_PATH,
-
-        PORTFOLIO_FILE
-
-    )
-
-    gcs_copy_to_local(
-
-        GCS_TRADES_PATH,
-
-        TRADE_FILE
-
-    )
-
-def save_persistent_files():
-
-    if os.path.exists(RESEARCH_FILE):
-
-        gcs_copy_from_local(
-
-            RESEARCH_FILE,
-
-            GCS_RESEARCH_PATH
-
-        )
-
-    if os.path.exists(INTRADAY_HISTORY_FILE):
-
-        gcs_copy_from_local(
-
-            INTRADAY_HISTORY_FILE,
-
-            GCS_INTRADAY_HISTORY_PATH
-
-        )
-
-    if os.path.exists(PORTFOLIO_FILE):
-
-        gcs_copy_from_local(
-
-            PORTFOLIO_FILE,
-
-            GCS_PORTFOLIO_PATH
-
-        )
-
-    if os.path.exists(TRADE_FILE):
-
-        gcs_copy_from_local(
-
-            TRADE_FILE,
-
-            GCS_TRADES_PATH
-
-        )
 
 # ============================================================
 
@@ -439,6 +337,10 @@ def write_result(text):
         f.write(text)
 
     print(text)
+
+    # メール本文取得用
+
+    # latest_result.txtだけは即GCS保存
 
     gcs_copy_from_local(
 
@@ -504,7 +406,7 @@ def create_initial_portfolio():
 
 def load_portfolio():
 
-    restored = gcs_copy_to_local(
+    gcs_copy_to_local(
 
         GCS_PORTFOLIO_PATH,
 
@@ -549,10 +451,6 @@ def load_portfolio():
         []
 
     )
-
-    if not restored:
-
-        save_portfolio(data)
 
     return data
 
@@ -656,6 +554,10 @@ def normalize_index(df):
 
 def download_5m():
 
+    started = datetime.now()
+
+    print("5分足取得開始")
+
     try:
 
         data = yf.download(
@@ -678,11 +580,7 @@ def download_5m():
 
     except Exception as e:
 
-        print(
-
-            f"5m download error: {e}"
-
-        )
+        print(f"5m download error: {e}")
 
         return {}
 
@@ -830,9 +728,45 @@ def download_5m():
 
                 continue
 
+    seconds = (
+
+        datetime.now() - started
+
+    ).total_seconds()
+
+    print(
+
+        f"5分足取得完了: "
+
+        f"{len(result)}/{len(TICKERS)} "
+
+        f"{seconds:.1f}秒"
+
+    )
+
     return result
 
+# ============================================================
+
+# DAILY CACHE
+
+# ============================================================
+
 def load_daily_cache():
+
+    if not os.path.exists(
+
+        DAILY_CACHE_FILE
+
+    ):
+
+        gcs_copy_to_local(
+
+            GCS_DAILY_CACHE_PATH,
+
+            DAILY_CACHE_FILE
+
+        )
 
     if not os.path.exists(
 
@@ -844,7 +778,7 @@ def load_daily_cache():
 
     try:
 
-        return pd.read_pickle(
+        cache = pd.read_pickle(
 
             DAILY_CACHE_FILE
 
@@ -854,43 +788,61 @@ def load_daily_cache():
 
         return {}
 
-def create_daily_cache():
+    if not isinstance(cache, dict):
 
-    cache = load_daily_cache()
+        return {}
 
-    if cache:
+    return cache
 
-        valid = True
+def daily_cache_valid(cache):
 
-        for ticker in TICKERS:
+    if not cache:
 
-            if ticker not in cache:
+        return False
 
-                valid = False
+    for ticker in TICKERS:
 
-                break
+        if ticker not in cache:
 
-            df = cache[ticker]
+            return False
 
-            if (
+        df = cache[ticker]
 
-                df is None
+        if (
 
-                or df.empty
+            df is None
 
-                or len(df)
+            or df.empty
 
-                < RS_LOOKBACK + 5
+            or len(df) < RS_LOOKBACK + 5
 
-            ):
+        ):
 
-                valid = False
+            return False
 
-                break
+    return True
 
-        if valid:
+def create_daily_cache(force=False):
+
+    if not force:
+
+        cache = load_daily_cache()
+
+        if daily_cache_valid(cache):
+
+            print(
+
+                f"日足キャッシュ使用: "
+
+                f"{len(cache)}/{len(TICKERS)}"
+
+            )
 
             return cache
+
+    started = datetime.now()
+
+    print("日足データ取得開始")
 
     try:
 
@@ -914,17 +866,13 @@ def create_daily_cache():
 
     except Exception as e:
 
-        print(
+        print(f"daily download error: {e}")
 
-            f"daily download error: {e}"
-
-        )
-
-        return cache
+        return {}
 
     if data is None or data.empty:
 
-        return cache
+        return {}
 
     data = normalize_index(data)
 
@@ -952,7 +900,7 @@ def create_daily_cache():
 
     ):
 
-        return cache
+        return {}
 
     level0 = set(
 
@@ -1068,23 +1016,81 @@ def create_daily_cache():
 
     if result:
 
-        try:
+        pd.to_pickle(
 
-            pd.to_pickle(
+            result,
 
-                result,
+            DAILY_CACHE_FILE
 
-                DAILY_CACHE_FILE
+        )
 
-            )
+        gcs_copy_from_local(
 
-        except Exception:
+            DAILY_CACHE_FILE,
 
-            pass
+            GCS_DAILY_CACHE_PATH
 
-        return result
+        )
 
-    return cache
+    seconds = (
+
+        datetime.now() - started
+
+    ).total_seconds()
+
+    print(
+
+        f"日足取得完了: "
+
+        f"{len(result)}/{len(TICKERS)} "
+
+        f"{seconds:.1f}秒"
+
+    )
+
+    return result
+
+def run_prepare():
+
+    started = datetime.now()
+
+    daily = create_daily_cache(
+
+        force=True
+
+    )
+
+    seconds = (
+
+        datetime.now() - started
+
+    ).total_seconds()
+
+    if daily_cache_valid(daily):
+
+        return (
+
+            "PREPARE OK\n"
+
+            f"daily={len(daily)}/{len(TICKERS)}\n"
+
+            f"time={seconds:.1f}s"
+
+        )
+
+    raise RuntimeError(
+
+        f"Daily cache preparation failed: "
+
+        f"{len(daily)}/{len(TICKERS)}"
+
+    )
+
+# ============================================================
+
+# DATE
+
+# ============================================================
 
 def get_last_business_day():
 
@@ -1098,259 +1104,17 @@ def get_last_business_day():
 
     while date.weekday() >= 5:
 
-        date -= pd.Timedelta(days=1)
+        date -= pd.Timedelta(
+
+            days=1
+
+        )
 
     return date
 
 # ============================================================
 
-# 5分足履歴保存
-
-# ============================================================
-
-def prepare_intraday_history(
-
-    intraday,
-
-    target_date
-
-):
-
-    rows = []
-
-    target = target_date.date()
-
-    for ticker in TICKERS:
-
-        df = intraday.get(ticker)
-
-        if (
-
-            df is None
-
-            or df.empty
-
-        ):
-
-            continue
-
-        day = df[
-
-            df.index.date == target
-
-        ]
-
-        if day.empty:
-
-            continue
-
-        for ts, bar in day.iterrows():
-
-            rows.append({
-
-                "date": str(target),
-
-                "datetime": ts.strftime(
-
-                    "%Y-%m-%d %H:%M:%S"
-
-                ),
-
-                "ticker": ticker,
-
-                "open": float(
-
-                    bar["Open"]
-
-                ),
-
-                "high": float(
-
-                    bar["High"]
-
-                ),
-
-                "low": float(
-
-                    bar["Low"]
-
-                ),
-
-                "close": float(
-
-                    bar["Close"]
-
-                ),
-
-                "volume": float(
-
-                    bar["Volume"]
-
-                )
-
-            })
-
-    if not rows:
-
-        return pd.DataFrame()
-
-    return pd.DataFrame(rows)
-
-def save_intraday_history(
-
-    intraday,
-
-    target_date
-
-):
-
-    new_df = prepare_intraday_history(
-
-        intraday,
-
-        target_date
-
-    )
-
-    if new_df.empty:
-
-        print(
-
-            "WARNING: 5分足履歴データなし"
-
-        )
-
-        return False
-
-    date_str = target_date.strftime(
-
-        "%Y-%m-%d"
-
-    )
-
-    # GCSの既存履歴を取得
-
-    gcs_copy_to_local(
-
-        GCS_INTRADAY_HISTORY_PATH,
-
-        INTRADAY_HISTORY_FILE
-
-    )
-
-    old_df = pd.DataFrame()
-
-    if os.path.exists(
-
-        INTRADAY_HISTORY_FILE
-
-    ):
-
-        try:
-
-            if os.path.getsize(
-
-                INTRADAY_HISTORY_FILE
-
-            ) > 0:
-
-                old_df = pd.read_csv(
-
-                    INTRADAY_HISTORY_FILE
-
-                )
-
-        except Exception as e:
-
-            print(
-
-                f"既存5分足履歴読込エラー: {e}"
-
-            )
-
-            old_df = pd.DataFrame()
-
-    # 同じ日付を再実行したら差し替え
-
-    if (
-
-        not old_df.empty
-
-        and "date" in old_df.columns
-
-    ):
-
-        old_df = old_df[
-
-            old_df[
-
-                "date"
-
-            ].astype(str)
-
-            != date_str
-
-        ]
-
-    combined = pd.concat(
-
-        [
-
-            old_df,
-
-            new_df
-
-        ],
-
-        ignore_index=True
-
-    )
-
-    combined = combined.sort_values(
-
-        [
-
-            "datetime",
-
-            "ticker"
-
-        ]
-
-    )
-
-    combined.to_csv(
-
-        INTRADAY_HISTORY_FILE,
-
-        index=False,
-
-        encoding="utf-8-sig"
-
-    )
-
-    print(
-
-        f"5分足履歴保存: "
-
-        f"今回 {len(new_df)}行 / "
-
-        f"累計 {len(combined)}行"
-
-    )
-
-    uploaded = gcs_copy_from_local(
-
-        INTRADAY_HISTORY_FILE,
-
-        GCS_INTRADAY_HISTORY_PATH
-
-    )
-
-    return uploaded
-
-# ============================================================
-
-# RS / CANDIDATES
+# RS
 
 # ============================================================
 
@@ -1413,6 +1177,12 @@ def calc_rs(
         - 1
 
     )
+
+# ============================================================
+
+# CANDIDATE
+
+# ============================================================
 
 def make_candidate(
 
@@ -1774,9 +1544,7 @@ def select_candidates(
 
     df["long_rs_ok"] = (
 
-        df["RS"]
-
-        >= LONG_RS_THRESHOLD
+        df["RS"] >= LONG_RS_THRESHOLD
 
     )
 
@@ -1798,9 +1566,7 @@ def select_candidates(
 
     df["short_rs_ok"] = (
 
-        df["RS"]
-
-        <= SHORT_RS_THRESHOLD
+        df["RS"] <= SHORT_RS_THRESHOLD
 
     )
 
@@ -2112,17 +1878,9 @@ def check_position(
 
         for idx, bar in after.iterrows():
 
-            high = float(
+            high = float(bar["High"])
 
-                bar["High"]
-
-            )
-
-            low = float(
-
-                bar["Low"]
-
-            )
+            low = float(bar["Low"])
 
             if low <= sl_price:
 
@@ -2156,17 +1914,9 @@ def check_position(
 
         for idx, bar in after.iterrows():
 
-            high = float(
+            high = float(bar["High"])
 
-                bar["High"]
-
-            )
-
-            low = float(
-
-                bar["Low"]
-
-            )
+            low = float(bar["Low"])
 
             if high >= sl_price:
 
@@ -2726,6 +2476,860 @@ def save_research_data(
 
     )
 
+def prepare_intraday_history(
+
+    intraday,
+
+    target_date
+
+):
+
+    rows = []
+
+    target = target_date.date()
+
+    for ticker in TICKERS:
+
+        df = intraday.get(ticker)
+
+        if (
+
+            df is None
+
+            or df.empty
+
+        ):
+
+            continue
+
+        day = df[
+
+            df.index.date == target
+
+        ]
+
+        if day.empty:
+
+            continue
+
+        for ts, bar in day.iterrows():
+
+            rows.append({
+
+                "date": str(target),
+
+                "datetime": ts.strftime(
+
+                    "%Y-%m-%d %H:%M:%S"
+
+                ),
+
+                "ticker": ticker,
+
+                "open": float(
+
+                    bar["Open"]
+
+                ),
+
+                "high": float(
+
+                    bar["High"]
+
+                ),
+
+                "low": float(
+
+                    bar["Low"]
+
+                ),
+
+                "close": float(
+
+                    bar["Close"]
+
+                ),
+
+                "volume": float(
+
+                    bar["Volume"]
+
+                )
+
+            })
+
+    return pd.DataFrame(rows)
+
+def save_intraday_history(
+
+    intraday,
+
+    target_date
+
+):
+
+    new_df = prepare_intraday_history(
+
+        intraday,
+
+        target_date
+
+    )
+
+    if new_df.empty:
+
+        return False
+
+    date_str = target_date.strftime(
+
+        "%Y-%m-%d"
+
+    )
+
+    gcs_copy_to_local(
+
+        GCS_INTRADAY_HISTORY_PATH,
+
+        INTRADAY_HISTORY_FILE
+
+    )
+
+    old_df = pd.DataFrame()
+
+    if os.path.exists(
+
+        INTRADAY_HISTORY_FILE
+
+    ):
+
+        try:
+
+            if os.path.getsize(
+
+                INTRADAY_HISTORY_FILE
+
+            ) > 0:
+
+                old_df = pd.read_csv(
+
+                    INTRADAY_HISTORY_FILE
+
+                )
+
+        except Exception:
+
+            old_df = pd.DataFrame()
+
+    if (
+
+        not old_df.empty
+
+        and "date" in old_df.columns
+
+    ):
+
+        old_df = old_df[
+
+            old_df["date"].astype(str)
+
+            != date_str
+
+        ]
+
+    combined = pd.concat(
+
+        [
+
+            old_df,
+
+            new_df
+
+        ],
+
+        ignore_index=True
+
+    )
+
+    combined = combined.sort_values(
+
+        [
+
+            "datetime",
+
+            "ticker"
+
+        ]
+
+    )
+
+    combined.to_csv(
+
+        INTRADAY_HISTORY_FILE,
+
+        index=False,
+
+        encoding="utf-8-sig"
+
+    )
+
+    return gcs_copy_from_local(
+
+        INTRADAY_HISTORY_FILE,
+
+        GCS_INTRADAY_HISTORY_PATH
+
+    )
+
+# ============================================================
+
+# DECISION
+
+# ============================================================
+
+def run_decision(
+
+    target_date=None,
+
+    test_mode=False
+
+):
+
+    started = datetime.now()
+
+    portfolio = load_portfolio()
+
+    equity = float(
+
+        portfolio["equity"]
+
+    )
+
+    positions = portfolio.get(
+
+        "positions",
+
+        []
+
+    )
+
+    if target_date is None:
+
+        now = pd.Timestamp.now(
+
+            tz=JST
+
+        ).tz_localize(None)
+
+        target_date = now.normalize()
+
+    long_count = sum(
+
+        1
+
+        for p in positions
+
+        if p.get("side") == "LONG"
+
+    )
+
+    short_count = sum(
+
+        1
+
+        for p in positions
+
+        if p.get("side") == "SHORT"
+
+    )
+
+    # 12:45以降に必要なのは5分足だけ
+
+    intraday = download_5m()
+
+    # 12:30台に作ったキャッシュを利用
+
+    daily = load_daily_cache()
+
+    if not daily_cache_valid(daily):
+
+        print(
+
+            "日足キャッシュなし。"
+
+            "緊急取得します。"
+
+        )
+
+        daily = create_daily_cache(
+
+            force=True
+
+        )
+
+    if target_date.weekday() >= 5:
+
+        text = (
+
+            "━━━━━━━━━━━━━━━━━━━━\n"
+
+            "v33.20 Paper Trader\n"
+
+            "12:45 TEST判定\n"
+
+            "━━━━━━━━━━━━━━━━━━━━\n\n"
+
+            f"判定日　　{target_date:%Y-%m-%d}\n"
+
+            f"現在資産　¥{equity:,.0f}\n\n"
+
+            "LONG　　　なし\n"
+
+            "SHORT　　 なし\n\n"
+
+            "判定結果　休場日"
+
+        )
+
+        write_result(text)
+
+        return
+
+    all_df = select_candidates(
+
+        intraday,
+
+        daily,
+
+        target_date
+
+    )
+
+    target_count = len(all_df)
+
+    if not all_df.empty:
+
+        long_candidate_count = int(
+
+            all_df[
+
+                "long_candidate"
+
+            ].sum()
+
+        )
+
+        short_candidate_count = int(
+
+            all_df[
+
+                "short_candidate"
+
+            ].sum()
+
+        )
+
+    else:
+
+        long_candidate_count = 0
+
+        short_candidate_count = 0
+
+    selected_rows = []
+
+    if (
+
+        not all_df.empty
+
+        and long_count
+
+        < MAX_LONG_POSITIONS
+
+    ):
+
+        long_df = all_df[
+
+            all_df["long_candidate"]
+
+        ].copy()
+
+        if not long_df.empty:
+
+            long_df = long_df.sort_values(
+
+                "score",
+
+                ascending=False
+
+            )
+
+            row = long_df.iloc[0].copy()
+
+            row["side"] = "LONG"
+
+            selected_rows.append(row)
+
+    if (
+
+        not all_df.empty
+
+        and short_count
+
+        < MAX_SHORT_POSITIONS
+
+    ):
+
+        short_df = all_df[
+
+            all_df["short_candidate"]
+
+        ].copy()
+
+        if not short_df.empty:
+
+            short_df = short_df.sort_values(
+
+                "score",
+
+                ascending=True
+
+            )
+
+            row = short_df.iloc[0].copy()
+
+            row["side"] = "SHORT"
+
+            selected_rows.append(row)
+
+    selected_df = (
+
+        pd.DataFrame(selected_rows)
+
+        if selected_rows
+
+        else pd.DataFrame()
+
+    )
+
+    new_positions = create_positions(
+
+        selected_df,
+
+        intraday,
+
+        equity,
+
+        target_date
+
+    )
+
+    # 本番だけポートフォリオへ追加
+
+    # これはメール前に必ず永続化
+
+    if (
+
+        new_positions
+
+        and not test_mode
+
+    ):
+
+        portfolio[
+
+            "positions"
+
+        ].extend(
+
+            new_positions
+
+        )
+
+        save_portfolio(portfolio)
+
+    if not selected_df.empty:
+
+        selected_df.to_csv(
+
+            CANDIDATE_FILE,
+
+            index=False,
+
+            encoding="utf-8-sig"
+
+        )
+
+    # TESTだけ研究保存まで実施
+
+    # 本番decisionはメール後にresearch endpointで保存
+
+    if test_mode:
+
+        research_df = prepare_research_rows(
+
+            all_df,
+
+            intraday,
+
+            target_date,
+
+            new_positions
+
+        )
+
+        if not research_df.empty:
+
+            save_research_data(
+
+                research_df,
+
+                target_date
+
+            )
+
+        save_intraday_history(
+
+            intraday,
+
+            target_date
+
+        )
+
+    elapsed = (
+
+        datetime.now() - started
+
+    ).total_seconds()
+
+    lines = [
+
+        "━━━━━━━━━━━━━━━━━━━━",
+
+        "v33.20 Paper Trader",
+
+        (
+
+            "12:45 TEST判定"
+
+            if test_mode
+
+            else "12:45 判定"
+
+        ),
+
+        "━━━━━━━━━━━━━━━━━━━━",
+
+        "",
+
+        f"判定日　　{target_date:%Y-%m-%d}",
+
+        f"現在資産　¥{equity:,.0f}",
+
+        ""
+
+    ]
+
+    long_positions = [
+
+        p
+
+        for p in new_positions
+
+        if p["side"] == "LONG"
+
+    ]
+
+    lines.append("【LONG】")
+
+    if long_positions:
+
+        p = long_positions[0]
+
+        lines.extend([
+
+            f"銘柄　　　{p['ticker']}",
+
+            f"12:50約定　{p['entry_price']:,.1f}円",
+
+            f"株数　　　{p['shares']}株",
+
+            f"建玉金額　¥{p['entry_value']:,.0f}",
+
+            f"TP　　　　{p['tp_price']:,.1f}円",
+
+            f"SL　　　　{p['sl_price']:,.1f}円"
+
+        ])
+
+    else:
+
+        lines.append("なし")
+
+    lines.append("")
+
+    short_positions = [
+
+        p
+
+        for p in new_positions
+
+        if p["side"] == "SHORT"
+
+    ]
+
+    lines.append("【SHORT】")
+
+    if short_positions:
+
+        p = short_positions[0]
+
+        lines.extend([
+
+            f"銘柄　　　{p['ticker']}",
+
+            f"12:50約定　{p['entry_price']:,.1f}円",
+
+            f"株数　　　{p['shares']}株",
+
+            f"建玉金額　¥{p['entry_value']:,.0f}",
+
+            f"TP　　　　{p['tp_price']:,.1f}円",
+
+            f"SL　　　　{p['sl_price']:,.1f}円"
+
+        ])
+
+    else:
+
+        lines.append("なし")
+
+    lines.extend([
+
+        "",
+
+        "【判定状況】",
+
+        (
+
+            f"5分足　　 "
+
+            f"{len(intraday)}/{len(TICKERS)}"
+
+        ),
+
+        (
+
+            f"日足　　　 "
+
+            f"{len(daily)}/{len(TICKERS)}"
+
+        ),
+
+        (
+
+            f"判定対象　 "
+
+            f"{target_count}銘柄"
+
+        ),
+
+        "",
+
+        (
+
+            f"LONG候補　 "
+
+            f"{long_candidate_count}"
+
+        ),
+
+        (
+
+            f"SHORT候補　"
+
+            f"{short_candidate_count}"
+
+        ),
+
+        ""
+
+    ])
+
+    if new_positions:
+
+        lines.append(
+
+            f"判定結果　 "
+
+            f"{len(new_positions)}件取引"
+
+        )
+
+    elif target_count == 0:
+
+        lines.append(
+
+            "判定結果　 "
+
+            "判定対象データなし"
+
+        )
+
+    else:
+
+        lines.append(
+
+            "判定結果　 "
+
+            "条件一致なし"
+
+        )
+
+    lines.append("")
+
+    lines.append(
+
+        f"判定処理時間　{elapsed:.1f}秒"
+
+    )
+
+    if test_mode:
+
+        lines.extend([
+
+            "",
+
+            "※ TESTモード",
+
+            "実際のポートフォリオには追加していません"
+
+        ])
+
+    write_result(
+
+        "\n".join(lines)
+
+    )
+
+# ============================================================
+
+# RESEARCH AFTER EMAIL
+
+# ============================================================
+
+def run_research():
+
+    print(
+
+        "メール送信後の研究データ保存開始"
+
+    )
+
+    now = pd.Timestamp.now(
+
+        tz=JST
+
+    ).tz_localize(None)
+
+    target_date = now.normalize()
+
+    portfolio = load_portfolio()
+
+    intraday = download_5m()
+
+    daily = load_daily_cache()
+
+    if not daily_cache_valid(daily):
+
+        daily = create_daily_cache(
+
+            force=True
+
+        )
+
+    all_df = select_candidates(
+
+        intraday,
+
+        daily,
+
+        target_date
+
+    )
+
+    selected_positions = []
+
+    for p in portfolio.get(
+
+        "positions",
+
+        []
+
+    ):
+
+        if str(
+
+            p.get(
+
+                "entry_date",
+
+                ""
+
+            )
+
+        ) == str(
+
+            target_date.date()
+
+        ):
+
+            selected_positions.append(p)
+
+    research_df = prepare_research_rows(
+
+        all_df,
+
+        intraday,
+
+        target_date,
+
+        selected_positions
+
+    )
+
+    research_ok = save_research_data(
+
+        research_df,
+
+        target_date
+
+    )
+
+    intraday_ok = save_intraday_history(
+
+        intraday,
+
+        target_date
+
+    )
+
+    return (
+
+        "RESEARCH SAVE COMPLETE\n"
+
+        f"screening={research_ok}\n"
+
+        f"intraday={intraday_ok}\n"
+
+        f"rows={len(research_df)}"
+
+    )
+
+# ============================================================
+
+# UPDATE RESEARCH AFTER CLOSE
+
+# ============================================================
+
 def update_research_after_close(
 
     intraday,
@@ -2854,35 +3458,29 @@ def update_research_after_close(
 
             continue
 
-        try:
+        entry_price = float(
 
-            entry_price = float(
+            after.iloc[0]["Open"]
 
-                after.iloc[0]["Open"]
+        )
 
-            )
+        post_high = float(
 
-            post_high = float(
+            after["High"].max()
 
-                after["High"].max()
+        )
 
-            )
+        post_low = float(
 
-            post_low = float(
+            after["Low"].min()
 
-                after["Low"].min()
+        )
 
-            )
+        close_price = float(
 
-            close_price = float(
+            after.iloc[-1]["Close"]
 
-                after.iloc[-1]["Close"]
-
-            )
-
-        except Exception:
-
-            continue
+        )
 
         research.loc[
 
@@ -3028,6 +3626,62 @@ def update_research_after_close(
 
         )
 
+        selected_side = str(
+
+            research.loc[
+
+                idx,
+
+                "selected_side"
+
+            ]
+
+        )
+
+        if selected_side == "LONG":
+
+            if post_low <= long_sl:
+
+                result = "SL"
+
+            elif post_high >= long_tp:
+
+                result = "TP"
+
+            else:
+
+                result = "HOLD"
+
+            research.loc[
+
+                idx,
+
+                "hypothetical_result"
+
+            ] = result
+
+        elif selected_side == "SHORT":
+
+            if post_high >= short_sl:
+
+                result = "SL"
+
+            elif post_low <= short_tp:
+
+                result = "TP"
+
+            else:
+
+                result = "HOLD"
+
+            research.loc[
+
+                idx,
+
+                "hypothetical_result"
+
+            ] = result
+
     research.to_csv(
 
         RESEARCH_FILE,
@@ -3079,8 +3733,6 @@ def run_result():
     ).tz_localize(None)
 
     target_date = now.normalize()
-
-    # 15:45時点の5分足を保存し直す
 
     save_intraday_history(
 
@@ -3170,11 +3822,7 @@ def run_result():
 
         if not hit:
 
-            remaining.append(
-
-                position
-
-            )
+            remaining.append(position)
 
             continue
 
@@ -3274,9 +3922,17 @@ def run_result():
 
     )
 
-    portfolio["equity"] = new_equity
+    portfolio[
 
-    portfolio["positions"] = remaining
+        "equity"
+
+    ] = new_equity
+
+    portfolio[
+
+        "positions"
+
+    ] = remaining
 
     save_portfolio(portfolio)
 
@@ -3288,6 +3944,14 @@ def run_result():
 
         )
 
+        gcs_copy_to_local(
+
+            GCS_TRADES_PATH,
+
+            TRADE_FILE
+
+        )
+
         if os.path.exists(
 
             TRADE_FILE
@@ -3296,25 +3960,31 @@ def run_result():
 
             try:
 
-                old_df = pd.read_csv(
+                if os.path.getsize(
 
                     TRADE_FILE
 
-                )
+                ) > 0:
 
-                trade_df = pd.concat(
+                    old_df = pd.read_csv(
 
-                    [
+                        TRADE_FILE
 
-                        old_df,
+                    )
 
-                        trade_df
+                    trade_df = pd.concat(
 
-                    ],
+                        [
 
-                    ignore_index=True
+                            old_df,
 
-                )
+                            trade_df
+
+                        ],
+
+                        ignore_index=True
+
+                    )
 
             except Exception:
 
@@ -3538,643 +4208,7 @@ def run_result():
 
 # ============================================================
 
-# DECISION
-
-# ============================================================
-
-def run_decision(
-
-    target_date=None,
-
-    test_mode=False
-
-):
-
-    portfolio = load_portfolio()
-
-    equity = float(
-
-        portfolio["equity"]
-
-    )
-
-    positions = portfolio.get(
-
-        "positions",
-
-        []
-
-    )
-
-    if target_date is None:
-
-        now = pd.Timestamp.now(
-
-            tz=JST
-
-        ).tz_localize(None)
-
-        target_date = now.normalize()
-
-    long_count = sum(
-
-        1
-
-        for p in positions
-
-        if p.get("side") == "LONG"
-
-    )
-
-    short_count = sum(
-
-        1
-
-        for p in positions
-
-        if p.get("side") == "SHORT"
-
-    )
-
-    intraday = download_5m()
-
-    daily = load_daily_cache()
-
-    if not daily:
-
-        daily = create_daily_cache()
-
-    if target_date.weekday() >= 5:
-
-        text = (
-
-            "━━━━━━━━━━━━━━━━━━━━\n"
-
-            "v33.20 Paper Trader\n"
-
-            "12:45 TEST判定\n"
-
-            "━━━━━━━━━━━━━━━━━━━━\n\n"
-
-            f"判定日　　"
-
-            f"{target_date:%Y-%m-%d}\n"
-
-            f"現在資産　"
-
-            f"¥{equity:,.0f}\n\n"
-
-            "LONG　　　なし\n"
-
-            "SHORT　　 なし\n\n"
-
-            "判定結果　休場日\n"
-
-        )
-
-        write_result(text)
-
-        return
-
-    all_df = select_candidates(
-
-        intraday,
-
-        daily,
-
-        target_date
-
-    )
-
-    target_count = len(
-
-        all_df
-
-    )
-
-    if not all_df.empty:
-
-        long_candidate_count = int(
-
-            all_df[
-
-                "long_candidate"
-
-            ].sum()
-
-        )
-
-        short_candidate_count = int(
-
-            all_df[
-
-                "short_candidate"
-
-            ].sum()
-
-        )
-
-    else:
-
-        long_candidate_count = 0
-
-        short_candidate_count = 0
-
-    selected_rows = []
-
-    if (
-
-        not all_df.empty
-
-        and long_count
-
-        < MAX_LONG_POSITIONS
-
-    ):
-
-        long_df = all_df[
-
-            all_df[
-
-                "long_candidate"
-
-            ]
-
-        ].copy()
-
-        if not long_df.empty:
-
-            long_df = long_df.sort_values(
-
-                "score",
-
-                ascending=False
-
-            )
-
-            row = long_df.iloc[0].copy()
-
-            row["side"] = "LONG"
-
-            selected_rows.append(row)
-
-    if (
-
-        not all_df.empty
-
-        and short_count
-
-        < MAX_SHORT_POSITIONS
-
-    ):
-
-        short_df = all_df[
-
-            all_df[
-
-                "short_candidate"
-
-            ]
-
-        ].copy()
-
-        if not short_df.empty:
-
-            short_df = short_df.sort_values(
-
-                "score",
-
-                ascending=True
-
-            )
-
-            row = short_df.iloc[0].copy()
-
-            row["side"] = "SHORT"
-
-            selected_rows.append(row)
-
-    selected_df = (
-
-        pd.DataFrame(
-
-            selected_rows
-
-        )
-
-        if selected_rows
-
-        else pd.DataFrame()
-
-    )
-
-    new_positions = create_positions(
-
-        selected_df,
-
-        intraday,
-
-        equity,
-
-        target_date
-
-    )
-
-    if (
-
-        new_positions
-
-        and not test_mode
-
-    ):
-
-        portfolio[
-
-            "positions"
-
-        ].extend(
-
-            new_positions
-
-        )
-
-        save_portfolio(portfolio)
-
-    research_df = prepare_research_rows(
-
-        all_df,
-
-        intraday,
-
-        target_date,
-
-        new_positions
-
-    )
-
-    research_saved = False
-
-    if not research_df.empty:
-
-        research_saved = save_research_data(
-
-            research_df,
-
-            target_date
-
-        )
-
-    intraday_saved = save_intraday_history(
-
-        intraday,
-
-        target_date
-
-    )
-
-    if not selected_df.empty:
-
-        selected_df.to_csv(
-
-            CANDIDATE_FILE,
-
-            index=False,
-
-            encoding="utf-8-sig"
-
-        )
-
-    lines = [
-
-        "━━━━━━━━━━━━━━━━━━━━",
-
-        "v33.20 Paper Trader",
-
-        (
-
-            "12:45 TEST判定"
-
-            if test_mode
-
-            else "12:45 判定"
-
-        ),
-
-        "━━━━━━━━━━━━━━━━━━━━",
-
-        "",
-
-        (
-
-            f"判定日　　"
-
-            f"{target_date:%Y-%m-%d}"
-
-        ),
-
-        (
-
-            f"現在資産　"
-
-            f"¥{equity:,.0f}"
-
-        ),
-
-        ""
-
-    ]
-
-    long_positions = [
-
-        p
-
-        for p in new_positions
-
-        if p["side"] == "LONG"
-
-    ]
-
-    lines.append("【LONG】")
-
-    if long_positions:
-
-        p = long_positions[0]
-
-        lines.extend([
-
-            (
-
-                f"銘柄　　　"
-
-                f"{p['ticker']}"
-
-            ),
-
-            (
-
-                f"12:50約定　"
-
-                f"{p['entry_price']:,.1f}円"
-
-            ),
-
-            (
-
-                f"株数　　　"
-
-                f"{p['shares']}株"
-
-            ),
-
-            (
-
-                f"建玉金額　"
-
-                f"¥{p['entry_value']:,.0f}"
-
-            ),
-
-            (
-
-                f"TP　　　　"
-
-                f"{p['tp_price']:,.1f}円"
-
-            ),
-
-            (
-
-                f"SL　　　　"
-
-                f"{p['sl_price']:,.1f}円"
-
-            )
-
-        ])
-
-    else:
-
-        lines.append("なし")
-
-    lines.append("")
-
-    short_positions = [
-
-        p
-
-        for p in new_positions
-
-        if p["side"] == "SHORT"
-
-    ]
-
-    lines.append("【SHORT】")
-
-    if short_positions:
-
-        p = short_positions[0]
-
-        lines.extend([
-
-            (
-
-                f"銘柄　　　"
-
-                f"{p['ticker']}"
-
-            ),
-
-            (
-
-                f"12:50約定　"
-
-                f"{p['entry_price']:,.1f}円"
-
-            ),
-
-            (
-
-                f"株数　　　"
-
-                f"{p['shares']}株"
-
-            ),
-
-            (
-
-                f"建玉金額　"
-
-                f"¥{p['entry_value']:,.0f}"
-
-            ),
-
-            (
-
-                f"TP　　　　"
-
-                f"{p['tp_price']:,.1f}円"
-
-            ),
-
-            (
-
-                f"SL　　　　"
-
-                f"{p['sl_price']:,.1f}円"
-
-            )
-
-        ])
-
-    else:
-
-        lines.append("なし")
-
-    lines.extend([
-
-        "",
-
-        "【判定状況】",
-
-        (
-
-            f"5分足　　 "
-
-            f"{len(intraday)}/{len(TICKERS)}"
-
-        ),
-
-        (
-
-            f"日足　　　 "
-
-            f"{len(daily)}/{len(TICKERS)}"
-
-        ),
-
-        (
-
-            f"判定対象　 "
-
-            f"{target_count}銘柄"
-
-        ),
-
-        "",
-
-        (
-
-            f"LONG候補　 "
-
-            f"{long_candidate_count}"
-
-        ),
-
-        (
-
-            f"SHORT候補　"
-
-            f"{short_candidate_count}"
-
-        ),
-
-        ""
-
-    ])
-
-    if new_positions:
-
-        lines.append(
-
-            f"判定結果　 "
-
-            f"{len(new_positions)}件取引"
-
-        )
-
-    elif target_count == 0:
-
-        lines.append(
-
-            "判定結果　 "
-
-            "判定対象データなし"
-
-        )
-
-    else:
-
-        lines.append(
-
-            "判定結果　 "
-
-            "条件一致なし"
-
-        )
-
-    lines.append("")
-
-    if research_saved:
-
-        lines.append(
-
-            f"研究データ保存　"
-
-            f"{len(research_df)}銘柄"
-
-        )
-
-    else:
-
-        lines.append(
-
-            "研究データ保存　失敗"
-
-        )
-
-    if intraday_saved:
-
-        lines.append(
-
-            "5分足履歴保存　成功"
-
-        )
-
-    else:
-
-        lines.append(
-
-            "5分足履歴保存　失敗"
-
-        )
-
-    if test_mode:
-
-        lines.extend([
-
-            "",
-
-            "※ TESTモード",
-
-            (
-
-                "実際のポートフォリオには"
-
-                "追加していません"
-
-            )
-
-        ])
-
-    write_result(
-
-        "\n".join(lines)
-
-    )
-
-# ============================================================
-
-# RUN
+# TEST
 
 # ============================================================
 
@@ -4194,6 +4228,12 @@ def run_test():
 
     )
 
+# ============================================================
+
+# EXECUTE
+
+# ============================================================
+
 def get_run_mode():
 
     mode = os.environ.get(
@@ -4210,7 +4250,9 @@ def get_run_mode():
 
         "result",
 
-        "test"
+        "test",
+
+        "research"
 
     ):
 
@@ -4230,23 +4272,11 @@ def get_run_mode():
 
 def execute_mode(mode):
 
-    print(
+    print(f"{VERSION} START")
 
-        f"{VERSION} START"
+    print(f"RUN MODE: {mode}")
 
-    )
-
-    print(
-
-        f"RUN MODE: {mode}"
-
-    )
-
-    print(
-
-        f"UNIVERSE: {len(TICKERS)}"
-
-    )
+    print(f"UNIVERSE: {len(TICKERS)}")
 
     if mode == "decision":
 
@@ -4260,6 +4290,10 @@ def execute_mode(mode):
 
         run_test()
 
+    elif mode == "research":
+
+        return run_research()
+
     else:
 
         raise ValueError(
@@ -4268,11 +4302,7 @@ def execute_mode(mode):
 
         )
 
-    print(
-
-        f"{VERSION} END"
-
-    )
+    print(f"{VERSION} END")
 
     if os.path.exists(
 
@@ -4314,6 +4344,52 @@ def health():
 
     })
 
+@app.get("/prepare")
+
+def prepare_endpoint():
+
+    try:
+
+        result = run_prepare()
+
+        return Response(
+
+            result,
+
+            status=200,
+
+            mimetype=(
+
+                "text/plain; charset=utf-8"
+
+            )
+
+        )
+
+    except Exception as e:
+
+        return Response(
+
+            (
+
+                f"PREPARE ERROR\n\n"
+
+                f"{type(e).__name__}: {e}\n\n"
+
+                f"{traceback.format_exc()}"
+
+            ),
+
+            status=500,
+
+            mimetype=(
+
+                "text/plain; charset=utf-8"
+
+            )
+
+        )
+
 @app.get("/run")
 
 def run_endpoint():
@@ -4328,11 +4404,7 @@ def run_endpoint():
 
     try:
 
-        result = execute_mode(
-
-            mode
-
-        )
+        result = execute_mode(mode)
 
         return Response(
 
