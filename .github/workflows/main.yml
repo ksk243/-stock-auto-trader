@@ -66,11 +66,13 @@ jobs:
 
       # Checkout
 
+      # Node.js 24対応
+
       # =====================================================
 
       - name: Checkout
 
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # =====================================================
 
@@ -264,11 +266,11 @@ jobs:
 
       # =====================================================
 
-      # メール設定を先に確認
+      # Mail settings
 
       #
 
-      # 判定後の時間を使わない
+      # 判定前に確認しておく
 
       # =====================================================
 
@@ -346,13 +348,43 @@ jobs:
 
       # =====================================================
 
-      # Wait until 12:45 JST
+      # 日足事前準備
 
       #
 
-      # decisionだけ待つ
+      # decision と test の両方で実行
 
-      # test / resultは待たない
+      # =====================================================
+
+      - name: Prepare daily data
+
+        if: steps.mode.outputs.mode == 'decision' || steps.mode.outputs.mode == 'test'
+
+        shell: bash
+
+        run: |
+
+          URL="${{ steps.cloudrun.outputs.url }}"
+
+          echo "========================================"
+
+          echo "PREPARE DAILY DATA"
+
+          echo "========================================"
+
+          echo "MODE: ${{ steps.mode.outputs.mode }}"
+
+          echo "========================================"
+
+          curl --fail-with-body --retry 3 --retry-delay 5 --max-time 600 "${URL}/prepare"
+
+      # =====================================================
+
+      # decisionだけ12:45まで待つ
+
+      #
+
+      # testは待たない
 
       # =====================================================
 
@@ -424,11 +456,19 @@ jobs:
 
       # =====================================================
 
-      # Paper Trader実行
+      # Paper Trader
 
       #
 
-      # 12:45に開始
+      # decision:
+
+      # 12:45から5分足取得＋判定
+
+      #
+
+      # test:
+
+      # 日足準備後すぐに5分足取得＋判定
 
       # =====================================================
 
@@ -458,7 +498,7 @@ jobs:
 
       # =====================================================
 
-      # 現在の判定結果を即メール用ファイルへ
+      # Email body
 
       # =====================================================
 
@@ -480,73 +520,195 @@ jobs:
 
       # =====================================================
 
-      # ★ 最優先でメール送信
+      # 即メール
 
       #
 
-      # CSV download
+      # dawidd6/action-send-mail を使用しない
 
-      # GitHub commit
-
-      # 等より先に送る
+      # Python標準ライブラリで送信
 
       # =====================================================
 
       - name: Send result email immediately
 
-        uses: dawidd6/action-send-mail@v3
+        env:
 
-        with:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
 
-          server_address: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
 
-          server_port: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
 
-          username: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
 
-          password: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
 
-          subject: "v33.20 Paper Trader ${{ steps.mode.outputs.mode }}"
+          MAIL_USER: ${{ secrets.MAIL_USER }}
 
-          to: ${{ secrets.MAIL_TO }}
-
-          from: ${{ secrets.MAIL_USER }}
-
-          secure: false
-
-          starttls: true
-
-          body: file://latest_result.txt
-
-      - name: Email sent
+          RUN_MODE: ${{ steps.mode.outputs.mode }}
 
         shell: bash
 
         run: |
 
-          echo "========================================"
+          python <<'PY'
 
-          echo "メール送信完了"
+          import os
 
-          echo "========================================"
+          import smtplib
 
-          echo "MODE: ${{ steps.mode.outputs.mode }}"
+          from email.message import EmailMessage
 
-          echo "========================================"
+          with open(
+
+              "latest_result.txt",
+
+              "r",
+
+              encoding="utf-8"
+
+          ) as f:
+
+              body = f.read()
+
+          msg = EmailMessage()
+
+          msg["Subject"] = (
+
+              f"v33.20 Paper Trader "
+
+              f"{os.environ['RUN_MODE']}"
+
+          )
+
+          msg["From"] = os.environ[
+
+              "MAIL_USER"
+
+          ]
+
+          msg["To"] = os.environ[
+
+              "MAIL_TO"
+
+          ]
+
+          msg.set_content(
+
+              body
+
+          )
+
+          host = os.environ[
+
+              "SMTP_HOST"
+
+          ]
+
+          port = int(
+
+              os.environ[
+
+                  "SMTP_PORT"
+
+              ]
+
+          )
+
+          user = os.environ[
+
+              "SMTP_USER"
+
+          ]
+
+          password = os.environ[
+
+              "SMTP_PASSWORD"
+
+          ]
+
+          print(
+
+              f"SMTP connection: "
+
+              f"{host}:{port}"
+
+          )
+
+          with smtplib.SMTP(
+
+              host,
+
+              port,
+
+              timeout=30
+
+          ) as smtp:
+
+              smtp.ehlo()
+
+              smtp.starttls()
+
+              smtp.ehlo()
+
+              smtp.login(
+
+                  user,
+
+                  password
+
+              )
+
+              smtp.send_message(
+
+                  msg
+
+              )
+
+          print(
+
+              "メール送信成功"
+
+          )
+
+          PY
 
       # =====================================================
 
-      # ↓↓↓ ここから後処理
+      # メール送信後の研究データ保存
 
       #
 
-      # メールはすでに送信済み
+      # decisionのみ
+
+      #
+
+      # TESTはpaper_trader.py側で研究保存済み
 
       # =====================================================
 
+      - name: Save research data after email
+
+        if: steps.mode.outputs.mode == 'decision'
+
+        shell: bash
+
+        run: |
+
+          URL="${{ steps.cloudrun.outputs.url }}"
+
+          echo "========================================"
+
+          echo "RESEARCH SAVE AFTER EMAIL"
+
+          echo "========================================"
+
+          curl --fail-with-body --retry 3 --retry-delay 5 --max-time 900 "${URL}/run?mode=research"
+
       # =====================================================
 
-      # Download result files from GCS
+      # Download GCS files
 
       # =====================================================
 
@@ -724,7 +886,7 @@ jobs:
 
       # =====================================================
 
-      # Check result file
+      # Check result
 
       # =====================================================
 
@@ -792,7 +954,7 @@ jobs:
 
       # =====================================================
 
-      # Finish
+      # Completed
 
       # =====================================================
 
