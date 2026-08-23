@@ -8,11 +8,21 @@ on:
 
       run_mode:
 
-        description: "decision / result / test"
+        description: "実行モード"
 
-        required: false
+        required: true
 
-        default: "decision"
+        type: choice
+
+        options:
+
+          - decision
+
+          - result
+
+          - test
+
+        default: decision
 
   schedule:
 
@@ -212,7 +222,7 @@ jobs:
 
       # 重要:
 
-      # gcloud run deploy は改行せず1行
+      # ここは改行しない
 
       # =====================================================
 
@@ -260,11 +270,9 @@ jobs:
 
       #
 
-      # decision の場合のみ待機
+      # decision の場合だけ12:45まで待つ
 
-      # 12:30頃にCloud Schedulerから起動
-
-      # 準備完了後、12:45まで待つ
+      # test / result は待たない
 
       # =====================================================
 
