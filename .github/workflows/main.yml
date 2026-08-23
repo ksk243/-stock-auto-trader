@@ -68,27 +68,17 @@ jobs:
 
       #
 
-      # Cloud Scheduler
+      # Cloud Scheduler 12:30 JST
 
-      # 12:30 JST
+      # → workflow_dispatch
 
-      # ↓
-
-      # workflow_dispatch
-
-      # ↓
-
-      # decision
+      # → decision
 
       #
 
-      # GitHub schedule
+      # GitHub schedule 15:45 JST
 
-      # 15:45 JST
-
-      # ↓
-
-      # result
+      # → result
 
       # =====================================================
 
@@ -132,15 +122,7 @@ jobs:
 
       # =====================================================
 
-      # decision の場合だけ12:45 JSTまで待つ
-
-      #
-
-      # Cloud Schedulerを12:30に起動
-
-      # Docker Build / Push 等を先に行い、
-
-      # Paper Trader実行直前で12:45まで待つ
+      # Google Cloud Authentication
 
       # =====================================================
 
@@ -154,6 +136,12 @@ jobs:
 
           service_account: ${{ env.SERVICE_ACCOUNT }}
 
+      # =====================================================
+
+      # Setup gcloud
+
+      # =====================================================
+
       - name: Setup gcloud
 
         uses: google-github-actions/setup-gcloud@v3
@@ -162,9 +150,21 @@ jobs:
 
           project_id: ${{ env.PROJECT_ID }}
 
+      # =====================================================
+
+      # Docker Authentication
+
+      # =====================================================
+
       - name: Configure Docker
 
         run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+
+      # =====================================================
+
+      # Artifact Registry
+
+      # =====================================================
 
       - name: Create Artifact Registry
 
@@ -180,47 +180,51 @@ jobs:
 
             echo "Creating Artifact Registry repository"
 
-            gcloud artifacts repositories create "${REPOSITORY}" \
-
-              --repository-format=docker \
-
-              --location="${REGION}" \
-
-              --project="${PROJECT_ID}" \
-
-              --description="Paper Trader Docker Repository"
+            gcloud artifacts repositories create "${REPOSITORY}" --repository-format=docker --location="${REGION}" --project="${PROJECT_ID}" --description="Paper Trader Docker Repository"
 
           fi
+
+      # =====================================================
+
+      # Docker Build
+
+      # =====================================================
 
       - name: Docker Build
 
         run: docker build -t "${IMAGE}:latest" .
 
+      # =====================================================
+
+      # Docker Push
+
+      # =====================================================
+
       - name: Docker Push
 
         run: docker push "${IMAGE}:latest"
 
+      # =====================================================
+
+      # Deploy Cloud Run
+
+      #
+
+      # 重要:
+
+      # gcloud run deploy は改行せず1行
+
+      # =====================================================
+
       - name: Deploy Cloud Run
 
-        shell: bash
+        run: gcloud run deploy paper-trader --image="${IMAGE}:latest" --region="${REGION}" --project="${PROJECT_ID}" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ steps.mode.outputs.mode }},GCS_BUCKET=${GCS_BUCKET}" --timeout=900
 
-        run: |
+      # =====================================================
 
-          gcloud run deploy paper-trader \
+      # Get Cloud Run URL
 
-            --image="${IMAGE}:latest" \
-
-            --region="${REGION}" \
-
-            --project="${PROJECT_ID}" \
-
-            --platform=managed \
-
-            --allow-unauthenticated \
-
-            --set-env-vars="RUN_MODE=${{ steps.mode.outputs.mode }},GCS_BUCKET=${GCS_BUCKET}" \
-
-            --timeout=900
+      # =====================================================
 
       - name: Get Cloud Run URL
 
@@ -230,13 +234,7 @@ jobs:
 
         run: |
 
-          URL=$(gcloud run services describe paper-trader \
-
-            --region="${REGION}" \
-
-            --project="${PROJECT_ID}" \
-
-            --format='value(status.url)')
+          URL=$(gcloud run services describe paper-trader --region="${REGION}" --project="${PROJECT_ID}" --format='value(status.url)')
 
           if [ -z "$URL" ]; then
 
@@ -258,7 +256,15 @@ jobs:
 
       # =====================================================
 
-      # 12:45 JST 待機
+      # Wait until 12:45 JST
+
+      #
+
+      # decision の場合のみ待機
+
+      # 12:30頃にCloud Schedulerから起動
+
+      # 準備完了後、12:45まで待つ
 
       # =====================================================
 
@@ -272,7 +278,7 @@ jobs:
 
           python <<'PY'
 
-          from datetime import datetime, timedelta
+          from datetime import datetime
 
           from zoneinfo import ZoneInfo
 
@@ -330,7 +336,7 @@ jobs:
 
       # =====================================================
 
-      # Paper Trader実行
+      # Run Paper Trader
 
       # =====================================================
 
@@ -356,23 +362,11 @@ jobs:
 
           echo "========================================"
 
-          curl \
-
-            --fail-with-body \
-
-            --retry 3 \
-
-            --retry-delay 10 \
-
-            --max-time 900 \
-
-            "${URL}/run?mode=${MODE}" \
-
-            | tee cloud_run_result.txt
+          curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "${URL}/run?mode=${MODE}" | tee cloud_run_result.txt
 
       # =====================================================
 
-      # Current result
+      # Current Cloud Run result
 
       # =====================================================
 
@@ -394,7 +388,7 @@ jobs:
 
       # =====================================================
 
-      # Download GCS files
+      # Download result files from GCS
 
       # =====================================================
 
@@ -418,11 +412,7 @@ jobs:
 
           echo "screening_history.csv"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/research/screening_history.csv" \
-
-            "data/research/screening_history.csv"; then
+          if gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"; then
 
             echo "screening_history.csv downloaded"
 
@@ -438,11 +428,7 @@ jobs:
 
           echo "intraday_history.csv"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/research/intraday_history.csv" \
-
-            "data/research/intraday_history.csv"; then
+          if gcloud storage cp "gs://${GCS_BUCKET}/research/intraday_history.csv" "data/research/intraday_history.csv"; then
 
             echo "intraday_history.csv downloaded"
 
@@ -450,11 +436,7 @@ jobs:
 
             echo "WARNING: intraday_history.csv がGCSにありません"
 
-            printf '%s\n' \
-
-              'date,datetime,ticker,open,high,low,close,volume' \
-
-              > "data/research/intraday_history.csv"
+            printf '%s\n' 'date,datetime,ticker,open,high,low,close,volume' > "data/research/intraday_history.csv"
 
           fi
 
@@ -462,11 +444,7 @@ jobs:
 
           echo "portfolio.json"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/paper_trader/portfolio.json" \
-
-            "data/portfolio.json"; then
+          if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/portfolio.json" "data/portfolio.json"; then
 
             echo "portfolio.json downloaded"
 
@@ -474,9 +452,7 @@ jobs:
 
             echo "WARNING: portfolio.json がGCSにありません"
 
-            python -c \
-
-              'import json; json.dump(dict(equity=1117792, positions=[]), open("data/portfolio.json","w",encoding="utf-8"), ensure_ascii=False, indent=2)'
+            python -c 'import json; json.dump(dict(equity=1117792, positions=[]), open("data/portfolio.json","w",encoding="utf-8"), ensure_ascii=False, indent=2)'
 
           fi
 
@@ -484,11 +460,7 @@ jobs:
 
           echo "paper_trades.csv"
 
-          if gcloud storage cp \
-
-            "gs://${GCS_BUCKET}/paper_trader/paper_trades.csv" \
-
-            "data/paper_trades.csv"; then
+          if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/paper_trades.csv" "data/paper_trades.csv"; then
 
             echo "paper_trades.csv downloaded"
 
@@ -496,11 +468,7 @@ jobs:
 
             echo "WARNING: paper_trades.csv がGCSにありません"
 
-            printf '%s\n' \
-
-              'date,ticker,side,shares,entry,exit,return,pnl,reason,entry_time,exit_time' \
-
-              > "data/paper_trades.csv"
+            printf '%s\n' 'date,ticker,side,shares,entry,exit,return,pnl,reason,entry_time,exit_time' > "data/paper_trades.csv"
 
           fi
 
@@ -598,7 +566,7 @@ jobs:
 
       # =====================================================
 
-      # Check result
+      # Check result file
 
       # =====================================================
 
@@ -628,7 +596,7 @@ jobs:
 
       # =====================================================
 
-      # Save to GitHub
+      # Save data to GitHub
 
       # =====================================================
 
@@ -666,7 +634,7 @@ jobs:
 
       # =====================================================
 
-      # Mail settings
+      # Check mail settings
 
       # =====================================================
 
@@ -744,7 +712,7 @@ jobs:
 
       # =====================================================
 
-      # Send mail
+      # Send result email
 
       # =====================================================
 
@@ -773,6 +741,12 @@ jobs:
           starttls: true
 
           body: file://latest_result.txt
+
+      # =====================================================
+
+      # Email success
+
+      # =====================================================
 
       - name: Email sent successfully
 
