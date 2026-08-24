@@ -96,11 +96,23 @@ MAX_SHORT_POSITIONS = 1
 
 # ============================================================
 
-# 採用済み LONG 条件
+# 採用条件
 
-# RS >= 85
+# ============================================================
 
-# 前場高値突破率 >= 0.25%
+# LONG:
+
+#   RS >= 85
+
+#   前場高値突破率 >= 0.25%
+
+#
+
+# SHORT:
+
+#   RS <= 30
+
+#   前場安値割れ
 
 # ============================================================
 
@@ -1286,21 +1298,9 @@ def make_candidate(
 
     )
 
-    if morning_high > 0:
+    if morning_high <= 0:
 
-        breakout_pct = (
-
-            close_1245
-
-            / morning_high
-
-            - 1
-
-        ) * 100
-
-    else:
-
-        breakout_pct = np.nan
+        return None
 
     volume = (
 
@@ -1445,6 +1445,22 @@ def make_candidate(
     if pd.isna(raw_rs):
 
         return None
+
+    breakout_pct = (
+
+        (
+
+            close_1245
+
+            / morning_high
+
+            - 1
+
+        )
+
+        * 100
+
+    )
 
     return {
 
@@ -3078,9 +3094,39 @@ def run_decision(
 
         p = long_positions[0]
 
+        ticker_row = all_df[
+
+            all_df["ticker"] == p["ticker"]
+
+        ]
+
+        if not ticker_row.empty:
+
+            long_rs = float(
+
+                ticker_row.iloc[0]["RS"]
+
+            )
+
+            breakout_pct = float(
+
+                ticker_row.iloc[0]["breakout_pct"]
+
+            )
+
+        else:
+
+            long_rs = np.nan
+
+            breakout_pct = np.nan
+
         lines.extend([
 
             f"銘柄　　　{p['ticker']}",
+
+            f"RS　　　　{long_rs:.2f}",
+
+            f"突破率　　{breakout_pct:.3f}%",
 
             f"12:50約定　{p['entry_price']:,.1f}円",
 
@@ -3116,9 +3162,29 @@ def run_decision(
 
         p = short_positions[0]
 
+        ticker_row = all_df[
+
+            all_df["ticker"] == p["ticker"]
+
+        ]
+
+        if not ticker_row.empty:
+
+            short_rs = float(
+
+                ticker_row.iloc[0]["RS"]
+
+            )
+
+        else:
+
+            short_rs = np.nan
+
         lines.extend([
 
             f"銘柄　　　{p['ticker']}",
+
+            f"RS　　　　{short_rs:.2f}",
 
             f"12:50約定　{p['entry_price']:,.1f}円",
 
@@ -3140,19 +3206,59 @@ def run_decision(
 
         "",
 
-        "【判定状況】",
+        "【判定条件】",
 
-        f"5分足　　 {len(intraday)}/{len(TICKERS)}",
+        "LONG　　　RS>=85",
 
-        f"日足　　　 {len(daily)}/{len(TICKERS)}",
+        "突破率　　 >=0.25%",
 
-        f"判定対象　 {target_count}銘柄",
+        "SHORT　　 RS<=30 + 前場安値割れ",
 
         "",
 
-        f"LONG候補　 {long_candidate_count}",
+        "【判定状況】",
 
-        f"SHORT候補　{short_candidate_count}",
+        (
+
+            f"5分足　　 "
+
+            f"{len(intraday)}/{len(TICKERS)}"
+
+        ),
+
+        (
+
+            f"日足　　　 "
+
+            f"{len(daily)}/{len(TICKERS)}"
+
+        ),
+
+        (
+
+            f"判定対象　 "
+
+            f"{target_count}銘柄"
+
+        ),
+
+        "",
+
+        (
+
+            f"LONG候補　 "
+
+            f"{long_candidate_count}"
+
+        ),
+
+        (
+
+            f"SHORT候補　"
+
+            f"{short_candidate_count}"
+
+        ),
 
         ""
 
@@ -4054,13 +4160,37 @@ def run_result():
 
             lines.extend([
 
-                f"{trade['side']} {trade['ticker']}",
+                (
 
-                f"株数　　　{trade['shares']}株",
+                    f"{trade['side']} "
 
-                f"建値　　　{trade['entry']:,.1f}円",
+                    f"{trade['ticker']}"
 
-                f"決済　　　{trade['exit']:,.1f}円",
+                ),
+
+                (
+
+                    f"株数　　　"
+
+                    f"{trade['shares']}株"
+
+                ),
+
+                (
+
+                    f"建値　　　"
+
+                    f"{trade['entry']:,.1f}円"
+
+                ),
+
+                (
+
+                    f"決済　　　"
+
+                    f"{trade['exit']:,.1f}円"
+
+                ),
 
                 (
 
@@ -4072,7 +4202,13 @@ def run_result():
 
                 ),
 
-                f"結果　　　{trade['reason']}",
+                (
+
+                    f"結果　　　"
+
+                    f"{trade['reason']}"
+
+                ),
 
                 ""
 
@@ -4100,15 +4236,45 @@ def run_result():
 
             lines.extend([
 
-                f"{position['side']} {position['ticker']}",
+                (
 
-                f"株数　　　{position['shares']}株",
+                    f"{position['side']} "
 
-                f"建値　　　{position['entry_price']:,.1f}円",
+                    f"{position['ticker']}"
 
-                f"TP　　　　{position['tp_price']:,.1f}円",
+                ),
 
-                f"SL　　　　{position['sl_price']:,.1f}円",
+                (
+
+                    f"株数　　　"
+
+                    f"{position['shares']}株"
+
+                ),
+
+                (
+
+                    f"建値　　　"
+
+                    f"{position['entry_price']:,.1f}円"
+
+                ),
+
+                (
+
+                    f"TP　　　　"
+
+                    f"{position['tp_price']:,.1f}円"
+
+                ),
+
+                (
+
+                    f"SL　　　　"
+
+                    f"{position['sl_price']:,.1f}円"
+
+                ),
 
                 ""
 
@@ -4284,7 +4450,13 @@ def health():
 
         "status": "ok",
 
-        "version": VERSION
+        "version": VERSION,
+
+        "long_rs": LONG_RS_THRESHOLD,
+
+        "long_breakout_pct": LONG_BREAKOUT_THRESHOLD,
+
+        "short_rs": SHORT_RS_THRESHOLD
 
     })
 
