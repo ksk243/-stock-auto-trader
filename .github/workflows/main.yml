@@ -114,9 +114,37 @@ jobs:
 
       # ======================================================
 
-      # Docker Auth
+      # IMPORTANT
 
-      # 1行にして改行問題を防止
+      # Google Cloud Projectを明示
+
+      # ======================================================
+
+      - name: Set Google Cloud Project
+
+        run: gcloud config set project ${{ env.PROJECT_ID }}
+
+      # ======================================================
+
+      # Verify Google Cloud Project
+
+      # ======================================================
+
+      - name: Verify Google Cloud Project
+
+        shell: bash
+
+        run: |
+
+          echo "Expected project: ${{ env.PROJECT_ID }}"
+
+          echo "Current project:"
+
+          gcloud config get-value project
+
+      # ======================================================
+
+      # Docker Auth
 
       # ======================================================
 
@@ -127,8 +155,6 @@ jobs:
       # ======================================================
 
       # Build
-
-      # 1行にして改行問題を防止
 
       # ======================================================
 
@@ -150,17 +176,19 @@ jobs:
 
       # Deploy Cloud Run
 
-      # 1行にして "\" による分断を防止
+      # projectも明示
 
       # ======================================================
 
       - name: Deploy Cloud Run
 
-        run: gcloud run deploy ${{ env.SERVICE_NAME }} --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }} --region=${{ env.REGION }} --platform=managed --service-account=${{ env.SERVICE_ACCOUNT }} --memory=4Gi --cpu=2 --timeout=3600 --concurrency=1 --max-instances=1 --no-allow-unauthenticated --set-env-vars=GCS_BUCKET=${{ env.GCS_BUCKET }},FIX11_DATA_DIR=fix11_forward --quiet
+        run: gcloud run deploy ${{ env.SERVICE_NAME }} --project=${{ env.PROJECT_ID }} --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }} --region=${{ env.REGION }} --platform=managed --service-account=${{ env.SERVICE_ACCOUNT }} --memory=4Gi --cpu=2 --timeout=3600 --concurrency=1 --max-instances=1 --no-allow-unauthenticated --set-env-vars=GCS_BUCKET=${{ env.GCS_BUCKET }},FIX11_DATA_DIR=fix11_forward --quiet
 
       # ======================================================
 
       # Service URL
+
+      # projectも明示
 
       # ======================================================
 
@@ -172,7 +200,7 @@ jobs:
 
         run: |
 
-          URL=$(gcloud run services describe "${{ env.SERVICE_NAME }}" --region="${{ env.REGION }}" --format="value(status.url)")
+          URL=$(gcloud run services describe "${{ env.SERVICE_NAME }}" --project="${{ env.PROJECT_ID }}" --region="${{ env.REGION }}" --format="value(status.url)")
 
           if [ -z "$URL" ]; then
 
@@ -304,11 +332,7 @@ jobs:
 
       # Ensure Email Body Exists
 
-      #
-
-      # Build/Deploy等で途中失敗しても
-
-      # response.txt がないせいでメールまで失敗するのを防止
+      # 途中失敗でもメール本文を必ず作る
 
       # ======================================================
 
