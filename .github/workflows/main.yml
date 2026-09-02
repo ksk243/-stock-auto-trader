@@ -38,8 +38,6 @@ on:
 
     # JST 16:10 / Mon-Fri
 
-    # Yahoo遅延を考慮して引け後に保存
-
     - cron: "10 7 * * 1-5"
 
 permissions:
@@ -88,11 +86,13 @@ jobs:
 
       # ======================================================
 
-      # Google Auth
+      # Google Auth for Deploy
 
       # ======================================================
 
       - name: Google Auth
+
+        id: google_auth
 
         uses: google-github-actions/auth@v3
 
@@ -101,6 +101,10 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
 
           service_account: ${{ env.SERVICE_ACCOUNT }}
+
+          create_credentials_file: true
+
+          export_environment_variables: true
 
       # ======================================================
 
@@ -112,11 +116,13 @@ jobs:
 
         uses: google-github-actions/setup-gcloud@v3
 
+        with:
+
+          project_id: ${{ env.PROJECT_ID }}
+
       # ======================================================
 
-      # IMPORTANT
-
-      # Google Cloud Projectを明示
+      # Set Project
 
       # ======================================================
 
@@ -126,7 +132,7 @@ jobs:
 
       # ======================================================
 
-      # Verify Google Cloud Project
+      # Verify Project
 
       # ======================================================
 
@@ -176,8 +182,6 @@ jobs:
 
       # Deploy Cloud Run
 
-      # projectも明示
-
       # ======================================================
 
       - name: Deploy Cloud Run
@@ -187,8 +191,6 @@ jobs:
       # ======================================================
 
       # Service URL
-
-      # projectも明示
 
       # ======================================================
 
@@ -216,6 +218,38 @@ jobs:
 
       # ======================================================
 
+      # Generate Cloud Run ID Token
+
+      #
+
+      # Cloud Run URLをaudienceにしたID tokenを
+
+      # auth@v3から直接取得する
+
+      # ======================================================
+
+      - name: Generate Cloud Run ID Token
+
+        id: cloud_run_auth
+
+        uses: google-github-actions/auth@v3
+
+        with:
+
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+
+          token_format: id_token
+
+          id_token_audience: ${{ steps.service.outputs.url }}
+
+          id_token_include_email: true
+
+          create_credentials_file: false
+
+      # ======================================================
+
       # Health Check
 
       # ======================================================
@@ -224,13 +258,23 @@ jobs:
 
         shell: bash
 
+        env:
+
+          CLOUD_RUN_TOKEN: ${{ steps.cloud_run_auth.outputs.id_token }}
+
         run: |
 
           URL="${{ steps.service.outputs.url }}"
 
-          TOKEN=$(gcloud auth print-identity-token)
+          if [ -z "$CLOUD_RUN_TOKEN" ]; then
 
-          curl --fail --show-error --silent --header "Authorization: Bearer ${TOKEN}" "${URL}/"
+            echo "ERROR: Cloud Run ID token is empty."
+
+            exit 1
+
+          fi
+
+          curl --fail --show-error --silent --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" "${URL}/"
 
       # ======================================================
 
@@ -284,6 +328,10 @@ jobs:
 
       # Run FIX11 Forward
 
+      #
+
+      # gcloud auth print-identity-token は使用しない
+
       # ======================================================
 
       - name: Run FIX11 Forward
@@ -292,17 +340,19 @@ jobs:
 
         shell: bash
 
+        env:
+
+          CLOUD_RUN_TOKEN: ${{ steps.cloud_run_auth.outputs.id_token }}
+
         run: |
 
           URL="${{ steps.service.outputs.url }}"
 
           MODE="${{ steps.mode.outputs.mode }}"
 
-          TOKEN=$(gcloud auth print-identity-token)
-
           echo "Calling: ${URL}/run?mode=${MODE}"
 
-          HTTP_CODE=$(curl --show-error --silent --location --output response.txt --write-out "%{http_code}" --header "Authorization: Bearer ${TOKEN}" "${URL}/run?mode=${MODE}")
+          HTTP_CODE=$(curl --show-error --silent --location --output response.txt --write-out "%{http_code}" --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" "${URL}/run?mode=${MODE}")
 
           echo "HTTP_CODE=$HTTP_CODE"
 
@@ -331,8 +381,6 @@ jobs:
       # ======================================================
 
       # Ensure Email Body Exists
-
-      # 途中失敗でもメール本文を必ず作る
 
       # ======================================================
 
