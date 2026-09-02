@@ -28,15 +28,59 @@ on:
 
   schedule:
 
+    # ======================================================
+
     # JST 12:45 / Mon-Fri
+
+    #
+
+    # decision
+
+    # 前場 09:15～11:30 の
+
+    # Formal ENTRY / EXITを処理
+
+    # ↓
+
+    # 前場報告メール
+
+    # ======================================================
 
     - cron: "45 3 * * 1-5"
 
+    # ======================================================
+
     # JST 15:45 / Mon-Fri
+
+    #
+
+    # result
+
+    # 前場処理済み時刻より後 ～ 15:25
+
+    # Formal ENTRY / EXITを継続
+
+    # ↓
+
+    # 後場 + 1日報告メール
+
+    # ======================================================
 
     - cron: "45 6 * * 1-5"
 
+    # ======================================================
+
     # JST 16:10 / Mon-Fri
+
+    #
+
+    # snapshot
+
+    # RVOL20用
+
+    # 当日1分足保存
+
+    # ======================================================
 
     - cron: "10 7 * * 1-5"
 
@@ -220,12 +264,6 @@ jobs:
 
       # Generate Cloud Run ID Token
 
-      #
-
-      # Cloud Run URLをaudienceにしたID tokenを
-
-      # auth@v3から直接取得する
-
       # ======================================================
 
       - name: Generate Cloud Run ID Token
@@ -274,7 +312,11 @@ jobs:
 
           fi
 
-          curl --fail --show-error --silent --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" "${URL}/"
+          curl --fail --show-error --silent \
+
+            --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" \
+
+            "${URL}/"
 
       # ======================================================
 
@@ -328,10 +370,6 @@ jobs:
 
       # Run FIX11 Forward
 
-      #
-
-      # gcloud auth print-identity-token は使用しない
-
       # ======================================================
 
       - name: Run FIX11 Forward
@@ -352,7 +390,21 @@ jobs:
 
           echo "Calling: ${URL}/run?mode=${MODE}"
 
-          HTTP_CODE=$(curl --show-error --silent --location --output response.txt --write-out "%{http_code}" --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" "${URL}/run?mode=${MODE}")
+          HTTP_CODE=$(curl \
+
+            --show-error \
+
+            --silent \
+
+            --location \
+
+            --output response.txt \
+
+            --write-out "%{http_code}" \
+
+            --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" \
+
+            "${URL}/run?mode=${MODE}")
 
           echo "HTTP_CODE=$HTTP_CODE"
 
