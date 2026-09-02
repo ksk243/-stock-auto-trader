@@ -1,6 +1,6 @@
 # ============================================================
 
-# FIX11 / Stage6 Forward Shadow Trader V3
+# FIX11 / Stage6 Forward Shadow Trader V4
 
 # ============================================================
 
@@ -20,7 +20,11 @@
 
 #
 
+# ------------------------------------------------------------
+
 # SHORT_FILTER 固定除外条件
+
+# ------------------------------------------------------------
 
 #   ATR14_pct_prev >= 7.0
 
@@ -30,7 +34,11 @@
 
 #
 
+# ------------------------------------------------------------
+
 # Formal rules
+
+# ------------------------------------------------------------
 
 #   ORB      09:00-09:14
 
@@ -74,19 +82,77 @@
 
 #
 
-# 重要
+# ------------------------------------------------------------
 
-#   decision = 新規ENTRY + 既存POSITIONのEXIT処理
+# V4 運用
 
-#   result   = EXIT処理のみ。新規ENTRY禁止
+# ------------------------------------------------------------
 
-#   snapshot = RVOL20用の引け後1分足保存
+#
+
+# decision
+
+#   前場処理
+
+#   09:15 ～ 11:30
+
+#   新規ENTRY + EXIT
+
+#   ↓
+
+#   昼メール = 前場報告
+
+#
+
+# result
+
+#   その日の続き ～ 15:25
+
+#   午後の新規ENTRY + EXIT
+
+#   LONG 10D forced closeも処理
+
+#   ↓
+
+#   夕方メール = 後場 + 1日全体
+
+#
+
+# snapshot
+
+#   引け後
+
+#   RVOL20用の当日1分足を保存
+
+#
+
+# ------------------------------------------------------------
+
+# CRITICAL
+
+# ------------------------------------------------------------
+
+#
+
+# ・12:40打ち切りは廃止
+
+# ・resultでも新規ENTRYを許可
+
+# ・LastProcessedDatetimeより前は再処理しない
+
+# ・同一Side最大1ポジション
+
+# ・EXITと同時刻のENTRYは禁止
+
+# ・1日複数回可能
 
 #
 
 # ※ Stage6 strategy shadow。
 
 # ※ 1557再投資・金利等を含む完全FIX11 broker layerではない。
+
+#
 
 # ============================================================
 
@@ -164,9 +230,13 @@ ORB_END = "09:14"
 
 SIGNAL_START = "09:15"
 
-# 12:45実行時点では12:40までの確定1分足を使用
+# 昼メール
 
-DECISION_LAST_BAR = "12:40"
+MORNING_LAST_BAR = "11:30"
+
+# Formal Forward 終日処理
+
+FULL_DAY_LAST_BAR = "15:25"
 
 GCS_BUCKET = os.environ.get(
 
@@ -220,7 +290,15 @@ def fmt_dt(x):
 
     if x.tzinfo is not None:
 
-        x = x.tz_convert("Asia/Tokyo").tz_localize(None)
+        x = (
+
+            x
+
+            .tz_convert("Asia/Tokyo")
+
+            .tz_localize(None)
+
+        )
 
     return x.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -1760,9 +1838,31 @@ def build_signal_candidates(
 
     minute_df,
 
-    rvol_lookup
+    rvol_lookup,
+
+    last_bar
 
 ):
+
+    """
+
+    Date+Code+Sideについて
+
+    最初のFormal qualifying signalを作る。
+
+    METHOD B:
+
+      breakoutしてもRVOL不足なら
+
+      後のbreakoutを探索継続。
+
+    last_bar:
+
+      decision -> 11:30
+
+      result   -> 15:25
+
+    """
 
     if minute_df.empty:
 
@@ -1956,7 +2056,7 @@ def build_signal_candidates(
 
                 continue
 
-            if minute > DECISION_LAST_BAR:
+            if minute > last_bar:
 
                 break
 
@@ -2020,9 +2120,7 @@ def build_signal_candidates(
 
             )
 
-            # METHOD B:
-
-            # RVOL不足なら後のbreakoutを探索継続
+            # METHOD B
 
             if (
 
@@ -2056,17 +2154,11 @@ def build_signal_candidates(
 
             )
 
-            # 12:40までの確定範囲
-
             if (
 
-                entry_dt.strftime(
+                entry_dt.strftime("%H:%M")
 
-                    "%H:%M"
-
-                )
-
-                > DECISION_LAST_BAR
+                > last_bar
 
             ):
 
@@ -2340,7 +2432,7 @@ def new_state():
 
     return {
 
-        "version": "FIX11_STAGE6_FORWARD_V3",
+        "version": "FIX11_STAGE6_FORWARD_V4",
 
         "created_at": fmt_dt(
 
@@ -2382,9 +2474,11 @@ def load_state():
 
             state[name] = new_track()
 
+    # V3 stateをそのままV4へ引継ぐ
+
     state["version"] = (
 
-        "FIX11_STAGE6_FORWARD_V3"
+        "FIX11_STAGE6_FORWARD_V4"
 
     )
 
@@ -2516,7 +2610,9 @@ def open_position(
 
     candidate,
 
-    minute_df
+    minute_df,
+
+    activity_log
 
 ):
 
@@ -2780,9 +2876,7 @@ def open_position(
 
                     "TRAIL"
 
-                    if pending
-
-                    > fixed_stop
+                    if pending > fixed_stop
 
                     else "SL"
 
@@ -2856,9 +2950,7 @@ def open_position(
 
                     "TRAIL"
 
-                    if pending
-
-                    < fixed_stop
+                    if pending < fixed_stop
 
                     else "SL"
 
@@ -2871,6 +2963,50 @@ def open_position(
         )
 
     track["Position"] = p
+
+    activity_log.append(
+
+        {
+
+            "Type": "ENTRY",
+
+            "Track": track_name,
+
+            "Side": side,
+
+            "Code": p["Code"],
+
+            "Datetime": fmt_dt(
+
+                entry_dt
+
+            ),
+
+            "Price": entry,
+
+            "Qty": qty,
+
+            "RS20_corrected": p[
+
+                "RS20_corrected"
+
+            ],
+
+            "RVOL20": p[
+
+                "RVOL20"
+
+            ],
+
+            "ATR14_pct_prev": p[
+
+                "ATR14_pct_prev"
+
+            ]
+
+        }
+
+    )
 
     return (
 
@@ -2932,7 +3068,9 @@ def close_position(
 
     reason,
 
-    trade_log
+    trade_log,
+
+    activity_log
 
 ):
 
@@ -3056,9 +3194,61 @@ def close_position(
 
         )
 
+    row = {
+
+        "Track": track_name,
+
+        "Side": side,
+
+        "Code": p["Code"],
+
+        "EntryDatetime": (
+
+            p["EntryDatetime"]
+
+        ),
+
+        "EntryPrice": entry,
+
+        "Qty": qty,
+
+        "ExitDatetime": fmt_dt(
+
+            exit_dt
+
+        ),
+
+        "ExitPrice": exit_price,
+
+        "ReturnPct": (
+
+            ret * 100.0
+
+        ),
+
+        "PnL": pnl,
+
+        "ExitReason": reason,
+
+        "EquityAfter": (
+
+            track["Equity"]
+
+        )
+
+    }
+
     trade_log.append(
 
+        row
+
+    )
+
+    activity_log.append(
+
         {
+
+            "Type": "EXIT",
 
             "Track": track_name,
 
@@ -3066,23 +3256,15 @@ def close_position(
 
             "Code": p["Code"],
 
-            "EntryDatetime": (
-
-                p["EntryDatetime"]
-
-            ),
-
-            "EntryPrice": entry,
-
-            "Qty": qty,
-
-            "ExitDatetime": fmt_dt(
+            "Datetime": fmt_dt(
 
                 exit_dt
 
             ),
 
-            "ExitPrice": exit_price,
+            "Price": exit_price,
+
+            "Qty": qty,
 
             "ReturnPct": (
 
@@ -3092,13 +3274,7 @@ def close_position(
 
             "PnL": pnl,
 
-            "ExitReason": reason,
-
-            "EquityAfter": (
-
-                track["Equity"]
-
-            )
+            "ExitReason": reason
 
         }
 
@@ -3125,6 +3301,8 @@ def evaluate_open_position(
     until_dt,
 
     trade_log,
+
+    activity_log,
 
     allow_forced_close
 
@@ -3308,7 +3486,9 @@ def evaluate_open_position(
 
                     f"{stop_type}_GAP",
 
-                    trade_log
+                    trade_log,
+
+                    activity_log
 
                 )
 
@@ -3334,7 +3514,9 @@ def evaluate_open_position(
 
                     stop_type,
 
-                    trade_log
+                    trade_log,
+
+                    activity_log
 
                 )
 
@@ -3362,7 +3544,9 @@ def evaluate_open_position(
 
                     f"{stop_type}_GAP",
 
-                    trade_log
+                    trade_log,
+
+                    activity_log
 
                 )
 
@@ -3388,7 +3572,9 @@ def evaluate_open_position(
 
                     stop_type,
 
-                    trade_log
+                    trade_log,
+
+                    activity_log
 
                 )
 
@@ -3418,11 +3604,7 @@ def evaluate_open_position(
 
             )
 
-            p["BestPrice"] = (
-
-                best
-
-            )
+            p["BestPrice"] = best
 
             trigger = (
 
@@ -3500,9 +3682,7 @@ def evaluate_open_position(
 
                     new_stop > effective
 
-                    and new_stop
-
-                    > pending_value
+                    and new_stop > pending_value
 
                 ):
 
@@ -3544,11 +3724,7 @@ def evaluate_open_position(
 
             )
 
-            p["BestPrice"] = (
-
-                best
-
-            )
+            p["BestPrice"] = best
 
             trigger = (
 
@@ -3626,9 +3802,7 @@ def evaluate_open_position(
 
                     new_stop < effective
 
-                    and new_stop
-
-                    < pending_value
+                    and new_stop < pending_value
 
                 ):
 
@@ -3808,17 +3982,19 @@ def evaluate_open_position(
 
                             "FORCED_10D",
 
-                            trade_log
+                            trade_log,
+
+                            activity_log
 
                         )
 
 # ============================================================
 
-# DECISION REPLAY
+# FORMAL MULTI REPLAY
 
 # ============================================================
 
-def replay_decision_track(
+def replay_formal_track(
 
     state,
 
@@ -3832,13 +4008,25 @@ def replay_decision_track(
 
     until_dt,
 
-    trade_log
+    trade_log,
+
+    activity_log,
+
+    allow_forced_close
 
 ):
 
     """
 
-    decisionのみ新規ENTRYを許可。
+    Stage4 MULTI型 Forward replay。
+
+    ・同一Track 最大1 position
+
+    ・EXIT後、後続candidateへ進める
+
+    ・同時刻 EXIT -> ENTRY 禁止
+
+    ・前回処理済みEntryDatetimeは再処理しない
 
     """
 
@@ -3856,171 +4044,165 @@ def replay_decision_track(
 
     )
 
-    # まず既存positionを現在時刻まで進める
+    last_processed = parse_dt(
 
-    if c.empty:
-
-        evaluate_open_position(
-
-            track,
-
-            track_name,
-
-            minute_df,
-
-            trading_dates,
-
-            until_dt,
-
-            trade_log,
-
-            False
-
-        )
-
-        track[
+        track.get(
 
             "LastProcessedDatetime"
 
-        ] = fmt_dt(
-
-            until_dt
-
         )
-
-        return
-
-    c = c[
-
-        c["EntryDatetime"]
-
-        <= until_dt
-
-    ].copy()
-
-    c = c.sort_values(
-
-        "EntryDatetime"
 
     )
 
-    for entry_dt, group in c.groupby(
+    if not c.empty:
 
-        "EntryDatetime",
+        c = c[
 
-        sort=True
+            c["EntryDatetime"]
 
-    ):
+            <= until_dt
 
-        entry_dt = pd.Timestamp(
+        ].copy()
 
-            entry_dt
+        if last_processed is not None:
 
-        )
+            c = c[
 
-        # candidate時刻まで既存positionを処理
+                c["EntryDatetime"]
 
-        evaluate_open_position(
+                > last_processed
 
-            track,
+            ].copy()
 
-            track_name,
+        c = c.sort_values(
 
-            minute_df,
-
-            trading_dates,
-
-            entry_dt,
-
-            trade_log,
-
-            False
+            "EntryDatetime"
 
         )
 
-        # まだ保有中
+    if not c.empty:
 
-        if (
+        for entry_dt, group in c.groupby(
 
-            track.get(
+            "EntryDatetime",
 
-                "Position"
-
-            )
-
-            is not None
+            sort=True
 
         ):
 
-            continue
+            entry_dt = pd.Timestamp(
 
-        # 同時刻 EXIT -> ENTRY 禁止
-
-        last_exit = parse_dt(
-
-            track.get(
-
-                "LastExitDatetime"
+                entry_dt
 
             )
 
-        )
+            # candidate時刻まで既存positionを処理
 
-        if (
+            evaluate_open_position(
 
-            last_exit is not None
+                track,
 
-            and entry_dt <= last_exit
+                track_name,
 
-        ):
+                minute_df,
 
-            continue
+                trading_dates,
 
-        ranked = rank_group(
+                entry_dt,
 
-            group,
+                trade_log,
 
-            side_for_track(
+                activity_log,
 
-                track_name
-
-            )
-
-        )
-
-        if ranked.empty:
-
-            continue
-
-        winner = ranked.iloc[0]
-
-        ok, reason = open_position(
-
-            track,
-
-            track_name,
-
-            winner,
-
-            minute_df
-
-        )
-
-        if not ok:
-
-            print(
-
-                f"{track_name} "
-
-                f"{winner['Code']} "
-
-                f"SKIP {reason}",
-
-                flush=True
+                False
 
             )
 
-    # 12:40まで処理
+            # まだ保有中ならcandidateを無視
+
+            if (
+
+                track.get(
+
+                    "Position"
+
+                )
+
+                is not None
+
+            ):
+
+                continue
+
+            # 同時刻 EXIT -> ENTRY 禁止
+
+            last_exit = parse_dt(
+
+                track.get(
+
+                    "LastExitDatetime"
+
+                )
+
+            )
+
+            if (
+
+                last_exit is not None
+
+                and entry_dt <= last_exit
+
+            ):
+
+                continue
+
+            ranked = rank_group(
+
+                group,
+
+                side_for_track(
+
+                    track_name
+
+                )
+
+            )
+
+            if ranked.empty:
+
+                continue
+
+            winner = ranked.iloc[0]
+
+            ok, reason = open_position(
+
+                track,
+
+                track_name,
+
+                winner,
+
+                minute_df,
+
+                activity_log
+
+            )
+
+            if not ok:
+
+                print(
+
+                    f"{track_name} "
+
+                    f"{winner['Code']} "
+
+                    f"SKIP {reason}",
+
+                    flush=True
+
+                )
+
+    # 最後に今回の処理終了時刻まで進める
 
     evaluate_open_position(
 
@@ -4036,71 +4218,9 @@ def replay_decision_track(
 
         trade_log,
 
-        False
+        activity_log,
 
-    )
-
-    track[
-
-        "LastProcessedDatetime"
-
-    ] = fmt_dt(
-
-        until_dt
-
-    )
-
-# ============================================================
-
-# RESULT REPLAY
-
-# ============================================================
-
-def replay_result_track(
-
-    state,
-
-    track_name,
-
-    minute_df,
-
-    trading_dates,
-
-    until_dt,
-
-    trade_log
-
-):
-
-    """
-
-    RESULTはEXIT処理のみ。
-
-    新規ENTRYは絶対に行わない。
-
-    """
-
-    track = state[
-
-        track_name
-
-    ]
-
-    evaluate_open_position(
-
-        track,
-
-        track_name,
-
-        minute_df,
-
-        trading_dates,
-
-        until_dt,
-
-        trade_log,
-
-        True
+        allow_forced_close
 
     )
 
@@ -4196,6 +4316,94 @@ def append_trade_log(
 
     )
 
+def append_activity_log(
+
+    new_rows
+
+):
+
+    if not new_rows:
+
+        return
+
+    path = "activity.csv"
+
+    raw = gcs_download_bytes(
+
+        path
+
+    )
+
+    if raw is None:
+
+        old = pd.DataFrame()
+
+    else:
+
+        old = pd.read_csv(
+
+            io.BytesIO(raw)
+
+        )
+
+    new = pd.DataFrame(
+
+        new_rows
+
+    )
+
+    z = pd.concat(
+
+        [
+
+            old,
+
+            new
+
+        ],
+
+        ignore_index=True
+
+    )
+
+    subset = [
+
+        c
+
+        for c in [
+
+            "Type",
+
+            "Track",
+
+            "Code",
+
+            "Datetime"
+
+        ]
+
+        if c in z.columns
+
+    ]
+
+    if subset:
+
+        z = z.drop_duplicates(
+
+            subset=subset,
+
+            keep="last"
+
+        )
+
+    gcs_upload_df_csv(
+
+        path,
+
+        z
+
+    )
+
 def append_screening_log(
 
     mode,
@@ -4254,17 +4462,9 @@ def append_screening_log(
 
         ),
 
-        "LONGCandidates": (
+        "LONGCandidates": long_n,
 
-            long_n
-
-        ),
-
-        "SHORTCandidates": (
-
-            short_n
-
-        )
+        "SHORTCandidates": short_n
 
     }
 
@@ -4426,17 +4626,53 @@ def build_report(
 
     state,
 
-    new_trades
+    new_trades,
+
+    activity_log
 
 ):
 
+    if mode == "decision":
+
+        title = (
+
+            "FIX11 Stage6 Forward V4 "
+
+            "- 前場報告"
+
+        )
+
+        period_text = (
+
+            "09:15 ～ 前場終了"
+
+        )
+
+    else:
+
+        title = (
+
+            "FIX11 Stage6 Forward V4 "
+
+            "- 後場 + 1日報告"
+
+        )
+
+        period_text = (
+
+            "終日 ～ 15:25"
+
+        )
+
     lines = [
 
-        "FIX11 Stage6 Forward Shadow V3",
+        title,
 
         f"MODE: {mode}",
 
         f"TIME: {fmt_dt(now_jst())}",
+
+        f"PERIOD: {period_text}",
 
         "",
 
@@ -4522,6 +4758,88 @@ def build_report(
 
             f"Candidates SHORT FILTER: {filter_n}",
 
+            ""
+
+        ]
+
+    )
+
+    # --------------------------------------------------------
+
+    # 今回のENTRY / EXIT
+
+    # --------------------------------------------------------
+
+    entries = [
+
+        x
+
+        for x in activity_log
+
+        if x.get("Type") == "ENTRY"
+
+    ]
+
+    exits = [
+
+        x
+
+        for x in activity_log
+
+        if x.get("Type") == "EXIT"
+
+    ]
+
+    lines.append(
+
+        f"New entries: {len(entries)}"
+
+    )
+
+    for x in entries[-20:]:
+
+        lines.append(
+
+            f"  {x['Track']} "
+
+            f"{x['Code']} "
+
+            f"{x['Datetime']} "
+
+            f"{x['Qty']}株 "
+
+            f"@{x['Price']:.2f}"
+
+        )
+
+    lines.append("")
+
+    lines.append(
+
+        f"New exits: {len(exits)}"
+
+    )
+
+    for x in exits[-20:]:
+
+        lines.append(
+
+            f"  {x['Track']} "
+
+            f"{x['Code']} "
+
+            f"{x['Datetime']} "
+
+            f"{x['ReturnPct']:+.2f}% "
+
+            f"{x['ExitReason']}"
+
+        )
+
+    lines.extend(
+
+        [
+
             "",
 
             track_report(
@@ -4555,38 +4873,6 @@ def build_report(
         ]
 
     )
-
-    if new_trades:
-
-        lines.extend(
-
-            [
-
-                "",
-
-                f"New exits: {len(new_trades)}"
-
-            ]
-
-        )
-
-        for t in new_trades[
-
-            -10:
-
-        ]:
-
-            lines.append(
-
-                f"  {t['Track']} "
-
-                f"{t['Code']} "
-
-                f"{t['ReturnPct']:+.2f}% "
-
-                f"{t['ExitReason']}"
-
-            )
 
     return "\n".join(
 
@@ -4644,14 +4930,6 @@ def run(mode):
 
     # TEST
 
-    #
-
-    # Universe + lending + GCS state読込だけ。
-
-    # Yahoo大量取得しない。
-
-    # stateも変更しない。
-
     # --------------------------------------------------------
 
     if mode == "test":
@@ -4660,7 +4938,7 @@ def run(mode):
 
         report = (
 
-            "FIX11 Stage6 Forward V3 TEST PASS\n"
+            "FIX11 Stage6 Forward V4 TEST PASS\n"
 
             f"Universe : {len(universe)}\n"
 
@@ -4679,12 +4957,6 @@ def run(mode):
     # --------------------------------------------------------
 
     # SNAPSHOT
-
-    #
-
-    # 引け後に4208銘柄の当日1分足を保存。
-
-    # RVOL20 baseline。
 
     # --------------------------------------------------------
 
@@ -4830,13 +5102,7 @@ def run(mode):
 
     # --------------------------------------------------------
 
-    # CRITICAL FIX:
-
-    #
-
-    # 現在保有中の銘柄はRS等から外れても
-
-    # 必ず1分足取得対象へ追加。
+    # 保有中銘柄は必ず取得
 
     # --------------------------------------------------------
 
@@ -4870,7 +5136,7 @@ def run(mode):
 
     if minute_df.empty:
 
-        until_dt = pd.Timestamp(
+        available_until = pd.Timestamp(
 
             now.replace(
 
@@ -4882,7 +5148,7 @@ def run(mode):
 
     else:
 
-        until_dt = pd.Timestamp(
+        available_until = pd.Timestamp(
 
             minute_df[
 
@@ -4891,6 +5157,40 @@ def run(mode):
             ].max()
 
         )
+
+    # --------------------------------------------------------
+
+    # Modeごとの処理上限
+
+    # --------------------------------------------------------
+
+    if mode == "decision":
+
+        cap = pd.Timestamp(
+
+            f"{today} "
+
+            f"{MORNING_LAST_BAR}:59"
+
+        )
+
+    else:
+
+        cap = pd.Timestamp(
+
+            f"{today} "
+
+            f"{FULL_DAY_LAST_BAR}:59"
+
+        )
+
+    until_dt = min(
+
+        available_until,
+
+        cap
+
+    )
 
     # --------------------------------------------------------
 
@@ -4922,153 +5222,11 @@ def run(mode):
 
     )
 
-    new_trades = []
+    # --------------------------------------------------------
 
-    # ========================================================
+    # RVOL20
 
-    # RESULT
-
-    #
-
-    # CRITICAL:
-
-    # EXIT ONLY
-
-    # 新規signal / ENTRYは一切作らない。
-
-    # ========================================================
-
-    if mode == "result":
-
-        candidates = pd.DataFrame()
-
-        for track_name in [
-
-            "LONG",
-
-            "SHORT_BASE",
-
-            "SHORT_FILTER"
-
-        ]:
-
-            replay_result_track(
-
-                state,
-
-                track_name,
-
-                minute_df,
-
-                trading_dates,
-
-                until_dt,
-
-                new_trades
-
-            )
-
-        save_state(
-
-            state
-
-        )
-
-        append_trade_log(
-
-            new_trades
-
-        )
-
-        history_dates = (
-
-            list_snapshot_dates(
-
-                before_date=today
-
-            )[-20:]
-
-        )
-
-        append_screening_log(
-
-            mode,
-
-            feat,
-
-            candidates
-
-        )
-
-        report = build_report(
-
-            mode,
-
-            universe,
-
-            feat,
-
-            minute_df,
-
-            history_dates,
-
-            candidates,
-
-            state,
-
-            new_trades
-
-        )
-
-        report += (
-
-            f"\n\nElapsed: "
-
-            f"{time.time()-start:.1f}s"
-
-        )
-
-        gcs_upload_bytes(
-
-            "latest_result.txt",
-
-            report.encode(
-
-                "utf-8"
-
-            ),
-
-            "text/plain"
-
-        )
-
-        return report
-
-    # ========================================================
-
-    # DECISION
-
-    #
-
-    # 新規signal + ENTRYを許可。
-
-    # ========================================================
-
-    cap = pd.Timestamp(
-
-        f"{today} "
-
-        f"{DECISION_LAST_BAR}:59"
-
-    )
-
-    until_dt = min(
-
-        until_dt,
-
-        cap
-
-    )
+    # --------------------------------------------------------
 
     history_dates, history = (
 
@@ -5108,13 +5266,33 @@ def run(mode):
 
         rvol_lookup = {}
 
-    # 20日履歴がない場合は正式signalを作らない
+    # --------------------------------------------------------
+
+    # Formal candidate generation
+
+    #
+
+    # decision -> 前場まで
+
+    # result   -> 15:25まで
+
+    # --------------------------------------------------------
 
     if len(history_dates) < 20:
 
         candidates = pd.DataFrame()
 
     else:
+
+        last_bar = (
+
+            MORNING_LAST_BAR
+
+            if mode == "decision"
+
+            else FULL_DAY_LAST_BAR
+
+        )
 
         candidates = (
 
@@ -5124,11 +5302,37 @@ def run(mode):
 
                 minute_df,
 
-                rvol_lookup
+                rvol_lookup,
+
+                last_bar
 
             )
 
         )
+
+    new_trades = []
+
+    activity_log = []
+
+    # --------------------------------------------------------
+
+    # Formal MULTI replay
+
+    #
+
+    # decision:
+
+    #   前場
+
+    #
+
+    # result:
+
+    #   LastProcessedDatetimeより後を処理
+
+    #   午後ENTRYも許可
+
+    # --------------------------------------------------------
 
     for track_name in [
 
@@ -5140,7 +5344,7 @@ def run(mode):
 
     ]:
 
-        replay_decision_track(
+        replay_formal_track(
 
             state,
 
@@ -5154,9 +5358,23 @@ def run(mode):
 
             until_dt,
 
-            new_trades
+            new_trades,
+
+            activity_log,
+
+            allow_forced_close=(
+
+                mode == "result"
+
+            )
 
         )
+
+    # --------------------------------------------------------
+
+    # SAVE
+
+    # --------------------------------------------------------
 
     save_state(
 
@@ -5170,6 +5388,12 @@ def run(mode):
 
     )
 
+    append_activity_log(
+
+        activity_log
+
+    )
+
     append_screening_log(
 
         mode,
@@ -5180,7 +5404,11 @@ def run(mode):
 
     )
 
+    # --------------------------------------------------------
+
     # Candidate audit
+
+    # --------------------------------------------------------
 
     if not candidates.empty:
 
@@ -5190,11 +5418,7 @@ def run(mode):
 
         )
 
-        audit["RunMode"] = (
-
-            mode
-
-        )
+        audit["RunMode"] = mode
 
         audit[
 
@@ -5212,13 +5436,19 @@ def run(mode):
 
                 "candidate_audit/"
 
-                f"{today}_decision.csv"
+                f"{today}_{mode}.csv"
 
             ),
 
             audit
 
         )
+
+    # --------------------------------------------------------
+
+    # REPORT
+
+    # --------------------------------------------------------
 
     report = build_report(
 
@@ -5236,7 +5466,9 @@ def run(mode):
 
         state,
 
-        new_trades
+        new_trades,
+
+        activity_log
 
     )
 
@@ -5282,7 +5514,7 @@ def health():
 
     return Response(
 
-        "FIX11 Stage6 Forward V3 OK\n",
+        "FIX11 Stage6 Forward V4 OK\n",
 
         status=200,
 
