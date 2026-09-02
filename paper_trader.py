@@ -1,106 +1,30 @@
 # ============================================================
 
-# FIX11 FORMAL STAGE6 FORWARD PAPER TRADER
+# FIX11 STAGE6 FORWARD PAPER TRADER
 
 #
 
-# GitHub Actions / Cloud Run Service
-
-# PAPER TRADE ONLY - NO REAL ORDERS
+# PAPER ONLY - NO REAL ORDERS
 
 #
 
-# ------------------------------------------------------------
+# Tracks:
 
-# FORMAL SIGNAL
+#   LONG
 
-# ------------------------------------------------------------
+#   SHORT_BASE
 
-#
-
-# ORB15:
-
-#   09:00 - 09:14 actual 1m bars
+#   SHORT_FILTER
 
 #
 
-# Signal:
+# SHORT_FILTER:
 
-#   09:15 onward
-
-#
-
-# LONG:
-
-#   RS20_corrected >= 80
-
-#   turnover20 >= 3 oku yen
-
-#   RVOL20 >= 2.0
-
-#   previous actual close <= ORB15 High
-
-#   current actual close  > ORB15 High
-
-#
-
-# SHORT:
-
-#   lending eligible
-
-#   RS20_corrected <= 20
-
-#   turnover20 >= 3 oku yen
-
-#   RVOL20 >= 2.0
-
-#   previous actual close >= ORB15 Low
-
-#   current actual close  < ORB15 Low
-
-#
-
-# Entry:
-
-#   next actual 1m Open
-
-#
-
-# ------------------------------------------------------------
-
-# PORTFOLIOS
-
-# ------------------------------------------------------------
-
-#
-
-# BASE
-
-#   LONG  1.00x
-
-#   SHORT 0.50x
-
-#
-
-# FILTER
-
-#   LONG  = same formal LONG
-
-#   SHORT = formal SHORT after locked exclusion
-
-#
-
-# LOCKED SHORT FILTER:
-
-#
-
-#   EXCLUDE if ALL true:
-
-#
+#   exclude when ALL:
 
 #       ATR14_pct_prev >= 7.0
 
-#       RVOL20         >= 2.5
+#       RVOL20 >= 2.5
 
 #       RS20_corrected <= 5.0
 
@@ -108,73 +32,33 @@
 
 # IMPORTANT:
 
-#   filter BEFORE same-time ranking.
+#   SHORT_BASE and SHORT_FILTER are independent portfolios.
+
+#   Filtering happens BEFORE ranking.
 
 #
 
-# ------------------------------------------------------------
+# Modes:
 
-# EXIT
+#   snapshot
 
-# ------------------------------------------------------------
+#   decision
 
-#
+#   result
 
-# LONG:
-
-#   fixed SL       -2.5%
-
-#   trail trigger  +2.5%
-
-#   trail width     1.0%
-
-#   max 10 trading days
+#   test
 
 #
 
-# SHORT:
+# Data:
 
-#   fixed SL       -1.5%
+#   Yahoo Finance raw 1m
 
-#   trail trigger  +2.0%
-
-#   trail width     2.0%
-
-#   unlimited carry
+#   GCS persistent snapshots/state
 
 #
 
-# Entry bar:
-
-#   no exit
-
-#   favorable extreme may activate trailing
-
-#   new trail stop effective from NEXT actual bar
-
-#
-
-# ------------------------------------------------------------
-
-# IMPORTANT
-
-# ------------------------------------------------------------
-
-#
-
-# * NO REAL ORDERS
-
-# * No-Future
-
-# * raw Yahoo 1m snapshots saved
-
-# * missing history => NOT_READY
-
-# * BASE / FILTER independent state
-
-# * GCS persistent storage
-
-#
+# No real orders.
 
 # ============================================================
 
@@ -216,7 +100,7 @@ TZ = "Asia/Tokyo"
 
 # ============================================================
 
-# SETTINGS
+# FIX11
 
 # ============================================================
 
@@ -229,8 +113,6 @@ SHORT_LEVERAGE = 0.50
 LOT_SIZE = 100
 
 MIN_MARGIN_RATIO = 0.30
-
-SUBSTITUTE_HAIRCUT = 0.80
 
 # ============================================================
 
@@ -254,19 +136,7 @@ SIGNAL_START = "09:15"
 
 # ============================================================
 
-# LOCKED RESEARCH SHORT FILTER
-
-# ============================================================
-
-FILTER_ATR_MIN = 7.0
-
-FILTER_RVOL_MIN = 2.5
-
-FILTER_RS_MAX = 5.0
-
-# ============================================================
-
-# EXIT RULES
+# EXIT
 
 # ============================================================
 
@@ -286,15 +156,15 @@ SHORT_TRAIL_WIDTH = 0.020
 
 # ============================================================
 
-# FINANCING
+# RESEARCH FILTER
 
 # ============================================================
 
-LONG_INTEREST_RATE = 0.0285
+FILTER_ATR_MIN = 7.0
 
-SHORT_LENDING_RATE = 0.0110
+FILTER_RVOL_MIN = 2.5
 
-DAY_COUNT = 365.0
+FILTER_RS_MAX = 5.0
 
 # ============================================================
 
@@ -302,53 +172,33 @@ DAY_COUNT = 365.0
 
 # ============================================================
 
-BASE_DIR = Path(
+BASE_DIR = Path(__file__).resolve().parent
 
-    os.path.dirname(
+DATA_DIR = Path(
 
-        os.path.abspath(__file__)
+    os.getenv(
+
+        "FIX11_DATA_DIR",
+
+        str(BASE_DIR / "data" / "fix11"),
 
     )
 
 )
 
-DATA_DIR = BASE_DIR / "data" / "fix11"
-
 RAW_DIR = DATA_DIR / "yahoo_1m"
 
-CACHE_DIR = DATA_DIR / "cache"
+STATE_DIR = DATA_DIR / "state"
 
 UNIVERSE_FILE = BASE_DIR / "data" / "universe.csv"
 
-STATE_FILE = DATA_DIR / "portfolio.json"
+RESULT_FILE = DATA_DIR / "latest_result.txt"
 
-TRADES_FILE = DATA_DIR / "paper_trades.csv"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-SCREEN_FILE = DATA_DIR / "screening_history.csv"
+RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-SIGNALS_FILE = DATA_DIR / "signals.csv"
-
-DAILY_CACHE_FILE = CACHE_DIR / "daily_features.parquet"
-
-LATEST_FILE = BASE_DIR / "latest_result.txt"
-
-for p in [
-
-    DATA_DIR,
-
-    RAW_DIR,
-
-    CACHE_DIR,
-
-]:
-
-    p.mkdir(
-
-        parents=True,
-
-        exist_ok=True
-
-    )
+STATE_DIR.mkdir(parents=True, exist_ok=True)
 
 # ============================================================
 
@@ -356,89 +206,75 @@ for p in [
 
 # ============================================================
 
-GCS_BUCKET = os.getenv(
-
-    "GCS_BUCKET",
-
-    ""
-
-)
+GCS_BUCKET = os.getenv("GCS_BUCKET", "").strip()
 
 GCS_PREFIX = "fix11_forward"
 
-GCS_STATE = f"{GCS_PREFIX}/portfolio.json"
+def get_bucket():
 
-GCS_TRADES = f"{GCS_PREFIX}/paper_trades.csv"
+    if not GCS_BUCKET:
 
-GCS_SCREEN = f"{GCS_PREFIX}/screening_history.csv"
+        raise RuntimeError("GCS_BUCKET is empty")
 
-GCS_SIGNALS = f"{GCS_PREFIX}/signals.csv"
+    client = storage.Client()
 
-GCS_DAILY = f"{GCS_PREFIX}/daily_features.parquet"
+    return client.bucket(GCS_BUCKET)
 
-GCS_LATEST = f"{GCS_PREFIX}/latest_result.txt"
+def gcs_download_bytes(path):
 
-GCS_RAW_PREFIX = f"{GCS_PREFIX}/yahoo_1m"
+    bucket = get_bucket()
+
+    blob = bucket.blob(path)
+
+    if not blob.exists():
+
+        return None
+
+    return blob.download_as_bytes()
+
+def gcs_upload_bytes(data, path):
+
+    bucket = get_bucket()
+
+    blob = bucket.blob(path)
+
+    blob.upload_from_string(data)
+
+def gcs_upload_file(local_path, gcs_path):
+
+    local_path = Path(local_path)
+
+    if not local_path.exists():
+
+        return False
+
+    bucket = get_bucket()
+
+    blob = bucket.blob(gcs_path)
+
+    blob.upload_from_filename(str(local_path))
+
+    return True
 
 # ============================================================
 
-# FLASK
+# HELPERS
 
 # ============================================================
 
-app = Flask(__name__)
-
-# ============================================================
-
-# GENERAL HELPERS
-
-# ============================================================
-
-def now_jst():
-
-    return pd.Timestamp.now(
-
-        tz=TZ
-
-    )
-
-def today_naive():
+def now_jst_naive():
 
     return (
 
-        now_jst()
+        pd.Timestamp.now(tz=TZ)
 
         .tz_localize(None)
 
-        .normalize()
-
     )
 
-def safe_float(
+def normalize_code(x):
 
-    value,
-
-    default=np.nan
-
-):
-
-    try:
-
-        x = float(value)
-
-        if np.isfinite(x):
-
-            return x
-
-    except Exception:
-
-        pass
-
-    return default
-
-def normalize_code(value):
-
-    s = str(value).strip()
+    s = str(x).strip()
 
     if s.endswith(".T"):
 
@@ -454,325 +290,47 @@ def ticker_from_code(code):
 
     code = normalize_code(code)
 
-    if code.endswith("0") and len(code) == 5:
+    # J-Quants 5-char format:
+
+    # 63270 -> 6327.T
+
+    # 278A0 -> 278A.T
+
+    if len(code) == 5 and code.endswith("0"):
 
         code = code[:-1]
 
     return f"{code}.T"
 
-def json_default(obj):
-
-    if isinstance(
-
-        obj,
-
-        (
-
-            pd.Timestamp,
-
-            datetime,
-
-        )
-
-    ):
-
-        return str(obj)
-
-    if isinstance(
-
-        obj,
-
-        np.integer
-
-    ):
-
-        return int(obj)
-
-    if isinstance(
-
-        obj,
-
-        np.floating
-
-    ):
-
-        return float(obj)
-
-    if isinstance(
-
-        obj,
-
-        np.bool_
-
-    ):
-
-        return bool(obj)
-
-    return str(obj)
-
-def atomic_json_save(
-
-    obj,
-
-    path
-
-):
-
-    path = Path(path)
-
-    path.parent.mkdir(
-
-        parents=True,
-
-        exist_ok=True
-
-    )
-
-    tmp = Path(
-
-        str(path) + ".tmp"
-
-    )
-
-    with open(
-
-        tmp,
-
-        "w",
-
-        encoding="utf-8"
-
-    ) as f:
-
-        json.dump(
-
-            obj,
-
-            f,
-
-            ensure_ascii=False,
-
-            indent=2,
-
-            default=json_default
-
-        )
-
-    os.replace(
-
-        tmp,
-
-        path
-
-    )
-
-# ============================================================
-
-# GCS HELPERS
-
-# ============================================================
-
-def get_bucket():
-
-    if not GCS_BUCKET:
-
-        return None
-
-    client = storage.Client()
-
-    return client.bucket(
-
-        GCS_BUCKET
-
-    )
-
-def gcs_download(
-
-    gcs_path,
-
-    local_path
-
-):
-
-    bucket = get_bucket()
-
-    if bucket is None:
-
-        return False
+def safe_float(x, default=np.nan):
 
     try:
 
-        blob = bucket.blob(
+        x = float(x)
 
-            gcs_path
+        if np.isfinite(x):
 
-        )
+            return x
 
-        if not blob.exists():
+    except Exception:
 
-            return False
+        pass
 
-        local_path = Path(
+    return default
 
-            local_path
+def dumps_json(obj):
 
-        )
+    return json.dumps(
 
-        local_path.parent.mkdir(
+        obj,
 
-            parents=True,
+        ensure_ascii=False,
 
-            exist_ok=True
+        indent=2,
 
-        )
+        default=str,
 
-        blob.download_to_filename(
-
-            str(local_path)
-
-        )
-
-        print(
-
-            "GCS restore:",
-
-            gcs_path
-
-        )
-
-        return True
-
-    except Exception as e:
-
-        print(
-
-            "GCS restore failed:",
-
-            gcs_path,
-
-            e
-
-        )
-
-        return False
-
-def gcs_upload(
-
-    local_path,
-
-    gcs_path
-
-):
-
-    local_path = Path(
-
-        local_path
-
-    )
-
-    if not local_path.exists():
-
-        return False
-
-    bucket = get_bucket()
-
-    if bucket is None:
-
-        return False
-
-    try:
-
-        blob = bucket.blob(
-
-            gcs_path
-
-        )
-
-        blob.upload_from_filename(
-
-            str(local_path)
-
-        )
-
-        print(
-
-            "GCS upload:",
-
-            gcs_path
-
-        )
-
-        return True
-
-    except Exception as e:
-
-        print(
-
-            "GCS upload failed:",
-
-            gcs_path,
-
-            e
-
-        )
-
-        return False
-
-# ============================================================
-
-# RESULT
-
-# ============================================================
-
-def write_result(lines):
-
-    if isinstance(
-
-        lines,
-
-        str
-
-    ):
-
-        text = lines
-
-    else:
-
-        text = "\n".join(
-
-            str(x)
-
-            for x in lines
-
-        )
-
-    print(text)
-
-    with open(
-
-        LATEST_FILE,
-
-        "w",
-
-        encoding="utf-8"
-
-    ) as f:
-
-        f.write(
-
-            text + "\n"
-
-        )
-
-    gcs_upload(
-
-        LATEST_FILE,
-
-        GCS_LATEST
-
-    )
-
-    return text
+    ).encode("utf-8")
 
 # ============================================================
 
@@ -786,7 +344,7 @@ def load_universe():
 
         raise RuntimeError(
 
-            "data/universe.csv がありません"
+            f"Universe file missing: {UNIVERSE_FILE}"
 
         )
 
@@ -794,73 +352,37 @@ def load_universe():
 
         UNIVERSE_FILE,
 
-        dtype=str
+        dtype=str,
 
     )
 
-    source_col = None
-
-    for c in [
-
-        "Code",
-
-        "code",
-
-        "Ticker",
-
-        "ticker",
-
-    ]:
-
-        if c in df.columns:
-
-            source_col = c
-
-            break
-
-    if source_col is None:
+    if "Code" not in df.columns:
 
         raise RuntimeError(
 
-            "universe.csv に Code 列がありません"
+            "universe.csv requires Code column"
 
         )
 
-    codes = []
+    codes = (
 
-    for x in df[source_col]:
+        df["Code"]
 
-        if pd.isna(x):
+        .dropna()
 
-            continue
+        .astype(str)
 
-        code = normalize_code(
+        .map(normalize_code)
 
-            x
+        .drop_duplicates()
 
-        )
-
-        if code:
-
-            codes.append(
-
-                code
-
-            )
-
-    codes = sorted(
-
-        set(codes)
+        .tolist()
 
     )
 
     if not codes:
 
-        raise RuntimeError(
-
-            "Universe empty"
-
-        )
+        raise RuntimeError("Universe empty")
 
     return codes
 
@@ -870,33 +392,27 @@ def load_universe():
 
 # ============================================================
 
-def empty_strategy_state():
+TRACKS = [
+
+    "LONG",
+
+    "SHORT_BASE",
+
+    "SHORT_FILTER",
+
+]
+
+def initial_track():
 
     return {
 
-        "equity":
+        "equity": INITIAL_CAPITAL,
 
-            INITIAL_CAPITAL,
+        "position": None,
 
-        "cash":
+        "closed_trades": 0,
 
-            INITIAL_CAPITAL,
-
-        "positions": {
-
-            "LONG":
-
-                None,
-
-            "SHORT":
-
-                None,
-
-        },
-
-        "last_financing_date":
-
-            None,
+        "realized_pnl": 0.0,
 
     }
 
@@ -904,223 +420,159 @@ def initial_state():
 
     return {
 
-        "version":
+        "version": VERSION,
 
-            VERSION,
+        "tracks": {
 
-        "BASE":
+            name: initial_track()
 
-            empty_strategy_state(),
+            for name in TRACKS
 
-        "FILTER":
+        },
 
-            empty_strategy_state(),
+        "last_snapshot": None,
 
-        "last_run":
+        "last_decision": None,
 
-            None,
+        "last_result": None,
 
     }
 
+def state_gcs_path():
+
+    return f"{GCS_PREFIX}/state/portfolio.json"
+
 def load_state():
 
-    gcs_download(
+    raw = gcs_download_bytes(
 
-        GCS_STATE,
-
-        STATE_FILE
+        state_gcs_path()
 
     )
 
-    if not STATE_FILE.exists():
+    if raw is None:
 
-        state = initial_state()
-
-        save_state(
-
-            state
-
-        )
-
-        return state
+        return initial_state()
 
     try:
 
-        with open(
+        state = json.loads(
 
-            STATE_FILE,
+            raw.decode("utf-8")
 
-            "r",
-
-            encoding="utf-8"
-
-        ) as f:
-
-            state = json.load(
-
-                f
-
-            )
+        )
 
     except Exception:
 
-        state = initial_state()
+        return initial_state()
 
-    state.setdefault(
+    state.setdefault("tracks", {})
 
-        "BASE",
+    for name in TRACKS:
 
-        empty_strategy_state()
+        if name not in state["tracks"]:
 
-    )
-
-    state.setdefault(
-
-        "FILTER",
-
-        empty_strategy_state()
-
-    )
+            state["tracks"][name] = initial_track()
 
     return state
 
 def save_state(state):
 
-    atomic_json_save(
+    gcs_upload_bytes(
 
-        state,
+        dumps_json(state),
 
-        STATE_FILE
-
-    )
-
-    gcs_upload(
-
-        STATE_FILE,
-
-        GCS_STATE
+        state_gcs_path(),
 
     )
 
 # ============================================================
 
-# CSV APPEND
+# TRADE LOG
 
 # ============================================================
 
-def append_csv(
+def trade_log_path():
 
-    path,
+    return f"{GCS_PREFIX}/trades/paper_trades.csv"
 
-    rows,
-
-    gcs_path=None
-
-):
+def append_trade_log(rows):
 
     if not rows:
 
         return
 
-    path = Path(path)
+    new = pd.DataFrame(rows)
 
-    if (
+    raw = gcs_download_bytes(
 
-        gcs_path
-
-        and
-
-        not path.exists()
-
-    ):
-
-        gcs_download(
-
-            gcs_path,
-
-            path
-
-        )
-
-    new = pd.DataFrame(
-
-        rows
+        trade_log_path()
 
     )
 
-    if path.exists():
+    if raw:
 
         try:
 
             old = pd.read_csv(
 
-                path
+                io.BytesIO(raw)
+
+            )
+
+            new = pd.concat(
+
+                [old, new],
+
+                ignore_index=True,
 
             )
 
         except Exception:
 
-            old = pd.DataFrame()
+            pass
 
-        if not old.empty:
+    new = new.drop_duplicates(
 
-            new = pd.concat(
+        subset=[
 
-                [
+            "Track",
 
-                    old,
+            "Code",
 
-                    new
+            "EntryDatetime",
 
-                ],
+            "Event",
 
-                ignore_index=True
+            "EventDatetime",
 
-            )
+        ],
 
-    new.to_csv(
-
-        path,
-
-        index=False,
-
-        encoding="utf-8-sig"
+        keep="last",
 
     )
 
-    if gcs_path:
+    gcs_upload_bytes(
 
-        gcs_upload(
+        new.to_csv(
 
-            path,
+            index=False
 
-            gcs_path
+        ).encode("utf-8"),
 
-        )
+        trade_log_path(),
 
-# ============================================================
-
-# YAHOO NORMALIZATION
+    )
 
 # ============================================================
 
-def normalize_yahoo_1m(
+# RAW 1M
 
-    raw,
+# ============================================================
 
-    code
+def normalize_yahoo_1m(raw):
 
-):
-
-    if (
-
-        raw is None
-
-        or
-
-        len(raw) == 0
-
-    ):
+    if raw is None or len(raw) == 0:
 
         return pd.DataFrame()
 
@@ -1130,7 +582,7 @@ def normalize_yahoo_1m(
 
         x.columns,
 
-        pd.MultiIndex
+        pd.MultiIndex,
 
     ):
 
@@ -1154,7 +606,7 @@ def normalize_yahoo_1m(
 
         "Datetime",
 
-        "Date"
+        "Date",
 
     ]:
 
@@ -1174,7 +626,7 @@ def normalize_yahoo_1m(
 
         errors="coerce",
 
-        utc=True
+        utc=True,
 
     )
 
@@ -1188,33 +640,21 @@ def normalize_yahoo_1m(
 
     )
 
-    rename = {
-
-        "Open":
-
-            "Open",
-
-        "High":
-
-            "High",
-
-        "Low":
-
-            "Low",
-
-        "Close":
-
-            "Close",
-
-        "Volume":
-
-            "Volume",
-
-    }
-
     x = x.rename(
 
-        columns=rename
+        columns={
+
+            "Open": "O",
+
+            "High": "H",
+
+            "Low": "L",
+
+            "Close": "C",
+
+            "Volume": "V",
+
+        }
 
     )
 
@@ -1222,15 +662,15 @@ def normalize_yahoo_1m(
 
         "Datetime",
 
-        "Open",
+        "O",
 
-        "High",
+        "H",
 
-        "Low",
+        "L",
 
-        "Close",
+        "C",
 
-        "Volume",
+        "V",
 
     ]
 
@@ -1244,23 +684,19 @@ def normalize_yahoo_1m(
 
         return pd.DataFrame()
 
-    x = x[
-
-        required
-
-    ].copy()
+    x = x[required].copy()
 
     for c in [
 
-        "Open",
+        "O",
 
-        "High",
+        "H",
 
-        "Low",
+        "L",
 
-        "Close",
+        "C",
 
-        "Volume",
+        "V",
 
     ]:
 
@@ -1268,29 +704,11 @@ def normalize_yahoo_1m(
 
             x[c],
 
-            errors="coerce"
+            errors="coerce",
 
         )
 
-    # Remove synthetic placeholder rows.
-
-    x = x.dropna(
-
-        subset=[
-
-            "Open",
-
-            "High",
-
-            "Low",
-
-            "Close",
-
-        ],
-
-        how="all"
-
-    )
+    # placeholder row is NOT an actual bar
 
     x = x.dropna(
 
@@ -1298,23 +716,49 @@ def normalize_yahoo_1m(
 
             "Datetime",
 
-            "Open",
+            "O",
 
-            "High",
+            "H",
 
-            "Low",
+            "L",
 
-            "Close",
+            "C",
+
+            "V",
 
         ]
 
     )
 
-    x["Code"] = normalize_code(
+    x = x[
 
-        code
+        ~(
 
-    )
+            x[
+
+                [
+
+                    "O",
+
+                    "H",
+
+                    "L",
+
+                    "C",
+
+                    "V",
+
+                ]
+
+            ]
+
+            .isna()
+
+            .all(axis=1)
+
+        )
+
+    ]
 
     x["Date"] = (
 
@@ -1336,41 +780,23 @@ def normalize_yahoo_1m(
 
         x
 
-        .sort_values(
-
-            "Datetime"
-
-        )
+        .sort_values("Datetime")
 
         .drop_duplicates(
 
             "Datetime",
 
-            keep="first"
+            keep="last",
 
         )
 
-        .reset_index(
-
-            drop=True
-
-        )
+        .reset_index(drop=True)
 
     )
-
-# ============================================================
-
-# FETCH TODAY 1M
-
-# ============================================================
 
 def fetch_today_1m(code):
 
-    ticker = ticker_from_code(
-
-        code
-
-    )
+    ticker = ticker_from_code(code)
 
     try:
 
@@ -1392,115 +818,43 @@ def fetch_today_1m(code):
 
         )
 
-    except Exception as e:
+        x = normalize_yahoo_1m(raw)
 
-        print(
+        if x.empty:
 
-            "1m error:",
+            return x
 
-            code,
+        today = now_jst_naive().normalize()
 
-            e
+        x = x[
 
-        )
+            x["Date"] == today
 
-        return pd.DataFrame()
+        ].copy()
 
-    x = normalize_yahoo_1m(
-
-        raw,
-
-        code
-
-    )
-
-    if x.empty:
+        x["Code"] = normalize_code(code)
 
         return x
 
-    today = today_naive()
+    except Exception:
 
-    return (
-
-        x[
-
-            x["Date"]
-
-            ==
-
-            today
-
-        ]
-
-        .copy()
-
-        .reset_index(
-
-            drop=True
-
-        )
-
-    )
+        return pd.DataFrame()
 
 # ============================================================
 
-# RAW SNAPSHOT
+# GCS RAW SNAPSHOT
 
 # ============================================================
 
-def raw_local_path(
+def raw_gcs_path(date, code):
 
-    date,
-
-    code
-
-):
-
-    date = pd.Timestamp(
-
-        date
-
-    )
+    date = pd.Timestamp(date)
 
     return (
 
-        RAW_DIR
+        f"{GCS_PREFIX}/yahoo_1m/"
 
-        /
-
-        date.strftime("%Y")
-
-        /
-
-        date.strftime("%m")
-
-        /
-
-        f"{date:%Y-%m-%d}_{code}.parquet"
-
-    )
-
-def raw_gcs_path(
-
-    date,
-
-    code
-
-):
-
-    date = pd.Timestamp(
-
-        date
-
-    )
-
-    return (
-
-        f"{GCS_RAW_PREFIX}/"
-
-        f"{date:%Y}/"
-
-        f"{date:%m}/"
+        f"{date:%Y/%m}/"
 
         f"{date:%Y-%m-%d}_{code}.parquet"
 
@@ -1518,73 +872,47 @@ def save_raw_snapshot(df):
 
     )
 
-    code = str(
+    code = normalize_code(
 
         df["Code"].iloc[0]
 
     )
 
-    path = raw_local_path(
+    path = raw_gcs_path(
 
         date,
 
-        code
+        code,
 
     )
 
-    gcs_path = raw_gcs_path(
+    old_raw = gcs_download_bytes(
 
-        date,
-
-        code
+        path
 
     )
 
-    path.parent.mkdir(
-
-        parents=True,
-
-        exist_ok=True
-
-    )
-
-    if not path.exists():
-
-        gcs_download(
-
-            gcs_path,
-
-            path
-
-        )
-
-    if path.exists():
+    if old_raw:
 
         try:
 
             old = pd.read_parquet(
 
-                path
+                io.BytesIO(old_raw)
+
+            )
+
+            z = pd.concat(
+
+                [old, df],
+
+                ignore_index=True,
 
             )
 
         except Exception:
 
-            old = pd.DataFrame()
-
-        z = pd.concat(
-
-            [
-
-                old,
-
-                df
-
-            ],
-
-            ignore_index=True
-
-        )
+            z = df.copy()
 
     else:
 
@@ -1596,63 +924,157 @@ def save_raw_snapshot(df):
 
     )
 
+    # first observation preserved
+
     z = (
 
         z
 
-        .sort_values(
-
-            "Datetime"
-
-        )
+        .sort_values("Datetime")
 
         .drop_duplicates(
 
             "Datetime",
 
-            keep="first"
+            keep="first",
 
         )
 
     )
+
+    bio = io.BytesIO()
 
     z.to_parquet(
 
-        path,
+        bio,
 
-        index=False
+        index=False,
 
     )
 
-    gcs_upload(
+    gcs_upload_bytes(
+
+        bio.getvalue(),
 
         path,
-
-        gcs_path
 
     )
 
 # ============================================================
 
-# DAILY DOWNLOAD
+# HISTORICAL SNAPSHOT LIST
 
 # ============================================================
 
-def download_daily(universe):
+def previous_snapshot_dates(
 
-    tickers = [
+    code,
 
-        ticker_from_code(
+    before_date,
 
-            c
+    max_days=20,
+
+):
+
+    bucket = get_bucket()
+
+    prefix = (
+
+        f"{GCS_PREFIX}/yahoo_1m/"
+
+    )
+
+    suffix = f"_{code}.parquet"
+
+    dates = []
+
+    for blob in bucket.list_blobs(
+
+        prefix=prefix
+
+    ):
+
+        name = blob.name
+
+        if not name.endswith(suffix):
+
+            continue
+
+        filename = name.rsplit(
+
+            "/",
+
+            1,
+
+        )[-1]
+
+        try:
+
+            date = pd.Timestamp(
+
+                filename[:10]
+
+            )
+
+        except Exception:
+
+            continue
+
+        if date < before_date:
+
+            dates.append(date)
+
+    dates = sorted(set(dates))
+
+    return dates[-max_days:]
+
+def load_snapshot(date, code):
+
+    raw = gcs_download_bytes(
+
+        raw_gcs_path(
+
+            date,
+
+            code,
 
         )
 
-        for c in universe
+    )
+
+    if not raw:
+
+        return pd.DataFrame()
+
+    try:
+
+        return pd.read_parquet(
+
+            io.BytesIO(raw)
+
+        )
+
+    except Exception:
+
+        return pd.DataFrame()
+
+# ============================================================
+
+# DAILY DATA
+
+# ============================================================
+
+def fetch_daily_batch(codes):
+
+    frames = []
+
+    tickers = [
+
+        ticker_from_code(c)
+
+        for c in codes
 
     ]
-
-    rows = []
 
     for start in range(
 
@@ -1660,15 +1082,13 @@ def download_daily(universe):
 
         len(tickers),
 
-        50
+        100,
 
     ):
 
         batch = tickers[
 
-            start:
-
-            start + 50
+            start:start + 100
 
         ]
 
@@ -1692,25 +1112,11 @@ def download_daily(universe):
 
             )
 
-        except Exception as e:
-
-            print(
-
-                "daily batch error:",
-
-                e
-
-            )
+        except Exception:
 
             continue
 
         for ticker in batch:
-
-            code = normalize_code(
-
-                ticker
-
-            )
 
             try:
 
@@ -1720,29 +1126,7 @@ def download_daily(universe):
 
                 else:
 
-                    if not isinstance(
-
-                        raw.columns,
-
-                        pd.MultiIndex
-
-                    ):
-
-                        continue
-
-                    if ticker not in set(
-
-                        raw.columns.get_level_values(0)
-
-                    ):
-
-                        continue
-
-                    d = raw[
-
-                        ticker
-
-                    ].copy()
+                    d = raw[ticker].copy()
 
                 if d.empty:
 
@@ -1750,135 +1134,71 @@ def download_daily(universe):
 
                 d = d.reset_index()
 
+                if "Date" not in d.columns:
+
+                    continue
+
                 d["Date"] = pd.to_datetime(
 
                     d["Date"],
 
-                    errors="coerce"
+                    errors="coerce",
 
                 ).dt.normalize()
 
-                for c in [
+                raw_close = pd.to_numeric(
 
-                    "Open",
+                    d["Close"],
 
-                    "High",
+                    errors="coerce",
 
-                    "Low",
-
-                    "Close",
-
-                    "Volume",
-
-                ]:
-
-                    d[c] = pd.to_numeric(
-
-                        d[c],
-
-                        errors="coerce"
-
-                    )
+                )
 
                 if "Adj Close" in d.columns:
 
-                    d["AdjClose"] = pd.to_numeric(
+                    adj_close = pd.to_numeric(
 
                         d["Adj Close"],
 
-                        errors="coerce"
+                        errors="coerce",
 
                     )
 
                 else:
 
-                    d["AdjClose"] = d[
+                    adj_close = raw_close
 
-                        "Close"
+                volume = pd.to_numeric(
 
-                    ]
+                    d["Volume"],
 
-                factor = (
-
-                    d["AdjClose"]
-
-                    /
-
-                    d["Close"]
+                    errors="coerce",
 
                 )
 
-                factor = factor.replace(
+                code = ticker.replace(
 
-                    [
+                    ".T",
 
-                        np.inf,
-
-                        -np.inf
-
-                    ],
-
-                    np.nan
+                    "",
 
                 )
 
-                factor = factor.fillna(
+                frames.append(
 
-                    1.0
+                    pd.DataFrame({
 
-                )
+                        "Date": d["Date"],
 
-                d["AdjHigh"] = (
+                        "Code": normalize_code(code),
 
-                    d["High"]
+                        "AdjC": adj_close,
 
-                    *
+                        "RawC": raw_close,
 
-                    factor
+                        "Volume": volume,
 
-                )
-
-                d["AdjLow"] = (
-
-                    d["Low"]
-
-                    *
-
-                    factor
-
-                )
-
-                d["Code"] = code
-
-                rows.append(
-
-                    d[
-
-                        [
-
-                            "Date",
-
-                            "Code",
-
-                            "Open",
-
-                            "High",
-
-                            "Low",
-
-                            "Close",
-
-                            "Volume",
-
-                            "AdjClose",
-
-                            "AdjHigh",
-
-                            "AdjLow",
-
-                        ]
-
-                    ]
+                    })
 
                 )
 
@@ -1886,37 +1206,15 @@ def download_daily(universe):
 
                 continue
 
-    if not rows:
+    if not frames:
 
         return pd.DataFrame()
 
-    return (
+    return pd.concat(
 
-        pd.concat(
+        frames,
 
-            rows,
-
-            ignore_index=True
-
-        )
-
-        .sort_values(
-
-            [
-
-                "Code",
-
-                "Date"
-
-            ]
-
-        )
-
-        .reset_index(
-
-            drop=True
-
-        )
+        ignore_index=True,
 
     )
 
@@ -1930,7 +1228,7 @@ def build_daily_features(
 
     daily,
 
-    target_date
+    today,
 
 ):
 
@@ -1942,11 +1240,7 @@ def build_daily_features(
 
     d = d[
 
-        d["Date"]
-
-        <
-
-        target_date
+        d["Date"] < today
 
     ].copy()
 
@@ -1956,165 +1250,33 @@ def build_daily_features(
 
             "Code",
 
-            "Date"
+            "Date",
 
         ]
 
     )
 
-    # --------------------------------------------------------
-
-    # ATR14
-
-    # --------------------------------------------------------
-
-    d["PrevAdjClose"] = (
-
-        d.groupby(
-
-            "Code"
-
-        )["AdjClose"]
-
-        .shift(1)
-
-    )
-
-    tr1 = (
-
-        d["AdjHigh"]
-
-        -
-
-        d["AdjLow"]
-
-    ).abs()
-
-    tr2 = (
-
-        d["AdjHigh"]
-
-        -
-
-        d["PrevAdjClose"]
-
-    ).abs()
-
-    tr3 = (
-
-        d["AdjLow"]
-
-        -
-
-        d["PrevAdjClose"]
-
-    ).abs()
-
-    d["TR"] = pd.concat(
-
-        [
-
-            tr1,
-
-            tr2,
-
-            tr3
-
-        ],
-
-        axis=1
-
-    ).max(
-
-        axis=1
-
-    )
-
-    d["ATR14"] = (
-
-        d.groupby(
-
-            "Code"
-
-        )["TR"]
-
-        .transform(
-
-            lambda s:
-
-            s.rolling(
-
-                14,
-
-                min_periods=14
-
-            ).mean()
-
-        )
-
-    )
-
-    d["ATR14_pct"] = (
-
-        d["ATR14"]
-
-        /
-
-        d["AdjClose"]
-
-        *
-
-        100.0
-
-    )
-
-    # --------------------------------------------------------
-
-    # 20 observation return
-
-    # --------------------------------------------------------
-
     d["Return20"] = (
 
-        d.groupby(
+        d.groupby("Code")["AdjC"]
 
-            "Code"
-
-        )["AdjClose"]
-
-        .pct_change(
-
-            20
-
-        )
+        .pct_change(20)
 
     )
 
-    latest_rows = []
+    rows = []
 
     for code, g in d.groupby(
 
         "Code",
 
-        sort=False
+        sort=False,
 
     ):
 
-        g = (
+        g = g.sort_values(
 
-            g
-
-            .sort_values(
-
-                "Date"
-
-            )
-
-            .reset_index(
-
-                drop=True
-
-            )
+            "Date"
 
         )
 
@@ -2124,15 +1286,11 @@ def build_daily_features(
 
         last = g.iloc[-1]
 
-        tail20 = g.tail(
-
-            20
-
-        )
+        tail20 = g.tail(20)
 
         turnover = (
 
-            tail20["Close"]
+            tail20["RawC"]
 
             *
 
@@ -2144,25 +1302,15 @@ def build_daily_features(
 
         )
 
-        latest_rows.append({
+        rows.append({
 
-            "Code":
-
-                code,
+            "Code": code,
 
             "Return20_prev":
 
                 safe_float(
 
                     last["Return20"]
-
-                ),
-
-            "ATR14_pct_prev":
-
-                safe_float(
-
-                    last["ATR14_pct"]
 
                 ),
 
@@ -2174,21 +1322,9 @@ def build_daily_features(
 
                 ),
 
-            "PrevDailyClose":
-
-                safe_float(
-
-                    last["Close"]
-
-                ),
-
         })
 
-    f = pd.DataFrame(
-
-        latest_rows
-
-    )
+    f = pd.DataFrame(rows)
 
     if f.empty:
 
@@ -2196,9 +1332,7 @@ def build_daily_features(
 
     valid = f[
 
-        f["Return20_prev"]
-
-        .notna()
+        f["Return20_prev"].notna()
 
     ].copy()
 
@@ -2218,7 +1352,7 @@ def build_daily_features(
 
             pct=True,
 
-            method="average"
+            method="average",
 
         )
 
@@ -2228,7 +1362,7 @@ def build_daily_features(
 
     )
 
-    f = f.merge(
+    return f.merge(
 
         valid[
 
@@ -2244,183 +1378,165 @@ def build_daily_features(
 
         on="Code",
 
-        how="left"
-
-    )
-
-    return f
-
-# ============================================================
-
-# PREPARE DAILY
-
-# ============================================================
-
-def run_prepare():
-
-    universe = load_universe()
-
-    print(
-
-        "Daily download..."
-
-    )
-
-    daily = download_daily(
-
-        universe
-
-    )
-
-    if daily.empty:
-
-        raise RuntimeError(
-
-            "daily download empty"
-
-        )
-
-    target = today_naive()
-
-    features = build_daily_features(
-
-        daily,
-
-        target
-
-    )
-
-    if features.empty:
-
-        raise RuntimeError(
-
-            "daily features empty"
-
-        )
-
-    features.to_parquet(
-
-        DAILY_CACHE_FILE,
-
-        index=False
-
-    )
-
-    gcs_upload(
-
-        DAILY_CACHE_FILE,
-
-        GCS_DAILY
-
-    )
-
-    return (
-
-        "PREPARE OK\n"
-
-        f"universe={len(universe)}\n"
-
-        f"daily_rows={len(daily)}\n"
-
-        f"feature_rows={len(features)}"
+        how="left",
 
     )
 
 # ============================================================
 
-# LOAD DAILY FEATURES
+# ATR14 PREVIOUS DAY
 
 # ============================================================
 
-def load_daily_features():
+def fetch_atr_feature(code):
 
-    if not DAILY_CACHE_FILE.exists():
-
-        gcs_download(
-
-            GCS_DAILY,
-
-            DAILY_CACHE_FILE
-
-        )
-
-    if not DAILY_CACHE_FILE.exists():
-
-        return pd.DataFrame()
+    ticker = ticker_from_code(code)
 
     try:
 
-        return pd.read_parquet(
+        raw = yf.download(
 
-            DAILY_CACHE_FILE
+            ticker,
+
+            period="2mo",
+
+            interval="1d",
+
+            auto_adjust=True,
+
+            progress=False,
+
+            threads=False,
 
         )
 
     except Exception:
 
-        return pd.DataFrame()
+        return np.nan
 
-# ============================================================
+    if raw is None or raw.empty:
 
-# RVOL HISTORY
+        return np.nan
 
-# ============================================================
+    if isinstance(
 
-def get_previous_raw_files(
+        raw.columns,
 
-    code,
-
-    current_date
-
-):
-
-    files = []
-
-    # Local
-
-    for p in RAW_DIR.rglob(
-
-        f"*_{code}.parquet"
+        pd.MultiIndex,
 
     ):
 
-        try:
+        raw.columns = [
 
-            d = pd.Timestamp(
+            c[0]
 
-                p.name[:10]
+            if isinstance(c, tuple)
 
-            )
+            else c
 
-        except Exception:
+            for c in raw.columns
 
-            continue
+        ]
 
-        if d < current_date:
+    required = [
 
-            files.append(
+        "High",
 
-                (
+        "Low",
 
-                    d,
+        "Close",
 
-                    p
+    ]
 
-                )
+    if any(
 
-            )
+        c not in raw.columns
 
-    files = sorted(
+        for c in required
 
-        files,
+    ):
 
-        key=lambda x:
+        return np.nan
 
-        x[0]
+    h = pd.to_numeric(
+
+        raw["High"],
+
+        errors="coerce",
 
     )
 
-    return files[-20:]
+    l = pd.to_numeric(
+
+        raw["Low"],
+
+        errors="coerce",
+
+    )
+
+    c = pd.to_numeric(
+
+        raw["Close"],
+
+        errors="coerce",
+
+    )
+
+    prev = c.shift(1)
+
+    tr = pd.concat(
+
+        [
+
+            h - l,
+
+            (h - prev).abs(),
+
+            (l - prev).abs(),
+
+        ],
+
+        axis=1,
+
+    ).max(axis=1)
+
+    atr = tr.rolling(
+
+        14
+
+    ).mean()
+
+    atr_pct = (
+
+        atr
+
+        /
+
+        c.shift(1)
+
+        *
+
+        100.0
+
+    )
+
+    valid = atr_pct.dropna()
+
+    if valid.empty:
+
+        return np.nan
+
+    return safe_float(
+
+        valid.iloc[-1]
+
+    )
+
+# ============================================================
+
+# RVOL20
+
+# ============================================================
 
 def calc_rvol20(
 
@@ -2428,37 +1544,35 @@ def calc_rvol20(
 
     current_df,
 
-    signal_dt
+    signal_dt,
 
 ):
 
-    date = pd.Timestamp(
+    signal_dt = pd.Timestamp(
 
         signal_dt
 
-    ).normalize()
+    )
 
-    minute = pd.Timestamp(
+    date = signal_dt.normalize()
 
-        signal_dt
+    history_dates = (
 
-    ).strftime(
+        previous_snapshot_dates(
 
-        "%H:%M"
+            code,
+
+            date,
+
+            max_days=20,
+
+        )
 
     )
 
-    hist_files = get_previous_raw_files(
+    if len(history_dates) != 20:
 
-        code,
-
-        date
-
-    )
-
-    if len(hist_files) < 20:
-
-        return np.nan, len(hist_files)
+        return np.nan, len(history_dates)
 
     current_cut = current_df[
 
@@ -2470,73 +1584,85 @@ def calc_rvol20(
 
     ]
 
-    current_cum = float(
+    if current_cut.empty:
 
-        current_cut[
+        current_cum = 0.0
 
-            "Volume"
+    else:
 
-        ]
+        current_cum = float(
 
-        .fillna(0)
+            pd.to_numeric(
 
-        .sum()
+                current_cut["V"],
+
+                errors="coerce",
+
+            )
+
+            .fillna(0)
+
+            .sum()
+
+        )
+
+    minute = signal_dt.strftime(
+
+        "%H:%M"
 
     )
 
-    hist_cums = []
+    hist = []
 
-    for hist_date, path in hist_files:
+    for hist_date in history_dates:
 
-        try:
+        h = load_snapshot(
 
-            h = pd.read_parquet(
+            hist_date,
 
-                path
+            code,
+
+        )
+
+        if h.empty:
+
+            hist.append(0.0)
+
+            continue
+
+        h["Datetime"] = pd.to_datetime(
+
+            h["Datetime"]
+
+        )
+
+        cut = h[
+
+            h["Datetime"].dt.strftime(
+
+                "%H:%M"
 
             )
 
-            h["Datetime"] = pd.to_datetime(
+            <= minute
 
-                h["Datetime"]
+        ]
 
-            )
+        if cut.empty:
 
-            h["Time"] = (
+            hist.append(0.0)
 
-                h["Datetime"]
+        else:
 
-                .dt.strftime(
+            hist.append(
 
-                    "%H:%M"
-
-                )
-
-            )
-
-            cut = h[
-
-                h["Time"]
-
-                <=
-
-                minute
-
-            ]
-
-            if cut.empty:
-
-                cum = 0.0
-
-            else:
-
-                cum = float(
+                float(
 
                     pd.to_numeric(
 
-                        cut["Volume"],
+                        cut["V"],
 
-                        errors="coerce"
+                        errors="coerce",
 
                     )
 
@@ -2546,41 +1672,21 @@ def calc_rvol20(
 
                 )
 
-            hist_cums.append(
-
-                cum
-
             )
 
-        except Exception:
+    if len(hist) != 20:
 
-            hist_cums.append(
-
-                0.0
-
-            )
-
-    if len(hist_cums) != 20:
-
-        return np.nan, len(hist_cums)
+        return np.nan, len(hist)
 
     baseline = float(
 
-        np.median(
-
-            hist_cums
-
-        )
+        np.median(hist)
 
     )
 
     if (
 
-        not np.isfinite(
-
-            baseline
-
-        )
+        not np.isfinite(baseline)
 
         or
 
@@ -2592,19 +1698,15 @@ def calc_rvol20(
 
     return (
 
-        current_cum
+        current_cum / baseline,
 
-        /
-
-        baseline,
-
-        20
+        20,
 
     )
 
 # ============================================================
 
-# SIGNAL GENERATION
+# METHOD B SIGNAL SCAN
 
 # ============================================================
 
@@ -2614,11 +1716,57 @@ def find_signals_for_code(
 
     minute,
 
-    feature
+    feature,
 
 ):
 
     if minute.empty:
+
+        return []
+
+    x = minute.copy()
+
+    x = x[
+
+        x["Time"] >= ORB_START
+
+    ]
+
+    orb = x[
+
+        (x["Time"] >= ORB_START)
+
+        &
+
+        (x["Time"] <= ORB_END)
+
+    ]
+
+    if orb.empty:
+
+        return []
+
+    orb_high = safe_float(
+
+        orb["H"].max()
+
+    )
+
+    orb_low = safe_float(
+
+        orb["L"].min()
+
+    )
+
+    if (
+
+        not np.isfinite(orb_high)
+
+        or
+
+        not np.isfinite(orb_low)
+
+    ):
 
         return []
 
@@ -2627,16 +1775,6 @@ def find_signals_for_code(
         feature.get(
 
             "RS20_corrected"
-
-        )
-
-    )
-
-    atr = safe_float(
-
-        feature.get(
-
-            "ATR14_pct_prev"
 
         )
 
@@ -2652,133 +1790,55 @@ def find_signals_for_code(
 
     )
 
-    if not np.isfinite(
+    atr = safe_float(
 
-        rs
+        feature.get(
 
-    ):
+            "ATR14_pct_prev"
 
-        return []
+        )
 
-    if not np.isfinite(
-
-        atr
-
-    ):
-
-        return []
+    )
 
     if (
 
-        not np.isfinite(
-
-            turnover
-
-        )
+        not np.isfinite(rs)
 
         or
 
-        turnover
+        not np.isfinite(turnover)
 
-        <
+        or
 
-        TURNOVER_MIN_OKU
+        not np.isfinite(atr)
 
     ):
 
         return []
 
-    x = (
-
-        minute
-
-        .sort_values(
-
-            "Datetime"
-
-        )
-
-        .reset_index(
-
-            drop=True
-
-        )
-
-    )
-
-    orb = x[
-
-        (
-
-            x["Time"]
-
-            >=
-
-            ORB_START
-
-        )
-
-        &
-
-        (
-
-            x["Time"]
-
-            <=
-
-            ORB_END
-
-        )
-
-    ]
-
-    if orb.empty:
+    if turnover < TURNOVER_MIN_OKU:
 
         return []
-
-    orb_high = float(
-
-        orb["High"].max()
-
-    )
-
-    orb_low = float(
-
-        orb["Low"].min()
-
-    )
 
     post = x[
 
-        x["Time"]
+        x["Time"] >= SIGNAL_START
 
-        >=
+    ].copy()
 
-        SIGNAL_START
+    signals = []
 
-    ]
+    for _, row in post.iterrows():
 
-    if post.empty:
+        dt = pd.Timestamp(
 
-        return []
+            row["Datetime"]
 
-    results = []
-
-    for idx in post.index:
-
-        current = x.loc[
-
-            idx
-
-        ]
+        )
 
         before = x[
 
-            x["Datetime"]
-
-            <
-
-            current["Datetime"]
+            x["Datetime"] < dt
 
         ]
 
@@ -2786,99 +1846,93 @@ def find_signals_for_code(
 
             continue
 
-        prev = before.iloc[-1]
+        prev_close = safe_float(
 
-        dt = pd.Timestamp(
-
-            current["Datetime"]
+            before.iloc[-1]["C"]
 
         )
 
-        prev_close = float(
+        close = safe_float(
 
-            prev["Close"]
-
-        )
-
-        close = float(
-
-            current["Close"]
+            row["C"]
 
         )
 
-        rvol, hist_n = calc_rvol20(
+        if (
 
-            code,
+            not np.isfinite(prev_close)
 
-            x,
+            or
 
-            dt
-
-        )
-
-        if not np.isfinite(
-
-            rvol
+            not np.isfinite(close)
 
         ):
 
             continue
 
-        # METHOD B:
-
-        # Breakout can occur earlier with RVOL < 2.
-
-        # Continue scanning later breakouts.
-
         long_break = (
 
-            prev_close
-
-            <=
-
-            orb_high
+            prev_close <= orb_high
 
             and
 
-            close
-
-            >
-
-            orb_high
+            close > orb_high
 
         )
 
         short_break = (
 
-            prev_close
-
-            >=
-
-            orb_low
+            prev_close >= orb_low
 
             and
 
-            close
-
-            <
-
-            orb_low
+            close < orb_low
 
         )
+
+        if not (
+
+            long_break
+
+            or
+
+            short_break
+
+        ):
+
+            continue
+
+        rvol, n = calc_rvol20(
+
+            code,
+
+            x,
+
+            dt,
+
+        )
+
+        if not np.isfinite(rvol):
+
+            continue
+
+        # METHOD B:
+
+        # failed RVOL breakout does NOT terminate scan.
+
+        if rvol < RVOL_MIN:
+
+            continue
 
         side = None
 
         if (
 
-            rs >= RS_LONG_MIN
-
-            and
-
-            rvol >= RVOL_MIN
-
-            and
-
             long_break
+
+            and
+
+            rs >= RS_LONG_MIN
 
         ):
 
@@ -2886,15 +1940,11 @@ def find_signals_for_code(
 
         elif (
 
-            rs <= RS_SHORT_MAX
-
-            and
-
-            rvol >= RVOL_MIN
-
-            and
-
             short_break
+
+            and
+
+            rs <= RS_SHORT_MAX
 
         ):
 
@@ -2906,11 +1956,7 @@ def find_signals_for_code(
 
         after = x[
 
-            x["Datetime"]
-
-            >
-
-            dt
+            x["Datetime"] > dt
 
         ]
 
@@ -2920,19 +1966,13 @@ def find_signals_for_code(
 
         nxt = after.iloc[0]
 
-        results.append({
+        signals.append({
 
-            "Side":
+            "Side": side,
 
-                side,
+            "Code": code,
 
-            "Code":
-
-                code,
-
-            "SignalDatetime":
-
-                dt,
+            "SignalDatetime": dt,
 
             "EntryDatetime":
 
@@ -2944,205 +1984,75 @@ def find_signals_for_code(
 
             "EntryPrice":
 
-                float(
+                safe_float(
 
-                    nxt["Open"]
-
-                ),
-
-            "RS20_corrected":
-
-                rs,
-
-            "ATR14_pct_prev":
-
-                atr,
-
-            "RVOL20":
-
-                float(
-
-                    rvol
+                    nxt["O"]
 
                 ),
+
+            "RS20_corrected": rs,
+
+            "RVOL20": rvol,
+
+            "ATR14_pct_prev": atr,
 
             "turnover_median_20d_oku":
 
                 turnover,
 
-            "ORBHigh":
+            "ORBHigh": orb_high,
 
-                orb_high,
+            "ORBLow": orb_low,
 
-            "ORBLow":
-
-                orb_low,
-
-            "Prev20N":
-
-                hist_n,
+            "Prev20N": n,
 
         })
 
         # First qualifying signal per
 
-        # Date + Code + Side.
+        # Date+Code+Side.
 
         break
 
-    return results
+    return signals
 
 # ============================================================
 
-# SHORT LENDING
+# FILTER
 
 # ============================================================
 
-def is_short_lending_eligible(code):
-
-    # --------------------------------------------------------
-
-    # Forward version:
-
-    #
-
-    # Exact J-Quants lending master should ultimately be used.
-
-    #
-
-    # Until a lending master file is supplied to GitHub,
-
-    # SHORT must NOT be guessed.
-
-    # --------------------------------------------------------
-
-    path = (
-
-        BASE_DIR
-
-        /
-
-        "data"
-
-        /
-
-        "lending_universe.csv"
-
-    )
-
-    if not path.exists():
-
-        return False
-
-    try:
-
-        d = pd.read_csv(
-
-            path,
-
-            dtype=str
-
-        )
-
-    except Exception:
-
-        return False
-
-    if "Code" not in d.columns:
-
-        return False
-
-    eligible = set(
-
-        d["Code"]
-
-        .dropna()
-
-        .map(
-
-            normalize_code
-
-        )
-
-    )
+def is_short_filter_excluded(row):
 
     return (
 
-        normalize_code(
+        safe_float(
 
-            code
+            row["ATR14_pct_prev"]
 
         )
 
-        in
-
-        eligible
-
-    )
-
-# ============================================================
-
-# LOCKED FILTER
-
-# ============================================================
-
-def short_danger(signal):
-
-    return (
-
-        signal["Side"]
-
-        ==
-
-        "SHORT"
+        >= FILTER_ATR_MIN
 
         and
 
         safe_float(
 
-            signal[
-
-                "ATR14_pct_prev"
-
-            ]
+            row["RVOL20"]
 
         )
 
-        >=
-
-        FILTER_ATR_MIN
+        >= FILTER_RVOL_MIN
 
         and
 
         safe_float(
 
-            signal[
-
-                "RVOL20"
-
-            ]
+            row["RS20_corrected"]
 
         )
 
-        >=
-
-        FILTER_RVOL_MIN
-
-        and
-
-        safe_float(
-
-            signal[
-
-                "RS20_corrected"
-
-            ]
-
-        )
-
-        <=
-
-        FILTER_RS_MAX
+        <= FILTER_RS_MAX
 
     )
 
@@ -3152,43 +2062,37 @@ def short_danger(signal):
 
 # ============================================================
 
-def rank_same_timestamp(
+def rank_signals(
 
     signals,
 
-    side
+    side,
 
 ):
 
-    x = [
-
-        s
-
-        for s in signals
-
-        if s["Side"]
-
-        ==
-
-        side
-
-    ]
-
-    if not x:
-
-        return None
-
-    df = pd.DataFrame(
+    rows = [
 
         x
 
+        for x in signals
+
+        if x["Side"] == side
+
+    ]
+
+    if not rows:
+
+        return []
+
+    df = pd.DataFrame(rows)
+
+    earliest = (
+
+        df["EntryDatetime"]
+
+        .min()
+
     )
-
-    earliest = df[
-
-        "EntryDatetime"
-
-    ].min()
 
     df = df[
 
@@ -3228,7 +2132,7 @@ def rank_same_timestamp(
 
             ],
 
-            kind="stable"
+            kind="stable",
 
         )
 
@@ -3260,29 +2164,29 @@ def rank_same_timestamp(
 
             ],
 
-            kind="stable"
+            kind="stable",
 
         )
 
-    return df.iloc[
+    return df.to_dict(
 
-        0
+        orient="records"
 
-    ].to_dict()
-
-# ============================================================
-
-# POSITION SIZE
+    )
 
 # ============================================================
 
-def calc_qty(
+# QUANTITY
+
+# ============================================================
+
+def calculate_qty(
 
     equity,
 
     leverage,
 
-    price
+    price,
 
 ):
 
@@ -3296,7 +2200,7 @@ def calc_qty(
 
     )
 
-    lot_notional = (
+    lot_value = (
 
         float(price)
 
@@ -3306,7 +2210,7 @@ def calc_qty(
 
     )
 
-    if lot_notional <= 0:
+    if lot_value <= 0:
 
         return 0, target
 
@@ -3316,133 +2220,79 @@ def calc_qty(
 
         /
 
-        lot_notional
-
-    )
-
-    qty = int(
-
-        max(
-
-            0,
-
-            lots
-
-            *
-
-            LOT_SIZE
-
-        )
+        lot_value
 
     )
 
     return (
 
-        qty,
+        max(
 
-        target
+            0,
+
+            int(lots) * LOT_SIZE,
+
+        ),
+
+        target,
 
     )
 
 # ============================================================
 
-# POSITION CREATION
+# ENTRY
 
 # ============================================================
 
-def make_position(
+def open_position(
 
-    signal,
+    track,
 
-    equity,
+    candidate,
 
-    strategy_name
+    leverage,
 
 ):
 
-    side = signal[
+    price = safe_float(
 
-        "Side"
-
-    ]
-
-    price = float(
-
-        signal[
-
-            "EntryPrice"
-
-        ]
+        candidate["EntryPrice"]
 
     )
 
-    leverage = (
+    qty, target = calculate_qty(
 
-        LONG_LEVERAGE
-
-        if side == "LONG"
-
-        else
-
-        SHORT_LEVERAGE
-
-    )
-
-    qty, target = calc_qty(
-
-        equity,
+        track["equity"],
 
         leverage,
 
-        price
+        price,
 
     )
 
     if qty < LOT_SIZE:
 
-        return None, "LOT_TOO_LARGE"
+        return None, {
 
-    actual = (
+            "Status":
 
-        qty
+                "LOT_TOO_LARGE",
 
-        *
+            **candidate,
 
-        price
+        }
 
-    )
-
-    return {
-
-        "Strategy":
-
-            strategy_name,
-
-        "Side":
-
-            side,
+    position = {
 
         "Code":
 
-            signal["Code"],
-
-        "SignalDatetime":
-
-            str(
-
-                signal[
-
-                    "SignalDatetime"
-
-                ]
-
-            ),
+            candidate["Code"],
 
         "EntryDatetime":
 
             str(
 
-                signal[
+                candidate[
 
                     "EntryDatetime"
 
@@ -3464,37 +2314,25 @@ def make_position(
 
         "ActualNotional":
 
-            actual,
+            qty * price,
 
         "RS20_corrected":
 
-            signal[
+            candidate[
 
                 "RS20_corrected"
 
             ],
 
-        "ATR14_pct_prev":
-
-            signal[
-
-                "ATR14_pct_prev"
-
-            ],
-
         "RVOL20":
 
-            signal[
+            candidate["RVOL20"],
 
-                "RVOL20"
+        "ATR14_pct_prev":
 
-            ],
+            candidate[
 
-        "turnover_median_20d_oku":
-
-            signal[
-
-                "turnover_median_20d_oku"
+                "ATR14_pct_prev"
 
             ],
 
@@ -3506,31 +2344,31 @@ def make_position(
 
             False,
 
-        "ActiveTrailStop":
+        "TrailStop":
 
             None,
 
-        "PendingTrailStop":
-
-            None,
-
-        "TradingDaysHeld":
-
-            1,
-
-        "LastProcessedDatetime":
+        "TradingDates": [
 
             str(
 
-                signal[
+                pd.Timestamp(
 
-                    "EntryDatetime"
+                    candidate[
 
-                ]
+                        "EntryDatetime"
 
-            ),
+                    ]
 
-    }, "OK"
+                ).date()
+
+            )
+
+        ],
+
+    }
+
+    return position, None
 
 # ============================================================
 
@@ -3538,63 +2376,29 @@ def make_position(
 
 # ============================================================
 
-def process_position_bars(
+def evaluate_position(
 
     position,
 
-    minute
+    minute,
+
+    side,
 
 ):
 
-    if position is None:
+    if minute.empty:
 
-        return (
-
-            None,
-
-            None
-
-        )
-
-    side = position[
-
-        "Side"
-
-    ]
+        return None
 
     entry_dt = pd.Timestamp(
 
-        position[
-
-            "EntryDatetime"
-
-        ]
+        position["EntryDatetime"]
 
     )
 
     entry = float(
 
-        position[
-
-            "EntryPrice"
-
-        ]
-
-    )
-
-    last_processed = pd.Timestamp(
-
-        position.get(
-
-            "LastProcessedDatetime",
-
-            position[
-
-                "EntryDatetime"
-
-            ]
-
-        )
+        position["EntryPrice"]
 
     )
 
@@ -3604,29 +2408,25 @@ def process_position_bars(
 
         >
 
-        last_processed
+        entry_dt
 
     ].copy()
 
     if x.empty:
 
-        return (
+        return None
 
-            position,
-
-            None
-
-        )
-
-    best = float(
+    best = safe_float(
 
         position.get(
 
             "BestPrice",
 
-            entry
+            entry,
 
-        )
+        ),
+
+        entry,
 
     )
 
@@ -3636,357 +2436,137 @@ def process_position_bars(
 
             "TrailActive",
 
-            False
+            False,
 
         )
 
     )
 
-    active_trail = safe_float(
+    trail_stop = safe_float(
 
         position.get(
 
-            "ActiveTrailStop"
+            "TrailStop"
 
         )
 
     )
 
-    pending_trail = safe_float(
+    if side == "LONG":
 
-        position.get(
+        fixed_stop = (
 
-            "PendingTrailStop"
+            entry
 
-        )
+            *
 
-    )
-
-    qty = int(
-
-        position[
-
-            "Quantity"
-
-        ]
-
-    )
-
-    for _, bar in x.iterrows():
-
-        dt = pd.Timestamp(
-
-            bar[
-
-                "Datetime"
-
-            ]
+            (1 - LONG_SL)
 
         )
 
-        o = float(
+        trigger = (
 
-            bar[
+            entry
 
-                "Open"
+            *
 
-            ]
+            (
 
-        )
+                1
 
-        h = float(
+                +
 
-            bar[
-
-                "High"
-
-            ]
-
-        )
-
-        l = float(
-
-            bar[
-
-                "Low"
-
-            ]
-
-        )
-
-        # ----------------------------------------------------
-
-        # Pending trail becomes active at this actual bar.
-
-        # ----------------------------------------------------
-
-        if np.isfinite(
-
-            pending_trail
-
-        ):
-
-            active_trail = (
-
-                pending_trail
+                LONG_TRAIL_TRIGGER
 
             )
 
-            pending_trail = np.nan
+        )
 
-        # ----------------------------------------------------
+        for _, bar in x.iterrows():
 
-        # Fixed SL
+            o = float(bar["O"])
 
-        # ----------------------------------------------------
+            h = float(bar["H"])
 
-        if side == "LONG":
+            l = float(bar["L"])
 
-            fixed_sl = (
+            dt = pd.Timestamp(
 
-                entry
-
-                *
-
-                (
-
-                    1
-
-                    -
-
-                    LONG_SL
-
-                )
+                bar["Datetime"]
 
             )
 
-            stops = [
+            effective_stop = fixed_stop
 
-                fixed_sl
+            if (
 
-            ]
+                trail_active
 
-            if np.isfinite(
+                and
 
-                active_trail
+                np.isfinite(trail_stop)
 
             ):
 
-                stops.append(
+                effective_stop = max(
 
-                    active_trail
+                    effective_stop,
 
-                )
-
-            stop = max(
-
-                stops
-
-            )
-
-            # GAP
-
-            if o <= stop:
-
-                exit_price = o
-
-                reason = (
-
-                    "TRAIL_GAP"
-
-                    if (
-
-                        np.isfinite(
-
-                            active_trail
-
-                        )
-
-                        and
-
-                        active_trail
-
-                        >=
-
-                        fixed_sl
-
-                    )
-
-                    else
-
-                    "SL_GAP"
+                    trail_stop,
 
                 )
 
-                ret = (
+            if o <= effective_stop:
 
-                    exit_price
+                return {
 
-                    /
+                    "ExitDatetime": dt,
 
-                    entry
+                    "ExitPrice": o,
 
-                    -
+                    "ExitReason":
 
-                    1
+                        (
 
-                )
+                            "TRAIL_GAP"
 
-                return (
+                            if trail_active
 
-                    None,
+                            else "SL_GAP"
 
-                    {
+                        ),
 
-                        "ExitDatetime":
+                }
 
-                            dt,
+            if l <= effective_stop:
 
-                        "ExitPrice":
+                return {
 
-                            exit_price,
+                    "ExitDatetime": dt,
 
-                        "ReturnPct":
+                    "ExitPrice":
 
-                            ret
+                        effective_stop,
 
-                            *
+                    "ExitReason":
 
-                            100.0,
+                        (
 
-                        "Reason":
+                            "TRAIL"
 
-                            reason,
+                            if trail_active
 
-                        "PnL":
+                            else "SL"
 
-                            entry
+                        ),
 
-                            *
-
-                            qty
-
-                            *
-
-                            ret,
-
-                    }
-
-                )
-
-            if l <= stop:
-
-                exit_price = stop
-
-                reason = (
-
-                    "TRAIL"
-
-                    if (
-
-                        np.isfinite(
-
-                            active_trail
-
-                        )
-
-                        and
-
-                        active_trail
-
-                        >=
-
-                        fixed_sl
-
-                    )
-
-                    else
-
-                    "SL"
-
-                )
-
-                ret = (
-
-                    exit_price
-
-                    /
-
-                    entry
-
-                    -
-
-                    1
-
-                )
-
-                return (
-
-                    None,
-
-                    {
-
-                        "ExitDatetime":
-
-                            dt,
-
-                        "ExitPrice":
-
-                            exit_price,
-
-                        "ReturnPct":
-
-                            ret
-
-                            *
-
-                            100.0,
-
-                        "Reason":
-
-                            reason,
-
-                        "PnL":
-
-                            entry
-
-                            *
-
-                            qty
-
-                            *
-
-                            ret,
-
-                    }
-
-                )
-
-            # Favorable extreme
+                }
 
             best = max(
 
                 best,
 
-                h
-
-            )
-
-            trigger = (
-
-                entry
-
-                *
-
-                (
-
-                    1
-
-                    +
-
-                    LONG_TRAIL_TRIGGER
-
-                )
+                h,
 
             )
 
@@ -3994,7 +2574,7 @@ def process_position_bars(
 
                 trail_active = True
 
-                new_stop = (
+                trail_stop = (
 
                     best
 
@@ -4012,273 +2592,121 @@ def process_position_bars(
 
                 )
 
-                if np.isfinite(
+    else:
 
-                    active_trail
+        fixed_stop = (
 
-                ):
+            entry
 
-                    new_stop = max(
+            *
 
-                        new_stop,
+            (1 + SHORT_SL)
 
-                        active_trail
+        )
 
-                    )
+        trigger = (
 
-                pending_trail = (
+            entry
 
-                    new_stop
+            *
 
-                )
+            (
 
-        else:
+                1
 
-            fixed_sl = (
+                -
 
-                entry
-
-                *
-
-                (
-
-                    1
-
-                    +
-
-                    SHORT_SL
-
-                )
+                SHORT_TRAIL_TRIGGER
 
             )
 
-            stops = [
+        )
 
-                fixed_sl
+        for _, bar in x.iterrows():
 
-            ]
+            o = float(bar["O"])
 
-            if np.isfinite(
+            h = float(bar["H"])
 
-                active_trail
+            l = float(bar["L"])
+
+            dt = pd.Timestamp(
+
+                bar["Datetime"]
+
+            )
+
+            effective_stop = fixed_stop
+
+            if (
+
+                trail_active
+
+                and
+
+                np.isfinite(trail_stop)
 
             ):
 
-                stops.append(
+                effective_stop = min(
 
-                    active_trail
+                    effective_stop,
 
-                )
-
-            stop = min(
-
-                stops
-
-            )
-
-            # GAP
-
-            if o >= stop:
-
-                exit_price = o
-
-                reason = (
-
-                    "TRAIL_GAP"
-
-                    if (
-
-                        np.isfinite(
-
-                            active_trail
-
-                        )
-
-                        and
-
-                        active_trail
-
-                        <=
-
-                        fixed_sl
-
-                    )
-
-                    else
-
-                    "SL_GAP"
+                    trail_stop,
 
                 )
 
-                ret = (
+            if o >= effective_stop:
 
-                    entry
+                return {
 
-                    /
+                    "ExitDatetime": dt,
 
-                    exit_price
+                    "ExitPrice": o,
 
-                    -
+                    "ExitReason":
 
-                    1
+                        (
 
-                )
+                            "TRAIL_GAP"
 
-                return (
+                            if trail_active
 
-                    None,
+                            else "SL_GAP"
 
-                    {
+                        ),
 
-                        "ExitDatetime":
+                }
 
-                            dt,
+            if h >= effective_stop:
 
-                        "ExitPrice":
+                return {
 
-                            exit_price,
+                    "ExitDatetime": dt,
 
-                        "ReturnPct":
+                    "ExitPrice":
 
-                            ret
+                        effective_stop,
 
-                            *
+                    "ExitReason":
 
-                            100.0,
+                        (
 
-                        "Reason":
+                            "TRAIL"
 
-                            reason,
+                            if trail_active
 
-                        "PnL":
+                            else "SL"
 
-                            entry
+                        ),
 
-                            *
-
-                            qty
-
-                            *
-
-                            ret,
-
-                    }
-
-                )
-
-            if h >= stop:
-
-                exit_price = stop
-
-                reason = (
-
-                    "TRAIL"
-
-                    if (
-
-                        np.isfinite(
-
-                            active_trail
-
-                        )
-
-                        and
-
-                        active_trail
-
-                        <=
-
-                        fixed_sl
-
-                    )
-
-                    else
-
-                    "SL"
-
-                )
-
-                ret = (
-
-                    entry
-
-                    /
-
-                    exit_price
-
-                    -
-
-                    1
-
-                )
-
-                return (
-
-                    None,
-
-                    {
-
-                        "ExitDatetime":
-
-                            dt,
-
-                        "ExitPrice":
-
-                            exit_price,
-
-                        "ReturnPct":
-
-                            ret
-
-                            *
-
-                            100.0,
-
-                        "Reason":
-
-                            reason,
-
-                        "PnL":
-
-                            entry
-
-                            *
-
-                            qty
-
-                            *
-
-                            ret,
-
-                    }
-
-                )
-
-            # Favorable extreme
+                }
 
             best = min(
 
                 best,
 
-                l
-
-            )
-
-            trigger = (
-
-                entry
-
-                *
-
-                (
-
-                    1
-
-                    -
-
-                    SHORT_TRAIL_TRIGGER
-
-                )
+                l,
 
             )
 
@@ -4286,7 +2714,7 @@ def process_position_bars(
 
                 trail_active = True
 
-                new_stop = (
+                trail_stop = (
 
                     best
 
@@ -4304,775 +2732,187 @@ def process_position_bars(
 
                 )
 
-                if np.isfinite(
+    position["BestPrice"] = best
 
-                    active_trail
+    position["TrailActive"] = trail_active
 
-                ):
+    if np.isfinite(
 
-                    new_stop = min(
-
-                        new_stop,
-
-                        active_trail
-
-                    )
-
-                pending_trail = (
-
-                    new_stop
-
-                )
-
-        position[
-
-            "LastProcessedDatetime"
-
-        ] = str(
-
-            dt
-
-        )
-
-    position[
-
-        "BestPrice"
-
-    ] = best
-
-    position[
-
-        "TrailActive"
-
-    ] = trail_active
-
-    position[
-
-        "ActiveTrailStop"
-
-    ] = (
-
-        None
-
-        if not np.isfinite(
-
-            active_trail
-
-        )
-
-        else float(
-
-            active_trail
-
-        )
-
-    )
-
-    position[
-
-        "PendingTrailStop"
-
-    ] = (
-
-        None
-
-        if not np.isfinite(
-
-            pending_trail
-
-        )
-
-        else float(
-
-            pending_trail
-
-        )
-
-    )
-
-    return (
-
-        position,
-
-        None
-
-    )
-
-# ============================================================
-
-# FINANCING
-
-# ============================================================
-
-def apply_daily_financing(
-
-    strategy_state,
-
-    target_date
-
-):
-
-    last = strategy_state.get(
-
-        "last_financing_date"
-
-    )
-
-    if last is None:
-
-        strategy_state[
-
-            "last_financing_date"
-
-        ] = str(
-
-            target_date.date()
-
-        )
-
-        return 0.0
-
-    last = pd.Timestamp(
-
-        last
-
-    ).normalize()
-
-    days = (
-
-        target_date
-
-        -
-
-        last
-
-    ).days
-
-    if days <= 0:
-
-        return 0.0
-
-    total = 0.0
-
-    for side in [
-
-        "LONG",
-
-        "SHORT"
-
-    ]:
-
-        p = strategy_state[
-
-            "positions"
-
-        ].get(
-
-            side
-
-        )
-
-        if not p:
-
-            continue
-
-        notional = safe_float(
-
-            p.get(
-
-                "ActualNotional"
-
-            ),
-
-            0.0
-
-        )
-
-        rate = (
-
-            LONG_INTEREST_RATE
-
-            if side == "LONG"
-
-            else
-
-            SHORT_LENDING_RATE
-
-        )
-
-        fee = (
-
-            notional
-
-            *
-
-            rate
-
-            *
-
-            days
-
-            /
-
-            DAY_COUNT
-
-        )
-
-        total += fee
-
-    strategy_state[
-
-        "equity"
-
-    ] -= total
-
-    strategy_state[
-
-        "cash"
-
-    ] -= total
-
-    strategy_state[
-
-        "last_financing_date"
-
-    ] = str(
-
-        target_date.date()
-
-    )
-
-    return total
-
-# ============================================================
-
-# EXIT CURRENT POSITIONS
-
-# ============================================================
-
-def update_existing_positions(
-
-    state,
-
-    minute_map,
-
-    target_date
-
-):
-
-    trade_rows = []
-
-    for strategy_name in [
-
-        "BASE",
-
-        "FILTER"
-
-    ]:
-
-        strategy = state[
-
-            strategy_name
-
-        ]
-
-        financing = apply_daily_financing(
-
-            strategy,
-
-            target_date
-
-        )
-
-        if financing:
-
-            trade_rows.append({
-
-                "RunDatetime":
-
-                    now_jst()
-
-                    .tz_localize(None),
-
-                "Strategy":
-
-                    strategy_name,
-
-                "Status":
-
-                    "FINANCING",
-
-                "PnL":
-
-                    -financing,
-
-            })
-
-        for side in [
-
-            "LONG",
-
-            "SHORT"
-
-        ]:
-
-            position = strategy[
-
-                "positions"
-
-            ].get(
-
-                side
-
-            )
-
-            if not position:
-
-                continue
-
-            code = position[
-
-                "Code"
-
-            ]
-
-            minute = minute_map.get(
-
-                code
-
-            )
-
-            if (
-
-                minute is None
-
-                or
-
-                minute.empty
-
-            ):
-
-                continue
-
-            new_position, exit_info = (
-
-                process_position_bars(
-
-                    position,
-
-                    minute
-
-                )
-
-            )
-
-            if exit_info is None:
-
-                strategy[
-
-                    "positions"
-
-                ][side] = (
-
-                    new_position
-
-                )
-
-                continue
-
-            pnl = float(
-
-                exit_info[
-
-                    "PnL"
-
-                ]
-
-            )
-
-            strategy[
-
-                "equity"
-
-            ] += pnl
-
-            strategy[
-
-                "cash"
-
-            ] += pnl
-
-            trade_rows.append({
-
-                "RunDatetime":
-
-                    now_jst()
-
-                    .tz_localize(None),
-
-                "Strategy":
-
-                    strategy_name,
-
-                "Status":
-
-                    "EXIT",
-
-                "Side":
-
-                    side,
-
-                "Code":
-
-                    code,
-
-                "EntryDatetime":
-
-                    position[
-
-                        "EntryDatetime"
-
-                    ],
-
-                "EntryPrice":
-
-                    position[
-
-                        "EntryPrice"
-
-                    ],
-
-                "ExitDatetime":
-
-                    exit_info[
-
-                        "ExitDatetime"
-
-                    ],
-
-                "ExitPrice":
-
-                    exit_info[
-
-                        "ExitPrice"
-
-                    ],
-
-                "Quantity":
-
-                    position[
-
-                        "Quantity"
-
-                    ],
-
-                "ReturnPct":
-
-                    exit_info[
-
-                        "ReturnPct"
-
-                    ],
-
-                "PnL":
-
-                    pnl,
-
-                "Reason":
-
-                    exit_info[
-
-                        "Reason"
-
-                    ],
-
-            })
-
-            strategy[
-
-                "positions"
-
-            ][side] = None
-
-    return trade_rows
-
-# ============================================================
-
-# ENTRY
-
-# ============================================================
-
-def try_entry(
-
-    strategy_name,
-
-    strategy_state,
-
-    signal
-
-):
-
-    side = signal[
-
-        "Side"
-
-    ]
-
-    if strategy_state[
-
-        "positions"
-
-    ].get(
-
-        side
+        safe_float(trail_stop)
 
     ):
 
-        return None
+        position["TrailStop"] = (
 
-    position, status = make_position(
+            trail_stop
 
-        signal,
+        )
 
-        strategy_state[
+    return None
 
-            "equity"
+# ============================================================
 
-        ],
+# RESULT WRITER
 
-        strategy_name
+# ============================================================
+
+def write_result(lines):
+
+    text = "\n".join(
+
+        str(x)
+
+        for x in lines
 
     )
 
-    if position is None:
+    print(text)
 
-        return {
+    RESULT_FILE.parent.mkdir(
 
-            "RunDatetime":
+        parents=True,
 
-                now_jst()
+        exist_ok=True,
 
-                .tz_localize(None),
+    )
 
-            "Strategy":
+    RESULT_FILE.write_text(
 
-                strategy_name,
+        text + "\n",
 
-            "Status":
+        encoding="utf-8",
 
-                status,
+    )
 
-            **signal,
+    gcs_upload_bytes(
 
-        }
+        text.encode("utf-8"),
 
-    # --------------------------------------------------------
+        f"{GCS_PREFIX}/latest_result.txt",
 
-    # Simplified entry margin guard.
+    )
 
-    # --------------------------------------------------------
+    return text
 
-    gross = 0.0
+# ============================================================
 
-    for p in strategy_state[
+# FETCH ALL TODAY
 
-        "positions"
+# ============================================================
 
-    ].values():
+def fetch_all_today(
 
-        if p:
+    universe,
 
-            gross += safe_float(
+):
 
-                p.get(
+    result = {}
 
-                    "ActualNotional"
+    success = 0
 
-                ),
+    failed = 0
 
-                0.0
+    for i, code in enumerate(
+
+        universe,
+
+        1,
+
+    ):
+
+        df = fetch_today_1m(
+
+            code
+
+        )
+
+        if df.empty:
+
+            failed += 1
+
+        else:
+
+            success += 1
+
+            result[code] = df
+
+            save_raw_snapshot(
+
+                df
 
             )
 
-    gross += position[
+        if i % 100 == 0:
 
-        "ActualNotional"
+            print(
 
-    ]
+                f"1m {i}/{len(universe)} "
 
-    collateral = safe_float(
+                f"OK={success} "
 
-        strategy_state[
+                f"NG={failed}"
 
-            "cash"
+            )
 
-        ],
+    return (
 
-        0.0
+        result,
 
-    )
+        success,
 
-    margin = (
-
-        np.inf
-
-        if gross <= 0
-
-        else
-
-        collateral
-
-        /
-
-        gross
+        failed,
 
     )
 
-    if margin < MIN_MARGIN_RATIO:
+# ============================================================
 
-        return {
+# SNAPSHOT
 
-            "RunDatetime":
+# ============================================================
 
-                now_jst()
+def run_snapshot():
 
-                .tz_localize(None),
+    universe = load_universe()
 
-            "Strategy":
+    minute_map, ok, ng = (
 
-                strategy_name,
+        fetch_all_today(
 
-            "Status":
+            universe
 
-                "MARGIN_SKIP",
+        )
 
-            "PostMarginPct":
+    )
 
-                margin
+    state = load_state()
 
-                *
+    state["last_snapshot"] = str(
 
-                100.0,
+        now_jst_naive()
 
-            **signal,
+    )
 
-        }
+    save_state(state)
 
-    strategy_state[
+    return write_result([
 
-        "positions"
+        VERSION,
 
-    ][side] = position
+        "",
 
-    return {
+        "SNAPSHOT COMPLETE",
 
-        "RunDatetime":
+        f"Universe: {len(universe)}",
 
-            now_jst()
+        f"1m success: {ok}",
 
-            .tz_localize(None),
+        f"1m failed: {ng}",
 
-        "Strategy":
+        "",
 
-            strategy_name,
+        "No real orders.",
 
-        "Status":
-
-            "ENTRY",
-
-        "Side":
-
-            side,
-
-        "Code":
-
-            signal[
-
-                "Code"
-
-            ],
-
-        "SignalDatetime":
-
-            signal[
-
-                "SignalDatetime"
-
-            ],
-
-        "EntryDatetime":
-
-            signal[
-
-                "EntryDatetime"
-
-            ],
-
-        "EntryPrice":
-
-            signal[
-
-                "EntryPrice"
-
-            ],
-
-        "Quantity":
-
-            position[
-
-                "Quantity"
-
-            ],
-
-        "ActualNotional":
-
-            position[
-
-                "ActualNotional"
-
-            ],
-
-        "RS20_corrected":
-
-            signal[
-
-                "RS20_corrected"
-
-            ],
-
-        "ATR14_pct_prev":
-
-            signal[
-
-                "ATR14_pct_prev"
-
-            ],
-
-        "RVOL20":
-
-            signal[
-
-                "RVOL20"
-
-            ],
-
-        "Danger":
-
-            short_danger(
-
-                signal
-
-            ),
-
-        "PostMarginPct":
-
-            margin
-
-            *
-
-            100.0,
-
-    }
+    ])
 
 # ============================================================
 
@@ -5082,49 +2922,63 @@ def try_entry(
 
 def run_decision(
 
-    test_mode=False
+    test_mode=False,
 
 ):
 
-    run_time = (
+    now = now_jst_naive()
 
-        now_jst()
-
-        .tz_localize(None)
-
-    )
-
-    target_date = (
-
-        run_time
-
-        .normalize()
-
-    )
+    today = now.normalize()
 
     universe = load_universe()
 
     state = load_state()
 
-    features = load_daily_features()
+    # --------------------------------------------------------
+
+    # Daily
+
+    # --------------------------------------------------------
+
+    print("Daily data...")
+
+    daily = fetch_daily_batch(
+
+        universe
+
+    )
+
+    features = build_daily_features(
+
+        daily,
+
+        today,
+
+    )
 
     if features.empty:
 
         raise RuntimeError(
 
-            "daily feature cache empty. /prepare を先に実行してください"
+            "Daily features empty"
 
         )
+
+    # ATR
+
+    # --------------------------------------------------------
+
+    # Only calculate ATR for signal-capable
+
+    # RS/liquidity universe later.
+
+    # --------------------------------------------------------
 
     feature_map = (
 
         features
 
-        .set_index(
-
-            "Code"
-
-        )
+        .set_index("Code")
 
         .to_dict(
 
@@ -5134,57 +2988,43 @@ def run_decision(
 
     )
 
-    minute_map = {}
+    # --------------------------------------------------------
 
-    all_signals = []
+    # Intraday
 
-    screen_rows = []
+    # --------------------------------------------------------
 
-    success = 0
+    minute_map, ok, ng = (
 
-    failed = 0
+        fetch_all_today(
+
+            universe
+
+        )
+
+    )
+
+    signals = []
 
     not_ready = 0
-
-    # ========================================================
-
-    # FETCH + SAVE RAW
-
-    # ========================================================
 
     for i, code in enumerate(
 
         universe,
 
-        1
+        1,
 
     ):
 
-        minute = fetch_today_1m(
+        minute = minute_map.get(
 
             code
 
         )
 
-        if minute.empty:
-
-            failed += 1
+        if minute is None:
 
             continue
-
-        success += 1
-
-        minute_map[
-
-            code
-
-        ] = minute
-
-        save_raw_snapshot(
-
-            minute
-
-        )
 
         feature = feature_map.get(
 
@@ -5192,611 +3032,515 @@ def run_decision(
 
         )
 
-        if feature is None:
-
-            screen_rows.append({
-
-                "RunDatetime":
-
-                    run_time,
-
-                "Code":
-
-                    code,
-
-                "Status":
-
-                    "NOT_READY_DAILY",
-
-            })
-
-            not_ready += 1
+        if not feature:
 
             continue
 
-        hist_n = len(
+        rs = safe_float(
 
-            get_previous_raw_files(
+            feature.get(
 
-                code,
-
-                target_date
+                "RS20_corrected"
 
             )
 
         )
 
-        if hist_n < 20:
+        turnover = safe_float(
 
-            screen_rows.append({
+            feature.get(
 
-                "RunDatetime":
+                "turnover_median_20d_oku"
 
-                    run_time,
+            )
 
-                "Code":
+        )
 
-                    code,
+        if (
 
-                "Status":
+            not np.isfinite(rs)
 
-                    "NOT_READY_RVOL20",
+            or
 
-                "HistoryDays":
+            not np.isfinite(turnover)
 
-                    hist_n,
+            or
 
-            })
+            turnover
+
+            <
+
+            TURNOVER_MIN_OKU
+
+        ):
+
+            continue
+
+        # Only LONG/SHORT RS tails need ATR.
+
+        if not (
+
+            rs >= RS_LONG_MIN
+
+            or
+
+            rs <= RS_SHORT_MAX
+
+        ):
+
+            continue
+
+        hist_dates = (
+
+            previous_snapshot_dates(
+
+                code,
+
+                today,
+
+                20,
+
+            )
+
+        )
+
+        if len(hist_dates) != 20:
 
             not_ready += 1
 
             continue
 
-        signals = find_signals_for_code(
+        atr = fetch_atr_feature(
+
+            code
+
+        )
+
+        if not np.isfinite(atr):
+
+            continue
+
+        feature[
+
+            "ATR14_pct_prev"
+
+        ] = atr
+
+        rows = find_signals_for_code(
 
             code,
 
             minute,
 
-            feature
+            feature,
 
         )
 
-        for sig in signals:
+        signals.extend(rows)
 
-            if (
+    # --------------------------------------------------------
 
-                sig["Side"]
+    # LONG
 
-                ==
+    # --------------------------------------------------------
 
-                "SHORT"
+    long_rank = rank_signals(
 
-                and
+        signals,
 
-                not is_short_lending_eligible(
+        "LONG",
 
-                    code
+    )
 
-                )
+    # --------------------------------------------------------
 
-            ):
+    # SHORT BASE
 
-                screen_rows.append({
+    # --------------------------------------------------------
 
-                    "RunDatetime":
+    short_base_rank = rank_signals(
 
-                        run_time,
+        signals,
 
-                    "Code":
+        "SHORT",
 
-                        code,
+    )
 
-                    "Status":
+    # --------------------------------------------------------
 
-                        "SHORT_NOT_LENDING",
+    # SHORT FILTER
 
-                    **sig,
+    #
 
-                })
+    # Filter first -> rerank.
 
-                continue
+    # --------------------------------------------------------
 
-            all_signals.append(
+    short_filtered_signals = [
 
-                sig
+        x
+
+        for x in signals
+
+        if (
+
+            x["Side"] != "SHORT"
+
+            or
+
+            not is_short_filter_excluded(
+
+                x
 
             )
 
-            screen_rows.append({
+        )
 
-                "RunDatetime":
+    ]
 
-                    run_time,
+    short_filter_rank = rank_signals(
 
-                "Status":
+        short_filtered_signals,
 
-                    "SIGNAL",
+        "SHORT",
 
-                "Danger":
+    )
 
-                    short_danger(
+    trade_rows = []
 
-                        sig
+    new_entries = []
 
-                    ),
+    # --------------------------------------------------------
 
-                **sig,
+    # LONG
+
+    # --------------------------------------------------------
+
+    long_track = state[
+
+        "tracks"
+
+    ]["LONG"]
+
+    if (
+
+        long_track["position"]
+
+        is None
+
+        and
+
+        long_rank
+
+    ):
+
+        pos, skip = open_position(
+
+            long_track,
+
+            long_rank[0],
+
+            LONG_LEVERAGE,
+
+        )
+
+        if pos is not None:
+
+            if not test_mode:
+
+                long_track[
+
+                    "position"
+
+                ] = pos
+
+            new_entries.append(
+
+                (
+
+                    "LONG",
+
+                    pos,
+
+                )
+
+            )
+
+    # --------------------------------------------------------
+
+    # SHORT BASE
+
+    # --------------------------------------------------------
+
+    base_track = state[
+
+        "tracks"
+
+    ]["SHORT_BASE"]
+
+    if (
+
+        base_track["position"]
+
+        is None
+
+        and
+
+        short_base_rank
+
+    ):
+
+        pos, skip = open_position(
+
+            base_track,
+
+            short_base_rank[0],
+
+            SHORT_LEVERAGE,
+
+        )
+
+        if pos is not None:
+
+            if not test_mode:
+
+                base_track[
+
+                    "position"
+
+                ] = pos
+
+            new_entries.append(
+
+                (
+
+                    "SHORT_BASE",
+
+                    pos,
+
+                )
+
+            )
+
+    # --------------------------------------------------------
+
+    # SHORT FILTER
+
+    # --------------------------------------------------------
+
+    filter_track = state[
+
+        "tracks"
+
+    ]["SHORT_FILTER"]
+
+    if (
+
+        filter_track["position"]
+
+        is None
+
+        and
+
+        short_filter_rank
+
+    ):
+
+        pos, skip = open_position(
+
+            filter_track,
+
+            short_filter_rank[0],
+
+            SHORT_LEVERAGE,
+
+        )
+
+        if pos is not None:
+
+            if not test_mode:
+
+                filter_track[
+
+                    "position"
+
+                ] = pos
+
+            new_entries.append(
+
+                (
+
+                    "SHORT_FILTER",
+
+                    pos,
+
+                )
+
+            )
+
+    if not test_mode:
+
+        state[
+
+            "last_decision"
+
+        ] = str(now)
+
+        save_state(state)
+
+        for track_name, pos in (
+
+            new_entries
+
+        ):
+
+            trade_rows.append({
+
+                "Track": track_name,
+
+                "Event": "ENTRY",
+
+                "EventDatetime":
+
+                    pos[
+
+                        "EntryDatetime"
+
+                    ],
+
+                "Code":
+
+                    pos["Code"],
+
+                "EntryDatetime":
+
+                    pos[
+
+                        "EntryDatetime"
+
+                    ],
+
+                "EntryPrice":
+
+                    pos[
+
+                        "EntryPrice"
+
+                    ],
+
+                "Quantity":
+
+                    pos[
+
+                        "Quantity"
+
+                    ],
+
+                "PnL":
+
+                    0.0,
 
             })
 
-        if i % 50 == 0:
+        append_trade_log(
 
-            print(
-
-                f"{i}/{len(universe)} "
-
-                f"success={success} "
-
-                f"failed={failed}"
-
-            )
-
-    # ========================================================
-
-    # UPDATE EXISTING POSITIONS FIRST
-
-    # ========================================================
-
-    trade_rows = update_existing_positions(
-
-        state,
-
-        minute_map,
-
-        target_date
-
-    )
-
-    # ========================================================
-
-    # BASE SELECTION
-
-    # ========================================================
-
-    base_long = rank_same_timestamp(
-
-        all_signals,
-
-        "LONG"
-
-    )
-
-    base_short = rank_same_timestamp(
-
-        all_signals,
-
-        "SHORT"
-
-    )
-
-    # ========================================================
-
-    # FILTER SELECTION
-
-    #
-
-    # Filter BEFORE ranking.
-
-    # ========================================================
-
-    filtered_signals = [
-
-        s
-
-        for s in all_signals
-
-        if not short_danger(
-
-            s
+            trade_rows
 
         )
 
-    ]
+    # --------------------------------------------------------
 
-    filter_long = rank_same_timestamp(
+    # Output
 
-        filtered_signals,
-
-        "LONG"
-
-    )
-
-    filter_short = rank_same_timestamp(
-
-        filtered_signals,
-
-        "SHORT"
-
-    )
-
-    chosen = {
-
-        "BASE": {
-
-            "LONG":
-
-                base_long,
-
-            "SHORT":
-
-                base_short,
-
-        },
-
-        "FILTER": {
-
-            "LONG":
-
-                filter_long,
-
-            "SHORT":
-
-                filter_short,
-
-        },
-
-    }
-
-    # ========================================================
-
-    # TEST MODE:
-
-    #
-
-    # Calculate only.
-
-    # Do not modify portfolio.
-
-    # ========================================================
-
-    if test_mode:
-
-        lines = [
-
-            "FIX11 STAGE6 TEST",
-
-            f"Run: {run_time}",
-
-            f"Universe: {len(universe)}",
-
-            f"1m success: {success}",
-
-            f"1m failed: {failed}",
-
-            f"NOT_READY: {not_ready}",
-
-            f"Signals: {len(all_signals)}",
-
-            f"SHORT danger signals: "
-
-            f"{sum(short_danger(s) for s in all_signals)}",
-
-            "",
-
-        ]
-
-        for strategy_name in [
-
-            "BASE",
-
-            "FILTER"
-
-        ]:
-
-            lines.append(
-
-                f"【{strategy_name}】"
-
-            )
-
-            for side in [
-
-                "LONG",
-
-                "SHORT"
-
-            ]:
-
-                c = chosen[
-
-                    strategy_name
-
-                ][side]
-
-                if c is None:
-
-                    lines.append(
-
-                        f"{side}: NONE"
-
-                    )
-
-                else:
-
-                    lines.append(
-
-                        f"{side}: "
-
-                        f"{c['Code']} "
-
-                        f"Entry={c['EntryDatetime']} "
-
-                        f"Price={c['EntryPrice']:.2f} "
-
-                        f"RS={c['RS20_corrected']:.2f} "
-
-                        f"ATR={c['ATR14_pct_prev']:.2f} "
-
-                        f"RVOL={c['RVOL20']:.2f}"
-
-                    )
-
-            lines.append("")
-
-        append_csv(
-
-            SCREEN_FILE,
-
-            screen_rows,
-
-            GCS_SCREEN
-
-        )
-
-        append_csv(
-
-            SIGNALS_FILE,
-
-            [
-
-                {
-
-                    "RunDatetime":
-
-                        run_time,
-
-                    "Danger":
-
-                        short_danger(
-
-                            s
-
-                        ),
-
-                    **s,
-
-                }
-
-                for s in all_signals
-
-            ],
-
-            GCS_SIGNALS
-
-        )
-
-        return write_result(
-
-            lines
-
-        )
-
-    # ========================================================
-
-    # REAL PAPER ENTRY
-
-    # ========================================================
-
-    for strategy_name in [
-
-        "BASE",
-
-        "FILTER"
-
-    ]:
-
-        strategy_state = state[
-
-            strategy_name
-
-        ]
-
-        for side in [
-
-            "LONG",
-
-            "SHORT"
-
-        ]:
-
-            signal = chosen[
-
-                strategy_name
-
-            ][side]
-
-            if signal is None:
-
-                continue
-
-            result = try_entry(
-
-                strategy_name,
-
-                strategy_state,
-
-                signal
-
-            )
-
-            if result:
-
-                trade_rows.append(
-
-                    result
-
-                )
-
-    state[
-
-        "last_run"
-
-    ] = str(
-
-        run_time
-
-    )
-
-    save_state(
-
-        state
-
-    )
-
-    append_csv(
-
-        TRADES_FILE,
-
-        trade_rows,
-
-        GCS_TRADES
-
-    )
-
-    append_csv(
-
-        SCREEN_FILE,
-
-        screen_rows,
-
-        GCS_SCREEN
-
-    )
-
-    append_csv(
-
-        SIGNALS_FILE,
-
-        [
-
-            {
-
-                "RunDatetime":
-
-                    run_time,
-
-                "Danger":
-
-                    short_danger(
-
-                        s
-
-                    ),
-
-                **s,
-
-            }
-
-            for s in all_signals
-
-        ],
-
-        GCS_SIGNALS
-
-    )
-
-    # ========================================================
-
-    # EMAIL / RESULT TEXT
-
-    # ========================================================
+    # --------------------------------------------------------
 
     lines = [
 
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-
-        "FIX11 FORMAL STAGE6",
-
-        "FORWARD PAPER TRADER",
-
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        VERSION,
 
         "",
 
-        f"Run: {run_time}",
+        (
+
+            "TEST"
+
+            if test_mode
+
+            else "DECISION"
+
+        ),
+
+        f"Run: {now}",
 
         f"Universe: {len(universe)}",
 
-        f"1m success: {success}",
+        f"1m success: {ok}",
 
-        f"1m failed: {failed}",
+        f"1m failed: {ng}",
 
-        f"NOT_READY: {not_ready}",
+        f"RVOL20 NOT_READY: {not_ready}",
 
-        f"Signals: {len(all_signals)}",
+        f"Signals: {len(signals)}",
 
         "",
 
     ]
 
-    for strategy_name in [
+    for name in TRACKS:
 
-        "BASE",
+        track = state[
 
-        "FILTER"
+            "tracks"
 
-    ]:
+        ][name]
 
-        strategy = state[
+        pos = track.get(
 
-            strategy_name
+            "position"
 
-        ]
+        )
 
-        lines.extend([
+        lines.append(
 
-            f"【{strategy_name}】",
+            f"[{name}]"
 
-            f"Equity: "
+        )
 
-            f"¥{strategy['equity']:,.0f}",
+        if pos:
 
-        ])
+            lines.append(
 
-        for side in [
+                f"OPEN {pos['Code']} "
 
-            "LONG",
+                f"{pos['Quantity']}株 "
 
-            "SHORT"
-
-        ]:
-
-            p = strategy[
-
-                "positions"
-
-            ].get(
-
-                side
+                f"@ {pos['EntryPrice']:,.2f}"
 
             )
 
-            if p:
+        else:
+
+            # test entry display
+
+            found = [
+
+                p
+
+                for n, p
+
+                in new_entries
+
+                if n == name
+
+            ]
+
+            if found:
+
+                p = found[0]
 
                 lines.append(
 
-                    f"{side}: "
+                    f"TEST ENTRY "
 
                     f"{p['Code']} "
 
@@ -5810,63 +3554,29 @@ def run_decision(
 
                 lines.append(
 
-                    f"{side}: FLAT"
+                    "FLAT"
 
                 )
 
         lines.append("")
 
-    base_short_code = (
-
-        None
-
-        if base_short is None
-
-        else
-
-        base_short["Code"]
-
-    )
-
-    filter_short_code = (
-
-        None
-
-        if filter_short is None
-
-        else
-
-        filter_short["Code"]
-
-    )
-
     lines.extend([
 
-        "【SHORT比較】",
+        "SHORT FILTER:",
 
-        f"BASE   : {base_short_code}",
+        (
 
-        f"FILTER : {filter_short_code}",
+            "ATR>=7 AND "
 
-        "",
+            "RVOL>=2.5 AND "
 
-        "LOCKED FILTER:",
+            "RS<=5 -> EXCLUDE"
 
-        "ATR14_pct_prev >= 7",
-
-        "RVOL20 >= 2.5",
-
-        "RS20_corrected <= 5",
-
-        "→ 3条件すべて一致したSHORT候補を",
-
-        "   ランキング前に除外",
+        ),
 
         "",
 
-        "※ PAPER TRADE ONLY",
-
-        "※ 実注文なし",
+        "No real orders.",
 
     ])
 
@@ -5878,91 +3588,79 @@ def run_decision(
 
 # ============================================================
 
-# RESULT MODE
+# RESULT / EXIT CHECK
 
 # ============================================================
 
 def run_result():
 
-    # --------------------------------------------------------
-
-    # Result mode re-fetches today's actual 1m bars,
-
-    # updates open positions and saves exits.
-
-    # No new entries.
-
-    # --------------------------------------------------------
-
-    run_time = (
-
-        now_jst()
-
-        .tz_localize(None)
-
-    )
-
-    target_date = (
-
-        run_time
-
-        .normalize()
-
-    )
+    now = now_jst_naive()
 
     state = load_state()
 
-    universe = load_universe()
+    universe_needed = set()
 
-    needed = set()
+    for name in TRACKS:
 
-    for strategy_name in [
+        pos = (
 
-        "BASE",
+            state[
 
-        "FILTER"
+                "tracks"
 
-    ]:
+            ][name]
 
-        for side in [
+            .get(
 
-            "LONG",
-
-            "SHORT"
-
-        ]:
-
-            p = state[
-
-                strategy_name
-
-            ][
-
-                "positions"
-
-            ].get(
-
-                side
+                "position"
 
             )
 
-            if p:
+        )
 
-                needed.add(
+        if pos:
 
-                    p[
+            universe_needed.add(
 
-                        "Code"
+                pos["Code"]
 
-                    ]
+            )
 
-                )
+    if not universe_needed:
+
+        state[
+
+            "last_result"
+
+        ] = str(now)
+
+        save_state(state)
+
+        return write_result([
+
+            VERSION,
+
+            "",
+
+            "RESULT",
+
+            f"Run: {now}",
+
+            "",
+
+            "No open positions.",
+
+            "",
+
+            "No real orders.",
+
+        ])
 
     minute_map = {}
 
     for code in sorted(
 
-        needed
+        universe_needed
 
     ):
 
@@ -5972,209 +3670,517 @@ def run_result():
 
         )
 
-        if minute.empty:
+        if not minute.empty:
 
-            continue
+            minute_map[
 
-        minute_map[
+                code
 
-            code
+            ] = minute
 
-        ] = minute
+            save_raw_snapshot(
 
-        save_raw_snapshot(
+                minute
 
-            minute
+            )
+
+    trade_rows = []
+
+    closed_text = []
+
+    for name in TRACKS:
+
+        track = state[
+
+            "tracks"
+
+        ][name]
+
+        pos = track.get(
+
+            "position"
 
         )
 
-    trade_rows = update_existing_positions(
+        if not pos:
 
-        state,
+            continue
 
-        minute_map,
+        code = pos["Code"]
 
-        target_date
+        minute = minute_map.get(
 
-    )
+            code
+
+        )
+
+        if minute is None:
+
+            continue
+
+        side = (
+
+            "LONG"
+
+            if name == "LONG"
+
+            else "SHORT"
+
+        )
+
+        exit_event = (
+
+            evaluate_position(
+
+                pos,
+
+                minute,
+
+                side,
+
+            )
+
+        )
+
+        if exit_event is None:
+
+            # Update trading-date count.
+
+            dates = set(
+
+                pos.get(
+
+                    "TradingDates",
+
+                    []
+
+                )
+
+            )
+
+            today_str = str(
+
+                now.date()
+
+            )
+
+            dates.add(
+
+                today_str
+
+            )
+
+            pos[
+
+                "TradingDates"
+
+            ] = sorted(dates)
+
+            # LONG 10 trading-day forced close
+
+            if (
+
+                side == "LONG"
+
+                and
+
+                len(dates)
+
+                >=
+
+                LONG_MAX_TRADING_DAYS
+
+                and
+
+                not minute.empty
+
+            ):
+
+                last = (
+
+                    minute
+
+                    .sort_values(
+
+                        "Datetime"
+
+                    )
+
+                    .iloc[-1]
+
+                )
+
+                exit_event = {
+
+                    "ExitDatetime":
+
+                        pd.Timestamp(
+
+                            last[
+
+                                "Datetime"
+
+                            ]
+
+                        ),
+
+                    "ExitPrice":
+
+                        float(
+
+                            last["C"]
+
+                        ),
+
+                    "ExitReason":
+
+                        "FORCED_10D",
+
+                }
+
+        if exit_event is None:
+
+            continue
+
+        entry = float(
+
+            pos["EntryPrice"]
+
+        )
+
+        exit_price = float(
+
+            exit_event[
+
+                "ExitPrice"
+
+            ]
+
+        )
+
+        qty = int(
+
+            pos["Quantity"]
+
+        )
+
+        if side == "LONG":
+
+            ret = (
+
+                exit_price
+
+                /
+
+                entry
+
+                -
+
+                1.0
+
+            )
+
+        else:
+
+            # Formal SHORT reciprocal convention.
+
+            ret = (
+
+                entry
+
+                /
+
+                exit_price
+
+                -
+
+                1.0
+
+            )
+
+        pnl = (
+
+            entry
+
+            *
+
+            qty
+
+            *
+
+            ret
+
+        )
+
+        track[
+
+            "equity"
+
+        ] = (
+
+            float(
+
+                track["equity"]
+
+            )
+
+            +
+
+            pnl
+
+        )
+
+        track[
+
+            "realized_pnl"
+
+        ] = (
+
+            float(
+
+                track.get(
+
+                    "realized_pnl",
+
+                    0.0,
+
+                )
+
+            )
+
+            +
+
+            pnl
+
+        )
+
+        track[
+
+            "closed_trades"
+
+        ] = (
+
+            int(
+
+                track.get(
+
+                    "closed_trades",
+
+                    0,
+
+                )
+
+            )
+
+            +
+
+            1
+
+        )
+
+        track[
+
+            "position"
+
+        ] = None
+
+        trade_rows.append({
+
+            "Track": name,
+
+            "Event": "EXIT",
+
+            "EventDatetime":
+
+                str(
+
+                    exit_event[
+
+                        "ExitDatetime"
+
+                    ]
+
+                ),
+
+            "Code": code,
+
+            "EntryDatetime":
+
+                pos[
+
+                    "EntryDatetime"
+
+                ],
+
+            "EntryPrice":
+
+                entry,
+
+            "ExitPrice":
+
+                exit_price,
+
+            "Quantity":
+
+                qty,
+
+            "ReturnPct":
+
+                ret * 100.0,
+
+            "PnL":
+
+                pnl,
+
+            "ExitReason":
+
+                exit_event[
+
+                    "ExitReason"
+
+                ],
+
+        })
+
+        closed_text.append(
+
+            (
+
+                f"{name} {code} "
+
+                f"{exit_event['ExitReason']} "
+
+                f"{ret * 100:+.3f}% "
+
+                f"{pnl:+,.0f}円"
+
+            )
+
+        )
 
     state[
 
-        "last_run"
+        "last_result"
 
-    ] = str(
+    ] = str(now)
 
-        run_time
+    save_state(state)
 
-    )
+    append_trade_log(
 
-    save_state(
-
-        state
-
-    )
-
-    append_csv(
-
-        TRADES_FILE,
-
-        trade_rows,
-
-        GCS_TRADES
+        trade_rows
 
     )
 
     lines = [
 
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-
-        "FIX11 STAGE6 RESULT",
-
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        VERSION,
 
         "",
 
-        f"Run: {run_time}",
+        "RESULT",
+
+        f"Run: {now}",
 
         "",
 
     ]
 
-    exits = [
-
-        r
-
-        for r in trade_rows
-
-        if r.get(
-
-            "Status"
-
-        )
-
-        ==
-
-        "EXIT"
-
-    ]
-
-    if exits:
+    if closed_text:
 
         lines.append(
 
-            "【EXIT】"
+            "CLOSED"
 
         )
 
-        for r in exits:
+        lines.extend(
 
-            lines.extend([
+            closed_text
 
-                (
-
-                    f"{r['Strategy']} "
-
-                    f"{r['Side']} "
-
-                    f"{r['Code']}"
-
-                ),
-
-                (
-
-                    f"{r['Reason']} "
-
-                    f"{r['ReturnPct']:+.3f}% "
-
-                    f"¥{r['PnL']:+,.0f}"
-
-                ),
-
-                "",
-
-            ])
+        )
 
     else:
 
-        lines.extend([
+        lines.append(
 
-            "【EXIT】",
+            "No exits."
 
-            "なし",
+        )
 
-            "",
+    lines.append("")
 
-        ])
+    for name in TRACKS:
 
-    for strategy_name in [
+        track = state[
 
-        "BASE",
+            "tracks"
 
-        "FILTER"
+        ][name]
 
-    ]:
-
-        strategy = state[
-
-            strategy_name
-
-        ]
-
-        lines.extend([
-
-            f"【{strategy_name}】",
+        lines.append(
 
             (
 
-                f"Equity "
+                f"{name}: "
 
-                f"¥{strategy['equity']:,.0f}"
+                f"equity="
 
-            ),
+                f"{track['equity']:,.0f} "
 
-        ])
+                f"realized="
 
-        for side in [
+                f"{track['realized_pnl']:+,.0f} "
 
-            "LONG",
+                f"closed="
 
-            "SHORT"
-
-        ]:
-
-            p = strategy[
-
-                "positions"
-
-            ].get(
-
-                side
+                f"{track['closed_trades']}"
 
             )
 
-            if p:
+        )
 
-                lines.append(
+        pos = track.get(
 
-                    f"{side}: "
+            "position"
 
-                    f"{p['Code']} "
+        )
 
-                    f"{p['Quantity']}株 "
+        if pos:
 
-                    f"@ {p['EntryPrice']:,.2f}"
+            lines.append(
+
+                (
+
+                    f"  OPEN "
+
+                    f"{pos['Code']} "
+
+                    f"{pos['Quantity']}株 "
+
+                    f"@ "
+
+                    f"{pos['EntryPrice']:,.2f}"
 
                 )
 
-            else:
+            )
 
-                lines.append(
+        else:
 
-                    f"{side}: FLAT"
+            lines.append(
 
-                )
+                "  FLAT"
 
-        lines.append("")
+            )
+
+    lines.extend([
+
+        "",
+
+        "No real orders.",
+
+    ])
 
     return write_result(
 
@@ -6184,67 +4190,43 @@ def run_result():
 
 # ============================================================
 
-# RESEARCH MODE
+# TEST
 
 # ============================================================
 
-def run_research():
+def run_test():
 
-    return (
+    return run_decision(
 
-        "FIX11 research data is saved "
-
-        "during decision/test mode."
+        test_mode=True
 
     )
 
 # ============================================================
 
-# MODE
+# EXECUTE
 
 # ============================================================
-
-def get_run_mode():
-
-    mode = os.getenv(
-
-        "RUN_MODE",
-
-        ""
-
-    ).strip().lower()
-
-    if mode in [
-
-        "decision",
-
-        "result",
-
-        "test",
-
-        "research",
-
-    ]:
-
-        return mode
-
-    return "test"
 
 def execute_mode(mode):
 
-    print("=" * 100)
-
-    print(VERSION)
-
-    print(
-
-        "MODE:",
+    mode = str(
 
         mode
 
-    )
+    ).strip().lower()
 
-    print("=" * 100)
+    print("=" * 80)
+
+    print(VERSION)
+
+    print("MODE:", mode)
+
+    print("=" * 80)
+
+    if mode == "snapshot":
+
+        return run_snapshot()
 
     if mode == "decision":
 
@@ -6254,23 +4236,15 @@ def execute_mode(mode):
 
         )
 
-    if mode == "test":
-
-        return run_decision(
-
-            test_mode=True
-
-        )
-
     if mode == "result":
 
         return run_result()
 
-    if mode == "research":
+    if mode == "test":
 
-        return run_research()
+        return run_test()
 
-    raise RuntimeError(
+    raise ValueError(
 
         f"Unknown mode: {mode}"
 
@@ -6278,9 +4252,11 @@ def execute_mode(mode):
 
 # ============================================================
 
-# HTTP
+# FLASK
 
 # ============================================================
+
+app = Flask(__name__)
 
 @app.get("/")
 
@@ -6288,25 +4264,13 @@ def health():
 
     return jsonify({
 
-        "status":
+        "status": "ok",
 
-            "ok",
+        "version": VERSION,
 
-        "version":
+        "paper_only": True,
 
-            VERSION,
-
-        "paper_only":
-
-            True,
-
-        "long_leverage":
-
-            LONG_LEVERAGE,
-
-        "short_leverage":
-
-            SHORT_LEVERAGE,
+        "tracks": TRACKS,
 
         "short_filter": {
 
@@ -6322,63 +4286,9 @@ def health():
 
                 FILTER_RS_MAX,
 
-        }
+        },
 
     })
-
-@app.get("/prepare")
-
-def prepare_endpoint():
-
-    try:
-
-        result = run_prepare()
-
-        return Response(
-
-            result,
-
-            status=200,
-
-            mimetype=(
-
-                "text/plain; "
-
-                "charset=utf-8"
-
-            )
-
-        )
-
-    except Exception as e:
-
-        error = (
-
-            "FIX11 PREPARE ERROR\n\n"
-
-            f"{type(e).__name__}: "
-
-            f"{e}\n\n"
-
-            f"{traceback.format_exc()}"
-
-        )
-
-        return Response(
-
-            error,
-
-            status=500,
-
-            mimetype=(
-
-                "text/plain; "
-
-                "charset=utf-8"
-
-            )
-
-        )
 
 @app.get("/run")
 
@@ -6388,13 +4298,13 @@ def run_endpoint():
 
         "mode",
 
-        get_run_mode()
+        "test",
 
-    ).strip().lower()
+    )
 
     try:
 
-        result = execute_mode(
+        text = execute_mode(
 
             mode
 
@@ -6402,7 +4312,7 @@ def run_endpoint():
 
         return Response(
 
-            str(result),
+            text,
 
             status=200,
 
@@ -6412,7 +4322,7 @@ def run_endpoint():
 
                 "charset=utf-8"
 
-            )
+            ),
 
         )
 
@@ -6420,7 +4330,7 @@ def run_endpoint():
 
         error = (
 
-            "FIX11 FORWARD ERROR\n\n"
+            f"{VERSION} ERROR\n\n"
 
             f"MODE: {mode}\n\n"
 
@@ -6432,17 +4342,7 @@ def run_endpoint():
 
         )
 
-        try:
-
-            write_result(
-
-                error
-
-            )
-
-        except Exception:
-
-            pass
+        print(error)
 
         return Response(
 
@@ -6456,20 +4356,28 @@ def run_endpoint():
 
                 "charset=utf-8"
 
-            )
+            ),
 
         )
 
 # ============================================================
 
-# LOCAL ENTRYPOINT
+# LOCAL
 
 # ============================================================
 
 if __name__ == "__main__":
 
+    mode = os.getenv(
+
+        "RUN_MODE",
+
+        "test",
+
+    )
+
     execute_mode(
 
-        get_run_mode()
+        mode
 
     )
