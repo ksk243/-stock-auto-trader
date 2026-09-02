@@ -30,19 +30,13 @@ on:
 
     # JST 08:50
 
-    # 1分足履歴用スナップショット
-
     - cron: "50 23 * * 0-4"
 
     # JST 12:45
 
-    # Forward判定
-
     - cron: "45 3 * * 1-5"
 
     # JST 15:45
-
-    # 決済確認・結果
 
     - cron: "45 6 * * 1-5"
 
@@ -51,6 +45,24 @@ permissions:
   contents: read
 
   id-token: write
+
+env:
+
+  PROJECT_ID: stock-auto-trader-506100
+
+  PROJECT_NUMBER: "913714190884"
+
+  REGION: asia-northeast1
+
+  SERVICE_NAME: fix11-forward-paper-trader
+
+  ARTIFACT_REPOSITORY: paper-trader
+
+  SERVICE_ACCOUNT: 913714190884-compute@developer.gserviceaccount.com
+
+  WIF_PROVIDER: projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github
+
+  GCS_BUCKET: stock-auto-trader-506100-paper
 
 jobs:
 
@@ -80,21 +92,51 @@ jobs:
 
       - name: Authenticate to Google Cloud
 
+        id: auth
+
         uses: google-github-actions/auth@v3
 
         with:
 
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
 
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
 
       - name: Setup Google Cloud
 
         uses: google-github-actions/setup-gcloud@v3
 
+        with:
+
+          project_id: ${{ env.PROJECT_ID }}
+
       # ======================================================
 
-      # RUN MODE
+      # GCLOUD CONFIG
+
+      # ======================================================
+
+      - name: Configure gcloud
+
+        shell: bash
+
+        run: |
+
+          set -e
+
+          gcloud config set project "${PROJECT_ID}"
+
+          echo "PROJECT_ID=${PROJECT_ID}"
+
+          echo "REGION=${REGION}"
+
+          echo "SERVICE_NAME=${SERVICE_NAME}"
+
+          echo "GCS_BUCKET=${GCS_BUCKET}"
+
+      # ======================================================
+
+      # DETERMINE RUN MODE
 
       # ======================================================
 
@@ -106,6 +148,8 @@ jobs:
 
         run: |
 
+          set -e
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
 
             MODE="${{ inputs.run_mode }}"
@@ -113,8 +157,6 @@ jobs:
           else
 
             HOUR="$(date -u +'%H')"
-
-            MINUTE="$(date -u +'%M')"
 
             if [ "$HOUR" = "23" ]; then
 
@@ -136,27 +178,13 @@ jobs:
 
           fi
 
-          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "mode=${MODE}" >> "$GITHUB_OUTPUT"
 
-          echo "RUN MODE = $MODE"
-
-      # ======================================================
-
-      # CONFIG
+          echo "RUN MODE = ${MODE}"
 
       # ======================================================
 
-      - name: Set Google Cloud project
-
-        shell: bash
-
-        run: |
-
-          gcloud config set project "${{ secrets.GCP_PROJECT_ID }}"
-
-      # ======================================================
-
-      # BUILD
+      # ARTIFACT REGISTRY
 
       # ======================================================
 
@@ -166,7 +194,13 @@ jobs:
 
         run: |
 
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+          set -e
+
+          gcloud auth configure-docker \
+
+            "${REGION}-docker.pkg.dev" \
+
+            --quiet
 
       - name: Ensure Artifact Registry exists
 
@@ -174,23 +208,63 @@ jobs:
 
         run: |
 
-          if ! gcloud artifacts repositories describe paper-trader \
+          set -e
 
-            --location=asia-northeast1 \
+          if gcloud artifacts repositories describe \
 
-            --project="${{ secrets.GCP_PROJECT_ID }}" >/dev/null 2>&1
+            "${ARTIFACT_REPOSITORY}" \
+
+            --location="${REGION}" \
+
+            --project="${PROJECT_ID}" \
+
+            >/dev/null 2>&1
 
           then
 
-            gcloud artifacts repositories create paper-trader \
+            echo "Artifact Registry already exists."
+
+          else
+
+            echo "Creating Artifact Registry..."
+
+            gcloud artifacts repositories create \
+
+              "${ARTIFACT_REPOSITORY}" \
 
               --repository-format=docker \
 
-              --location=asia-northeast1 \
+              --location="${REGION}" \
 
-              --project="${{ secrets.GCP_PROJECT_ID }}"
+              --project="${PROJECT_ID}"
 
           fi
+
+      # ======================================================
+
+      # IMAGE
+
+      # ======================================================
+
+      - name: Set image name
+
+        shell: bash
+
+        run: |
+
+          set -e
+
+          IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPOSITORY}/fix11-forward:${GITHUB_SHA}"
+
+          echo "IMAGE=${IMAGE}" >> "$GITHUB_ENV"
+
+          echo "IMAGE=${IMAGE}"
+
+      # ======================================================
+
+      # BUILD
+
+      # ======================================================
 
       - name: Build Docker image
 
@@ -198,15 +272,19 @@ jobs:
 
         run: |
 
-          IMAGE="asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/paper-trader/fix11-forward:${{ github.sha }}"
-
-          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          set -e
 
           docker build \
 
-            -t "$IMAGE" \
+            -t "${IMAGE}" \
 
             .
+
+      # ======================================================
+
+      # PUSH
+
+      # ======================================================
 
       - name: Push Docker image
 
@@ -214,11 +292,13 @@ jobs:
 
         run: |
 
-          docker push "$IMAGE"
+          set -e
+
+          docker push "${IMAGE}"
 
       # ======================================================
 
-      # CLOUD RUN
+      # DEPLOY CLOUD RUN
 
       # ======================================================
 
@@ -228,23 +308,29 @@ jobs:
 
         run: |
 
-          gcloud run deploy fix11-forward-paper-trader \
+          set -e
 
-            --image="$IMAGE" \
+          gcloud run deploy "${SERVICE_NAME}" \
 
-            --region=asia-northeast1 \
+            --image="${IMAGE}" \
+
+            --region="${REGION}" \
+
+            --project="${PROJECT_ID}" \
 
             --platform=managed \
 
-            --service-account="${{ secrets.WIF_SERVICE_ACCOUNT }}" \
+            --service-account="${SERVICE_ACCOUNT}" \
 
-            --set-env-vars="GCS_BUCKET=${{ secrets.GCS_BUCKET }}" \
+            --set-env-vars="TZ=Asia/Tokyo,GCS_BUCKET=${GCS_BUCKET},FIX11_DATA_DIR=/tmp/fix11" \
 
-            --memory=2Gi \
+            --memory=4Gi \
 
             --cpu=2 \
 
             --timeout=3600 \
+
+            --concurrency=1 \
 
             --min-instances=0 \
 
@@ -256,7 +342,7 @@ jobs:
 
       # ======================================================
 
-      # SERVICE URL
+      # GET CLOUD RUN URL
 
       # ======================================================
 
@@ -266,39 +352,49 @@ jobs:
 
         run: |
 
-          SERVICE_URL="$(gcloud run services describe fix11-forward-paper-trader \
+          set -e
 
-            --region=asia-northeast1 \
+          SERVICE_URL="$(
 
-            --format='value(status.url)')"
+            gcloud run services describe \
 
-          echo "SERVICE_URL=$SERVICE_URL" >> "$GITHUB_ENV"
+              "${SERVICE_NAME}" \
+
+              --region="${REGION}" \
+
+              --project="${PROJECT_ID}" \
+
+              --format='value(status.url)'
+
+          )"
+
+          if [ -z "${SERVICE_URL}" ]; then
+
+            echo "ERROR: Cloud Run URL is empty."
+
+            exit 1
+
+          fi
+
+          echo "SERVICE_URL=${SERVICE_URL}" >> "$GITHUB_ENV"
 
           echo "Cloud Run URL:"
 
-          echo "$SERVICE_URL"
+          echo "${SERVICE_URL}"
 
       # ======================================================
 
-      # EXECUTE
+      # HEALTH CHECK
 
       # ======================================================
 
-      - name: Run paper trader
+      - name: Cloud Run health check
 
         shell: bash
 
         run: |
 
-          MODE="${{ steps.mode.outputs.mode }}"
-
-          echo "================================"
-
-          echo "FIX11 Stage6 Forward"
-
-          echo "MODE=$MODE"
-
-          echo "================================"
+          set -e
 
           TOKEN="$(gcloud auth print-identity-token)"
 
@@ -310,9 +406,51 @@ jobs:
 
             --silent \
 
-            --max-time 3600 \
+            --max-time 60 \
 
-            -H "Authorization: Bearer $TOKEN" \
+            -H "Authorization: Bearer ${TOKEN}" \
+
+            "${SERVICE_URL}/"
+
+          echo ""
+
+      # ======================================================
+
+      # EXECUTE PAPER TRADER
+
+      # ======================================================
+
+      - name: Run FIX11 Forward
+
+        shell: bash
+
+        run: |
+
+          set -e
+
+          MODE="${{ steps.mode.outputs.mode }}"
+
+          echo "=========================================="
+
+          echo "FIX11 Stage6 Forward"
+
+          echo "MODE=${MODE}"
+
+          echo "=========================================="
+
+          TOKEN="$(gcloud auth print-identity-token)"
+
+          curl \
+
+            --fail \
+
+            --show-error \
+
+            --silent \
+
+            --max-time 3550 \
+
+            -H "Authorization: Bearer ${TOKEN}" \
 
             "${SERVICE_URL}/run?mode=${MODE}" \
 
@@ -320,17 +458,59 @@ jobs:
 
           echo ""
 
-          echo "================================"
+          echo "=========================================="
 
           echo "RESULT"
 
-          echo "================================"
+          echo "=========================================="
 
           cat result.txt
 
       # ======================================================
 
+      # CREATE ERROR MAIL BODY IF EXECUTION FAILED
+
+      # ======================================================
+
+      - name: Prepare mail body
+
+        if: always()
+
+        shell: bash
+
+        run: |
+
+          if [ ! -f result.txt ]; then
+
+            cat > result.txt <<EOF
+
+          FIX11 Stage6 Forward
+
+          GitHub Actions execution failed before result.txt was created.
+
+          Run mode:
+
+          ${{ steps.mode.outputs.mode }}
+
+          Repository:
+
+          ${GITHUB_REPOSITORY}
+
+          Run ID:
+
+          ${GITHUB_RUN_ID}
+
+          EOF
+
+          fi
+
+      # ======================================================
+
       # EMAIL
+
+      #
+
+      # 既存のメールSecretsをそのまま使用
 
       # ======================================================
 
