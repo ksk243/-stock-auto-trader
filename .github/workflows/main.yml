@@ -36,9 +36,7 @@ on:
 
     # decision
 
-    # 前場 09:15～11:30 の
-
-    # Formal ENTRY / EXITを処理
+    # 前場のFormal ENTRY / EXITを処理
 
     # ↓
 
@@ -56,9 +54,7 @@ on:
 
     # result
 
-    # 前場処理済み時刻より後 ～ 15:25
-
-    # Formal ENTRY / EXITを継続
+    # 後場のFormal ENTRY / EXITを継続
 
     # ↓
 
@@ -76,9 +72,7 @@ on:
 
     # snapshot
 
-    # RVOL20用
-
-    # 当日1分足保存
+    # RVOL20用の当日1分足保存
 
     # ======================================================
 
@@ -264,6 +258,12 @@ jobs:
 
       # Generate Cloud Run ID Token
 
+      #
+
+      # Cloud Run URLをaudienceにしたID tokenを
+
+      # auth@v3から直接取得
+
       # ======================================================
 
       - name: Generate Cloud Run ID Token
@@ -290,6 +290,10 @@ jobs:
 
       # Health Check
 
+      #
+
+      # curlは1行で実行
+
       # ======================================================
 
       - name: Health check
@@ -312,11 +316,7 @@ jobs:
 
           fi
 
-          curl --fail --show-error --silent \
-
-            --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" \
-
-            "${URL}/"
+          curl --fail --show-error --silent --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" "${URL}/"
 
       # ======================================================
 
@@ -370,6 +370,12 @@ jobs:
 
       # Run FIX11 Forward
 
+      #
+
+      # curlは1行で実行
+
+      # gcloud auth print-identity-token は使用しない
+
       # ======================================================
 
       - name: Run FIX11 Forward
@@ -390,21 +396,7 @@ jobs:
 
           echo "Calling: ${URL}/run?mode=${MODE}"
 
-          HTTP_CODE=$(curl \
-
-            --show-error \
-
-            --silent \
-
-            --location \
-
-            --output response.txt \
-
-            --write-out "%{http_code}" \
-
-            --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" \
-
-            "${URL}/run?mode=${MODE}")
+          HTTP_CODE=$(curl --show-error --silent --location --output response.txt --write-out "%{http_code}" --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" "${URL}/run?mode=${MODE}")
 
           echo "HTTP_CODE=$HTTP_CODE"
 
