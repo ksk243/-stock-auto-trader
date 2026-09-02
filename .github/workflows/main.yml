@@ -1,4 +1,4 @@
-name: v33.20 Paper Trader
+name: FIX11 Forward Paper Trader
 
 on:
 
@@ -22,121 +22,89 @@ on:
 
           - test
 
-        default: decision
+        default: test
 
   schedule:
 
-    # 15:45 JST
+    # ========================================================
+
+    # JST 09:15
+
+    # Yahoo 1m履歴保存・RVOL20育成用
+
+    # UTC 00:15
+
+    # ========================================================
+
+    - cron: "15 0 * * 1-5"
+
+    # ========================================================
+
+    # JST 12:45
+
+    # 前場～昼のデータ保存
+
+    # UTC 03:45
+
+    # ========================================================
+
+    - cron: "45 3 * * 1-5"
+
+    # ========================================================
+
+    # JST 15:45
+
+    # 当日最終処理
+
+    # UTC 06:45
+
+    # ========================================================
 
     - cron: "45 6 * * 1-5"
 
 permissions:
 
-  contents: write
+  contents: read
 
   id-token: write
 
 env:
 
-  PROJECT_ID: stock-auto-trader-506100
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 
   REGION: asia-northeast1
 
-  REPOSITORY: paper-trader
+  SERVICE_NAME: fix11-paper-trader
 
-  IMAGE: asia-northeast1-docker.pkg.dev/stock-auto-trader-506100/paper-trader/paper-trader
+  IMAGE_NAME: fix11-paper-trader
 
-  SERVICE_ACCOUNT: 913714190884-compute@developer.gserviceaccount.com
-
-  WIF_PROVIDER: projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github
-
-  GCS_BUCKET: stock-auto-trader-506100-paper
+  GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
 
 jobs:
 
-  paper-trader:
+  deploy-and-run:
 
     runs-on: ubuntu-latest
 
-    timeout-minutes: 40
+    timeout-minutes: 60
 
     steps:
 
-      # =====================================================
+      # ======================================================
 
       # Checkout
 
-      # Node.js 24対応
-
-      # =====================================================
+      # ======================================================
 
       - name: Checkout
 
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
-      # =====================================================
-
-      # Determine run mode
-
-      #
-
-      # Cloud Scheduler 12:30 JST
-
-      # → workflow_dispatch
-
-      # → decision
-
-      #
-
-      # GitHub schedule 15:45 JST
-
-      # → result
-
-      # =====================================================
-
-      - name: Determine run mode
-
-        id: mode
-
-        shell: bash
-
-        run: |
-
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-
-            MODE="${{ inputs.run_mode }}"
-
-            if [ -z "$MODE" ]; then
-
-              MODE="decision"
-
-            fi
-
-          elif [ "${{ github.event.schedule }}" = "45 6 * * 1-5" ]; then
-
-            MODE="result"
-
-          else
-
-            echo "ERROR: run mode could not be determined"
-
-            exit 1
-
-          fi
-
-          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
-
-          echo "========================================"
-
-          echo "RUN MODE: $MODE"
-
-          echo "========================================"
-
-      # =====================================================
+      # ======================================================
 
       # Google Cloud Authentication
 
-      # =====================================================
+      # ======================================================
 
       - name: Authenticate to Google Cloud
 
@@ -144,17 +112,17 @@ jobs:
 
         with:
 
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
 
-          service_account: ${{ env.SERVICE_ACCOUNT }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
-      # =====================================================
+      # ======================================================
 
-      # Setup gcloud
+      # gcloud
 
-      # =====================================================
+      # ======================================================
 
-      - name: Setup gcloud
+      - name: Set up Cloud SDK
 
         uses: google-github-actions/setup-gcloud@v3
 
@@ -162,814 +130,308 @@ jobs:
 
           project_id: ${{ env.PROJECT_ID }}
 
-      # =====================================================
+      # ======================================================
 
-      # Docker Authentication
+      # Docker authentication
 
-      # =====================================================
+      # ======================================================
 
       - name: Configure Docker
 
-        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+        run: |
 
-      # =====================================================
+          gcloud auth configure-docker \
+
+            ${REGION}-docker.pkg.dev \
+
+            --quiet
+
+      # ======================================================
 
       # Artifact Registry
 
-      # =====================================================
+      # ======================================================
 
-      - name: Create Artifact Registry
-
-        shell: bash
+      - name: Ensure Artifact Registry
 
         run: |
 
-          if gcloud artifacts repositories describe "${REPOSITORY}" --location="${REGION}" --project="${PROJECT_ID}" >/dev/null 2>&1; then
+          if ! gcloud artifacts repositories describe "${IMAGE_NAME}" \
 
-            echo "Artifact Registry repository already exists"
+            --location="${REGION}" \
 
-          else
+            --project="${PROJECT_ID}" >/dev/null 2>&1
 
-            echo "Creating Artifact Registry repository"
+          then
 
-            gcloud artifacts repositories create "${REPOSITORY}" --repository-format=docker --location="${REGION}" --project="${PROJECT_ID}" --description="Paper Trader Docker Repository"
+            gcloud artifacts repositories create "${IMAGE_NAME}" \
+
+              --repository-format=docker \
+
+              --location="${REGION}" \
+
+              --project="${PROJECT_ID}"
 
           fi
 
-      # =====================================================
+      # ======================================================
 
-      # Docker Build
+      # Image path
 
-      # =====================================================
+      # ======================================================
 
-      - name: Docker Build
+      - name: Set image path
 
-        run: docker build -t "${IMAGE}:latest" .
+        run: |
 
-      # =====================================================
+          echo "IMAGE=${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${IMAGE_NAME}:${GITHUB_SHA}" >> "$GITHUB_ENV"
 
-      # Docker Push
+      # ======================================================
 
-      # =====================================================
+      # Build
 
-      - name: Docker Push
+      # ======================================================
 
-        run: docker push "${IMAGE}:latest"
+      - name: Build Docker image
 
-      # =====================================================
+        run: |
+
+          docker build \
+
+            -t "${IMAGE}" \
+
+            .
+
+      # ======================================================
+
+      # Push
+
+      # ======================================================
+
+      - name: Push Docker image
+
+        run: |
+
+          docker push "${IMAGE}"
+
+      # ======================================================
 
       # Deploy Cloud Run
 
       #
 
-      # ここは改行しない
+      # paper trading only
 
-      # =====================================================
+      # ======================================================
 
       - name: Deploy Cloud Run
 
-        run: gcloud run deploy paper-trader --image="${IMAGE}:latest" --region="${REGION}" --project="${PROJECT_ID}" --platform=managed --allow-unauthenticated --set-env-vars="RUN_MODE=${{ steps.mode.outputs.mode }},GCS_BUCKET=${GCS_BUCKET}" --timeout=900
+        run: |
 
-      # =====================================================
+          gcloud run deploy "${SERVICE_NAME}" \
 
-      # Get Cloud Run URL
+            --image="${IMAGE}" \
 
-      # =====================================================
+            --region="${REGION}" \
+
+            --project="${PROJECT_ID}" \
+
+            --platform=managed \
+
+            --allow-unauthenticated \
+
+            --memory=4Gi \
+
+            --cpu=2 \
+
+            --timeout=3600 \
+
+            --concurrency=1 \
+
+            --max-instances=1 \
+
+            --set-env-vars="TZ=Asia/Tokyo,GCS_BUCKET=${GCS_BUCKET},FIX11_DATA_DIR=/tmp/fix11"
+
+      # ======================================================
+
+      # Get URL
+
+      # ======================================================
 
       - name: Get Cloud Run URL
 
-        id: cloudrun
+        run: |
 
-        shell: bash
+          URL=$(gcloud run services describe "${SERVICE_NAME}" \
+
+            --region="${REGION}" \
+
+            --project="${PROJECT_ID}" \
+
+            --format='value(status.url)')
+
+          echo "SERVICE_URL=${URL}" >> "$GITHUB_ENV"
+
+          echo "Cloud Run URL:"
+
+          echo "${URL}"
+
+      # ======================================================
+
+      # Decide mode
+
+      # ======================================================
+
+      - name: Decide run mode
 
         run: |
 
-          URL=$(gcloud run services describe paper-trader --region="${REGION}" --project="${PROJECT_ID}" --format='value(status.url)')
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
 
-          if [ -z "$URL" ]; then
+            MODE="${{ inputs.run_mode }}"
 
-            echo "ERROR: Cloud Run URL could not be obtained"
+          else
 
-            exit 1
+            HOUR=$(TZ=Asia/Tokyo date +%H)
+
+            MINUTE=$(TZ=Asia/Tokyo date +%M)
+
+            if [ "$HOUR" = "09" ]; then
+
+              MODE="snapshot"
+
+            elif [ "$HOUR" = "12" ]; then
+
+              MODE="decision"
+
+            else
+
+              MODE="result"
+
+            fi
 
           fi
 
-          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "RUN_MODE=${MODE}" >> "$GITHUB_ENV"
+
+          echo "RUN_MODE=${MODE}"
+
+      # ======================================================
+
+      # Run FIX11
+
+      # ======================================================
+
+      - name: Run FIX11 Forward
+
+        run: |
+
+          set -e
 
           echo "========================================"
 
-          echo "Cloud Run URL"
+          echo "FIX11 Forward"
+
+          echo "RUN_MODE=${RUN_MODE}"
 
           echo "========================================"
 
-          echo "$URL"
+          curl \
 
-      # =====================================================
+            --fail \
 
-      # Mail settings
+            --show-error \
+
+            --silent \
+
+            --max-time 3550 \
+
+            "${SERVICE_URL}/run?mode=${RUN_MODE}" \
+
+            | tee fix11_result.txt
+
+      # ======================================================
+
+      # Result
+
+      # ======================================================
+
+      - name: Show result
+
+        if: always()
+
+        run: |
+
+          echo "========================================"
+
+          echo "FIX11 RESULT"
+
+          echo "========================================"
+
+          if [ -f fix11_result.txt ]; then
+
+            cat fix11_result.txt
+
+          else
+
+            echo "fix11_result.txt not created"
+
+          fi
+
+      # ======================================================
+
+      # Email
 
       #
 
-      # 判定前に確認しておく
+      # Existing Gmail/iCloud mail secrets are reused.
 
-      # =====================================================
+      # ======================================================
 
-      - name: Check mail settings
+      - name: Prepare email
 
-        shell: bash
-
-        run: |
-
-          echo "========================================"
-
-          echo "メール設定確認"
-
-          echo "========================================"
-
-          if [ -z "${{ secrets.SMTP_HOST }}" ]; then
-
-            echo "ERROR: SMTP_HOST が未設定です"
-
-            exit 1
-
-          fi
-
-          if [ -z "${{ secrets.SMTP_PORT }}" ]; then
-
-            echo "ERROR: SMTP_PORT が未設定です"
-
-            exit 1
-
-          fi
-
-          if [ -z "${{ secrets.SMTP_USER }}" ]; then
-
-            echo "ERROR: SMTP_USER が未設定です"
-
-            exit 1
-
-          fi
-
-          if [ -z "${{ secrets.SMTP_PASSWORD }}" ]; then
-
-            echo "ERROR: SMTP_PASSWORD が未設定です"
-
-            exit 1
-
-          fi
-
-          if [ -z "${{ secrets.MAIL_TO }}" ]; then
-
-            echo "ERROR: MAIL_TO が未設定です"
-
-            exit 1
-
-          fi
-
-          if [ -z "${{ secrets.MAIL_USER }}" ]; then
-
-            echo "ERROR: MAIL_USER が未設定です"
-
-            exit 1
-
-          fi
-
-          echo "SMTP_HOST: 設定済み"
-
-          echo "SMTP_PORT: 設定済み"
-
-          echo "SMTP_USER: 設定済み"
-
-          echo "SMTP_PASSWORD: 設定済み"
-
-          echo "MAIL_TO: 設定済み"
-
-          echo "MAIL_USER: 設定済み"
-
-      # =====================================================
-
-      # 日足事前準備
-
-      #
-
-      # decision と test の両方で実行
-
-      # =====================================================
-
-      - name: Prepare daily data
-
-        if: steps.mode.outputs.mode == 'decision' || steps.mode.outputs.mode == 'test'
-
-        shell: bash
+        if: always()
 
         run: |
 
-          URL="${{ steps.cloudrun.outputs.url }}"
+          if [ -f fix11_result.txt ]; then
 
-          echo "========================================"
-
-          echo "PREPARE DAILY DATA"
-
-          echo "========================================"
-
-          echo "MODE: ${{ steps.mode.outputs.mode }}"
-
-          echo "========================================"
-
-          curl --fail-with-body --retry 3 --retry-delay 5 --max-time 600 "${URL}/prepare"
-
-      # =====================================================
-
-      # decisionだけ12:45まで待つ
-
-      #
-
-      # testは待たない
-
-      # =====================================================
-
-      - name: Wait until 12:45 JST
-
-        if: steps.mode.outputs.mode == 'decision'
-
-        shell: bash
-
-        run: |
-
-          python <<'PY'
-
-          from datetime import datetime
-
-          from zoneinfo import ZoneInfo
-
-          import time
-
-          jst = ZoneInfo("Asia/Tokyo")
-
-          now = datetime.now(jst)
-
-          target = now.replace(
-
-              hour=12,
-
-              minute=45,
-
-              second=0,
-
-              microsecond=0
-
-          )
-
-          print("========================================")
-
-          print("WAIT FOR 12:45 JST")
-
-          print("========================================")
-
-          print("Current:", now.strftime("%Y-%m-%d %H:%M:%S %Z"))
-
-          print("Target :", target.strftime("%Y-%m-%d %H:%M:%S %Z"))
-
-          if now < target:
-
-              seconds = (target - now).total_seconds()
-
-              print(f"Waiting {seconds:.0f} seconds...")
-
-              time.sleep(seconds)
-
-          else:
-
-              print("Already 12:45 JST or later.")
-
-              print("Start immediately.")
-
-          print(
-
-              "Start:",
-
-              datetime.now(jst).strftime("%Y-%m-%d %H:%M:%S %Z")
-
-          )
-
-          PY
-
-      # =====================================================
-
-      # Paper Trader
-
-      #
-
-      # decision:
-
-      # 12:45から5分足取得＋判定
-
-      #
-
-      # test:
-
-      # 日足準備後すぐに5分足取得＋判定
-
-      # =====================================================
-
-      - name: Run Paper Trader
-
-        shell: bash
-
-        run: |
-
-          URL="${{ steps.cloudrun.outputs.url }}"
-
-          MODE="${{ steps.mode.outputs.mode }}"
-
-          echo "========================================"
-
-          echo "Run Paper Trader"
-
-          echo "========================================"
-
-          echo "URL: $URL"
-
-          echo "MODE: $MODE"
-
-          echo "========================================"
-
-          curl --fail-with-body --retry 3 --retry-delay 10 --max-time 900 "${URL}/run?mode=${MODE}" | tee cloud_run_result.txt
-
-      # =====================================================
-
-      # Email body
-
-      # =====================================================
-
-      - name: Prepare immediate email
-
-        shell: bash
-
-        run: |
-
-          cp cloud_run_result.txt latest_result.txt
-
-          echo "========================================"
-
-          echo "EMAIL RESULT"
-
-          echo "========================================"
-
-          cat latest_result.txt
-
-      # =====================================================
-
-      # 即メール
-
-      #
-
-      # dawidd6/action-send-mail を使用しない
-
-      # Python標準ライブラリで送信
-
-      # =====================================================
-
-      - name: Send result email immediately
-
-        env:
-
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-
-          MAIL_TO: ${{ secrets.MAIL_TO }}
-
-          MAIL_USER: ${{ secrets.MAIL_USER }}
-
-          RUN_MODE: ${{ steps.mode.outputs.mode }}
-
-        shell: bash
-
-        run: |
-
-          python <<'PY'
-
-          import os
-
-          import smtplib
-
-          from email.message import EmailMessage
-
-          with open(
-
-              "latest_result.txt",
-
-              "r",
-
-              encoding="utf-8"
-
-          ) as f:
-
-              body = f.read()
-
-          msg = EmailMessage()
-
-          msg["Subject"] = (
-
-              f"v33.20 Paper Trader "
-
-              f"{os.environ['RUN_MODE']}"
-
-          )
-
-          msg["From"] = os.environ[
-
-              "MAIL_USER"
-
-          ]
-
-          msg["To"] = os.environ[
-
-              "MAIL_TO"
-
-          ]
-
-          msg.set_content(
-
-              body
-
-          )
-
-          host = os.environ[
-
-              "SMTP_HOST"
-
-          ]
-
-          port = int(
-
-              os.environ[
-
-                  "SMTP_PORT"
-
-              ]
-
-          )
-
-          user = os.environ[
-
-              "SMTP_USER"
-
-          ]
-
-          password = os.environ[
-
-              "SMTP_PASSWORD"
-
-          ]
-
-          print(
-
-              f"SMTP connection: "
-
-              f"{host}:{port}"
-
-          )
-
-          with smtplib.SMTP(
-
-              host,
-
-              port,
-
-              timeout=30
-
-          ) as smtp:
-
-              smtp.ehlo()
-
-              smtp.starttls()
-
-              smtp.ehlo()
-
-              smtp.login(
-
-                  user,
-
-                  password
-
-              )
-
-              smtp.send_message(
-
-                  msg
-
-              )
-
-          print(
-
-              "メール送信成功"
-
-          )
-
-          PY
-
-      # =====================================================
-
-      # メール送信後の研究データ保存
-
-      #
-
-      # decisionのみ
-
-      #
-
-      # TESTはpaper_trader.py側で研究保存済み
-
-      # =====================================================
-
-      - name: Save research data after email
-
-        if: steps.mode.outputs.mode == 'decision'
-
-        shell: bash
-
-        run: |
-
-          URL="${{ steps.cloudrun.outputs.url }}"
-
-          echo "========================================"
-
-          echo "RESEARCH SAVE AFTER EMAIL"
-
-          echo "========================================"
-
-          curl --fail-with-body --retry 3 --retry-delay 5 --max-time 900 "${URL}/run?mode=research"
-
-      # =====================================================
-
-      # Download GCS files
-
-      # =====================================================
-
-      - name: Download result files from GCS
-
-        shell: bash
-
-        run: |
-
-          mkdir -p data/research
-
-          mkdir -p data
-
-          echo "========================================"
-
-          echo "GCS result files"
-
-          echo "========================================"
-
-          echo ""
-
-          echo "screening_history.csv"
-
-          if gcloud storage cp "gs://${GCS_BUCKET}/research/screening_history.csv" "data/research/screening_history.csv"; then
-
-            echo "screening_history.csv downloaded"
+            cp fix11_result.txt mail_body.txt
 
           else
 
-            echo "WARNING: screening_history.csv がGCSにありません"
-
-            touch "data/research/screening_history.csv"
+            echo "FIX11 Forward execution failed before result creation." > mail_body.txt
 
           fi
 
-          echo ""
+          echo "" >> mail_body.txt
 
-          echo "intraday_history.csv"
+          echo "GitHub Actions:" >> mail_body.txt
 
-          if gcloud storage cp "gs://${GCS_BUCKET}/research/intraday_history.csv" "data/research/intraday_history.csv"; then
+          echo "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >> mail_body.txt
 
-            echo "intraday_history.csv downloaded"
+      - name: Send result email
 
-          else
+        if: always()
 
-            echo "WARNING: intraday_history.csv がGCSにありません"
+        uses: dawidd6/action-send-mail@v6
 
-            printf '%s\n' 'date,datetime,ticker,open,high,low,close,volume' > "data/research/intraday_history.csv"
+        with:
 
-          fi
+          server_address: smtp.gmail.com
 
-          echo ""
+          server_port: 465
 
-          echo "portfolio.json"
+          secure: true
 
-          if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/portfolio.json" "data/portfolio.json"; then
+          username: ${{ secrets.MAIL_USERNAME }}
 
-            echo "portfolio.json downloaded"
+          password: ${{ secrets.MAIL_PASSWORD }}
 
-          else
+          subject: "FIX11 Forward ${{ env.RUN_MODE }}"
 
-            echo "WARNING: portfolio.json がGCSにありません"
+          to: ${{ secrets.MAIL_TO }}
 
-            python -c 'import json; json.dump(dict(equity=1117792, positions=[]), open("data/portfolio.json","w",encoding="utf-8"), ensure_ascii=False, indent=2)'
+          from: ${{ secrets.MAIL_FROM }}
 
-          fi
-
-          echo ""
-
-          echo "paper_trades.csv"
-
-          if gcloud storage cp "gs://${GCS_BUCKET}/paper_trader/paper_trades.csv" "data/paper_trades.csv"; then
-
-            echo "paper_trades.csv downloaded"
-
-          else
-
-            echo "WARNING: paper_trades.csv がGCSにありません"
-
-            printf '%s\n' 'date,ticker,side,shares,entry,exit,return,pnl,reason,entry_time,exit_time' > "data/paper_trades.csv"
-
-          fi
-
-          echo ""
-
-          echo "========================================"
-
-          echo "GCS download completed"
-
-          echo "========================================"
-
-      # =====================================================
-
-      # Check research files
-
-      # =====================================================
-
-      - name: Check research files
-
-        shell: bash
-
-        run: |
-
-          echo "========================================"
-
-          echo "Research files"
-
-          echo "========================================"
-
-          echo ""
-
-          echo "screening_history.csv"
-
-          if [ -f "data/research/screening_history.csv" ]; then
-
-            wc -l "data/research/screening_history.csv"
-
-            ls -lh "data/research/screening_history.csv"
-
-          else
-
-            echo "ERROR: screening_history.csv が存在しません"
-
-            exit 1
-
-          fi
-
-          echo ""
-
-          echo "intraday_history.csv"
-
-          if [ -f "data/research/intraday_history.csv" ]; then
-
-            wc -l "data/research/intraday_history.csv"
-
-            ls -lh "data/research/intraday_history.csv"
-
-          else
-
-            echo "ERROR: intraday_history.csv が存在しません"
-
-            exit 1
-
-          fi
-
-      # =====================================================
-
-      # Check portfolio
-
-      # =====================================================
-
-      - name: Check portfolio
-
-        shell: bash
-
-        run: |
-
-          echo "========================================"
-
-          echo "Portfolio check"
-
-          echo "========================================"
-
-          if [ -f "data/portfolio.json" ]; then
-
-            cat "data/portfolio.json"
-
-          else
-
-            echo "ERROR: data/portfolio.json が存在しません"
-
-            exit 1
-
-          fi
-
-      # =====================================================
-
-      # Check result
-
-      # =====================================================
-
-      - name: Check result file
-
-        shell: bash
-
-        run: |
-
-          echo "========================================"
-
-          echo "latest_result.txt"
-
-          echo "========================================"
-
-          if [ -f "latest_result.txt" ]; then
-
-            cat "latest_result.txt"
-
-          else
-
-            echo "ERROR: latest_result.txt が存在しません"
-
-            exit 1
-
-          fi
-
-      # =====================================================
-
-      # Save data to GitHub
-
-      # =====================================================
-
-      - name: Save data to GitHub
-
-        shell: bash
-
-        run: |
-
-          git config user.name "github-actions[bot]"
-
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add "data/research/screening_history.csv"
-
-          git add "data/research/intraday_history.csv"
-
-          git add "data/portfolio.json"
-
-          git add "data/paper_trades.csv"
-
-          git add "latest_result.txt"
-
-          if git diff --cached --quiet; then
-
-            echo "No data changes"
-
-          else
-
-            git commit -m "Update paper trader data"
-
-            git push
-
-          fi
-
-      # =====================================================
-
-      # Completed
-
-      # =====================================================
-
-      - name: Completed
-
-        shell: bash
-
-        run: |
-
-          echo "========================================"
-
-          echo "v33.20 Paper Trader completed"
-
-          echo "========================================"
-
-          echo "MODE: ${{ steps.mode.outputs.mode }}"
-
-          echo "========================================"
+          body: file://mail_body.txt
