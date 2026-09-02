@@ -28,37 +28,17 @@ on:
 
   schedule:
 
-    # ========================================================
-
     # JST 12:45 / Mon-Fri
-
-    # decision
-
-    # ========================================================
 
     - cron: "45 3 * * 1-5"
 
-    # ========================================================
-
     # JST 15:45 / Mon-Fri
-
-    # result
-
-    # ========================================================
 
     - cron: "45 6 * * 1-5"
 
-    # ========================================================
-
     # JST 16:10 / Mon-Fri
 
-    # snapshot
-
-    #
-
     # Yahoo遅延を考慮して引け後に保存
-
-    # ========================================================
 
     - cron: "10 7 * * 1-5"
 
@@ -136,33 +116,25 @@ jobs:
 
       # Docker Auth
 
+      # 1行にして改行問題を防止
+
       # ======================================================
 
       - name: Docker Auth
 
-        run: |
-
-          gcloud auth configure-docker \
-
-            ${{ env.REGION }}-docker.pkg.dev \
-
-            --quiet
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
       # ======================================================
 
       # Build
 
+      # 1行にして改行問題を防止
+
       # ======================================================
 
       - name: Build image
 
-        run: |
-
-          docker build \
-
-            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }} \
-
-            .
+        run: docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }} .
 
       # ======================================================
 
@@ -172,47 +144,19 @@ jobs:
 
       - name: Push image
 
-        run: |
-
-          docker push \
-
-            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }}
+        run: docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }}
 
       # ======================================================
 
       # Deploy Cloud Run
 
+      # 1行にして "\" による分断を防止
+
       # ======================================================
 
       - name: Deploy Cloud Run
 
-        run: |
-
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
-
-            --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }} \
-
-            --region=${{ env.REGION }} \
-
-            --platform=managed \
-
-            --service-account=${{ env.SERVICE_ACCOUNT }} \
-
-            --memory=4Gi \
-
-            --cpu=2 \
-
-            --timeout=3600 \
-
-            --concurrency=1 \
-
-            --max-instances=1 \
-
-            --no-allow-unauthenticated \
-
-            --set-env-vars=GCS_BUCKET=${{ env.GCS_BUCKET }},FIX11_DATA_DIR=fix11_forward \
-
-            --quiet
+        run: gcloud run deploy ${{ env.SERVICE_NAME }} --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }} --region=${{ env.REGION }} --platform=managed --service-account=${{ env.SERVICE_ACCOUNT }} --memory=4Gi --cpu=2 --timeout=3600 --concurrency=1 --max-instances=1 --no-allow-unauthenticated --set-env-vars=GCS_BUCKET=${{ env.GCS_BUCKET }},FIX11_DATA_DIR=fix11_forward --quiet
 
       # ======================================================
 
@@ -224,21 +168,23 @@ jobs:
 
         id: service
 
+        shell: bash
+
         run: |
 
-          URL=$(gcloud run services describe \
+          URL=$(gcloud run services describe "${{ env.SERVICE_NAME }}" --region="${{ env.REGION }}" --format="value(status.url)")
 
-            ${{ env.SERVICE_NAME }} \
+          if [ -z "$URL" ]; then
 
-            --region=${{ env.REGION }} \
+            echo "ERROR: Cloud Run URL could not be obtained."
 
-            --format='value(status.url)')
+            exit 1
+
+          fi
 
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
-          echo "Cloud Run URL:"
-
-          echo "$URL"
+          echo "Cloud Run URL: $URL"
 
       # ======================================================
 
@@ -248,27 +194,19 @@ jobs:
 
       - name: Health check
 
+        shell: bash
+
         run: |
 
           URL="${{ steps.service.outputs.url }}"
 
           TOKEN=$(gcloud auth print-identity-token)
 
-          curl \
-
-            --fail \
-
-            --show-error \
-
-            --silent \
-
-            --header "Authorization: Bearer ${TOKEN}" \
-
-            "${URL}/"
+          curl --fail --show-error --silent --header "Authorization: Bearer ${TOKEN}" "${URL}/"
 
       # ======================================================
 
-      # Decide run mode
+      # Determine Run Mode
 
       # ======================================================
 
@@ -316,7 +254,7 @@ jobs:
 
       # ======================================================
 
-      # Run
+      # Run FIX11 Forward
 
       # ======================================================
 
@@ -334,25 +272,9 @@ jobs:
 
           TOKEN=$(gcloud auth print-identity-token)
 
-          echo "Calling:"
+          echo "Calling: ${URL}/run?mode=${MODE}"
 
-          echo "${URL}/run?mode=${MODE}"
-
-          HTTP_CODE=$(curl \
-
-            --show-error \
-
-            --silent \
-
-            --location \
-
-            --output response.txt \
-
-            --write-out "%{http_code}" \
-
-            --header "Authorization: Bearer ${TOKEN}" \
-
-            "${URL}/run?mode=${MODE}")
+          HTTP_CODE=$(curl --show-error --silent --location --output response.txt --write-out "%{http_code}" --header "Authorization: Bearer ${TOKEN}" "${URL}/run?mode=${MODE}")
 
           echo "HTTP_CODE=$HTTP_CODE"
 
@@ -360,13 +282,51 @@ jobs:
 
           echo "================ RESPONSE ================"
 
-          cat response.txt
+          if [ -f response.txt ]; then
+
+            cat response.txt
+
+          else
+
+            echo "response.txt was not created."
+
+          fi
 
           echo "=========================================="
 
           if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
 
             exit 1
+
+          fi
+
+      # ======================================================
+
+      # Ensure Email Body Exists
+
+      #
+
+      # Build/Deploy等で途中失敗しても
+
+      # response.txt がないせいでメールまで失敗するのを防止
+
+      # ======================================================
+
+      - name: Ensure email body exists
+
+        if: always()
+
+        shell: bash
+
+        run: |
+
+          if [ ! -f response.txt ]; then
+
+            echo "FIX11 workflow failed before the application response was created." > response.txt
+
+            echo "" >> response.txt
+
+            echo "Check the GitHub Actions log for the failed step." >> response.txt
 
           fi
 
