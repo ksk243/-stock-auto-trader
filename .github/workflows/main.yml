@@ -8,7 +8,7 @@ on:
 
       run_mode:
 
-        description: "Run mode"
+        description: "実行モード"
 
         required: true
 
@@ -28,17 +28,39 @@ on:
 
   schedule:
 
-    # JST 08:50
+    # ========================================================
 
-    - cron: "50 23 * * 0-4"
+    # JST 12:45 / Mon-Fri
 
-    # JST 12:45
+    # decision
+
+    # ========================================================
 
     - cron: "45 3 * * 1-5"
 
-    # JST 15:45
+    # ========================================================
+
+    # JST 15:45 / Mon-Fri
+
+    # result
+
+    # ========================================================
 
     - cron: "45 6 * * 1-5"
+
+    # ========================================================
+
+    # JST 16:10 / Mon-Fri
+
+    # snapshot
+
+    #
+
+    # Yahoo遅延を考慮して引け後に保存
+
+    # ========================================================
+
+    - cron: "10 7 * * 1-5"
 
 permissions:
 
@@ -66,17 +88,17 @@ env:
 
 jobs:
 
-  run-paper-trader:
+  deploy-and-run:
 
     runs-on: ubuntu-latest
 
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     steps:
 
       # ======================================================
 
-      # CHECKOUT
+      # Checkout
 
       # ======================================================
 
@@ -86,13 +108,11 @@ jobs:
 
       # ======================================================
 
-      # GOOGLE CLOUD AUTH
+      # Google Auth
 
       # ======================================================
 
-      - name: Authenticate to Google Cloud
-
-        id: auth
+      - name: Google Auth
 
         uses: google-github-actions/auth@v3
 
@@ -102,41 +122,153 @@ jobs:
 
           service_account: ${{ env.SERVICE_ACCOUNT }}
 
-      - name: Setup Google Cloud
+      # ======================================================
+
+      # gcloud
+
+      # ======================================================
+
+      - name: Setup gcloud
 
         uses: google-github-actions/setup-gcloud@v3
 
-        with:
+      # ======================================================
 
-          project_id: ${{ env.PROJECT_ID }}
+      # Docker Auth
 
       # ======================================================
 
-      # GCLOUD CONFIG
-
-      # ======================================================
-
-      - name: Configure gcloud
-
-        shell: bash
+      - name: Docker Auth
 
         run: |
 
-          set -e
+          gcloud auth configure-docker \
 
-          gcloud config set project "${PROJECT_ID}"
+            ${{ env.REGION }}-docker.pkg.dev \
 
-          echo "PROJECT_ID=${PROJECT_ID}"
-
-          echo "REGION=${REGION}"
-
-          echo "SERVICE_NAME=${SERVICE_NAME}"
-
-          echo "GCS_BUCKET=${GCS_BUCKET}"
+            --quiet
 
       # ======================================================
 
-      # DETERMINE RUN MODE
+      # Build
+
+      # ======================================================
+
+      - name: Build image
+
+        run: |
+
+          docker build \
+
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }} \
+
+            .
+
+      # ======================================================
+
+      # Push
+
+      # ======================================================
+
+      - name: Push image
+
+        run: |
+
+          docker push \
+
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }}
+
+      # ======================================================
+
+      # Deploy Cloud Run
+
+      # ======================================================
+
+      - name: Deploy Cloud Run
+
+        run: |
+
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }} \
+
+            --region=${{ env.REGION }} \
+
+            --platform=managed \
+
+            --service-account=${{ env.SERVICE_ACCOUNT }} \
+
+            --memory=4Gi \
+
+            --cpu=2 \
+
+            --timeout=3600 \
+
+            --concurrency=1 \
+
+            --max-instances=1 \
+
+            --no-allow-unauthenticated \
+
+            --set-env-vars=GCS_BUCKET=${{ env.GCS_BUCKET }},FIX11_DATA_DIR=fix11_forward \
+
+            --quiet
+
+      # ======================================================
+
+      # Service URL
+
+      # ======================================================
+
+      - name: Get service URL
+
+        id: service
+
+        run: |
+
+          URL=$(gcloud run services describe \
+
+            ${{ env.SERVICE_NAME }} \
+
+            --region=${{ env.REGION }} \
+
+            --format='value(status.url)')
+
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+          echo "Cloud Run URL:"
+
+          echo "$URL"
+
+      # ======================================================
+
+      # Health Check
+
+      # ======================================================
+
+      - name: Health check
+
+        run: |
+
+          URL="${{ steps.service.outputs.url }}"
+
+          TOKEN=$(gcloud auth print-identity-token)
+
+          curl \
+
+            --fail \
+
+            --show-error \
+
+            --silent \
+
+            --header "Authorization: Bearer ${TOKEN}" \
+
+            "${URL}/"
+
+      # ======================================================
+
+      # Decide run mode
 
       # ======================================================
 
@@ -148,27 +280,27 @@ jobs:
 
         run: |
 
-          set -e
-
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
 
-            MODE="${{ inputs.run_mode }}"
+            MODE="${{ github.event.inputs.run_mode }}"
 
           else
 
-            HOUR="$(date -u +'%H')"
+            HOUR=$(date -u +'%H')
 
-            if [ "$HOUR" = "23" ]; then
+            MINUTE=$(date -u +'%M')
 
-              MODE="snapshot"
-
-            elif [ "$HOUR" = "03" ]; then
+            if [ "$HOUR" = "03" ] && [ "$MINUTE" = "45" ]; then
 
               MODE="decision"
 
-            elif [ "$HOUR" = "06" ]; then
+            elif [ "$HOUR" = "06" ] && [ "$MINUTE" = "45" ]; then
 
               MODE="result"
+
+            elif [ "$HOUR" = "07" ] && [ "$MINUTE" = "10" ]; then
+
+              MODE="snapshot"
 
             else
 
@@ -178,339 +310,69 @@ jobs:
 
           fi
 
-          echo "mode=${MODE}" >> "$GITHUB_OUTPUT"
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
 
-          echo "RUN MODE = ${MODE}"
-
-      # ======================================================
-
-      # ARTIFACT REGISTRY
+          echo "RUN_MODE=$MODE"
 
       # ======================================================
 
-      - name: Configure Docker authentication
-
-        shell: bash
-
-        run: |
-
-          set -e
-
-          gcloud auth configure-docker \
-
-            "${REGION}-docker.pkg.dev" \
-
-            --quiet
-
-      - name: Ensure Artifact Registry exists
-
-        shell: bash
-
-        run: |
-
-          set -e
-
-          if gcloud artifacts repositories describe \
-
-            "${ARTIFACT_REPOSITORY}" \
-
-            --location="${REGION}" \
-
-            --project="${PROJECT_ID}" \
-
-            >/dev/null 2>&1
-
-          then
-
-            echo "Artifact Registry already exists."
-
-          else
-
-            echo "Creating Artifact Registry..."
-
-            gcloud artifacts repositories create \
-
-              "${ARTIFACT_REPOSITORY}" \
-
-              --repository-format=docker \
-
-              --location="${REGION}" \
-
-              --project="${PROJECT_ID}"
-
-          fi
-
-      # ======================================================
-
-      # IMAGE
-
-      # ======================================================
-
-      - name: Set image name
-
-        shell: bash
-
-        run: |
-
-          set -e
-
-          IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPOSITORY}/fix11-forward:${GITHUB_SHA}"
-
-          echo "IMAGE=${IMAGE}" >> "$GITHUB_ENV"
-
-          echo "IMAGE=${IMAGE}"
-
-      # ======================================================
-
-      # BUILD
-
-      # ======================================================
-
-      - name: Build Docker image
-
-        shell: bash
-
-        run: |
-
-          set -e
-
-          docker build \
-
-            -t "${IMAGE}" \
-
-            .
-
-      # ======================================================
-
-      # PUSH
-
-      # ======================================================
-
-      - name: Push Docker image
-
-        shell: bash
-
-        run: |
-
-          set -e
-
-          docker push "${IMAGE}"
-
-      # ======================================================
-
-      # DEPLOY CLOUD RUN
-
-      # ======================================================
-
-      - name: Deploy Cloud Run service
-
-        shell: bash
-
-        run: |
-
-          set -e
-
-          gcloud run deploy "${SERVICE_NAME}" \
-
-            --image="${IMAGE}" \
-
-            --region="${REGION}" \
-
-            --project="${PROJECT_ID}" \
-
-            --platform=managed \
-
-            --service-account="${SERVICE_ACCOUNT}" \
-
-            --set-env-vars="TZ=Asia/Tokyo,GCS_BUCKET=${GCS_BUCKET},FIX11_DATA_DIR=/tmp/fix11" \
-
-            --memory=4Gi \
-
-            --cpu=2 \
-
-            --timeout=3600 \
-
-            --concurrency=1 \
-
-            --min-instances=0 \
-
-            --max-instances=1 \
-
-            --no-allow-unauthenticated \
-
-            --quiet
-
-      # ======================================================
-
-      # GET CLOUD RUN URL
-
-      # ======================================================
-
-      - name: Get Cloud Run URL
-
-        shell: bash
-
-        run: |
-
-          set -e
-
-          SERVICE_URL="$(
-
-            gcloud run services describe \
-
-              "${SERVICE_NAME}" \
-
-              --region="${REGION}" \
-
-              --project="${PROJECT_ID}" \
-
-              --format='value(status.url)'
-
-          )"
-
-          if [ -z "${SERVICE_URL}" ]; then
-
-            echo "ERROR: Cloud Run URL is empty."
-
-            exit 1
-
-          fi
-
-          echo "SERVICE_URL=${SERVICE_URL}" >> "$GITHUB_ENV"
-
-          echo "Cloud Run URL:"
-
-          echo "${SERVICE_URL}"
-
-      # ======================================================
-
-      # HEALTH CHECK
-
-      # ======================================================
-
-      - name: Cloud Run health check
-
-        shell: bash
-
-        run: |
-
-          set -e
-
-          TOKEN="$(gcloud auth print-identity-token)"
-
-          curl \
-
-            --fail \
-
-            --show-error \
-
-            --silent \
-
-            --max-time 60 \
-
-            -H "Authorization: Bearer ${TOKEN}" \
-
-            "${SERVICE_URL}/"
-
-          echo ""
-
-      # ======================================================
-
-      # EXECUTE PAPER TRADER
+      # Run
 
       # ======================================================
 
       - name: Run FIX11 Forward
 
+        id: run_fix11
+
         shell: bash
 
         run: |
 
-          set -e
+          URL="${{ steps.service.outputs.url }}"
 
           MODE="${{ steps.mode.outputs.mode }}"
 
-          echo "=========================================="
+          TOKEN=$(gcloud auth print-identity-token)
 
-          echo "FIX11 Stage6 Forward"
+          echo "Calling:"
 
-          echo "MODE=${MODE}"
+          echo "${URL}/run?mode=${MODE}"
 
-          echo "=========================================="
-
-          TOKEN="$(gcloud auth print-identity-token)"
-
-          curl \
-
-            --fail \
+          HTTP_CODE=$(curl \
 
             --show-error \
 
             --silent \
 
-            --max-time 3550 \
+            --location \
 
-            -H "Authorization: Bearer ${TOKEN}" \
+            --output response.txt \
 
-            "${SERVICE_URL}/run?mode=${MODE}" \
+            --write-out "%{http_code}" \
 
-            | tee result.txt
+            --header "Authorization: Bearer ${TOKEN}" \
+
+            "${URL}/run?mode=${MODE}")
+
+          echo "HTTP_CODE=$HTTP_CODE"
 
           echo ""
 
+          echo "================ RESPONSE ================"
+
+          cat response.txt
+
           echo "=========================================="
 
-          echo "RESULT"
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
 
-          echo "=========================================="
-
-          cat result.txt
-
-      # ======================================================
-
-      # CREATE ERROR MAIL BODY IF EXECUTION FAILED
-
-      # ======================================================
-
-      - name: Prepare mail body
-
-        if: always()
-
-        shell: bash
-
-        run: |
-
-          if [ ! -f result.txt ]; then
-
-            cat > result.txt <<EOF
-
-          FIX11 Stage6 Forward
-
-          GitHub Actions execution failed before result.txt was created.
-
-          Run mode:
-
-          ${{ steps.mode.outputs.mode }}
-
-          Repository:
-
-          ${GITHUB_REPOSITORY}
-
-          Run ID:
-
-          ${GITHUB_RUN_ID}
-
-          EOF
+            exit 1
 
           fi
 
       # ======================================================
 
-      # EMAIL
-
-      #
-
-      # 既存のメールSecretsをそのまま使用
+      # Email
 
       # ======================================================
 
@@ -530,10 +392,10 @@ jobs:
 
           password: ${{ secrets.SMTP_PASSWORD }}
 
-          subject: "FIX11 Forward ${{ steps.mode.outputs.mode }}"
+          subject: FIX11 Forward ${{ steps.mode.outputs.mode }} - ${{ job.status }}
 
           to: ${{ secrets.MAIL_TO }}
 
           from: ${{ secrets.MAIL_USER }}
 
-          body: file://result.txt
+          body: file://response.txt
