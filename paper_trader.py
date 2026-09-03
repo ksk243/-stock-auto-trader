@@ -116,6 +116,34 @@
 
 # ------------------------------------------------------------
 
+# COVERAGE FIX
+
+# ------------------------------------------------------------
+
+#
+
+# Formalは実在1分足のみ使用。
+
+#
+
+# 市場全体snapshotが処理上限まで存在し、
+
+# 保有銘柄に当日の実在1分足が1本以上あれば、
+
+# 個別銘柄に15:25ちょうどのbarが無くても
+
+# coverage OKとする。
+
+#
+
+# 保有銘柄が当日snapshotに1本も無い場合のみ
+
+# fail closed。
+
+#
+
+# ------------------------------------------------------------
+
 # CRITICAL
 
 # ------------------------------------------------------------
@@ -774,11 +802,7 @@ def list_snapshot_dates(
 
         )
 
-        if not name.endswith(
-
-            ".parquet"
-
-        ):
+        if not name.endswith(".parquet"):
 
             continue
 
@@ -952,11 +976,7 @@ def normalize_yf_index(df):
 
             idx
 
-            .tz_convert(
-
-                "Asia/Tokyo"
-
-            )
+            .tz_convert("Asia/Tokyo")
 
             .tz_localize(None)
 
@@ -1123,8 +1143,6 @@ def load_daily_cache(
             .map(normalize_code)
 
         )
-
-        # universeとの整合だけ確認
 
         valid_codes = set(
 
@@ -1344,9 +1362,7 @@ def fetch_daily_features(
 
             x = x[
 
-                x.index.date
-
-                < today
+                x.index.date < today
 
             ].sort_index()
 
@@ -1560,7 +1576,9 @@ def fetch_daily_features(
 
                 {
 
-                    "Code": code,
+                    "Code":
+
+                        code,
 
                     "Return20_prev":
 
@@ -1633,10 +1651,6 @@ def fetch_daily_features(
         validate="one_to_one"
 
     )
-
-    # 同じtarget dateなら
-
-    # decision/resultで再利用
 
     gcs_upload_df_parquet(
 
@@ -1820,9 +1834,13 @@ def fetch_intraday_codes(codes):
 
                 {
 
-                    "Datetime": x.index,
+                    "Datetime":
 
-                    "Code": code,
+                        x.index,
+
+                    "Code":
+
+                        code,
 
                     "Open":
 
@@ -2192,8 +2210,6 @@ def build_rvol_lookup(
 
     ・20日必要
 
-    V4の逐次filter方式を高速化。
-
     """
 
     if (
@@ -2224,7 +2240,11 @@ def build_rvol_lookup(
 
     )
 
-    hist["SnapshotDateOnly"] = (
+    hist[
+
+        "SnapshotDateOnly"
+
+    ] = (
 
         hist["SnapshotDate"]
 
@@ -2257,8 +2277,6 @@ def build_rvol_lookup(
         .fillna(0.0)
 
     )
-
-    # 同一Code/日付/分に複数あれば合算
 
     hist_min = (
 
@@ -2361,8 +2379,6 @@ def build_rvol_lookup(
             ]
 
         )
-
-        # このcode自身に20日必要
 
         if not all(
 
@@ -2468,9 +2484,11 @@ def build_rvol_lookup(
 
             )
 
-            hc = np.cumsum(hv)
+            hc = np.cumsum(
 
-            # <= current minute の最後
+                hv
+
+            )
 
             idx = (
 
@@ -2704,9 +2722,7 @@ def build_signal_candidates(
 
             or not np.isfinite(turnover)
 
-            or turnover
-
-            < TURNOVER_MIN_OKU
+            or turnover < TURNOVER_MIN_OKU
 
         ):
 
@@ -2882,9 +2898,7 @@ def build_signal_candidates(
 
             )
 
-            # METHOD B:
-
-            # RVOL不足なら後のbreakoutを探す
+            # METHOD B
 
             if (
 
@@ -2956,19 +2970,33 @@ def build_signal_candidates(
 
             found = {
 
-                "Side": side,
+                "Side":
 
-                "Code": code,
+                    side,
 
-                "SignalDatetime": dt,
+                "Code":
 
-                "EntryDatetime": entry_dt,
+                    code,
 
-                "EntryPrice": entry_price,
+                "SignalDatetime":
 
-                "RS20_corrected": rs,
+                    dt,
 
-                "RVOL20": rv,
+                "EntryDatetime":
+
+                    entry_dt,
+
+                "EntryPrice":
+
+                    entry_price,
+
+                "RS20_corrected":
+
+                    rs,
+
+                "RVOL20":
+
+                    rv,
 
                 "turnover_median_20d_oku":
 
@@ -3022,11 +3050,7 @@ def build_signal_candidates(
 
         )
 
-        .reset_index(
-
-            drop=True
-
-        )
+        .reset_index(drop=True)
 
     )
 
@@ -3158,7 +3182,11 @@ def candidates_for_track(
 
             (
 
-                x["RVOL20"]
+                x[
+
+                    "RVOL20"
+
+                ]
 
                 >= FILTER_RVOL_MIN
 
@@ -3278,11 +3306,7 @@ def load_state():
 
         if name not in state:
 
-            state[name] = (
-
-                new_track()
-
-            )
+            state[name] = new_track()
 
     state["version"] = (
 
@@ -3426,13 +3450,21 @@ def open_position(
 
     entry = safe_float(
 
-        candidate["EntryPrice"]
+        candidate[
+
+            "EntryPrice"
+
+        ]
 
     )
 
     equity = safe_float(
 
-        track["Equity"],
+        track[
+
+            "Equity"
+
+        ],
 
         INITIAL_CAPITAL
 
@@ -3506,7 +3538,11 @@ def open_position(
 
         "EntryDatetime":
 
-            fmt_dt(entry_dt),
+            fmt_dt(
+
+                entry_dt
+
+            ),
 
         "EntryPrice":
 
@@ -3588,19 +3624,31 @@ def open_position(
 
     }
 
+    # --------------------------------------------------------
+
     # ENTRY BAR
 
-    # Exit判定禁止
+    #
+
+    # Exit判定は禁止
 
     # favorable extreme更新
 
-    # pending stopは次bar有効
+    # Trail trigger可
+
+    # Pending stopは次の実在barから有効
+
+    # --------------------------------------------------------
 
     eb = minute_df[
 
         (
 
-            minute_df["Code"]
+            minute_df[
+
+                "Code"
+
+            ]
 
             == p["Code"]
 
@@ -3610,7 +3658,11 @@ def open_position(
 
         (
 
-            minute_df["Datetime"]
+            minute_df[
+
+                "Datetime"
+
+            ]
 
             == entry_dt
 
@@ -3816,7 +3868,11 @@ def open_position(
 
             "Datetime":
 
-                fmt_dt(entry_dt),
+                fmt_dt(
+
+                    entry_dt
+
+                ),
 
             "Price":
 
@@ -3886,6 +3942,8 @@ def formal_return(
 
         )
 
+    # Formal SHORT reciprocal
+
     return (
 
         entry
@@ -3924,7 +3982,11 @@ def close_position(
 
     entry = safe_float(
 
-        p["EntryPrice"]
+        p[
+
+            "EntryPrice"
+
+        ]
 
     )
 
@@ -3968,7 +4030,11 @@ def close_position(
 
         safe_float(
 
-            track["Equity"]
+            track[
+
+                "Equity"
+
+            ]
 
         )
 
@@ -4066,7 +4132,11 @@ def close_position(
 
         "ExitDatetime":
 
-            fmt_dt(exit_dt),
+            fmt_dt(
+
+                exit_dt
+
+            ),
 
         "ExitPrice":
 
@@ -4086,7 +4156,11 @@ def close_position(
 
         "EquityAfter":
 
-            track["Equity"]
+            track[
+
+                "Equity"
+
+            ]
 
     }
 
@@ -4118,7 +4192,11 @@ def close_position(
 
             "Datetime":
 
-                fmt_dt(exit_dt),
+                fmt_dt(
+
+                    exit_dt
+
+                ),
 
             "Price":
 
@@ -4196,7 +4274,11 @@ def evaluate_open_position(
 
     entry = safe_float(
 
-        p["EntryPrice"]
+        p[
+
+            "EntryPrice"
+
+        ]
 
     )
 
@@ -4210,21 +4292,51 @@ def evaluate_open_position(
 
     )
 
-    x = minute_df[
+    code_rows = minute_df[
 
-        minute_df["Code"]
+        minute_df[
 
-        == code
+            "Code"
+
+        ] == code
 
     ].copy()
 
-    # 重要:
+    # --------------------------------------------------------
 
-    # 保有銘柄の1分足が無いなら
+    # COVERAGE CHECK
 
-    # 「処理済み」にしない
+    # --------------------------------------------------------
 
-    if x.empty:
+    #
+
+    # Formalは「実在1分足」だけを使う。
+
+    #
+
+    # したがって個別銘柄に
+
+    # 15:25ちょうどのbarは要求しない。
+
+    #
+
+    # 必要なのは:
+
+    #
+
+    # 1) 市場全体snapshotがuntil_dtまで存在
+
+    # 2) 保有銘柄に当日実在barが1本以上存在
+
+    #
+
+    # 保有銘柄がsnapshotに1本も無い場合だけ
+
+    # fail closed。
+
+    # --------------------------------------------------------
+
+    if code_rows.empty:
 
         print(
 
@@ -4238,55 +4350,81 @@ def evaluate_open_position(
 
         return False
 
-    x = x[
+    market_max = (
 
-        x["Datetime"]
+        minute_df[
 
-        <= until_dt
+            "Datetime"
 
-    ]
+        ].max()
+
+    )
+
+    sufficient_coverage = (
+
+        pd.notna(
+
+            market_max
+
+        )
+
+        and
+
+        pd.Timestamp(
+
+            market_max
+
+        ) >= until_dt.floor(
+
+            "min"
+
+        )
+
+    )
+
+    if not sufficient_coverage:
+
+        print(
+
+            f"WARNING {track_name}: "
+
+            f"market coverage insufficient "
+
+            f"market_max={market_max} "
+
+            f"until_dt={until_dt}",
+
+            flush=True
+
+        )
+
+        return False
+
+    x = code_rows[
+
+        code_rows[
+
+            "Datetime"
+
+        ] <= until_dt
+
+    ].copy()
 
     if last_bar is not None:
 
         x = x[
 
-            x["Datetime"]
+            x[
 
-            > last_bar
+                "Datetime"
+
+            ] > last_bar
 
         ]
 
     x = x.sort_values(
 
         "Datetime"
-
-    )
-
-    # last_bar以降に新しいbarが無くても
-
-    # 既にuntil_dt以上まで取得済みか確認
-
-    code_max = (
-
-        minute_df[
-
-            minute_df["Code"]
-
-            == code
-
-        ]["Datetime"]
-
-        .max()
-
-    )
-
-    sufficient_coverage = (
-
-        pd.notna(code_max)
-
-        and pd.Timestamp(code_max)
-
-        >= until_dt.floor("min")
 
     )
 
@@ -4298,6 +4436,8 @@ def evaluate_open_position(
 
         )
 
+        # Pending stopは次の実在bar開始時に有効化
+
         pending = p.get(
 
             "PendingStop"
@@ -4306,13 +4446,13 @@ def evaluate_open_position(
 
         if pending is not None:
 
-            p["EffectiveStop"] = (
+            p[
 
-                safe_float(
+                "EffectiveStop"
 
-                    pending
+            ] = safe_float(
 
-                )
+                pending
 
             )
 
@@ -4332,9 +4472,17 @@ def evaluate_open_position(
 
             )
 
-            p["PendingStop"] = None
+            p[
 
-            p["PendingStopType"] = None
+                "PendingStop"
+
+            ] = None
+
+            p[
+
+                "PendingStopType"
+
+            ] = None
 
         stop = safe_float(
 
@@ -4376,7 +4524,11 @@ def evaluate_open_position(
 
         )
 
+        # ----------------------------------------------------
+
         # EXIT
+
+        # ----------------------------------------------------
 
         if side == "LONG":
 
@@ -4494,7 +4646,13 @@ def evaluate_open_position(
 
                 return True
 
+        # ----------------------------------------------------
+
         # favorable extreme
+
+        # 新stopは次の実在barから
+
+        # ----------------------------------------------------
 
         if side == "LONG":
 
@@ -4568,27 +4726,19 @@ def evaluate_open_position(
 
                 )
 
-                effective = (
+                effective = safe_float(
 
-                    safe_float(
+                    p[
 
-                        p[
+                        "EffectiveStop"
 
-                            "EffectiveStop"
-
-                        ]
-
-                    )
+                    ]
 
                 )
 
-                pending_now = (
+                pending_now = p.get(
 
-                    p.get(
-
-                        "PendingStop"
-
-                    )
+                    "PendingStop"
 
                 )
 
@@ -4612,13 +4762,9 @@ def evaluate_open_position(
 
                 if (
 
-                    new_stop
+                    new_stop > effective
 
-                    > effective
-
-                    and new_stop
-
-                    > pending_value
+                    and new_stop > pending_value
 
                 ):
 
@@ -4724,27 +4870,19 @@ def evaluate_open_position(
 
                 )
 
-                effective = (
+                effective = safe_float(
 
-                    safe_float(
+                    p[
 
-                        p[
+                        "EffectiveStop"
 
-                            "EffectiveStop"
-
-                        ]
-
-                    )
+                    ]
 
                 )
 
-                pending_now = (
+                pending_now = p.get(
 
-                    p.get(
-
-                        "PendingStop"
-
-                    )
+                    "PendingStop"
 
                 )
 
@@ -4768,13 +4906,9 @@ def evaluate_open_position(
 
                 if (
 
-                    new_stop
+                    new_stop < effective
 
-                    < effective
-
-                    and new_stop
-
-                    < pending_value
+                    and new_stop < pending_value
 
                 ):
 
@@ -4818,7 +4952,11 @@ def evaluate_open_position(
 
         )
 
+    # --------------------------------------------------------
+
     # LONG 10 trading days
+
+    # --------------------------------------------------------
 
     if (
 
@@ -4840,7 +4978,11 @@ def evaluate_open_position(
 
             pd.Timestamp(
 
-                p["EntryDate"]
+                p[
+
+                    "EntryDate"
+
+                ]
 
             ).date()
 
@@ -4898,7 +5040,11 @@ def evaluate_open_position(
 
                         (
 
-                            minute_df["Code"]
+                            minute_df[
+
+                                "Code"
+
+                            ]
 
                             == code
 
@@ -4928,11 +5074,7 @@ def evaluate_open_position(
 
                     if len(z):
 
-                        last = (
-
-                            z.iloc[-1]
-
-                        )
+                        last = z.iloc[-1]
 
                         close_position(
 
@@ -4970,7 +5112,7 @@ def evaluate_open_position(
 
                         return True
 
-    return sufficient_coverage
+    return True
 
 # ============================================================
 
@@ -5044,9 +5186,7 @@ def replay_formal_track(
 
                     "EntryDatetime"
 
-                ]
-
-                > last_processed
+                ] > last_processed
 
             ].copy()
 
@@ -5100,6 +5240,8 @@ def replay_formal_track(
 
                 break
 
+            # まだ保有中ならcandidate無視
+
             if (
 
                 track.get(
@@ -5113,6 +5255,8 @@ def replay_formal_track(
             ):
 
                 continue
+
+            # 同時刻 EXIT -> ENTRY 禁止
 
             last_exit = parse_dt(
 
@@ -5128,9 +5272,7 @@ def replay_formal_track(
 
                 last_exit is not None
 
-                and entry_dt
-
-                <= last_exit
+                and entry_dt <= last_exit
 
             ):
 
@@ -5216,13 +5358,15 @@ def replay_formal_track(
 
         )
 
-    # FLATの場合はminute data欠落問題なし。
-
-    # OPENの場合のみcoverage確認が必要。
+    # FLATなら保有銘柄coverage問題なし
 
     if (
 
-        track.get("Position")
+        track.get(
+
+            "Position"
+
+        )
 
         is None
 
@@ -5414,9 +5558,11 @@ def prepare_screening_log(
 
             (
 
-                candidates["Side"]
+                candidates[
 
-                == "LONG"
+                    "Side"
+
+                ] == "LONG"
 
             ).sum()
 
@@ -5426,9 +5572,11 @@ def prepare_screening_log(
 
             (
 
-                candidates["Side"]
+                candidates[
 
-                == "SHORT"
+                    "Side"
+
+                ] == "SHORT"
 
             ).sum()
 
@@ -5438,7 +5586,11 @@ def prepare_screening_log(
 
         "Timestamp":
 
-            fmt_dt(now_jst()),
+            fmt_dt(
+
+                now_jst()
+
+            ),
 
         "Mode":
 
@@ -5656,13 +5808,17 @@ def build_report(
 
         "",
 
-        f"Universe    : {len(universe)}",
+        f"Universe    : "
+
+        f"{len(universe)}",
 
         f"Lending     : "
 
         f"{int(universe['is_lending'].sum())}",
 
-        f"DailyReady  : {len(feat)}",
+        f"DailyReady  : "
+
+        f"{len(feat)}",
 
         f"1m rows     : "
 
@@ -5702,9 +5858,11 @@ def build_report(
 
             (
 
-                candidates["Side"]
+                candidates[
 
-                == "LONG"
+                    "Side"
+
+                ] == "LONG"
 
             ).sum()
 
@@ -5714,9 +5872,11 @@ def build_report(
 
             (
 
-                candidates["Side"]
+                candidates[
 
-                == "SHORT"
+                    "Side"
+
+                ] == "SHORT"
 
             ).sum()
 
@@ -5762,9 +5922,11 @@ def build_report(
 
         for x in activity_log
 
-        if x.get("Type")
+        if x.get(
 
-        == "ENTRY"
+            "Type"
+
+        ) == "ENTRY"
 
     ]
 
@@ -5774,9 +5936,11 @@ def build_report(
 
         for x in activity_log
 
-        if x.get("Type")
+        if x.get(
 
-        == "EXIT"
+            "Type"
+
+        ) == "EXIT"
 
     ]
 
@@ -5840,7 +6004,11 @@ def build_report(
 
                 "LONG",
 
-                state["LONG"]
+                state[
+
+                    "LONG"
+
+                ]
 
             ),
 
@@ -5936,7 +6104,9 @@ def run(mode):
 
             "FIX11 Stage6 Forward V4.1 TEST PASS\n"
 
-            f"Universe : {len(universe)}\n"
+            f"Universe : "
+
+            f"{len(universe)}\n"
 
             f"Lending  : "
 
@@ -5984,9 +6154,13 @@ def run(mode):
 
                 "FIX11 Stage6 SNAPSHOT EXISTS\n"
 
-                f"Date     : {today}\n"
+                f"Date     : "
 
-                f"Universe : {len(universe)}\n"
+                f"{today}\n"
+
+                f"Universe : "
+
+                f"{len(universe)}\n"
 
                 f"Rows     : "
 
@@ -6036,9 +6210,13 @@ def run(mode):
 
             "FIX11 Stage6 SNAPSHOT SAVED\n"
 
-            f"Date     : {today}\n"
+            f"Date     : "
 
-            f"Universe : {len(universe)}\n"
+            f"{today}\n"
+
+            f"Universe : "
+
+            f"{len(universe)}\n"
 
             f"Rows     : "
 
@@ -6146,7 +6324,11 @@ def run(mode):
 
     fetch_codes = set(
 
-        pre["Code"].tolist()
+        pre[
+
+            "Code"
+
+        ].tolist()
 
     )
 
@@ -6158,7 +6340,11 @@ def run(mode):
 
     ):
 
-        fetch_codes.add(code)
+        fetch_codes.add(
+
+            code
+
+        )
 
     minute_df, minute_source = (
 
@@ -6226,7 +6412,9 @@ def run(mode):
 
     print(
 
-        f"minute source={minute_source}",
+        f"minute source="
+
+        f"{minute_source}",
 
         flush=True
 
@@ -6244,7 +6432,9 @@ def run(mode):
 
     print(
 
-        f"until_dt={until_dt}",
+        f"until_dt="
+
+        f"{until_dt}",
 
         flush=True
 
@@ -6272,7 +6462,11 @@ def run(mode):
 
     trading_dates = sorted(
 
-        set(trading_dates)
+        set(
+
+            trading_dates
+
+        )
 
     )
 
@@ -6420,7 +6614,7 @@ def run(mode):
 
     )
 
-    # 保有銘柄欠落などがあれば
+    # 保有銘柄の当日データが完全欠落した場合だけ
 
     # stateを保存せずfail closed
 
@@ -6520,15 +6714,27 @@ def run(mode):
 
     if not candidates.empty:
 
-        audit = candidates.copy()
+        audit = (
 
-        audit["RunMode"] = mode
+            candidates.copy()
+
+        )
+
+        audit[
+
+            "RunMode"
+
+        ] = mode
 
         audit[
 
             "RunTimestamp"
 
-        ] = fmt_dt(now)
+        ] = fmt_dt(
+
+            now
+
+        )
 
     # --------------------------------------------------------
 
@@ -6626,7 +6832,11 @@ def run(mode):
 
     "/",
 
-    methods=["GET"]
+    methods=[
+
+        "GET"
+
+    ]
 
 )
 
@@ -6732,7 +6942,9 @@ def run_route():
 
         return Response(
 
-            "ERROR\n\n" + err,
+            "ERROR\n\n"
+
+            + err,
 
             status=500,
 
