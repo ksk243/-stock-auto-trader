@@ -1,6 +1,6 @@
 # ============================================================
 
-# FIX11 / Stage6 Forward Shadow Trader V4
+# FIX11 / Stage6 Forward Shadow Trader V4.1
 
 # ============================================================
 
@@ -84,45 +84,33 @@
 
 # ------------------------------------------------------------
 
-# V4 運用
+# V4.1
 
 # ------------------------------------------------------------
 
 #
 
-# decision
+# 1. 当日snapshotがGCSに存在すれば最優先で利用
 
-#   前場処理
+# 2. daily featureを日付別にGCS cache
 
-#   09:15 ～ 11:30
+# 3. RVOL20を高速化
 
-#   新規ENTRY + EXIT
+#    定義はFormalのまま:
 
-#   ↓
+#      現在累積出来高 /
 
-#   昼メール = 前場報告
+#      過去20取引日の同時刻までの累積出来高中央値
 
-#
+#    exact-minute bar不要
 
-# result
+#    その時刻までbarなし = 0
 
-#   その日の続き ～ 15:25
+# 4. stateはログ生成後、最後に保存
 
-#   午後の新規ENTRY + EXIT
+# 5. 保有銘柄データ不足時はLastProcessedを進めない
 
-#   LONG 10D forced closeも処理
-
-#   ↓
-
-#   夕方メール = 後場 + 1日全体
-
-#
-
-# snapshot
-
-#   引け後
-
-#   RVOL20用の当日1分足を保存
+# 6. 保存済snapshotを使ったcatch-up対応
 
 #
 
@@ -134,17 +122,19 @@
 
 #
 
-# ・12:40打ち切りは廃止
+# ・12:40打ち切りなし
 
-# ・resultでも新規ENTRYを許可
+# ・resultでも新規ENTRY可能
 
-# ・LastProcessedDatetimeより前は再処理しない
+# ・LastProcessedDatetime以前は再処理しない
 
-# ・同一Side最大1ポジション
+# ・同一Side最大1position
 
-# ・EXITと同時刻のENTRYは禁止
+# ・EXITと同時刻ENTRYは禁止
 
 # ・1日複数回可能
+
+# ・売買ルールはV4から変更しない
 
 #
 
@@ -230,11 +220,7 @@ ORB_END = "09:14"
 
 SIGNAL_START = "09:15"
 
-# 昼メール
-
 MORNING_LAST_BAR = "11:30"
-
-# Formal Forward 終日処理
 
 FULL_DAY_LAST_BAR = "15:25"
 
@@ -322,18 +308,6 @@ def normalize_code(x):
 
 def ticker_from_code(code):
 
-    """
-
-    J-Quants canonical -> Yahoo
-
-      63270 -> 6327.T
-
-      278A0 -> 278A.T
-
-      130A0 -> 130A.T
-
-    """
-
     code = normalize_code(code)
 
     if len(code) == 5 and code.endswith("0"):
@@ -364,6 +338,216 @@ def chunks(xs, n):
 
         yield xs[i:i+n]
 
+def empty_minute_df():
+
+    return pd.DataFrame(
+
+        columns=[
+
+            "Datetime",
+
+            "Code",
+
+            "Open",
+
+            "High",
+
+            "Low",
+
+            "Close",
+
+            "Volume"
+
+        ]
+
+    )
+
+def normalize_minute_df(df):
+
+    if df is None or len(df) == 0:
+
+        return empty_minute_df()
+
+    df = df.copy()
+
+    required = [
+
+        "Datetime",
+
+        "Code",
+
+        "Open",
+
+        "High",
+
+        "Low",
+
+        "Close",
+
+        "Volume"
+
+    ]
+
+    missing = [
+
+        c for c in required
+
+        if c not in df.columns
+
+    ]
+
+    if missing:
+
+        raise RuntimeError(
+
+            f"minute columns missing: {missing}"
+
+        )
+
+    df["Datetime"] = pd.to_datetime(
+
+        df["Datetime"],
+
+        errors="coerce"
+
+    )
+
+    if getattr(
+
+        df["Datetime"].dt,
+
+        "tz",
+
+        None
+
+    ) is not None:
+
+        df["Datetime"] = (
+
+            df["Datetime"]
+
+            .dt.tz_convert("Asia/Tokyo")
+
+            .dt.tz_localize(None)
+
+        )
+
+    df["Code"] = (
+
+        df["Code"]
+
+        .map(normalize_code)
+
+    )
+
+    for c in [
+
+        "Open",
+
+        "High",
+
+        "Low",
+
+        "Close",
+
+        "Volume"
+
+    ]:
+
+        df[c] = pd.to_numeric(
+
+            df[c],
+
+            errors="coerce"
+
+        )
+
+    df = df.dropna(
+
+        subset=[
+
+            "Datetime",
+
+            "Code"
+
+        ]
+
+    )
+
+    # all OHLC NaN placeholder除去
+
+    df = df.dropna(
+
+        subset=[
+
+            "Open",
+
+            "High",
+
+            "Low",
+
+            "Close"
+
+        ],
+
+        how="all"
+
+    )
+
+    if df.empty:
+
+        return empty_minute_df()
+
+    hhmm = (
+
+        df["Datetime"]
+
+        .dt.strftime("%H:%M")
+
+    )
+
+    df = df[
+
+        (hhmm >= "09:00")
+
+        & (hhmm <= "15:30")
+
+    ]
+
+    return (
+
+        df
+
+        .sort_values(
+
+            [
+
+                "Datetime",
+
+                "Code"
+
+            ]
+
+        )
+
+        .drop_duplicates(
+
+            [
+
+                "Datetime",
+
+                "Code"
+
+            ],
+
+            keep="last"
+
+        )
+
+        .reset_index(drop=True)
+
+    )
+
 # ============================================================
 
 # GCS
@@ -376,13 +560,39 @@ def gcs_client():
 
 def bucket():
 
-    return gcs_client().bucket(GCS_BUCKET)
+    return gcs_client().bucket(
+
+        GCS_BUCKET
+
+    )
 
 def gcs_name(path):
 
-    return f"{GCS_PREFIX}/{path}".replace("//", "/")
+    return (
 
-def gcs_upload_bytes(path, data, content_type=None):
+        f"{GCS_PREFIX}/{path}"
+
+        .replace("//", "/")
+
+    )
+
+def gcs_exists(path):
+
+    return bucket().blob(
+
+        gcs_name(path)
+
+    ).exists()
+
+def gcs_upload_bytes(
+
+    path,
+
+    data,
+
+    content_type=None
+
+):
 
     bucket().blob(
 
@@ -410,7 +620,13 @@ def gcs_download_bytes(path):
 
     return b.download_as_bytes()
 
-def gcs_upload_json(path, obj):
+def gcs_upload_json(
+
+    path,
+
+    obj
+
+):
 
     raw = json.dumps(
 
@@ -436,7 +652,11 @@ def gcs_upload_json(path, obj):
 
 def gcs_download_json(path):
 
-    raw = gcs_download_bytes(path)
+    raw = gcs_download_bytes(
+
+        path
+
+    )
 
     if raw is None:
 
@@ -448,7 +668,13 @@ def gcs_download_json(path):
 
     )
 
-def gcs_upload_df_parquet(path, df):
+def gcs_upload_df_parquet(
+
+    path,
+
+    df
+
+):
 
     bio = io.BytesIO()
 
@@ -472,7 +698,11 @@ def gcs_upload_df_parquet(path, df):
 
 def gcs_download_df_parquet(path):
 
-    raw = gcs_download_bytes(path)
+    raw = gcs_download_bytes(
+
+        path
+
+    )
 
     if raw is None:
 
@@ -484,23 +714,39 @@ def gcs_download_df_parquet(path):
 
     )
 
-def gcs_upload_df_csv(path, df):
+def gcs_upload_df_csv(
+
+    path,
+
+    df
+
+):
+
+    raw = (
+
+        df
+
+        .to_csv(index=False)
+
+        .encode("utf-8")
+
+    )
 
     gcs_upload_bytes(
 
         path,
 
-        df.to_csv(
-
-            index=False
-
-        ).encode("utf-8"),
+        raw,
 
         "text/csv"
 
     )
 
-def list_snapshot_dates(before_date=None):
+def list_snapshot_dates(
+
+    before_date=None
+
+):
 
     prefix = gcs_name(
 
@@ -520,9 +766,19 @@ def list_snapshot_dates(before_date=None):
 
     for b in blobs:
 
-        name = b.name.split("/")[-1]
+        name = (
 
-        if not name.endswith(".parquet"):
+            b.name
+
+            .split("/")[-1]
+
+        )
+
+        if not name.endswith(
+
+            ".parquet"
+
+        ):
 
             continue
 
@@ -580,7 +836,11 @@ def load_universe():
 
         UNIVERSE_PATH,
 
-        dtype={"Code": str}
+        dtype={
+
+            "Code": str
+
+        }
 
     )
 
@@ -590,7 +850,11 @@ def load_universe():
 
         "is_lending"
 
-    }.issubset(df.columns):
+    }.issubset(
+
+        df.columns
+
+    ):
 
         raise RuntimeError(
 
@@ -616,15 +880,19 @@ def load_universe():
 
         .str.lower()
 
-        .isin([
+        .isin(
 
-            "true",
+            [
 
-            "1",
+                "true",
 
-            "yes"
+                "1",
 
-        ])
+                "yes"
+
+            ]
+
+        )
 
     )
 
@@ -684,7 +952,11 @@ def normalize_yf_index(df):
 
             idx
 
-            .tz_convert("Asia/Tokyo")
+            .tz_convert(
+
+                "Asia/Tokyo"
+
+            )
 
             .tz_localize(None)
 
@@ -704,7 +976,13 @@ def extract_ticker_frame(
 
 ):
 
-    if raw is None or len(raw) == 0:
+    if (
+
+        raw is None
+
+        or len(raw) == 0
+
+    ):
 
         return None
 
@@ -760,13 +1038,139 @@ def extract_ticker_frame(
 
         x = raw.copy()
 
-    return normalize_yf_index(x)
+    return normalize_yf_index(
+
+        x
+
+    )
 
 # ============================================================
 
 # DAILY FEATURES
 
 # ============================================================
+
+def daily_cache_path(today):
+
+    return (
+
+        "daily_features/"
+
+        f"{today}.parquet"
+
+    )
+
+def load_daily_cache(
+
+    universe,
+
+    today
+
+):
+
+    path = daily_cache_path(
+
+        today
+
+    )
+
+    if not gcs_exists(path):
+
+        return None
+
+    try:
+
+        feat = gcs_download_df_parquet(
+
+            path
+
+        )
+
+        if feat is None or feat.empty:
+
+            return None
+
+        required = {
+
+            "Code",
+
+            "Return20_prev",
+
+            "turnover_median_20d_oku",
+
+            "ATR14_pct_prev",
+
+            "RS20_corrected",
+
+            "is_lending"
+
+        }
+
+        if not required.issubset(
+
+            feat.columns
+
+        ):
+
+            return None
+
+        feat = feat.copy()
+
+        feat["Code"] = (
+
+            feat["Code"]
+
+            .map(normalize_code)
+
+        )
+
+        # universeとの整合だけ確認
+
+        valid_codes = set(
+
+            universe["Code"]
+
+        )
+
+        feat = feat[
+
+            feat["Code"].isin(
+
+                valid_codes
+
+            )
+
+        ].copy()
+
+        if feat.empty:
+
+            return None
+
+        print(
+
+            f"daily cache HIT: "
+
+            f"{path} / "
+
+            f"{len(feat)} rows",
+
+            flush=True
+
+        )
+
+        return feat
+
+    except Exception as e:
+
+        print(
+
+            f"daily cache invalid: {e}",
+
+            flush=True
+
+        )
+
+        return None
 
 def fetch_daily_features(
 
@@ -776,13 +1180,25 @@ def fetch_daily_features(
 
 ):
 
-    """
+    cached = load_daily_cache(
 
-    今日の日足は使用しない。
+        universe,
 
-    完成済み date < today の日足だけ。
+        today
 
-    """
+    )
+
+    if cached is not None:
+
+        return cached
+
+    print(
+
+        "daily cache MISS -> Yahoo",
+
+        flush=True
+
+    )
 
     codes = universe[
 
@@ -872,11 +1288,15 @@ def fetch_daily_features(
 
         for ticker in batch:
 
-            code = ticker_to_code[
+            code = (
 
-                ticker
+                ticker_to_code[
 
-            ]
+                    ticker
+
+                ]
+
+            )
 
             x = extract_ticker_frame(
 
@@ -888,7 +1308,13 @@ def fetch_daily_features(
 
             )
 
-            if x is None or len(x) == 0:
+            if (
+
+                x is None
+
+                or len(x) == 0
+
+            ):
 
                 continue
 
@@ -914,9 +1340,13 @@ def fetch_daily_features(
 
                 continue
 
+            # 今日の日足は使用しない
+
             x = x[
 
-                x.index.date < today
+                x.index.date
+
+                < today
 
             ].sort_index()
 
@@ -1132,11 +1562,17 @@ def fetch_daily_features(
 
                     "Code": code,
 
-                    "Return20_prev": return20,
+                    "Return20_prev":
 
-                    "turnover_median_20d_oku": turnover20,
+                        return20,
 
-                    "ATR14_pct_prev": atr_pct
+                    "turnover_median_20d_oku":
+
+                        turnover20,
+
+                    "ATR14_pct_prev":
+
+                        atr_pct
 
                 }
 
@@ -1162,7 +1598,11 @@ def fetch_daily_features(
 
         )
 
-    feat["RS20_corrected"] = (
+    feat[
+
+        "RS20_corrected"
+
+    ] = (
 
         feat[
 
@@ -1194,19 +1634,37 @@ def fetch_daily_features(
 
     )
 
+    # 同じtarget dateなら
+
+    # decision/resultで再利用
+
+    gcs_upload_df_parquet(
+
+        daily_cache_path(today),
+
+        feat
+
+    )
+
+    print(
+
+        f"daily cache SAVED: "
+
+        f"{daily_cache_path(today)}",
+
+        flush=True
+
+    )
+
     return feat
 
 # ============================================================
 
-# INTRADAY
+# INTRADAY YAHOO
 
 # ============================================================
 
-def fetch_intraday_codes(
-
-    codes
-
-):
+def fetch_intraday_codes(codes):
 
     codes = list(
 
@@ -1222,27 +1680,7 @@ def fetch_intraday_codes(
 
     if not codes:
 
-        return pd.DataFrame(
-
-            columns=[
-
-                "Datetime",
-
-                "Code",
-
-                "Open",
-
-                "High",
-
-                "Low",
-
-                "Close",
-
-                "Volume"
-
-            ]
-
-        )
+        return empty_minute_df()
 
     ticker_to_code = {
 
@@ -1344,7 +1782,13 @@ def fetch_intraday_codes(
 
             )
 
-            if x is None or len(x) == 0:
+            if (
+
+                x is None
+
+                or len(x) == 0
+
+            ):
 
                 continue
 
@@ -1380,97 +1824,69 @@ def fetch_intraday_codes(
 
                     "Code": code,
 
-                    "Open": pd.to_numeric(
+                    "Open":
 
-                        x["Open"],
+                        pd.to_numeric(
 
-                        errors="coerce"
+                            x["Open"],
 
-                    ),
+                            errors="coerce"
 
-                    "High": pd.to_numeric(
+                        ),
 
-                        x["High"],
+                    "High":
 
-                        errors="coerce"
+                        pd.to_numeric(
 
-                    ),
+                            x["High"],
 
-                    "Low": pd.to_numeric(
+                            errors="coerce"
 
-                        x["Low"],
+                        ),
 
-                        errors="coerce"
+                    "Low":
 
-                    ),
+                        pd.to_numeric(
 
-                    "Close": pd.to_numeric(
+                            x["Low"],
 
-                        x["Close"],
+                            errors="coerce"
 
-                        errors="coerce"
+                        ),
 
-                    ),
+                    "Close":
 
-                    "Volume": pd.to_numeric(
+                        pd.to_numeric(
 
-                        x["Volume"],
+                            x["Close"],
 
-                        errors="coerce"
+                            errors="coerce"
 
-                    )
+                        ),
+
+                    "Volume":
+
+                        pd.to_numeric(
+
+                            x["Volume"],
+
+                            errors="coerce"
+
+                        )
 
                 }
 
             )
 
-            # placeholder除去
+            y = normalize_minute_df(
 
-            y = y.dropna(
-
-                subset=[
-
-                    "Open",
-
-                    "High",
-
-                    "Low",
-
-                    "Close"
-
-                ],
-
-                how="all"
+                y
 
             )
-
-            if y.empty:
-
-                continue
-
-            hhmm = (
-
-                y["Datetime"]
-
-                .dt.strftime("%H:%M")
-
-            )
-
-            y = y[
-
-                (hhmm >= "09:00")
-
-                & (hhmm <= "15:30")
-
-            ]
 
             if len(y):
 
-                frames.append(
-
-                    y
-
-                )
+                frames.append(y)
 
         time.sleep(
 
@@ -1480,105 +1896,197 @@ def fetch_intraday_codes(
 
     if not frames:
 
-        return pd.DataFrame(
+        return empty_minute_df()
 
-            columns=[
+    return normalize_minute_df(
 
-                "Datetime",
+        pd.concat(
 
-                "Code",
+            frames,
 
-                "Open",
-
-                "High",
-
-                "Low",
-
-                "Close",
-
-                "Volume"
-
-            ]
-
-        )
-
-    out = pd.concat(
-
-        frames,
-
-        ignore_index=True
-
-    )
-
-    out = (
-
-        out
-
-        .sort_values(
-
-            [
-
-                "Datetime",
-
-                "Code"
-
-            ]
-
-        )
-
-        .drop_duplicates(
-
-            [
-
-                "Datetime",
-
-                "Code"
-
-            ],
-
-            keep="last"
-
-        )
-
-        .reset_index(
-
-            drop=True
+            ignore_index=True
 
         )
 
     )
 
-    return out
+# ============================================================
+
+# CURRENT DAY SNAPSHOT
 
 # ============================================================
 
-# SNAPSHOT HISTORY / RVOL20
+def snapshot_path(d):
 
-# ============================================================
+    return (
 
-def load_previous_20_snapshots(
+        "snapshots/"
 
-    today
+        f"{d}.parquet"
+
+    )
+
+def load_snapshot_date(d):
+
+    path = snapshot_path(d)
+
+    if not gcs_exists(path):
+
+        return None
+
+    x = gcs_download_df_parquet(
+
+        path
+
+    )
+
+    if x is None or x.empty:
+
+        return None
+
+    x = normalize_minute_df(
+
+        x
+
+    )
+
+    if x.empty:
+
+        return None
+
+    return x
+
+def get_today_intraday(
+
+    today,
+
+    fetch_codes
 
 ):
 
-    dates = list_snapshot_dates(
+    """
 
-        before_date=today
+    当日snapshotが存在する場合は
 
-    )[-20:]
+    Yahoo再取得をしない。
+
+    snapshotは全銘柄保存なので、
+
+    必要銘柄だけfilterして使用。
+
+    無い場合だけYahoo。
+
+    """
+
+    snap = load_snapshot_date(
+
+        today
+
+    )
+
+    wanted = set(
+
+        normalize_code(c)
+
+        for c in fetch_codes
+
+    )
+
+    if snap is not None:
+
+        print(
+
+            f"TODAY SNAPSHOT HIT: "
+
+            f"{snapshot_path(today)} "
+
+            f"rows={len(snap):,} "
+
+            f"codes={snap['Code'].nunique()}",
+
+            flush=True
+
+        )
+
+        x = snap[
+
+            snap["Code"].isin(
+
+                wanted
+
+            )
+
+        ].copy()
+
+        return (
+
+            normalize_minute_df(x),
+
+            "GCS_SNAPSHOT"
+
+        )
+
+    print(
+
+        "TODAY SNAPSHOT MISS -> Yahoo 1m",
+
+        flush=True
+
+    )
+
+    x = fetch_intraday_codes(
+
+        sorted(wanted)
+
+    )
+
+    return (
+
+        x,
+
+        "YAHOO"
+
+    )
+
+# ============================================================
+
+# SNAPSHOT HISTORY
+
+# ============================================================
+
+def load_previous_20_snapshots(today):
+
+    dates = (
+
+        list_snapshot_dates(
+
+            before_date=today
+
+        )[-20:]
+
+    )
 
     frames = []
 
     for d in dates:
 
-        x = gcs_download_df_parquet(
+        print(
 
-            f"snapshots/{d}.parquet"
+            f"history snapshot: {d}",
+
+            flush=True
 
         )
 
-        if x is None or len(x) == 0:
+        x = load_snapshot_date(d)
+
+        if (
+
+            x is None
+
+            or x.empty
+
+        ):
 
             continue
 
@@ -1590,11 +2098,7 @@ def load_previous_20_snapshots(
 
         )
 
-        frames.append(
-
-            x
-
-        )
+        frames.append(x)
 
     if not frames:
 
@@ -1606,17 +2110,53 @@ def load_previous_20_snapshots(
 
         )
 
+    history = pd.concat(
+
+        frames,
+
+        ignore_index=True
+
+    )
+
+    history[
+
+        "SnapshotDate"
+
+    ] = pd.to_datetime(
+
+        history[
+
+            "SnapshotDate"
+
+        ]
+
+    )
+
     return (
 
         dates,
 
-        pd.concat(
+        history
 
-            frames,
+    )
 
-            ignore_index=True
+# ============================================================
 
-        )
+# RVOL20 FAST
+
+# ============================================================
+
+def minute_number(series):
+
+    return (
+
+        series.dt.hour * 60
+
+        + series.dt.minute
+
+    ).to_numpy(
+
+        dtype=np.int32
 
     )
 
@@ -1630,6 +2170,32 @@ def build_rvol_lookup(
 
 ):
 
+    """
+
+    Formal RVOL20
+
+    current cumulative volume through signal minute
+
+    /
+
+    median(
+
+      previous 20 snapshot dates cumulative volume
+
+      through same minute
+
+    )
+
+    ・exact-minute bar不要
+
+    ・その時刻までbarなし = 0
+
+    ・20日必要
+
+    V4の逐次filter方式を高速化。
+
+    """
+
     if (
 
         len(history_dates) < 20
@@ -1642,15 +2208,93 @@ def build_rvol_lookup(
 
         return {}
 
+    history_dates = sorted(
+
+        history_dates
+
+    )[-20:]
+
+    hist = history.copy()
+
+    hist["Code"] = (
+
+        hist["Code"]
+
+        .map(normalize_code)
+
+    )
+
+    hist["SnapshotDateOnly"] = (
+
+        hist["SnapshotDate"]
+
+        .dt.date
+
+    )
+
+    hist["MinuteNo"] = (
+
+        hist["Datetime"]
+
+        .dt.hour * 60
+
+        + hist["Datetime"]
+
+        .dt.minute
+
+    )
+
+    hist["Volume"] = (
+
+        pd.to_numeric(
+
+            hist["Volume"],
+
+            errors="coerce"
+
+        )
+
+        .fillna(0.0)
+
+    )
+
+    # 同一Code/日付/分に複数あれば合算
+
+    hist_min = (
+
+        hist
+
+        .groupby(
+
+            [
+
+                "Code",
+
+                "SnapshotDateOnly",
+
+                "MinuteNo"
+
+            ],
+
+            as_index=False
+
+        )["Volume"]
+
+        .sum()
+
+    )
+
     hist_by_code = {
 
-        c: g.copy()
+        code: g.copy()
 
-        for c, g
+        for code, g
 
-        in history.groupby(
+        in hist_min.groupby(
 
-            "Code"
+            "Code",
+
+            sort=False
 
         )
 
@@ -1658,31 +2302,73 @@ def build_rvol_lookup(
 
     lookup = {}
 
-    for code, cur in minute_today.groupby(
+    total_codes = (
 
-        "Code"
+        minute_today["Code"]
+
+        .nunique()
+
+    )
+
+    for ci, (code, cur) in enumerate(
+
+        minute_today.groupby(
+
+            "Code",
+
+            sort=False
+
+        ),
+
+        1
 
     ):
 
-        hist = hist_by_code.get(
+        if (
+
+            ci == 1
+
+            or ci % 100 == 0
+
+            or ci == total_codes
+
+        ):
+
+            print(
+
+                f"RVOL {ci}/{total_codes}",
+
+                flush=True
+
+            )
+
+        hg = hist_by_code.get(
 
             code
 
         )
 
-        if hist is None:
+        if hg is None:
 
             continue
 
-        if (
+        available_dates = set(
 
-            hist["SnapshotDate"]
+            hg[
 
-            .dt.date
+                "SnapshotDateOnly"
 
-            .nunique()
+            ]
 
-            < 20
+        )
+
+        # このcode自身に20日必要
+
+        if not all(
+
+            d in available_dates
+
+            for d in history_dates
 
         ):
 
@@ -1702,7 +2388,7 @@ def build_rvol_lookup(
 
         )
 
-        cur["CumVolume"] = (
+        cur["Volume"] = (
 
             pd.to_numeric(
 
@@ -1712,117 +2398,209 @@ def build_rvol_lookup(
 
             )
 
-            .fillna(0)
+            .fillna(0.0)
+
+        )
+
+        cur["CumVolume"] = (
+
+            cur["Volume"]
 
             .cumsum()
 
         )
 
-        for _, r in cur.iterrows():
+        cur_minutes = (
 
-            dt = pd.Timestamp(
+            cur["Datetime"]
 
-                r["Datetime"]
+            .dt.hour * 60
+
+            + cur["Datetime"]
+
+            .dt.minute
+
+        ).to_numpy(
+
+            dtype=np.int32
+
+        )
+
+        hist_matrix = []
+
+        for d in history_dates:
+
+            day = hg[
+
+                hg[
+
+                    "SnapshotDateOnly"
+
+                ] == d
+
+            ].sort_values(
+
+                "MinuteNo"
 
             )
 
-            minute = dt.strftime(
+            hm = (
 
-                "%H:%M"
+                day["MinuteNo"]
 
-            )
+                .to_numpy(
 
-            h = hist[
-
-                hist["Datetime"]
-
-                .dt.strftime("%H:%M")
-
-                <= minute
-
-            ]
-
-            if h.empty:
-
-                continue
-
-            cumulative = (
-
-                h.groupby(
-
-                    h["SnapshotDate"]
-
-                    .dt.date
-
-                )["Volume"]
-
-                .sum(
-
-                    min_count=1
+                    dtype=np.int32
 
                 )
 
             )
 
-            cumulative = (
+            hv = (
 
-                pd.to_numeric(
+                day["Volume"]
 
-                    cumulative,
+                .to_numpy(
 
-                    errors="coerce"
-
-                )
-
-                .dropna()
-
-            )
-
-            if len(cumulative) < 20:
-
-                continue
-
-            med = safe_float(
-
-                cumulative
-
-                .tail(20)
-
-                .median()
-
-            )
-
-            if (
-
-                not np.isfinite(med)
-
-                or med <= 0
-
-            ):
-
-                continue
-
-            lookup[
-
-                (
-
-                    code,
-
-                    dt
+                    dtype=float
 
                 )
 
-            ] = (
+            )
 
-                safe_float(
+            hc = np.cumsum(hv)
 
-                    r["CumVolume"]
+            # <= current minute の最後
+
+            idx = (
+
+                np.searchsorted(
+
+                    hm,
+
+                    cur_minutes,
+
+                    side="right"
 
                 )
 
-                / med
+                - 1
 
             )
+
+            vals = np.zeros(
+
+                len(cur_minutes),
+
+                dtype=float
+
+            )
+
+            valid = idx >= 0
+
+            vals[valid] = (
+
+                hc[idx[valid]]
+
+            )
+
+            hist_matrix.append(
+
+                vals
+
+            )
+
+        hist_matrix = np.vstack(
+
+            hist_matrix
+
+        )
+
+        med = np.median(
+
+            hist_matrix,
+
+            axis=0
+
+        )
+
+        cur_cum = (
+
+            cur["CumVolume"]
+
+            .to_numpy(
+
+                dtype=float
+
+            )
+
+        )
+
+        rvol = np.full(
+
+            len(cur),
+
+            np.nan,
+
+            dtype=float
+
+        )
+
+        good = (
+
+            np.isfinite(med)
+
+            & (med > 0)
+
+        )
+
+        rvol[good] = (
+
+            cur_cum[good]
+
+            / med[good]
+
+        )
+
+        dts = (
+
+            cur["Datetime"]
+
+            .tolist()
+
+        )
+
+        for dt, rv in zip(
+
+            dts,
+
+            rvol
+
+        ):
+
+            if np.isfinite(rv):
+
+                lookup[
+
+                    (
+
+                        code,
+
+                        pd.Timestamp(dt)
+
+                    )
+
+                ] = float(rv)
+
+    print(
+
+        f"RVOL lookup: "
+
+        f"{len(lookup):,}",
+
+        flush=True
+
+    )
 
     return lookup
 
@@ -1843,26 +2621,6 @@ def build_signal_candidates(
     last_bar
 
 ):
-
-    """
-
-    Date+Code+Sideについて
-
-    最初のFormal qualifying signalを作る。
-
-    METHOD B:
-
-      breakoutしてもRVOL不足なら
-
-      後のbreakoutを探索継続。
-
-    last_bar:
-
-      decision -> 11:30
-
-      result   -> 15:25
-
-    """
 
     if minute_df.empty:
 
@@ -1946,7 +2704,9 @@ def build_signal_candidates(
 
             or not np.isfinite(turnover)
 
-            or turnover < TURNOVER_MIN_OKU
+            or turnover
+
+            < TURNOVER_MIN_OKU
 
         ):
 
@@ -2032,7 +2792,9 @@ def build_signal_candidates(
 
         prev_close = (
 
-            g["Close"].shift(1)
+            g["Close"]
+
+            .shift(1)
 
         )
 
@@ -2120,7 +2882,9 @@ def build_signal_candidates(
 
             )
 
-            # METHOD B
+            # METHOD B:
+
+            # RVOL不足なら後のbreakoutを探す
 
             if (
 
@@ -2142,7 +2906,11 @@ def build_signal_candidates(
 
                 continue
 
-            entry_bar = later.iloc[0]
+            entry_bar = (
+
+                later.iloc[0]
+
+            )
 
             entry_dt = pd.Timestamp(
 
@@ -2156,7 +2924,9 @@ def build_signal_candidates(
 
             if (
 
-                entry_dt.strftime("%H:%M")
+                entry_dt
+
+                .strftime("%H:%M")
 
                 > last_bar
 
@@ -2200,15 +2970,25 @@ def build_signal_candidates(
 
                 "RVOL20": rv,
 
-                "turnover_median_20d_oku": turnover,
+                "turnover_median_20d_oku":
 
-                "ATR14_pct_prev": atr,
+                    turnover,
 
-                "is_lending": lending,
+                "ATR14_pct_prev":
 
-                "ORBHigh": orb_high,
+                    atr,
 
-                "ORBLow": orb_low
+                "is_lending":
+
+                    lending,
+
+                "ORBHigh":
+
+                    orb_high,
+
+                "ORBLow":
+
+                    orb_low
 
             }
 
@@ -2352,8 +3132,6 @@ def candidates_for_track(
 
     ].copy()
 
-    # SHORTは必ず貸借
-
     x = x[
 
         x["is_lending"] == True
@@ -2366,7 +3144,11 @@ def candidates_for_track(
 
             (
 
-                x["ATR14_pct_prev"]
+                x[
+
+                    "ATR14_pct_prev"
+
+                ]
 
                 >= FILTER_ATR_MIN
 
@@ -2386,7 +3168,11 @@ def candidates_for_track(
 
             (
 
-                x["RS20_corrected"]
+                x[
+
+                    "RS20_corrected"
+
+                ]
 
                 <= FILTER_RS_MAX
 
@@ -2412,19 +3198,33 @@ def new_track():
 
     return {
 
-        "Equity": INITIAL_CAPITAL,
+        "Equity":
 
-        "Position": None,
+            INITIAL_CAPITAL,
 
-        "LastExitDatetime": None,
+        "Position":
 
-        "LastProcessedDatetime": None,
+            None,
 
-        "Trades": 0,
+        "LastExitDatetime":
 
-        "Wins": 0,
+            None,
 
-        "RealizedPnL": 0.0
+        "LastProcessedDatetime":
+
+            None,
+
+        "Trades":
+
+            0,
+
+        "Wins":
+
+            0,
+
+        "RealizedPnL":
+
+            0.0
 
     }
 
@@ -2432,19 +3232,25 @@ def new_state():
 
     return {
 
-        "version": "FIX11_STAGE6_FORWARD_V4",
+        "version":
 
-        "created_at": fmt_dt(
+            "FIX11_STAGE6_FORWARD_V4",
 
-            now_jst()
+        "created_at":
 
-        ),
+            fmt_dt(now_jst()),
 
-        "LONG": new_track(),
+        "LONG":
 
-        "SHORT_BASE": new_track(),
+            new_track(),
 
-        "SHORT_FILTER": new_track()
+        "SHORT_BASE":
+
+            new_track(),
+
+        "SHORT_FILTER":
+
+            new_track()
 
     }
 
@@ -2472,9 +3278,11 @@ def load_state():
 
         if name not in state:
 
-            state[name] = new_track()
+            state[name] = (
 
-    # V3 stateをそのままV4へ引継ぐ
+                new_track()
+
+            )
 
     state["version"] = (
 
@@ -2486,9 +3294,9 @@ def load_state():
 
 def save_state(state):
 
-    state["updated_at"] = fmt_dt(
+    state["updated_at"] = (
 
-        now_jst()
+        fmt_dt(now_jst())
 
     )
 
@@ -2518,13 +3326,11 @@ def current_position_codes(
 
     ]:
 
-        p = state[
+        p = (
 
-            name
+            state[name]
 
-        ].get(
-
-            "Position"
+            .get("Position")
 
         )
 
@@ -2538,11 +3344,7 @@ def current_position_codes(
 
             if code not in codes:
 
-                codes.append(
-
-                    code
-
-                )
+                codes.append(code)
 
     return codes
 
@@ -2624,11 +3426,7 @@ def open_position(
 
     entry = safe_float(
 
-        candidate[
-
-            "EntryPrice"
-
-        ]
+        candidate["EntryPrice"]
 
     )
 
@@ -2698,89 +3496,105 @@ def open_position(
 
     p = {
 
-        "Side": side,
+        "Side":
 
-        "Code": candidate["Code"],
+            side,
 
-        "EntryDatetime": fmt_dt(
+        "Code":
 
-            entry_dt
+            candidate["Code"],
 
-        ),
+        "EntryDatetime":
 
-        "EntryPrice": entry,
+            fmt_dt(entry_dt),
 
-        "Qty": qty,
+        "EntryPrice":
 
-        "FixedStop": fixed_stop,
+            entry,
 
-        "EffectiveStop": fixed_stop,
+        "Qty":
 
-        "EffectiveStopType": "SL",
+            qty,
 
-        "PendingStop": None,
+        "FixedStop":
 
-        "PendingStopType": None,
+            fixed_stop,
 
-        "BestPrice": entry,
+        "EffectiveStop":
 
-        "EntryDate": (
+            fixed_stop,
+
+        "EffectiveStopType":
+
+            "SL",
+
+        "PendingStop":
+
+            None,
+
+        "PendingStopType":
+
+            None,
+
+        "BestPrice":
+
+            entry,
+
+        "EntryDate":
 
             entry_dt.date()
 
-            .isoformat()
+            .isoformat(),
 
-        ),
+        "LastBarDatetime":
 
-        "LastBarDatetime": None,
+            None,
 
-        "RS20_corrected": safe_float(
+        "RS20_corrected":
 
-            candidate[
+            safe_float(
 
-                "RS20_corrected"
+                candidate[
 
-            ]
+                    "RS20_corrected"
 
-        ),
+                ]
 
-        "RVOL20": safe_float(
+            ),
 
-            candidate[
+        "RVOL20":
 
-                "RVOL20"
+            safe_float(
 
-            ]
+                candidate[
 
-        ),
+                    "RVOL20"
 
-        "ATR14_pct_prev": safe_float(
+                ]
 
-            candidate[
+            ),
 
-                "ATR14_pct_prev"
+        "ATR14_pct_prev":
 
-            ]
+            safe_float(
 
-        )
+                candidate[
+
+                    "ATR14_pct_prev"
+
+                ]
+
+            )
 
     }
 
-    # --------------------------------------------------------
-
     # ENTRY BAR
 
-    #
+    # Exit判定禁止
 
-    # Exit判定は禁止。
+    # favorable extreme更新
 
-    # favorable extreme は更新。
-
-    # Trail trigger は許可。
-
-    # 新stopはPendingとして次の実在barから有効。
-
-    # --------------------------------------------------------
+    # pending stopは次bar有効
 
     eb = minute_df[
 
@@ -2872,11 +3686,17 @@ def open_position(
 
                 )
 
-                p["PendingStopType"] = (
+                p[
+
+                    "PendingStopType"
+
+                ] = (
 
                     "TRAIL"
 
-                    if pending > fixed_stop
+                    if pending
+
+                    > fixed_stop
 
                     else "SL"
 
@@ -2946,19 +3766,29 @@ def open_position(
 
                 )
 
-                p["PendingStopType"] = (
+                p[
+
+                    "PendingStopType"
+
+                ] = (
 
                     "TRAIL"
 
-                    if pending < fixed_stop
+                    if pending
+
+                    < fixed_stop
 
                     else "SL"
 
                 )
 
-        p["LastBarDatetime"] = (
+        p[
 
-            fmt_dt(entry_dt)
+            "LastBarDatetime"
+
+        ] = fmt_dt(
+
+            entry_dt
 
         )
 
@@ -2968,41 +3798,53 @@ def open_position(
 
         {
 
-            "Type": "ENTRY",
+            "Type":
 
-            "Track": track_name,
+                "ENTRY",
 
-            "Side": side,
+            "Track":
 
-            "Code": p["Code"],
+                track_name,
 
-            "Datetime": fmt_dt(
+            "Side":
 
-                entry_dt
+                side,
 
-            ),
+            "Code":
 
-            "Price": entry,
+                p["Code"],
 
-            "Qty": qty,
+            "Datetime":
 
-            "RS20_corrected": p[
+                fmt_dt(entry_dt),
 
-                "RS20_corrected"
+            "Price":
 
-            ],
+                entry,
 
-            "RVOL20": p[
+            "Qty":
 
-                "RVOL20"
+                qty,
 
-            ],
+            "RS20_corrected":
 
-            "ATR14_pct_prev": p[
+                p[
 
-                "ATR14_pct_prev"
+                    "RS20_corrected"
 
-            ]
+                ],
+
+            "RVOL20":
+
+                p["RVOL20"],
+
+            "ATR14_pct_prev":
+
+                p[
+
+                    "ATR14_pct_prev"
+
+                ]
 
         }
 
@@ -3043,8 +3885,6 @@ def formal_return(
             - 1.0
 
         )
-
-    # Formal SHORT reciprocal
 
     return (
 
@@ -3196,45 +4036,57 @@ def close_position(
 
     row = {
 
-        "Track": track_name,
+        "Track":
 
-        "Side": side,
+            track_name,
 
-        "Code": p["Code"],
+        "Side":
 
-        "EntryDatetime": (
+            side,
 
-            p["EntryDatetime"]
+        "Code":
 
-        ),
+            p["Code"],
 
-        "EntryPrice": entry,
+        "EntryDatetime":
 
-        "Qty": qty,
+            p[
 
-        "ExitDatetime": fmt_dt(
+                "EntryDatetime"
 
-            exit_dt
+            ],
 
-        ),
+        "EntryPrice":
 
-        "ExitPrice": exit_price,
+            entry,
 
-        "ReturnPct": (
+        "Qty":
 
-            ret * 100.0
+            qty,
 
-        ),
+        "ExitDatetime":
 
-        "PnL": pnl,
+            fmt_dt(exit_dt),
 
-        "ExitReason": reason,
+        "ExitPrice":
 
-        "EquityAfter": (
+            exit_price,
+
+        "ReturnPct":
+
+            ret * 100.0,
+
+        "PnL":
+
+            pnl,
+
+        "ExitReason":
+
+            reason,
+
+        "EquityAfter":
 
             track["Equity"]
-
-        )
 
     }
 
@@ -3248,41 +4100,57 @@ def close_position(
 
         {
 
-            "Type": "EXIT",
+            "Type":
 
-            "Track": track_name,
+                "EXIT",
 
-            "Side": side,
+            "Track":
 
-            "Code": p["Code"],
+                track_name,
 
-            "Datetime": fmt_dt(
+            "Side":
 
-                exit_dt
+                side,
 
-            ),
+            "Code":
 
-            "Price": exit_price,
+                p["Code"],
 
-            "Qty": qty,
+            "Datetime":
 
-            "ReturnPct": (
+                fmt_dt(exit_dt),
 
-                ret * 100.0
+            "Price":
 
-            ),
+                exit_price,
 
-            "PnL": pnl,
+            "Qty":
 
-            "ExitReason": reason
+                qty,
+
+            "ReturnPct":
+
+                ret * 100.0,
+
+            "PnL":
+
+                pnl,
+
+            "ExitReason":
+
+                reason
 
         }
 
     )
 
-    track["LastExitDatetime"] = (
+    track[
 
-        fmt_dt(exit_dt)
+        "LastExitDatetime"
+
+    ] = fmt_dt(
+
+        exit_dt
 
     )
 
@@ -3316,7 +4184,7 @@ def evaluate_open_position(
 
     if p is None:
 
-        return
+        return True
 
     code = normalize_code(
 
@@ -3350,9 +4218,25 @@ def evaluate_open_position(
 
     ].copy()
 
+    # 重要:
+
+    # 保有銘柄の1分足が無いなら
+
+    # 「処理済み」にしない
+
     if x.empty:
 
-        return
+        print(
+
+            f"WARNING {track_name}: "
+
+            f"{code} minute data missing",
+
+            flush=True
+
+        )
+
+        return False
 
     x = x[
 
@@ -3378,6 +4262,34 @@ def evaluate_open_position(
 
     )
 
+    # last_bar以降に新しいbarが無くても
+
+    # 既にuntil_dt以上まで取得済みか確認
+
+    code_max = (
+
+        minute_df[
+
+            minute_df["Code"]
+
+            == code
+
+        ]["Datetime"]
+
+        .max()
+
+    )
+
+    sufficient_coverage = (
+
+        pd.notna(code_max)
+
+        and pd.Timestamp(code_max)
+
+        >= until_dt.floor("min")
+
+    )
+
     for _, r in x.iterrows():
 
         dt = pd.Timestamp(
@@ -3385,8 +4297,6 @@ def evaluate_open_position(
             r["Datetime"]
 
         )
-
-        # Pending stopは次の実在bar開始時に有効化
 
         pending = p.get(
 
@@ -3406,7 +4316,11 @@ def evaluate_open_position(
 
             )
 
-            p["EffectiveStopType"] = (
+            p[
+
+                "EffectiveStopType"
+
+            ] = (
 
                 p.get(
 
@@ -3424,7 +4338,11 @@ def evaluate_open_position(
 
         stop = safe_float(
 
-            p["EffectiveStop"]
+            p[
+
+                "EffectiveStop"
+
+            ]
 
         )
 
@@ -3458,11 +4376,7 @@ def evaluate_open_position(
 
         )
 
-        # ----------------------------------------------------
-
-        # EXIT判定
-
-        # ----------------------------------------------------
+        # EXIT
 
         if side == "LONG":
 
@@ -3492,7 +4406,7 @@ def evaluate_open_position(
 
                 )
 
-                return
+                return True
 
             if (
 
@@ -3520,7 +4434,7 @@ def evaluate_open_position(
 
                 )
 
-                return
+                return True
 
         else:
 
@@ -3550,7 +4464,7 @@ def evaluate_open_position(
 
                 )
 
-                return
+                return True
 
             if (
 
@@ -3578,15 +4492,9 @@ def evaluate_open_position(
 
                 )
 
-                return
+                return True
 
-        # ----------------------------------------------------
-
-        # 生存したbarの favorable extreme 更新
-
-        # 新stopは次barから
-
-        # ----------------------------------------------------
+        # favorable extreme
 
         if side == "LONG":
 
@@ -3594,7 +4502,11 @@ def evaluate_open_position(
 
                 safe_float(
 
-                    p["BestPrice"],
+                    p[
+
+                        "BestPrice"
+
+                    ],
 
                     entry
 
@@ -3604,7 +4516,11 @@ def evaluate_open_position(
 
             )
 
-            p["BestPrice"] = best
+            p["BestPrice"] = (
+
+                best
+
+            )
 
             trigger = (
 
@@ -3640,7 +4556,11 @@ def evaluate_open_position(
 
                     safe_float(
 
-                        p["FixedStop"]
+                        p[
+
+                            "FixedStop"
+
+                        ]
 
                     ),
 
@@ -3648,15 +4568,27 @@ def evaluate_open_position(
 
                 )
 
-                effective = safe_float(
+                effective = (
 
-                    p["EffectiveStop"]
+                    safe_float(
+
+                        p[
+
+                            "EffectiveStop"
+
+                        ]
+
+                    )
 
                 )
 
-                pending_now = p.get(
+                pending_now = (
 
-                    "PendingStop"
+                    p.get(
+
+                        "PendingStop"
+
+                    )
 
                 )
 
@@ -3680,19 +4612,27 @@ def evaluate_open_position(
 
                 if (
 
-                    new_stop > effective
+                    new_stop
 
-                    and new_stop > pending_value
+                    > effective
+
+                    and new_stop
+
+                    > pending_value
 
                 ):
 
-                    p["PendingStop"] = (
+                    p[
 
-                        new_stop
+                        "PendingStop"
 
-                    )
+                    ] = new_stop
 
-                    p["PendingStopType"] = (
+                    p[
+
+                        "PendingStopType"
+
+                    ] = (
 
                         "TRAIL"
 
@@ -3700,7 +4640,11 @@ def evaluate_open_position(
 
                         > safe_float(
 
-                            p["FixedStop"]
+                            p[
+
+                                "FixedStop"
+
+                            ]
 
                         )
 
@@ -3714,7 +4658,11 @@ def evaluate_open_position(
 
                 safe_float(
 
-                    p["BestPrice"],
+                    p[
+
+                        "BestPrice"
+
+                    ],
 
                     entry
 
@@ -3724,7 +4672,11 @@ def evaluate_open_position(
 
             )
 
-            p["BestPrice"] = best
+            p["BestPrice"] = (
+
+                best
+
+            )
 
             trigger = (
 
@@ -3760,7 +4712,11 @@ def evaluate_open_position(
 
                     safe_float(
 
-                        p["FixedStop"]
+                        p[
+
+                            "FixedStop"
+
+                        ]
 
                     ),
 
@@ -3768,15 +4724,27 @@ def evaluate_open_position(
 
                 )
 
-                effective = safe_float(
+                effective = (
 
-                    p["EffectiveStop"]
+                    safe_float(
+
+                        p[
+
+                            "EffectiveStop"
+
+                        ]
+
+                    )
 
                 )
 
-                pending_now = p.get(
+                pending_now = (
 
-                    "PendingStop"
+                    p.get(
+
+                        "PendingStop"
+
+                    )
 
                 )
 
@@ -3800,19 +4768,27 @@ def evaluate_open_position(
 
                 if (
 
-                    new_stop < effective
+                    new_stop
 
-                    and new_stop < pending_value
+                    < effective
+
+                    and new_stop
+
+                    < pending_value
 
                 ):
 
-                    p["PendingStop"] = (
+                    p[
 
-                        new_stop
+                        "PendingStop"
 
-                    )
+                    ] = new_stop
 
-                    p["PendingStopType"] = (
+                    p[
+
+                        "PendingStopType"
+
+                    ] = (
 
                         "TRAIL"
 
@@ -3820,7 +4796,11 @@ def evaluate_open_position(
 
                         < safe_float(
 
-                            p["FixedStop"]
+                            p[
+
+                                "FixedStop"
+
+                            ]
 
                         )
 
@@ -3828,17 +4808,17 @@ def evaluate_open_position(
 
                     )
 
-        p["LastBarDatetime"] = (
+        p[
 
-            fmt_dt(dt)
+            "LastBarDatetime"
+
+        ] = fmt_dt(
+
+            dt
 
         )
 
-    # --------------------------------------------------------
-
     # LONG 10 trading days
-
-    # --------------------------------------------------------
 
     if (
 
@@ -3918,11 +4898,7 @@ def evaluate_open_position(
 
                         (
 
-                            minute_df[
-
-                                "Code"
-
-                            ]
+                            minute_df["Code"]
 
                             == code
 
@@ -3952,7 +4928,11 @@ def evaluate_open_position(
 
                     if len(z):
 
-                        last = z.iloc[-1]
+                        last = (
+
+                            z.iloc[-1]
+
+                        )
 
                         close_position(
 
@@ -3988,6 +4968,10 @@ def evaluate_open_position(
 
                         )
 
+                        return True
+
+    return sufficient_coverage
+
 # ============================================================
 
 # FORMAL MULTI REPLAY
@@ -4015,20 +4999,6 @@ def replay_formal_track(
     allow_forced_close
 
 ):
-
-    """
-
-    Stage4 MULTI型 Forward replay。
-
-    ・同一Track 最大1 position
-
-    ・EXIT後、後続candidateへ進める
-
-    ・同時刻 EXIT -> ENTRY 禁止
-
-    ・前回処理済みEntryDatetimeは再処理しない
-
-    """
 
     track = state[
 
@@ -4058,9 +5028,11 @@ def replay_formal_track(
 
         c = c[
 
-            c["EntryDatetime"]
+            c[
 
-            <= until_dt
+                "EntryDatetime"
+
+            ] <= until_dt
 
         ].copy()
 
@@ -4068,7 +5040,11 @@ def replay_formal_track(
 
             c = c[
 
-                c["EntryDatetime"]
+                c[
+
+                    "EntryDatetime"
+
+                ]
 
                 > last_processed
 
@@ -4079,6 +5055,8 @@ def replay_formal_track(
             "EntryDatetime"
 
         )
+
+    coverage_ok = True
 
     if not c.empty:
 
@@ -4096,9 +5074,7 @@ def replay_formal_track(
 
             )
 
-            # candidate時刻まで既存positionを処理
-
-            evaluate_open_position(
+            ok = evaluate_open_position(
 
                 track,
 
@@ -4118,7 +5094,11 @@ def replay_formal_track(
 
             )
 
-            # まだ保有中ならcandidateを無視
+            if not ok:
+
+                coverage_ok = False
+
+                break
 
             if (
 
@@ -4134,8 +5114,6 @@ def replay_formal_track(
 
                 continue
 
-            # 同時刻 EXIT -> ENTRY 禁止
-
             last_exit = parse_dt(
 
                 track.get(
@@ -4150,7 +5128,9 @@ def replay_formal_track(
 
                 last_exit is not None
 
-                and entry_dt <= last_exit
+                and entry_dt
+
+                <= last_exit
 
             ):
 
@@ -4172,23 +5152,31 @@ def replay_formal_track(
 
                 continue
 
-            winner = ranked.iloc[0]
+            winner = (
 
-            ok, reason = open_position(
-
-                track,
-
-                track_name,
-
-                winner,
-
-                minute_df,
-
-                activity_log
+                ranked.iloc[0]
 
             )
 
-            if not ok:
+            ok_entry, reason = (
+
+                open_position(
+
+                    track,
+
+                    track_name,
+
+                    winner,
+
+                    minute_df,
+
+                    activity_log
+
+                )
+
+            )
+
+            if not ok_entry:
 
                 print(
 
@@ -4202,55 +5190,91 @@ def replay_formal_track(
 
                 )
 
-    # 最後に今回の処理終了時刻まで進める
+    if coverage_ok:
 
-    evaluate_open_position(
+        coverage_ok = (
 
-        track,
+            evaluate_open_position(
 
-        track_name,
+                track,
 
-        minute_df,
+                track_name,
 
-        trading_dates,
+                minute_df,
 
-        until_dt,
+                trading_dates,
 
-        trade_log,
+                until_dt,
 
-        activity_log,
+                trade_log,
 
-        allow_forced_close
+                activity_log,
 
-    )
+                allow_forced_close
 
-    track[
+            )
 
-        "LastProcessedDatetime"
+        )
 
-    ] = fmt_dt(
+    # FLATの場合はminute data欠落問題なし。
 
-        until_dt
+    # OPENの場合のみcoverage確認が必要。
 
-    )
+    if (
+
+        track.get("Position")
+
+        is None
+
+    ):
+
+        coverage_ok = True
+
+    if coverage_ok:
+
+        track[
+
+            "LastProcessedDatetime"
+
+        ] = fmt_dt(
+
+            until_dt
+
+        )
+
+    else:
+
+        print(
+
+            f"WARNING: "
+
+            f"{track_name} "
+
+            f"LastProcessedDatetime "
+
+            f"NOT advanced",
+
+            flush=True
+
+        )
+
+    return coverage_ok
 
 # ============================================================
 
-# LOG
+# LOG HELPERS
 
 # ============================================================
 
-def append_trade_log(
+def build_appended_csv(
 
-    new_rows
+    path,
+
+    new_rows,
+
+    dedupe_subset
 
 ):
-
-    if not new_rows:
-
-        return
-
-    path = "trades.csv"
 
     raw = gcs_download_bytes(
 
@@ -4270,81 +5294,9 @@ def append_trade_log(
 
         )
 
-    new = pd.DataFrame(
-
-        new_rows
-
-    )
-
-    z = pd.concat(
-
-        [
-
-            old,
-
-            new
-
-        ],
-
-        ignore_index=True
-
-    )
-
-    z = z.drop_duplicates(
-
-        subset=[
-
-            "Track",
-
-            "Code",
-
-            "EntryDatetime",
-
-            "ExitDatetime"
-
-        ],
-
-        keep="last"
-
-    )
-
-    gcs_upload_df_csv(
-
-        path,
-
-        z
-
-    )
-
-def append_activity_log(
-
-    new_rows
-
-):
-
     if not new_rows:
 
-        return
-
-    path = "activity.csv"
-
-    raw = gcs_download_bytes(
-
-        path
-
-    )
-
-    if raw is None:
-
-        old = pd.DataFrame()
-
-    else:
-
-        old = pd.read_csv(
-
-            io.BytesIO(raw)
-
-        )
+        return old
 
     new = pd.DataFrame(
 
@@ -4370,17 +5322,7 @@ def append_activity_log(
 
         c
 
-        for c in [
-
-            "Type",
-
-            "Track",
-
-            "Code",
-
-            "Datetime"
-
-        ]
+        for c in dedupe_subset
 
         if c in z.columns
 
@@ -4396,15 +5338,61 @@ def append_activity_log(
 
         )
 
-    gcs_upload_df_csv(
+    return z
 
-        path,
+def prepare_trade_log(
 
-        z
+    new_rows
+
+):
+
+    return build_appended_csv(
+
+        "trades.csv",
+
+        new_rows,
+
+        [
+
+            "Track",
+
+            "Code",
+
+            "EntryDatetime",
+
+            "ExitDatetime"
+
+        ]
 
     )
 
-def append_screening_log(
+def prepare_activity_log(
+
+    new_rows
+
+):
+
+    return build_appended_csv(
+
+        "activity.csv",
+
+        new_rows,
+
+        [
+
+            "Type",
+
+            "Track",
+
+            "Code",
+
+            "Datetime"
+
+        ]
+
+    )
+
+def prepare_screening_log(
 
     mode,
 
@@ -4448,35 +5436,31 @@ def append_screening_log(
 
     row = {
 
-        "Timestamp": fmt_dt(
+        "Timestamp":
 
-            now_jst()
+            fmt_dt(now_jst()),
 
-        ),
+        "Mode":
 
-        "Mode": mode,
+            mode,
 
-        "DailyReady": len(
+        "DailyReady":
 
-            feat
+            len(feat),
 
-        ),
+        "LONGCandidates":
 
-        "LONGCandidates": long_n,
+            long_n,
 
-        "SHORTCandidates": short_n
+        "SHORTCandidates":
+
+            short_n
 
     }
 
-    path = (
-
-        "screening_history.csv"
-
-    )
-
     raw = gcs_download_bytes(
 
-        path
+        "screening_history.csv"
 
     )
 
@@ -4492,7 +5476,7 @@ def append_screening_log(
 
         )
 
-    z = pd.concat(
+    return pd.concat(
 
         [
 
@@ -4507,14 +5491,6 @@ def append_screening_log(
         ],
 
         ignore_index=True
-
-    )
-
-    gcs_upload_df_csv(
-
-        path,
-
-        z
 
     )
 
@@ -4606,6 +5582,10 @@ def track_report(
 
         f"  WinRate     : {winrate:.1f}%\n"
 
+        f"  LastProcess : "
+
+        f"{track.get('LastProcessedDatetime')}\n"
+
         f"  Position    : {pos}"
 
     )
@@ -4620,13 +5600,13 @@ def build_report(
 
     minute_df,
 
+    minute_source,
+
     history_dates,
 
     candidates,
 
     state,
-
-    new_trades,
 
     activity_log
 
@@ -4636,7 +5616,7 @@ def build_report(
 
         title = (
 
-            "FIX11 Stage6 Forward V4 "
+            "FIX11 Stage6 Forward V4.1 "
 
             "- 前場報告"
 
@@ -4652,7 +5632,7 @@ def build_report(
 
         title = (
 
-            "FIX11 Stage6 Forward V4 "
+            "FIX11 Stage6 Forward V4.1 "
 
             "- 後場 + 1日報告"
 
@@ -4678,21 +5658,27 @@ def build_report(
 
         f"Universe    : {len(universe)}",
 
-        f"Lending     : {int(universe['is_lending'].sum())}",
+        f"Lending     : "
+
+        f"{int(universe['is_lending'].sum())}",
 
         f"DailyReady  : {len(feat)}",
 
-        f"1m rows     : {len(minute_df):,}",
+        f"1m rows     : "
 
-        f"RVOL history: {len(history_dates)}/20"
+        f"{len(minute_df):,}",
+
+        f"1m source   : "
+
+        f"{minute_source}",
+
+        f"RVOL history: "
+
+        f"{len(history_dates)}/20"
 
     ]
 
-    if len(
-
-        history_dates
-
-    ) < 20:
+    if len(history_dates) < 20:
 
         lines.append(
 
@@ -4752,11 +5738,17 @@ def build_report(
 
         [
 
-            f"Candidates LONG        : {long_n}",
+            f"Candidates LONG        : "
 
-            f"Candidates SHORT BASE  : {short_n}",
+            f"{long_n}",
 
-            f"Candidates SHORT FILTER: {filter_n}",
+            f"Candidates SHORT BASE  : "
+
+            f"{short_n}",
+
+            f"Candidates SHORT FILTER: "
+
+            f"{filter_n}",
 
             ""
 
@@ -4764,19 +5756,15 @@ def build_report(
 
     )
 
-    # --------------------------------------------------------
-
-    # 今回のENTRY / EXIT
-
-    # --------------------------------------------------------
-
     entries = [
 
         x
 
         for x in activity_log
 
-        if x.get("Type") == "ENTRY"
+        if x.get("Type")
+
+        == "ENTRY"
 
     ]
 
@@ -4786,13 +5774,17 @@ def build_report(
 
         for x in activity_log
 
-        if x.get("Type") == "EXIT"
+        if x.get("Type")
+
+        == "EXIT"
 
     ]
 
     lines.append(
 
-        f"New entries: {len(entries)}"
+        f"New entries: "
+
+        f"{len(entries)}"
 
     )
 
@@ -4816,7 +5808,9 @@ def build_report(
 
     lines.append(
 
-        f"New exits: {len(exits)}"
+        f"New exits: "
+
+        f"{len(exits)}"
 
     )
 
@@ -4856,7 +5850,11 @@ def build_report(
 
                 "SHORT_BASE",
 
-                state["SHORT_BASE"]
+                state[
+
+                    "SHORT_BASE"
+
+                ]
 
             ),
 
@@ -4866,7 +5864,11 @@ def build_report(
 
                 "SHORT_FILTER",
 
-                state["SHORT_FILTER"]
+                state[
+
+                    "SHORT_FILTER"
+
+                ]
 
             )
 
@@ -4882,7 +5884,7 @@ def build_report(
 
 # ============================================================
 
-# MAIN RUN
+# MAIN
 
 # ============================================================
 
@@ -4918,12 +5920,6 @@ def run(mode):
 
     today = now.date()
 
-    # --------------------------------------------------------
-
-    # Universe
-
-    # --------------------------------------------------------
-
     universe = load_universe()
 
     # --------------------------------------------------------
@@ -4936,23 +5932,29 @@ def run(mode):
 
         state = load_state()
 
-        report = (
+        return (
 
-            "FIX11 Stage6 Forward V4 TEST PASS\n"
+            "FIX11 Stage6 Forward V4.1 TEST PASS\n"
 
             f"Universe : {len(universe)}\n"
 
-            f"Lending  : {int(universe['is_lending'].sum())}\n"
+            f"Lending  : "
 
-            f"NonLend  : {int((~universe['is_lending']).sum())}\n"
+            f"{int(universe['is_lending'].sum())}\n"
 
-            f"StateVer : {state.get('version')}\n"
+            f"NonLend  : "
 
-            f"Elapsed  : {time.time()-start:.1f}s"
+            f"{int((~universe['is_lending']).sum())}\n"
+
+            f"StateVer : "
+
+            f"{state.get('version')}\n"
+
+            f"Elapsed  : "
+
+            f"{time.time()-start:.1f}s"
 
         )
-
-        return report
 
     # --------------------------------------------------------
 
@@ -4961,6 +5963,48 @@ def run(mode):
     # --------------------------------------------------------
 
     if mode == "snapshot":
+
+        path = snapshot_path(
+
+            today
+
+        )
+
+        # 既に保存済みなら上書きしない
+
+        existing = load_snapshot_date(
+
+            today
+
+        )
+
+        if existing is not None:
+
+            return (
+
+                "FIX11 Stage6 SNAPSHOT EXISTS\n"
+
+                f"Date     : {today}\n"
+
+                f"Universe : {len(universe)}\n"
+
+                f"Rows     : "
+
+                f"{len(existing):,}\n"
+
+                f"Codes    : "
+
+                f"{existing['Code'].nunique()}\n"
+
+                f"Path     : "
+
+                f"{GCS_PREFIX}/{path}\n"
+
+                f"Elapsed  : "
+
+                f"{time.time()-start:.1f}s"
+
+            )
 
         minute_df = fetch_intraday_codes(
 
@@ -4980,14 +6024,6 @@ def run(mode):
 
             )
 
-        path = (
-
-            f"snapshots/"
-
-            f"{today}.parquet"
-
-        )
-
         gcs_upload_df_parquet(
 
             path,
@@ -5004,25 +6040,33 @@ def run(mode):
 
             f"Universe : {len(universe)}\n"
 
-            f"Rows     : {len(minute_df):,}\n"
+            f"Rows     : "
 
-            f"Codes    : {minute_df['Code'].nunique()}\n"
+            f"{len(minute_df):,}\n"
 
-            f"Path     : {GCS_PREFIX}/{path}\n"
+            f"Codes    : "
 
-            f"Elapsed  : {time.time()-start:.1f}s"
+            f"{minute_df['Code'].nunique()}\n"
+
+            f"Path     : "
+
+            f"{GCS_PREFIX}/{path}\n"
+
+            f"Elapsed  : "
+
+            f"{time.time()-start:.1f}s"
 
         )
 
     # --------------------------------------------------------
 
-    # decision / result
+    # DECISION / RESULT
 
     # --------------------------------------------------------
 
     state = load_state()
 
-    # 完成済み前日までの日足
+    # 前日までの日足
 
     feat = fetch_daily_features(
 
@@ -5100,17 +6144,13 @@ def run(mode):
 
     ].copy()
 
-    # --------------------------------------------------------
-
-    # 保有中銘柄は必ず取得
-
-    # --------------------------------------------------------
-
     fetch_codes = set(
 
         pre["Code"].tolist()
 
     )
+
+    # 保有銘柄は必ず対象
 
     for code in current_position_codes(
 
@@ -5118,15 +6158,13 @@ def run(mode):
 
     ):
 
-        fetch_codes.add(
+        fetch_codes.add(code)
 
-            code
+    minute_df, minute_source = (
 
-        )
+        get_today_intraday(
 
-    minute_df = fetch_intraday_codes(
-
-        sorted(
+            today,
 
             fetch_codes
 
@@ -5136,31 +6174,15 @@ def run(mode):
 
     if minute_df.empty:
 
-        available_until = pd.Timestamp(
+        raise RuntimeError(
 
-            now.replace(
-
-                tzinfo=None
-
-            )
-
-        )
-
-    else:
-
-        available_until = pd.Timestamp(
-
-            minute_df[
-
-                "Datetime"
-
-            ].max()
+            "minute_df = 0"
 
         )
 
     # --------------------------------------------------------
 
-    # Modeごとの処理上限
+    # MODE CAP
 
     # --------------------------------------------------------
 
@@ -5184,11 +6206,47 @@ def run(mode):
 
         )
 
+    available_until = pd.Timestamp(
+
+        minute_df[
+
+            "Datetime"
+
+        ].max()
+
+    )
+
     until_dt = min(
 
         available_until,
 
         cap
+
+    )
+
+    print(
+
+        f"minute source={minute_source}",
+
+        flush=True
+
+    )
+
+    print(
+
+        f"available_until="
+
+        f"{available_until}",
+
+        flush=True
+
+    )
+
+    print(
+
+        f"until_dt={until_dt}",
+
+        flush=True
 
     )
 
@@ -5214,17 +6272,13 @@ def run(mode):
 
     trading_dates = sorted(
 
-        set(
-
-            trading_dates
-
-        )
+        set(trading_dates)
 
     )
 
     # --------------------------------------------------------
 
-    # RVOL20
+    # RVOL HISTORY
 
     # --------------------------------------------------------
 
@@ -5243,8 +6297,6 @@ def run(mode):
         len(history_dates) >= 20
 
         and not history.empty
-
-        and not minute_df.empty
 
     ):
 
@@ -5268,19 +6320,17 @@ def run(mode):
 
     # --------------------------------------------------------
 
-    # Formal candidate generation
-
-    #
-
-    # decision -> 前場まで
-
-    # result   -> 15:25まで
+    # CANDIDATES
 
     # --------------------------------------------------------
 
     if len(history_dates) < 20:
 
-        candidates = pd.DataFrame()
+        candidates = (
+
+            pd.DataFrame()
+
+        )
 
     else:
 
@@ -5316,23 +6366,11 @@ def run(mode):
 
     # --------------------------------------------------------
 
-    # Formal MULTI replay
-
-    #
-
-    # decision:
-
-    #   前場
-
-    #
-
-    # result:
-
-    #   LastProcessedDatetimeより後を処理
-
-    #   午後ENTRYも許可
+    # FORMAL MULTI REPLAY
 
     # --------------------------------------------------------
+
+    coverage = {}
 
     for track_name in [
 
@@ -5344,7 +6382,11 @@ def run(mode):
 
     ]:
 
-        replay_formal_track(
+        coverage[
+
+            track_name
+
+        ] = replay_formal_track(
 
             state,
 
@@ -5370,37 +6412,101 @@ def run(mode):
 
         )
 
-    # --------------------------------------------------------
+    print(
 
-    # SAVE
+        f"COVERAGE={coverage}",
 
-    # --------------------------------------------------------
-
-    save_state(
-
-        state
+        flush=True
 
     )
 
-    append_trade_log(
+    # 保有銘柄欠落などがあれば
 
-        new_trades
+    # stateを保存せずfail closed
 
-    )
+    if not all(
 
-    append_activity_log(
+        coverage.values()
+
+    ):
+
+        raise RuntimeError(
+
+            "DATA COVERAGE INCOMPLETE. "
+
+            "portfolio.json was NOT saved."
+
+        )
+
+    # --------------------------------------------------------
+
+    # REPORTをstate保存前に生成
+
+    # --------------------------------------------------------
+
+    report = build_report(
+
+        mode,
+
+        universe,
+
+        feat,
+
+        minute_df,
+
+        minute_source,
+
+        history_dates,
+
+        candidates,
+
+        state,
 
         activity_log
 
     )
 
-    append_screening_log(
+    report += (
 
-        mode,
+        f"\n\nElapsed: "
 
-        feat,
+        f"{time.time()-start:.1f}s"
 
-        candidates
+    )
+
+    # --------------------------------------------------------
+
+    # 保存用データを先にメモリ上で構築
+
+    # --------------------------------------------------------
+
+    trade_df = prepare_trade_log(
+
+        new_trades
+
+    )
+
+    activity_df = (
+
+        prepare_activity_log(
+
+            activity_log
+
+        )
+
+    )
+
+    screening_df = (
+
+        prepare_screening_log(
+
+            mode,
+
+            feat,
+
+            candidates
+
+        )
 
     )
 
@@ -5410,13 +6516,11 @@ def run(mode):
 
     # --------------------------------------------------------
 
+    audit = None
+
     if not candidates.empty:
 
-        audit = (
-
-            candidates.copy()
-
-        )
+        audit = candidates.copy()
 
         audit["RunMode"] = mode
 
@@ -5424,11 +6528,47 @@ def run(mode):
 
             "RunTimestamp"
 
-        ] = fmt_dt(
+        ] = fmt_dt(now)
 
-            now
+    # --------------------------------------------------------
+
+    # GCS SAVE
+
+    #
+
+    # stateを最後にする
+
+    # --------------------------------------------------------
+
+    if len(trade_df):
+
+        gcs_upload_df_csv(
+
+            "trades.csv",
+
+            trade_df
 
         )
+
+    if len(activity_df):
+
+        gcs_upload_df_csv(
+
+            "activity.csv",
+
+            activity_df
+
+        )
+
+    gcs_upload_df_csv(
+
+        "screening_history.csv",
+
+        screening_df
+
+    )
+
+    if audit is not None:
 
         gcs_upload_df_csv(
 
@@ -5444,42 +6584,6 @@ def run(mode):
 
         )
 
-    # --------------------------------------------------------
-
-    # REPORT
-
-    # --------------------------------------------------------
-
-    report = build_report(
-
-        mode,
-
-        universe,
-
-        feat,
-
-        minute_df,
-
-        history_dates,
-
-        candidates,
-
-        state,
-
-        new_trades,
-
-        activity_log
-
-    )
-
-    report += (
-
-        f"\n\nElapsed: "
-
-        f"{time.time()-start:.1f}s"
-
-    )
-
     gcs_upload_bytes(
 
         "latest_result.txt",
@@ -5491,6 +6595,22 @@ def run(mode):
         ),
 
         "text/plain"
+
+    )
+
+    # 最後にstate
+
+    save_state(
+
+        state
+
+    )
+
+    print(
+
+        "STATE SAVE COMPLETE",
+
+        flush=True
 
     )
 
@@ -5514,7 +6634,7 @@ def health():
 
     return Response(
 
-        "FIX11 Stage6 Forward V4 OK\n",
+        "FIX11 Stage6 Forward V4.1 OK\n",
 
         status=200,
 
@@ -5570,15 +6690,11 @@ def run_route():
 
         else:
 
-            mode = (
+            mode = request.args.get(
 
-                request.args.get(
+                "mode",
 
-                    "mode",
-
-                    "test"
-
-                )
+                "test"
 
             )
 
@@ -5600,7 +6716,11 @@ def run_route():
 
     except Exception:
 
-        err = traceback.format_exc()
+        err = (
+
+            traceback.format_exc()
+
+        )
 
         print(
 
