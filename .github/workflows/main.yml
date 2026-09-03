@@ -322,6 +322,24 @@ jobs:
 
       # Determine Run Mode
 
+      #
+
+      # 実際に処理を開始した時刻ではなく
+
+      # GitHub Actionsを起動したcron文字列で判定する
+
+      #
+
+      # 03:45 UTC → decision
+
+      # 06:45 UTC → result
+
+      # 07:10 UTC → snapshot
+
+      #
+
+      # 不明なscheduleはtestにせずエラーで停止
+
       # ======================================================
 
       - name: Determine run mode
@@ -332,33 +350,51 @@ jobs:
 
         run: |
 
+          echo "EVENT_NAME=${{ github.event_name }}"
+
+          echo "EVENT_SCHEDULE=${{ github.event.schedule }}"
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
 
             MODE="${{ github.event.inputs.run_mode }}"
 
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+
+            case "${{ github.event.schedule }}" in
+
+              "45 3 * * 1-5")
+
+                MODE="decision"
+
+                ;;
+
+              "45 6 * * 1-5")
+
+                MODE="result"
+
+                ;;
+
+              "10 7 * * 1-5")
+
+                MODE="snapshot"
+
+                ;;
+
+              *)
+
+                echo "ERROR: Unknown schedule: ${{ github.event.schedule }}"
+
+                exit 1
+
+                ;;
+
+            esac
+
           else
 
-            HOUR=$(date -u +'%H')
+            echo "ERROR: Unknown event: ${{ github.event_name }}"
 
-            MINUTE=$(date -u +'%M')
-
-            if [ "$HOUR" = "03" ] && [ "$MINUTE" = "45" ]; then
-
-              MODE="decision"
-
-            elif [ "$HOUR" = "06" ] && [ "$MINUTE" = "45" ]; then
-
-              MODE="result"
-
-            elif [ "$HOUR" = "07" ] && [ "$MINUTE" = "10" ]; then
-
-              MODE="snapshot"
-
-            else
-
-              MODE="test"
-
-            fi
+            exit 1
 
           fi
 
