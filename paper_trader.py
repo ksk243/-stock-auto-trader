@@ -1027,3 +1027,1369 @@ if __name__ == "__main__":
         sys.exit(
             1
         )
+
+# ============================================================
+
+# FIX17 OFFICIAL LIVE EXECUTION LAYER
+
+# ============================================================
+
+#
+
+# この層ではFIX17のENTRY条件自体を再構築しない。
+
+#
+
+# 入力:
+
+#   runtime/fix17_candidates.json
+
+#
+
+# candidate例:
+
+# {
+
+#   "market_date": "2026-09-14",
+
+#   "candidates": [
+
+#     {
+
+#       "trade_id": "...",
+
+#       "code": "1234",
+
+#       "side": "LONG",
+
+#       "entry_price": 1000.0,
+
+#       "target_notional": 500000.0
+
+#     }
+
+#   ]
+
+# }
+
+#
+
+# candidate生成は別データ層から行う。
+
+# ここでは正式FIX17 sizing / margin / state logicのみ使用。
+
+# ============================================================
+
+import importlib.util
+
+import math
+
+import uuid
+
+FIX17_CANDIDATE_FILE = (
+
+    RUNTIME_DIR
+
+    / "fix17_candidates.json"
+
+)
+
+FIX17_EXECUTION_FILE = (
+
+    RUNTIME_DIR
+
+    / "fix17_execution_result.json"
+
+)
+
+# ============================================================
+
+# OFFICIAL RUNTIME LOADER
+
+#
+
+# subprocess隔離では関数を直接呼べないため、
+
+# live execution時のみ専用module namespaceへロードする。
+
+#
+
+# Notebook globalsへは保持しない。
+
+# paper_trader.pyプロセス終了時に消える。
+
+# ============================================================
+
+def load_fix17_runtime_module():
+
+    verify_official_source()
+
+    module_name = (
+
+        "_fix17_official_runtime_"
+
+        + uuid.uuid4().hex
+
+    )
+
+    spec = importlib.util.spec_from_file_location(
+
+        module_name,
+
+        OFFICIAL_FILE,
+
+    )
+
+    if (
+
+        spec is None
+
+        or spec.loader is None
+
+    ):
+
+        raise RuntimeError(
+
+            "FIX17正式runtime moduleを作成できません。"
+
+        )
+
+    module = importlib.util.module_from_spec(
+
+        spec
+
+    )
+
+    spec.loader.exec_module(
+
+        module
+
+    )
+
+    required = [
+
+        "calc_entry_time_position_state",
+
+        "calc_long_dynamic_max_positions",
+
+        "calc_margin_capped_qty",
+
+        "calc_target_qty",
+
+    ]
+
+    missing = [
+
+        name
+
+        for name in required
+
+        if not hasattr(
+
+            module,
+
+            name
+
+        )
+
+    ]
+
+    if missing:
+
+        raise RuntimeError(
+
+            "FIX17 runtime必須関数不足:\n"
+
+            + "\n".join(
+
+                missing
+
+            )
+
+        )
+
+    return module
+
+# ============================================================
+
+# POSITION HELPERS
+
+# ============================================================
+
+def normalize_code(
+
+    code
+
+):
+
+    code = str(
+
+        code
+
+    ).strip()
+
+    if code.endswith(
+
+        ".0"
+
+    ):
+
+        code = code[:-2]
+
+    if code.endswith(
+
+        ".T"
+
+    ):
+
+        code = code[:-2]
+
+    return code
+
+def normalize_side(
+
+    side
+
+):
+
+    side = str(
+
+        side
+
+    ).upper().strip()
+
+    if side not in {
+
+        "LONG",
+
+        "SHORT",
+
+    }:
+
+        raise RuntimeError(
+
+            f"side不正: {side}"
+
+        )
+
+    return side
+
+def position_key(
+
+    code,
+
+    side
+
+):
+
+    return (
+
+        normalize_code(
+
+            code
+
+        )
+
+        + ":"
+
+        + normalize_side(
+
+            side
+
+        )
+
+    )
+
+def active_positions(
+
+    state
+
+):
+
+    return [
+
+        p
+
+        for p in state.get(
+
+            "positions",
+
+            []
+
+        )
+
+        if p.get(
+
+            "status",
+
+            "OPEN"
+
+        ) == "OPEN"
+
+    ]
+
+def active_position_exists(
+
+    state,
+
+    code,
+
+    side
+
+):
+
+    key = position_key(
+
+        code,
+
+        side
+
+    )
+
+    for p in active_positions(
+
+        state
+
+    ):
+
+        if position_key(
+
+            p.get(
+
+                "code"
+
+            ),
+
+            p.get(
+
+                "side"
+
+            ),
+
+        ) == key:
+
+            return True
+
+    return False
+
+def active_trade_id_exists(
+
+    state,
+
+    trade_id
+
+):
+
+    if trade_id is None:
+
+        return False
+
+    trade_id = str(
+
+        trade_id
+
+    )
+
+    for p in active_positions(
+
+        state
+
+    ):
+
+        if str(
+
+            p.get(
+
+                "trade_id",
+
+                ""
+
+            )
+
+        ) == trade_id:
+
+            return True
+
+    return False
+
+# ============================================================
+
+# CANDIDATE INPUT
+
+# ============================================================
+
+def load_fix17_candidates():
+
+    if not FIX17_CANDIDATE_FILE.exists():
+
+        return {
+
+            "market_date": None,
+
+            "candidates": [],
+
+        }
+
+    obj = load_json(
+
+        FIX17_CANDIDATE_FILE,
+
+        default={}
+
+    )
+
+    if not isinstance(
+
+        obj,
+
+        dict
+
+    ):
+
+        raise RuntimeError(
+
+            "fix17_candidates.json形式不正"
+
+        )
+
+    candidates = obj.get(
+
+        "candidates",
+
+        []
+
+    )
+
+    if not isinstance(
+
+        candidates,
+
+        list
+
+    ):
+
+        raise RuntimeError(
+
+            "candidates はlistである必要があります。"
+
+        )
+
+    return {
+
+        "market_date": obj.get(
+
+            "market_date"
+
+        ),
+
+        "candidates": candidates,
+
+    }
+
+# ============================================================
+
+# CURRENT EXPOSURE
+
+# ============================================================
+
+def calculate_existing_exposure(
+
+    state
+
+):
+
+    gross_notional = 0.0
+
+    unrealized = 0.0
+
+    for p in active_positions(
+
+        state
+
+    ):
+
+        entry_price = float(
+
+            p.get(
+
+                "entry_price",
+
+                0.0
+
+            )
+
+        )
+
+        qty = int(
+
+            p.get(
+
+                "qty",
+
+                0
+
+            )
+
+        )
+
+        mark_price = float(
+
+            p.get(
+
+                "mark_price",
+
+                entry_price
+
+            )
+
+        )
+
+        side = normalize_side(
+
+            p.get(
+
+                "side"
+
+            )
+
+        )
+
+        gross_notional += (
+
+            abs(
+
+                mark_price
+
+                * qty
+
+            )
+
+        )
+
+        if side == "LONG":
+
+            pnl = (
+
+                mark_price
+
+                - entry_price
+
+            ) * qty
+
+        else:
+
+            pnl = (
+
+                entry_price
+
+                - mark_price
+
+            ) * qty
+
+        unrealized += pnl
+
+    return (
+
+        gross_notional,
+
+        unrealized
+
+    )
+
+# ============================================================
+
+# EQUITY
+
+# ============================================================
+
+def calculate_equity(
+
+    state
+
+):
+
+    cash_now = float(
+
+        state.get(
+
+            "cash",
+
+            0.0
+
+        )
+
+    )
+
+    _, unrealized = (
+
+        calculate_existing_exposure(
+
+            state
+
+        )
+
+    )
+
+    return (
+
+        cash_now
+
+        + unrealized
+
+    )
+
+# ============================================================
+
+# CANDIDATE VALIDATION
+
+# ============================================================
+
+def validate_candidate(
+
+    candidate
+
+):
+
+    required = [
+
+        "code",
+
+        "side",
+
+        "entry_price",
+
+        "target_notional",
+
+    ]
+
+    missing = [
+
+        x
+
+        for x in required
+
+        if x not in candidate
+
+    ]
+
+    if missing:
+
+        raise RuntimeError(
+
+            "candidate必須項目不足: "
+
+            + ",".join(
+
+                missing
+
+            )
+
+        )
+
+    code = normalize_code(
+
+        candidate[
+
+            "code"
+
+        ]
+
+    )
+
+    side = normalize_side(
+
+        candidate[
+
+            "side"
+
+        ]
+
+    )
+
+    entry_price = float(
+
+        candidate[
+
+            "entry_price"
+
+        ]
+
+    )
+
+    target_notional = float(
+
+        candidate[
+
+            "target_notional"
+
+        ]
+
+    )
+
+    if (
+
+        not math.isfinite(
+
+            entry_price
+
+        )
+
+        or entry_price <= 0
+
+    ):
+
+        raise RuntimeError(
+
+            f"entry_price不正: {entry_price}"
+
+        )
+
+    if (
+
+        not math.isfinite(
+
+            target_notional
+
+        )
+
+        or target_notional <= 0
+
+    ):
+
+        raise RuntimeError(
+
+            f"target_notional不正: {target_notional}"
+
+        )
+
+    trade_id = candidate.get(
+
+        "trade_id"
+
+    )
+
+    if trade_id is None:
+
+        trade_id = (
+
+            code
+
+            + "-"
+
+            + side
+
+            + "-"
+
+            + uuid.uuid4().hex[:12]
+
+        )
+
+    return {
+
+        **candidate,
+
+        "trade_id": str(
+
+            trade_id
+
+        ),
+
+        "code": code,
+
+        "side": side,
+
+        "entry_price": entry_price,
+
+        "target_notional": target_notional,
+
+    }
+
+# ============================================================
+
+# OFFICIAL FIX17 POSITION SIZE
+
+# ============================================================
+
+def calculate_fix17_order(
+
+    runtime,
+
+    candidate,
+
+    state,
+
+):
+
+    candidate = validate_candidate(
+
+        candidate
+
+    )
+
+    code = candidate[
+
+        "code"
+
+    ]
+
+    side = candidate[
+
+        "side"
+
+    ]
+
+    entry_price = candidate[
+
+        "entry_price"
+
+    ]
+
+    target_notional = candidate[
+
+        "target_notional"
+
+    ]
+
+    if active_trade_id_exists(
+
+        state,
+
+        candidate[
+
+            "trade_id"
+
+        ],
+
+    ):
+
+        return {
+
+            "status": "SKIP",
+
+            "reason": "DUPLICATE_TRADE_ID",
+
+            "candidate": candidate,
+
+        }
+
+    if active_position_exists(
+
+        state,
+
+        code,
+
+        side,
+
+    ):
+
+        return {
+
+            "status": "SKIP",
+
+            "reason": "POSITION_ALREADY_OPEN",
+
+            "candidate": candidate,
+
+        }
+
+    # --------------------------------------------------------
+
+    # 正式FIX17 calc_target_qty
+
+    # --------------------------------------------------------
+
+    target_qty = runtime.calc_target_qty(
+
+        target_notional,
+
+        entry_price,
+
+    )
+
+    target_qty = int(
+
+        target_qty
+
+    )
+
+    if target_qty <= 0:
+
+        return {
+
+            "status": "SKIP",
+
+            "reason": "TARGET_QTY_ZERO",
+
+            "candidate": candidate,
+
+        }
+
+    cash_now = float(
+
+        state.get(
+
+            "cash",
+
+            0.0
+
+        )
+
+    )
+
+    etf_mark = float(
+
+        state.get(
+
+            "etf_mark",
+
+            0.0
+
+        )
+
+    )
+
+    etf_shares = int(
+
+        state.get(
+
+            "etf_shares",
+
+            0
+
+        )
+
+    )
+
+    (
+
+        existing_gross_notional,
+
+        existing_unrealized,
+
+    ) = calculate_existing_exposure(
+
+        state
+
+    )
+
+    # --------------------------------------------------------
+
+    # 正式FIX17 calc_margin_capped_qty
+
+    # --------------------------------------------------------
+
+    capped_qty = runtime.calc_margin_capped_qty(
+
+        target_qty,
+
+        entry_price,
+
+        cash_now,
+
+        etf_mark,
+
+        etf_shares,
+
+        existing_gross_notional,
+
+        existing_unrealized,
+
+    )
+
+    capped_qty = int(
+
+        capped_qty
+
+    )
+
+    if capped_qty <= 0:
+
+        return {
+
+            "status": "SKIP",
+
+            "reason": "MARGIN_CAPPED_QTY_ZERO",
+
+            "candidate": candidate,
+
+            "target_qty": target_qty,
+
+        }
+
+    return {
+
+        "status": "ORDER",
+
+        "candidate": candidate,
+
+        "target_qty": target_qty,
+
+        "qty": capped_qty,
+
+        "notional": float(
+
+            capped_qty
+
+            * entry_price
+
+        ),
+
+    }
+
+# ============================================================
+
+# PAPER FILL
+
+# ============================================================
+
+def apply_paper_fill(
+
+    state,
+
+    order,
+
+    market_date,
+
+):
+
+    if order.get(
+
+        "status"
+
+    ) != "ORDER":
+
+        return None
+
+    c = order[
+
+        "candidate"
+
+    ]
+
+    qty = int(
+
+        order[
+
+            "qty"
+
+        ]
+
+    )
+
+    entry_price = float(
+
+        c[
+
+            "entry_price"
+
+        ]
+
+    )
+
+    side = c[
+
+        "side"
+
+    ]
+
+    # --------------------------------------------------------
+
+    # 信用売買想定
+
+    #
+
+    # cashは建玉代金全額を差し引かない。
+
+    # FIX17 margin logicは正式関数側で制御済み。
+
+    # --------------------------------------------------------
+
+    position = {
+
+        "trade_id": c[
+
+            "trade_id"
+
+        ],
+
+        "code": c[
+
+            "code"
+
+        ],
+
+        "side": side,
+
+        "entry_price": entry_price,
+
+        "mark_price": entry_price,
+
+        "qty": qty,
+
+        "entry_notional": float(
+
+            entry_price
+
+            * qty
+
+        ),
+
+        "market_date": market_date,
+
+        "entry_datetime": c.get(
+
+            "entry_datetime"
+
+        ),
+
+        "status": "OPEN",
+
+        "source": "FIX17_OFFICIAL_PIPELINE",
+
+        "created_at": datetime.now().isoformat(),
+
+    }
+
+    state.setdefault(
+
+        "positions",
+
+        []
+
+    ).append(
+
+        position
+
+    )
+
+    state[
+
+        "updated_at"
+
+    ] = datetime.now().isoformat()
+
+    return position
+
+# ============================================================
+
+# OFFICIAL ENTRY-TIME STATE
+
+# ============================================================
+
+def get_fix17_position_state(
+
+    runtime,
+
+    state,
+
+    market_date,
+
+):
+
+    broker_active = active_positions(
+
+        state
+
+    )
+
+    return runtime.calc_entry_time_position_state(
+
+        broker_active,
+
+        market_date,
+
+    )
+
+# ============================================================
+
+# PROCESS CANDIDATES
+
+# ============================================================
+
+def execute_fix17_candidate_batch():
+
+    state = ensure_paper_state()
+
+    payload = load_fix17_candidates()
+
+    market_date = payload.get(
+
+        "market_date"
+
+    )
+
+    candidates = payload.get(
+
+        "candidates",
+
+        []
+
+    )
+
+    if not candidates:
+
+        result = {
+
+            "status": "NO_CANDIDATES",
+
+            "market_date": market_date,
+
+            "candidate_count": 0,
+
+            "orders": [],
+
+            "fills": [],
+
+            "time": datetime.now().isoformat(),
+
+        }
+
+        save_json(
+
+            FIX17_EXECUTION_FILE,
+
+            result
+
+        )
+
+        return result
+
+    runtime = load_fix17_runtime_module()
+
+    # --------------------------------------------------------
+
+    # 正式 position state
+
+    # --------------------------------------------------------
+
+    position_state = (
+
+        get_fix17_position_state(
+
+            runtime,
+
+            state,
+
+            market_date,
+
+        )
+
+    )
+
+    orders = []
+
+    fills = []
+
+    for raw_candidate in candidates:
+
+        order = calculate_fix17_order(
+
+            runtime,
+
+            raw_candidate,
+
+            state,
+
+        )
+
+        orders.append(
+
+            order
+
+        )
+
+        if order.get(
+
+            "status"
+
+        ) != "ORDER":
+
+            continue
+
+        fill = apply_paper_fill(
+
+            state,
+
+            order,
+
+            market_date,
+
+        )
+
+        if fill is not None:
+
+            fills.append(
+
+                fill
+
+            )
+
+    save_json(
+
+        STATE_FILE,
+
+        state
+
+    )
+
+    result = {
+
+        "status": "COMPLETE",
+
+        "market_date": market_date,
+
+        "candidate_count": len(
+
+            candidates
+
+        ),
+
+        "order_count": sum(
+
+            1
+
+            for x in orders
+
+            if x.get(
+
+                "status"
+
+            ) == "ORDER"
+
+        ),
+
+        "fill_count": len(
+
+            fills
+
+        ),
+
+        "position_state_repr": repr(
+
+            position_state
+
+        ),
+
+        "orders": orders,
+
+        "fills": fills,
+
+        "time": datetime.now().isoformat(),
+
+    }
+
+    save_json(
+
+        FIX17_EXECUTION_FILE,
+
+        result
+
+    )
+
+    return result
+
+# ============================================================
+
+# END FIX17 OFFICIAL LIVE EXECUTION LAYER
+
+# ============================================================
