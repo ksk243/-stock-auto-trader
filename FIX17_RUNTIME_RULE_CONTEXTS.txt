@@ -1,0 +1,1129 @@
+FIX17 OFFICIAL RULE CONTEXTS
+====================================================================================================
+Official SHA256: 9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4
+
+
+====================================================================================================
+PATTERN: target_notional = long_remaining_capacity
+====================================================================================================
+HITS: 1
+
+[1] FIX17_ROOT line=1467
+----------------------------------------------------------------------------------------------------
+01459:                                 _qty = pd.to_numeric(_p.get('Quantity', np.nan), errors='coerce')
+01460:                                 if np.isfinite(_px) and np.isfinite(_qty):
+01461:                                     _notional = float(_px) * float(_qty)
+01462:                                 else:
+01463:                                     _notional = 0.0
+01464:                             current_long_gross += float(_notional)
+01465:                         long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)
+01466:                         long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)
+01467:                         target_notional = long_remaining_capacity
+01468:                 else:
+01469:                     target_notional = broker_strategy_equity * leverage
+01470:                 target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)
+01471:                 lot_notional_before_margin = target_qty * entry_price
+01472:                 pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)
+01473:                 margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])
+01474:                 qty = int(margin_check['AllowedQty'])
+01475:                 actual_notional = qty * entry_price
+01476:                 utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan
+01477:                 skipped = qty == 0
+01478:                 if target_qty == 0:
+01479:                     skip_reason = 'LOT_TOO_LARGE'
+
+====================================================================================================
+PATTERN: LONG_CAP_PER_STOCK
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: RS20_corrected
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: RVOL20
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: turnover_median_20d_oku
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: ORB15_LongSignal
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: ORB15_ShortSignal
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: CrossPass_EXACT
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: EntryPriceFormal
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: FormalEntryPrice
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: ENTRY
+====================================================================================================
+HITS: 6
+
+[1] FIX17_ROOT line=103
+----------------------------------------------------------------------------------------------------
+00095: 
+00096: 
+00097: # ============================================================
+00098: # EMBEDDED OFFICIAL FIX15 PARENT
+00099: # ============================================================
+00100: 
+00101: FIX16_EMBEDDED_PARENT_SHA256 = '2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b'
+00102: 
+00103: FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\n# FIX15 OFFICIAL STANDALONE\n#\n# Parent:\n#   FIX14_OFFICIAL_FULL_SOURCE.py\n#   File ID:\n#       1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk\n#\n# FIX15 addition:\n#   Dynamic Japanese specified-account tax model\n#   TAX_RATE = 20.315%\n#\n# Tax semantics:\n#\n#   CREDIT EXIT:\n#       TaxablePnL =\n#           BrokerPnL\n#           - LONG interest / SHORT borrow cost\n#           - commission\n#\n#   Tax:\n#       new_tax =\n#           max(yearly_taxable_pnl, 0)\n#           * 0.20315\n#\n#       positive TaxChange:\n#           immediate withholding\n#\n#       negative TaxChange:\n#           immediate same-year refund\n#\n#   No cross-year loss carryforward in this model.\n#\n#   1557 realized PnL enters the same yearly tax ledger.\n#\n# IMPORTANT:\n#   FIX14 ENTRY / EXIT / SHORT / CASH10 / margin / leverage rules are unchanged.\n#\n# Validated:\n#   MTM      : 5,271,872.91\n#   Return   : +371.63%\n#   MaxDD    : -17.13%\n#   Trades   : 647\n#   LONG     : 414\n#   SHORT    : 233\n#   Cash     : 964,472.91\n#   ETF      : 36\n#   MinCash  : 56,347.78\n#   NegCash  : 0\n#   NetTax   : 789,998.93\n#\n# ==========================================================================================\n\nimport re\nimport io\nimport copy\nimport hashlib\nimport contextlib\n\nimport numpy as np\nimport pandas as pd\n\n\n# ==========================================================================================\n# DRIVE AUTH\n# ==========================================================================================\n\ntry:\n    from google.colab import auth\n    auth.authenticate_user()\nexcept Exception:\n    pass\n\nimport google.auth\nfrom googleapiclient.discovery import build\n\n_creds, _ = google.auth.default()\n_drive = build("drive", "v3", credentials=_creds)\n\n\n# ==========================================================================================\n# CONSTANTS\n# ==========================================================================================\n\nFIX11_RECOVERY_ID = "1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n"\n\nFIX11_BASE_SHA = (\n    "cb4d239f907ec3d8377902f5a59205bb"\n    "96151da8ebf5fcd0cf21573ea3568ea9"\n)\n\nFIX14_FILE_ID = "1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk"\n\nFIX14_SHA = (\n    "53632969dec8eb36558bdf26866688f8"\n    "81f6598a90002cf89c868a3c9d136586"\n)\n\nTAX_RATE_FIX15 = 0.20315\n\nINITIAL_CAPITAL_FIX15 = 1_117_792.0\n\n\n# ==========================================================================================\n# HELPERS\n# ==========================================================================================\n\ndef _download_text(file_id):\n\n    data = (\n        _drive.files()\n        .get_media(fileId=file_id)\n        .execute()\n    )\n\n    if isinstance(data, bytes):\n        return data.decode("utf-8")\n\n    return str(data)\n\n\ndef _sha256_text(text):\n\n    return hashlib.sha256(\n        text.encode("utf-8")\n    ).hexdigest()\n\n\n# ==========================================================================================\n# 1. FIX11 RECOVERY\n# ==========================================================================================\n\nrecovery_source = _download_text(\n    FIX11_RECOVERY_ID\n)\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            recovery_source,\n            "FIX11_RECOVERY_LOADER",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nif "base_code" not in globals():\n\n    raise RuntimeError(\n        "FIX11 recovery failed: base_code missing"\n    )\n\n\nbase_sha = _sha256_text(\n    base_code\n)\n\nif base_sha != FIX11_BASE_SHA:\n\n    raise RuntimeError(\n        "FIX11 base SHA mismatch\\n"\n        f"expected={FIX11_BASE_SHA}\\n"\n        f"actual  ={base_sha}"\n    )\n\n\n# ==========================================================================================\n# 2. EXACT FIX11 BASE\n# ==========================================================================================\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            base_code,\n            "FIX11_OFFICIAL_BASE",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nfor _name in [\n    "events_by_date",\n    "entry_meta",\n    "daily_mark_map",\n]:\n\n    if _name not in globals():\n\n        raise RuntimeError(\n            f"FIX11 base restore failed: {_name}"\n        )\n\n\n# ==========================================================================================\n# 3. EXACT FIX14\n# ==========================================================================================\n\nfix14_source = _download_text(\n    FIX14_FILE_ID\n)\n\nfix14_sha = _sha256_text(\n    fix14_source\n)\n\nif fix14_sha != FIX14_SHA:\n\n    raise RuntimeError(\n        "FIX14 SHA mismatch\\n"\n        f"expected={FIX14_SHA}\\n"\n        f"actual  ={fix14_sha}"\n    )\n\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            fix14_source,\n            "FIX14_OFFICIAL",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nif "simulate_fix11" not in globals():\n\n    raise RuntimeError(\n        "FIX14 simulate_fix11 missing"\n    )\n\n\n# ==========================================================================================\n# 4. TAX ENGINE\n# ==========================================================================================\n\nFIX15_TAX_STATE = {}\nFIX15_TAX_LEDGER = []\n\nFIX15_ETF_BOOK = {\n    "avg_cost": 0.0,\n}\n\n\ndef fix15_ensure_tax_year(year):\n\n    year = int(year)\n\n    if year not in FIX15_TAX_STATE:\n\n        FIX15_TAX_STATE[year] = {\n            "TaxablePnL": 0.0,\n            "TheoreticalTax": 0.0,\n            "Withheld": 0.0,\n            "Refunded": 0.0,\n        }\n\n    return FIX15_TAX_STATE[year]\n\n\ndef fix15_apply_tax(\n    dt,\n    taxable_pnl,\n    source,\n    detail="",\n):\n\n    dt = pd.Timestamp(dt)\n\n    s = fix15_ensure_tax_year(\n        dt.year\n    )\n\n    taxable_pnl = float(\n        taxable_pnl\n    )\n\n    old_ytd = float(\n        s["TaxablePnL"]\n    )\n\n    old_tax = float(\n        s["TheoreticalTax"]\n    )\n\n    new_ytd = (\n        old_ytd\n        +\n        taxable_pnl\n    )\n\n    new_tax = (\n        max(\n            new_ytd,\n            0.0,\n        )\n        *\n        TAX_RATE_FIX15\n    )\n\n    tax_change = (\n        new_tax\n        -\n        old_tax\n    )\n\n    if tax_change > 0:\n\n        s["Withheld"] += (\n            tax_change\n        )\n\n    elif tax_change < 0:\n\n        s["Refunded"] += (\n            -tax_change\n        )\n\n    s["TaxablePnL"] = (\n        new_ytd\n    )\n\n    s["TheoreticalTax"] = (\n        new_tax\n    )\n\n    FIX15_TAX_LEDGER.append({\n        "Datetime": dt,\n        "Year": int(dt.year),\n        "Source": str(source),\n        "Detail": str(detail),\n        "TaxablePnL": taxable_pnl,\n        "TaxChange": tax_change,\n        "YTDBefore": old_ytd,\n        "YTDAfter": new_ytd,\n        "TaxBefore": old_tax,\n        "TaxAfter": new_tax,\n    })\n\n    return float(\n        tax_change\n    )\n\n\n# ==========================================================================================\n# 5. EXTRACT EXACT FIX14 simulate_fix11\n# ==========================================================================================\n\n_src_lines = fix14_source.splitlines()\n\n_start = None\n_end = None\n\nfor _i, _line in enumerate(_src_lines):\n\n    if _line.startswith("def simulate_fix11():"):\n\n        _start = _i\n        break\n\n\nif _start is None:\n\n    raise RuntimeError(\n        "FIX14 simulate_fix11 source not found"\n    )\n\n\nfor _i in range(\n    _start + 1,\n    len(_src_lines),\n):\n\n    if _src_lines[_i].startswith("def "):\n\n        _end = _i\n        break\n\n\nif _end is None:\n\n    _end = len(_src_lines)\n\n\nFIX15_SIMULATOR_SOURCE = "\\n".join(\n    _src_lines[\n        _start:_end\n    ]\n)\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE.replace(\n        "def simulate_fix11():",\n        "def simulate_fix15():",\n        1,\n    )\n)\n\n\n# ==========================================================================================\n# 6. PATCH 1557 SELL TAX\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    etf_shares\\s*-=\\s*sell_shares\\s*\\n\n    (?P=indent)cash\\s*\\+=\\s*proceeds\\s*-\\s*ETF_SELL_FEE\\s*\\n\n    (?P=indent)sold_etf_today\\s*=\\s*sell_shares\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH A failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}fix15_etf_realized = (\n{_ind}    float(sell_shares)\n{_ind}    * (\n{_ind}        float(etf_open)\n{_ind}        - float(FIX15_ETF_BOOK["avg_cost"])\n{_ind}    )\n{_ind}    - float(ETF_SELL_FEE)\n{_ind})\n\n{_ind}etf_shares -= sell_shares\n{_ind}cash += proceeds - ETF_SELL_FEE\n\n{_ind}fix15_spot_tax = fix15_apply_tax(\n{_ind}    date,\n{_ind}    fix15_etf_realized,\n{_ind}    "1557_SPOT",\n{_ind}    "SELL_CASH_RECOVERY",\n{_ind})\n\n{_ind}cash -= fix15_spot_tax\n\n{_ind}if etf_shares == 0:\n{_ind}    FIX15_ETF_BOOK["avg_cost"] = 0.0\n\n{_ind}sold_etf_today = sell_shares\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 7. PATCH 1557 BUY COST BOOK\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    cash_before\\s*=\\s*float\\(cash\\)\\s*\\n\n    (?P=indent)etf_shares\\s*\\+=\\s*buy_shares\\s*\\n\n    (?P=indent)cash\\s*-=\\s*total_cost\\s*\\n\n    (?P=indent)bought_etf_today\\s*=\\s*buy_shares\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH B failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}cash_before = float(cash)\n\n{_ind}fix15_old_etf_shares = int(\n{_ind}    etf_shares\n{_ind})\n\n{_ind}fix15_old_cost = (\n{_ind}    float(fix15_old_etf_shares)\n{_ind}    * float(FIX15_ETF_BOOK["avg_cost"])\n{_ind})\n\n{_ind}fix15_new_cost = (\n{_ind}    float(buy_shares)\n{_ind}    * float(etf_open)\n{_ind}    + float(ETF_BUY_FEE)\n{_ind})\n\n{_ind}etf_shares += buy_shares\n\n{_ind}if etf_shares > 0:\n\n{_ind}    FIX15_ETF_BOOK["avg_cost"] = (\n{_ind}        fix15_old_cost\n{_ind}        + fix15_new_cost\n{_ind}    ) / float(etf_shares)\n\n{_ind}cash -= total_cost\n\n{_ind}bought_etf_today = buy_shares\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 8. PATCH CREDIT EXIT TAX\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    broker_strategy_equity\\s*\\+=\\s*broker_pnl\\s*\\n\n    (?P=indent)cash\\s*\\+=\\s*broker_pnl\\s*\\n\n    (?P=indent)broker_realized_today\\s*\\+=\\s*broker_pnl\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH C failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}broker_strategy_equity += broker_pnl\n{_ind}cash += broker_pnl\n\n{_ind}fix15_exit_dt = pd.Timestamp(\n{_ind}    e["Datetime"]\n{_ind})\n\n{_ind}fix15_entry_dt = pd.Timestamp(\n{_ind}    bp["EntryDatetime"]\n{_ind})\n\n{_ind}fix15_raw_days = max(\n{_ind}    (\n{_ind}        fix15_exit_dt\n{_ind}        - fix15_entry_dt\n{_ind}    ).total_seconds()\n{_ind}    / 86400.0,\n{_ind}    0.0,\n{_ind})\n\n{_ind}fix15_financing_days = max(\n{_ind}    fix15_raw_days,\n{_ind}    1.0,\n{_ind})\n\n{_ind}fix15_notional = float(\n{_ind}    bp["ActualNotional"]\n{_ind})\n\n{_ind}if side == "LONG":\n\n{_ind}    fix15_financing_tax = (\n{_ind}        fix15_notional\n{_ind}        * LONG_INTEREST_ANNUAL\n{_ind}        * fix15_financing_days\n{_ind}        / DAY_COUNT\n{_ind}    )\n\n{_ind}else:\n\n{_ind}    fix15_financing_tax = (\n{_ind}        fix15_notional\n{_ind}        * SHORT_LENDING_ANNUAL\n{_ind}        * fix15_financing_days\n{_ind}        / DAY_COUNT\n{_ind}    )\n\n{_ind}fix15_taxable_pnl = (\n{_ind}    float(broker_pnl)\n{_ind}    - float(fix15_financing_tax)\n{_ind})\n\n{_ind}fix15_tax_change = fix15_apply_tax(\n{_ind}    fix15_exit_dt,\n{_ind}    fix15_taxable_pnl,\n{_ind}    f"CREDIT_{{side}}",\n{_ind}    bp["Code"],\n{_ind})\n\n{_ind}cash -= fix15_tax_change\n\n{_ind}broker_strategy_equity -= (\n{_ind}    fix15_tax_change\n{_ind})\n\n{_ind}broker_realized_today += broker_pnl\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 9. COMPILE\n# ==========================================================================================\n\ncompile(\n    FIX15_SIMULATOR_SOURCE,\n    "FIX15_DYNAMIC_TAX",\n    "exec",\n)\n\nexec(\n    compile(\n        FIX15_SIMULATOR_SOURCE,\n        "FIX15_DYNAMIC_TAX",\n        "exec",\n    ),\n    globals(),\n)\n\n\nif "simulate_fix15" not in globals():\n\n    raise RuntimeError(\n        "simulate_fix15 creation failed"\n    )\n\n\n# ==========================================================================================\n# 10. RESET + RUN\n# ==========================================================================================\n\nFIX15_TAX_STATE.clear()\nFIX15_TAX_LEDGER.clear()\n\nFIX15_ETF_BOOK["avg_cost"] = 0.0\n\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    FIX15_RESULT = simulate_fix15()\n\n\nif not isinstance(\n    FIX15_RESULT,\n    tuple,\n):\n\n    raise RuntimeError(\n        "FIX15_RESULT is not tuple"\n    )\n\n\ndaily15 = FIX15_RESULT[0]\nentry15 = FIX15_RESULT[1]\ntrade15 = FIX15_RESULT[2]\netf15 = FIX15_RESULT[3]\n\n\n# ==========================================================================================\n# 11. FINAL PERFORMANCE\n# ==========================================================================================\n\nd = daily15.copy()\n\nd["Date"] = pd.to_datetime(\n    d["Date"]\n)\n\nd = (\n    d.sort_values("Date")\n    .reset_index(drop=True)\n)\n\nfinal_mtm = float(\n    d.iloc[-1]["TotalEquityMTM"]\n)\n\nfinal_cash = float(\n    d.iloc[-1]["Cash"]\n)\n\nfinal_etf = int(\n    d.iloc[-1]["ETF_Shares"]\n)\n\nreturn_pct = (\n    final_mtm\n    / INITIAL_CAPITAL_FIX15\n    - 1.0\n) * 100.0\n\n\nrunning_max = (\n    d["TotalEquityMTM"]\n    .cummax()\n)\n\nmax_dd_pct = float(\n    (\n        d["TotalEquityMTM"]\n        / running_max\n        - 1.0\n    ).min()\n    * 100.0\n)\n\n\nmin_cash = float(\n    d["Cash"].min()\n)\n\nmin_cash_date = pd.Timestamp(\n    d.loc[\n        d["Cash"].idxmin(),\n        "Date",\n    ]\n)\n\nnegative_cash_days = int(\n    (d["Cash"] < 0).sum()\n)\n\n\ntrade_side = (\n    trade15["Side"]\n    .astype(str)\n    .str.upper()\n)\n\ntrades = int(\n    len(trade15)\n)\n\nlong_n = int(\n    (trade_side == "LONG").sum()\n)\n\nshort_n = int(\n    (trade_side == "SHORT").sum()\n)\n\n\ntax15 = pd.DataFrame(\n    FIX15_TAX_LEDGER\n)\n\nnet_tax = float(\n    tax15["TaxChange"].sum()\n)\n\n\nwithheld = float(\n    tax15.loc[\n        tax15["TaxChange"] > 0,\n        "TaxChange"\n    ].sum()\n)\n\n\nrefunded = float(\n    -tax15.loc[\n        tax15["TaxChange"] < 0,\n        "TaxChange"\n    ].sum()\n)\n\n\n# ==========================================================================================\n# 12. ENTRY / EXIT AUDIT\n# ==========================================================================================\n\nexecuted15 = entry15[\n    ~entry15["Skipped"].fillna(False)\n].copy()\n\n\nentry_ids = set(\n    executed15[\n        "TradeID"\n    ].astype(str)\n)\n\n\nexit_ids = set(\n    trade15[\n        "TradeID"\n    ].astype(str)\n)\n\n\nif entry_ids != exit_ids:\n\n    raise RuntimeError(\n        "FIX15 ENTRY/EXIT ID mismatch"\n    )\n\n\nif int(\n    d.iloc[-1][\n        "BrokerOpenPositions"\n    ]\n) != 0:\n\n    raise RuntimeError(\n        "FIX15 open position remains"\n    )\n\n\nif len(tax15) != trades:\n\n    raise RuntimeError(\n        "FIX15 TAX event count mismatch"\n    )\n\n\n# ==========================================================================================\n# 13. TAX AUDIT\n# ==========================================================================================\n\nstate_tax = float(\n    sum(\n        x["TheoreticalTax"]\n        for x in FIX15_TAX_STATE.values()\n    )\n)\n\n\nif abs(\n    state_tax\n    -\n    net_tax\n) >= 0.01:\n\n    raise RuntimeError(\n        "FIX15 TAX state mismatch"\n    )\n\n\nfor _year, _s in FIX15_TAX_STATE.items():\n\n    _expected_tax = (\n        max(\n            float(\n                _s["TaxablePnL"]\n            ),\n            0.0,\n        )\n        *\n        TAX_RATE_FIX15\n    )\n\n    if abs(\n        float(\n            _s["TheoreticalTax"]\n        )\n        -\n        _expected_tax\n    ) >= 0.01:\n\n        raise RuntimeError(\n            f"FIX15 TAX yearly mismatch: {_year}"\n        )\n\n\n# ==========================================================================================\n# 14. VALIDATED TARGET AUDIT\n# ==========================================================================================\n\nEXPECTED = {\n    "FinalMTM": 5271872.91,\n    "ReturnPct": 371.63,\n    "MaxDDPct": -17.13,\n    "Trades": 647,\n    "LONG": 414,\n    "SHORT": 233,\n    "FinalCash": 964472.91,\n    "ETF": 36,\n    "MinCash": 56347.78,\n    "NegativeCashDays": 0,\n    "NetTax": 789998.93,\n}\n\n\nchecks = [\n    abs(\n        final_mtm\n        -\n        EXPECTED["FinalMTM"]\n    ) < 1.0,\n\n    abs(\n        return_pct\n        -\n        EXPECTED["ReturnPct"]\n    ) < 0.02,\n\n    abs(\n        max_dd_pct\n        -\n        EXPECTED["MaxDDPct"]\n    ) < 0.02,\n\n    trades\n    ==\n    EXPECTED["Trades"],\n\n    long_n\n    ==\n    EXPECTED["LONG"],\n\n    short_n\n    ==\n    EXPECTED["SHORT"],\n\n    abs(\n        final_cash\n        -\n        EXPECTED["FinalCash"]\n    ) < 1.0,\n\n    final_etf\n    ==\n    EXPECTED["ETF"],\n\n    abs(\n        min_cash\n        -\n        EXPECTED["MinCash"]\n    ) < 1.0,\n\n    negative_cash_days\n    ==\n    EXPECTED["NegativeCashDays"],\n\n    abs(\n        net_tax\n        -\n        EXPECTED["NetTax"]\n    ) < 1.0,\n]\n\n\nif not all(checks):\n\n    raise RuntimeError(\n        "FIX15 validated target mismatch"\n    )\n\n\n# ==========================================================================================\n# 15. EXPORT\n# ==========================================================================================\n\nFIX15_TAX_LEDGER_DF = tax15.copy()\n\nFIX15_FINAL_METRICS = {\n    "InitialCapital":\n        INITIAL_CAPITAL_FIX15,\n\n    "FinalMTM":\n        final_mtm,\n\n    "ReturnPct":\n        return_pct,\n\n    "MaxDDPct":\n        max_dd_pct,\n\n    "Trades":\n        trades,\n\n    "LONG":\n        long_n,\n\n    "SHORT":\n        short_n,\n\n    "FinalCash":\n        final_cash,\n\n    "ETF":\n        final_etf,\n\n    "MinCash":\n        min_cash,\n\n    "MinCashDate":\n        min_cash_date,\n\n    "NegativeCashDays":\n        negative_cash_days,\n\n    "NetTax":\n        net_tax,\n\n    "Withheld":\n        withheld,\n\n    "Refunded":\n        refunded,\n}\n\n\nFIX15_DYNAMIC_TAX_READY = True\n\n\n# ==========================================================================================\n# OUTPUT\n# ==========================================================================================\n\nprint("=" * 64)\nprint("FIX15 OFFICIAL STANDALONE")\nprint("=" * 64)\n\nprint(\n    f"MTM    : {final_mtm:,.2f}"\n)\n\nprint(\n    f"Return : {return_pct:+.2f}%"\n)\n\nprint(\n    f"MaxDD  : {max_dd_pct:+.2f}%"\n)\n\nprint(\n    f"Trades : {trades}"\n)\n\nprint(\n    f"LONG   : {long_n}"\n)\n\nprint(\n    f"SHORT  : {short_n}"\n)\n\nprint(\n    f"Cash   : {final_cash:,.2f}"\n)\n\nprint(\n    f"ETF    : {final_etf}"\n)\n\nprint(\n    f"MinCash: {min_cash:,.2f}"\n)\n\nprint(\n    f"NegCash: {negative_cash_days}"\n)\n\nprint(\n    f"NetTax : {net_tax:,.2f}"\n)\n\nprint()\nprint(\n    "★★★★★ FIX15 OFFICIAL STANDALONE PASS ★★★★★"\n)\n'
+00104: 
+00105: _parent_bytes = (
+00106:     FIX16_EMBEDDED_PARENT_SOURCE
+00107:     .encode('utf-8')
+00108: )
+00109: 
+00110: _embedded_parent_sha = hashlib.sha256(
+00111:     _parent_bytes
+00112: ).hexdigest()
+00113: 
+00114: if (
+00115:     _embedded_parent_sha
+
+[2] FIX17_ROOT line=391
+----------------------------------------------------------------------------------------------------
+00383:         * (
+00384:             1.0
+00385:             + trigger_pct
+00386:         )
+00387:     )
+00388: 
+00389: 
+00390:     # ========================================================
+00391:     # ENTRYの次の1分足から開始
+00392:     # ========================================================
+00393: 
+00394:     start = int(
+00395:         np.searchsorted(
+00396:             dt,
+00397:             entry_dt,
+00398:             side="right",
+00399:         )
+00400:     )
+00401: 
+00402: 
+00403:     # ========================================================
+
+[3] FIX17_ROOT line=1490
+----------------------------------------------------------------------------------------------------
+01482:                 else:
+01483:                     skip_reason = ''
+01484:                 entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional': target_notional, 'TargetQty100': target_qty, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'PreExistingGrossNotional': pre['GrossNotional'], 'PreExistingUnrealized': pre['TotalUnrealized'], 'EntryEffectiveCollateral': margin_check['EffectiveCollateral'], 'MaxAdditionalNotionalByMargin': margin_check['MaxNotionalByMargin'], 'PreMarginPct': margin_check['PreMarginPct'], 'PostMarginPct': margin_check['PostMarginPct'], 'Quantity': qty, 'ActualNotional': actual_notional, 'UnusedTargetNotional': target_notional - actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimited': margin_check['MarginLimited'], 'MissingPrevMarks': pre['MissingPrevMarks'], 'Skipped': skipped, 'SkipReason': skip_reason})
+01485:                 if skipped:
+01486:                     broker_skipped.add(trade_id)
+01487:                     continue
+01488:                 post_margin_pct = margin_check['PostMarginPct']
+01489:                 if np.isfinite(post_margin_pct) and post_margin_pct < MIN_MARGIN_RATIO * 100.0 - 1e-09:
+01490:                     raise RuntimeError(f'ENTRY margin check failure: {trade_id} {post_margin_pct:.6f}%')
+01491:                 broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'ActualNotional': actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimitedAtEntry': margin_check['MarginLimited']}
+01492:         long_notional = 0.0
+01493:         short_notional = 0.0
+01494:         long_unrealized = 0.0
+01495:         short_unrealized = 0.0
+01496:         missing_marks = []
+01497:         for trade_id, p in broker_active.items():
+01498:             code = p['Code']
+01499:             entry_price = float(p['EntryPrice'])
+01500:             qty = int(p['Quantity'])
+01501:             actual_notional = float(p['ActualNotional'])
+01502:             mark = daily_mark_map.get((date, code), np.nan)
+
+[4] FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE line=37
+----------------------------------------------------------------------------------------------------
+00029: #       negative TaxChange:
+00030: #           immediate same-year refund
+00031: #
+00032: #   No cross-year loss carryforward in this model.
+00033: #
+00034: #   1557 realized PnL enters the same yearly tax ledger.
+00035: #
+00036: # IMPORTANT:
+00037: #   FIX14 ENTRY / EXIT / SHORT / CASH10 / margin / leverage rules are unchanged.
+00038: #
+00039: # Validated:
+00040: #   MTM      : 5,271,872.91
+00041: #   Return   : +371.63%
+00042: #   MaxDD    : -17.13%
+00043: #   Trades   : 647
+00044: #   LONG     : 414
+00045: #   SHORT    : 233
+00046: #   Cash     : 964,472.91
+00047: #   ETF      : 36
+00048: #   MinCash  : 56,347.78
+00049: #   NegCash  : 0
+
+[5] FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE line=812
+----------------------------------------------------------------------------------------------------
+00804:     -tax15.loc[
+00805:         tax15["TaxChange"] < 0,
+00806:         "TaxChange"
+00807:     ].sum()
+00808: )
+00809: 
+00810: 
+00811: # ==========================================================================================
+00812: # 12. ENTRY / EXIT AUDIT
+00813: # ==========================================================================================
+00814: 
+00815: executed15 = entry15[
+00816:     ~entry15["Skipped"].fillna(False)
+00817: ].copy()
+00818: 
+00819: 
+00820: entry_ids = set(
+00821:     executed15[
+00822:         "TradeID"
+00823:     ].astype(str)
+00824: )
+
+[6] FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE line=837
+----------------------------------------------------------------------------------------------------
+00829:         "TradeID"
+00830:     ].astype(str)
+00831: )
+00832: 
+00833: 
+00834: if entry_ids != exit_ids:
+00835: 
+00836:     raise RuntimeError(
+00837:         "FIX15 ENTRY/EXIT ID mismatch"
+00838:     )
+00839: 
+00840: 
+00841: if int(
+00842:     d.iloc[-1][
+00843:         "BrokerOpenPositions"
+00844:     ]
+00845: ) != 0:
+00846: 
+00847:     raise RuntimeError(
+00848:         "FIX15 open position remains"
+00849:     )
+
+====================================================================================================
+PATTERN: ExitReason
+====================================================================================================
+HITS: 4
+
+[1] FIX17_ROOT line=456
+----------------------------------------------------------------------------------------------------
+00448:             "ExitDatetime":
+00449:                 pd.Timestamp(
+00450:                     formal_exit_dt
+00451:                 ),
+00452: 
+00453:             "ReturnPct":
+00454:                 formal_ret,
+00455: 
+00456:             "ExitReason":
+00457:                 "FORMAL_EXIT",
+00458: 
+00459:             "TriggerHit":
+00460:                 False,
+00461: 
+00462:             "TriggerDatetime":
+00463:                 pd.NaT,
+00464: 
+00465:             "TrailExit":
+00466:                 False,
+00467: 
+00468:             "MaxHigh":
+
+[2] FIX17_ROOT line=583
+----------------------------------------------------------------------------------------------------
+00575:                 "ExitDatetime":
+00576:                     pd.Timestamp(
+00577:                         dt[i]
+00578:                     ),
+00579: 
+00580:                 "ReturnPct":
+00581:                     ret,
+00582: 
+00583:                 "ExitReason":
+00584:                     "OPEN_BELOW_PROFIT_STOP",
+00585: 
+00586:                 "TriggerHit":
+00587:                     True,
+00588: 
+00589:                 "TriggerDatetime":
+00590:                     pd.Timestamp(
+00591:                         trigger_dt
+00592:                     ),
+00593: 
+00594:                 "TrailExit":
+00595:                     True,
+
+[3] FIX17_ROOT line=644
+----------------------------------------------------------------------------------------------------
+00636:                 "ExitDatetime":
+00637:                     pd.Timestamp(
+00638:                         dt[i]
+00639:                     ),
+00640: 
+00641:                 "ReturnPct":
+00642:                     ret,
+00643: 
+00644:                 "ExitReason":
+00645:                     (
+00646:                         "TRIGGER_FLOOR"
+00647:                         if stop_price
+00648:                         <= trigger_price
+00649:                         * (
+00650:                             1.0
+00651:                             + 1e-12
+00652:                         )
+00653:                         else
+00654:                         "TRAIL"
+00655:                     ),
+00656: 
+
+[4] FIX17_ROOT line=711
+----------------------------------------------------------------------------------------------------
+00703: 
+00704:     return {
+00705:         "ExitDatetime":
+00706:             pd.NaT,
+00707: 
+00708:         "ReturnPct":
+00709:             np.nan,
+00710: 
+00711:         "ExitReason":
+00712:             "NO_EXIT",
+00713: 
+00714:         "TriggerHit":
+00715:             True,
+00716: 
+00717:         "TriggerDatetime":
+00718:             pd.Timestamp(
+00719:                 trigger_dt
+00720:             ),
+00721: 
+00722:         "TrailExit":
+00723:             False,
+
+====================================================================================================
+PATTERN: ExitDatetime
+====================================================================================================
+HITS: 7
+
+[1] FIX17_ROOT line=349
+----------------------------------------------------------------------------------------------------
+00341:         pd.Timestamp(
+00342:             trade["EntryDatetime"]
+00343:         ),
+00344:         "ns",
+00345:     )
+00346: 
+00347:     formal_exit_dt = np.datetime64(
+00348:         pd.Timestamp(
+00349:             trade["ExitDatetime"]
+00350:         ),
+00351:         "ns",
+00352:     )
+00353: 
+00354:     entry_price = float(
+00355:         trade["EntryPrice"]
+00356:     )
+00357: 
+00358:     formal_ret = float(
+00359:         trade["BrokerReturnPct"]
+00360:     )
+00361: 
+
+[2] FIX17_ROOT line=448
+----------------------------------------------------------------------------------------------------
+00440:     # Triggerなし
+00441:     #
+00442:     # → FIX15正式EXITを完全維持
+00443:     # ========================================================
+00444: 
+00445:     if trigger_idx is None:
+00446: 
+00447:         return {
+00448:             "ExitDatetime":
+00449:                 pd.Timestamp(
+00450:                     formal_exit_dt
+00451:                 ),
+00452: 
+00453:             "ReturnPct":
+00454:                 formal_ret,
+00455: 
+00456:             "ExitReason":
+00457:                 "FORMAL_EXIT",
+00458: 
+00459:             "TriggerHit":
+00460:                 False,
+
+[3] FIX17_ROOT line=575
+----------------------------------------------------------------------------------------------------
+00567: 
+00568:             ret = (
+00569:                 exit_exec
+00570:                 / entry_price
+00571:                 - 1.0
+00572:             ) * 100.0
+00573: 
+00574:             return {
+00575:                 "ExitDatetime":
+00576:                     pd.Timestamp(
+00577:                         dt[i]
+00578:                     ),
+00579: 
+00580:                 "ReturnPct":
+00581:                     ret,
+00582: 
+00583:                 "ExitReason":
+00584:                     "OPEN_BELOW_PROFIT_STOP",
+00585: 
+00586:                 "TriggerHit":
+00587:                     True,
+
+[4] FIX17_ROOT line=636
+----------------------------------------------------------------------------------------------------
+00628: 
+00629:             ret = (
+00630:                 exit_exec
+00631:                 / entry_price
+00632:                 - 1.0
+00633:             ) * 100.0
+00634: 
+00635:             return {
+00636:                 "ExitDatetime":
+00637:                     pd.Timestamp(
+00638:                         dt[i]
+00639:                     ),
+00640: 
+00641:                 "ReturnPct":
+00642:                     ret,
+00643: 
+00644:                 "ExitReason":
+00645:                     (
+00646:                         "TRIGGER_FLOOR"
+00647:                         if stop_price
+00648:                         <= trigger_price
+
+[5] FIX17_ROOT line=705
+----------------------------------------------------------------------------------------------------
+00697:             )
+00698: 
+00699: 
+00700:     # ========================================================
+00701:     # データ終了
+00702:     # ========================================================
+00703: 
+00704:     return {
+00705:         "ExitDatetime":
+00706:             pd.NaT,
+00707: 
+00708:         "ReturnPct":
+00709:             np.nan,
+00710: 
+00711:         "ExitReason":
+00712:             "NO_EXIT",
+00713: 
+00714:         "TriggerHit":
+00715:             True,
+00716: 
+00717:         "TriggerDatetime":
+
+[6] FIX17_ROOT line=754
+----------------------------------------------------------------------------------------------------
+00746: 
+00747:     _tid = str(
+00748:         _tr["TradeID"]
+00749:     )
+00750: 
+00751:     FIX16_TRAILING_EXIT_MAP[_tid] = {
+00752:         "Datetime":
+00753:             pd.Timestamp(
+00754:                 _r["ExitDatetime"]
+00755:             ),
+00756: 
+00757:         "ReturnPct":
+00758:             float(
+00759:                 _r["ReturnPct"]
+00760:             ),
+00761:     }
+00762: 
+00763: 
+00764: if len(FIX16_TRAILING_EXIT_MAP) != 474:
+00765: 
+00766:     raise RuntimeError(
+
+[7] FIX17_ROOT line=1435
+----------------------------------------------------------------------------------------------------
+01427: 
+01428:                 cash -= fix15_tax_change
+01429: 
+01430:                 broker_strategy_equity -= (
+01431:                     fix15_tax_change
+01432:                 )
+01433: 
+01434:                 broker_realized_today += broker_pnl
+01435:                 trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'TargetNotional': bp['TargetNotional'], 'LotNotionalBeforeMargin': bp['LotNotionalBeforeMargin'], 'ActualNotional': bp['ActualNotional'], 'TargetUtilizationPct': bp['TargetUtilizationPct'], 'FormalReturnPct': float(e['ReturnPct']), 'BrokerReturnPct': broker_r * 100.0, 'BrokerPnL': broker_pnl, 'MarginLimitedAtEntry': bp['MarginLimitedAtEntry']})
+01436:                 del broker_active[trade_id]
+01437:             else:
+01438:                 meta = entry_meta.get(trade_id)
+01439:                 if meta is None:
+01440:                     raise RuntimeError(f'entry_metaなし: {trade_id}')
+01441:                 entry_price = float(meta['EntryPrice'])
+01442:                 leverage = LONG_LEVERAGE if side == 'LONG' else SHORT_LEVERAGE
+01443:                 formal_notional = formal_equity * leverage
+01444:                 formal_active[trade_id] = {'Side': side, 'EntryNotional': formal_notional}
+01445:                 if broker_strategy_equity <= 0:
+01446:                     raise RuntimeError(f'Broker strategy equity <= 0: {date.date()}')
+01447:                 if side == 'LONG':
+
+====================================================================================================
+PATTERN: OPEN_BELOW_STOP
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: OPEN_BELOW_TRAIL
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: OPEN_ABOVE_TP
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: FixedStopPrice
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: EffectiveStopPrice
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: TrailActive
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: FIX16_TRIGGER_PCT
+====================================================================================================
+HITS: 3
+
+[1] FIX17_ROOT line=45
+----------------------------------------------------------------------------------------------------
+00037: 
+00038: import numpy as np
+00039: import pandas as pd
+00040: 
+00041: from google.colab import auth
+00042: from googleapiclient.discovery import build
+00043: from googleapiclient.http import MediaIoBaseDownload
+00044: 
+00045: FIX16_TRIGGER_PCT = 0.0375
+00046: FIX16_WIDTH_PCT   = 0.0175
+00047: EXIT_SLIPPAGE     = 0.0005
+00048: 
+00049: FIX16_PARENT_FILE_ID = '1SpTJNDpsxwCoid16_yKdMtly4duEaxXN'
+00050: FIX16_PARENT_SHA256  = '2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b'
+00051: 
+00052: FIX16_TARGET_MTM    = 6136042.33
+00053: FIX16_TARGET_RETURN = 448.94
+00054: FIX16_TARGET_MAXDD  = -17.11
+00055: FIX16_TARGET_TRADES = 663
+00056: FIX16_TARGET_LONG   = 430
+00057: FIX16_TARGET_SHORT  = 233
+
+[2] FIX17_ROOT line=743
+----------------------------------------------------------------------------------------------------
+00735: # ============================================================
+00736: 
+00737: FIX16_TRAILING_EXIT_MAP = {}
+00738: 
+00739: for _, _tr in trade474.iterrows():
+00740: 
+00741:     _r = simulate_profit_floor_trail(
+00742:         trade=_tr,
+00743:         trigger_pct=FIX16_TRIGGER_PCT,
+00744:         width_pct=FIX16_WIDTH_PCT,
+00745:     )
+00746: 
+00747:     _tid = str(
+00748:         _tr["TradeID"]
+00749:     )
+00750: 
+00751:     FIX16_TRAILING_EXIT_MAP[_tid] = {
+00752:         "Datetime":
+00753:             pd.Timestamp(
+00754:                 _r["ExitDatetime"]
+00755:             ),
+
+[3] FIX17_ROOT line=1071
+----------------------------------------------------------------------------------------------------
+01063:         int(
+01064:             _last["ETF_Shares"]
+01065:         ),
+01066: 
+01067:     "NetTax":
+01068:         _fix16_nettax,
+01069: 
+01070:     "TriggerPct":
+01071:         FIX16_TRIGGER_PCT,
+01072: 
+01073:     "WidthPct":
+01074:         FIX16_WIDTH_PCT,
+01075: }
+01076: 
+01077: 
+01078: _checks = [
+01079:     abs(
+01080:         _fix16_mtm
+01081:         -
+01082:         FIX16_TARGET_MTM
+01083:     ) < 0.02,
+
+====================================================================================================
+PATTERN: FIX16_WIDTH_PCT
+====================================================================================================
+HITS: 3
+
+[1] FIX17_ROOT line=46
+----------------------------------------------------------------------------------------------------
+00038: import numpy as np
+00039: import pandas as pd
+00040: 
+00041: from google.colab import auth
+00042: from googleapiclient.discovery import build
+00043: from googleapiclient.http import MediaIoBaseDownload
+00044: 
+00045: FIX16_TRIGGER_PCT = 0.0375
+00046: FIX16_WIDTH_PCT   = 0.0175
+00047: EXIT_SLIPPAGE     = 0.0005
+00048: 
+00049: FIX16_PARENT_FILE_ID = '1SpTJNDpsxwCoid16_yKdMtly4duEaxXN'
+00050: FIX16_PARENT_SHA256  = '2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b'
+00051: 
+00052: FIX16_TARGET_MTM    = 6136042.33
+00053: FIX16_TARGET_RETURN = 448.94
+00054: FIX16_TARGET_MAXDD  = -17.11
+00055: FIX16_TARGET_TRADES = 663
+00056: FIX16_TARGET_LONG   = 430
+00057: FIX16_TARGET_SHORT  = 233
+00058: FIX16_TARGET_NETTAX = 993875.77
+
+[2] FIX17_ROOT line=744
+----------------------------------------------------------------------------------------------------
+00736: 
+00737: FIX16_TRAILING_EXIT_MAP = {}
+00738: 
+00739: for _, _tr in trade474.iterrows():
+00740: 
+00741:     _r = simulate_profit_floor_trail(
+00742:         trade=_tr,
+00743:         trigger_pct=FIX16_TRIGGER_PCT,
+00744:         width_pct=FIX16_WIDTH_PCT,
+00745:     )
+00746: 
+00747:     _tid = str(
+00748:         _tr["TradeID"]
+00749:     )
+00750: 
+00751:     FIX16_TRAILING_EXIT_MAP[_tid] = {
+00752:         "Datetime":
+00753:             pd.Timestamp(
+00754:                 _r["ExitDatetime"]
+00755:             ),
+00756: 
+
+[3] FIX17_ROOT line=1074
+----------------------------------------------------------------------------------------------------
+01066: 
+01067:     "NetTax":
+01068:         _fix16_nettax,
+01069: 
+01070:     "TriggerPct":
+01071:         FIX16_TRIGGER_PCT,
+01072: 
+01073:     "WidthPct":
+01074:         FIX16_WIDTH_PCT,
+01075: }
+01076: 
+01077: 
+01078: _checks = [
+01079:     abs(
+01080:         _fix16_mtm
+01081:         -
+01082:         FIX16_TARGET_MTM
+01083:     ) < 0.02,
+01084: 
+01085:     abs(
+01086:         _fix16_return
+
+====================================================================================================
+PATTERN: calc_target_qty
+====================================================================================================
+HITS: 1
+
+[1] FIX17_ROOT line=1470
+----------------------------------------------------------------------------------------------------
+01462:                                 else:
+01463:                                     _notional = 0.0
+01464:                             current_long_gross += float(_notional)
+01465:                         long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)
+01466:                         long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)
+01467:                         target_notional = long_remaining_capacity
+01468:                 else:
+01469:                     target_notional = broker_strategy_equity * leverage
+01470:                 target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)
+01471:                 lot_notional_before_margin = target_qty * entry_price
+01472:                 pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)
+01473:                 margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])
+01474:                 qty = int(margin_check['AllowedQty'])
+01475:                 actual_notional = qty * entry_price
+01476:                 utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan
+01477:                 skipped = qty == 0
+01478:                 if target_qty == 0:
+01479:                     skip_reason = 'LOT_TOO_LARGE'
+01480:                 elif qty == 0:
+01481:                     skip_reason = 'MARGIN_CAPACITY'
+01482:                 else:
+
+====================================================================================================
+PATTERN: calc_margin_capped_qty
+====================================================================================================
+HITS: 1
+
+[1] FIX17_ROOT line=1473
+----------------------------------------------------------------------------------------------------
+01465:                         long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)
+01466:                         long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)
+01467:                         target_notional = long_remaining_capacity
+01468:                 else:
+01469:                     target_notional = broker_strategy_equity * leverage
+01470:                 target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)
+01471:                 lot_notional_before_margin = target_qty * entry_price
+01472:                 pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)
+01473:                 margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])
+01474:                 qty = int(margin_check['AllowedQty'])
+01475:                 actual_notional = qty * entry_price
+01476:                 utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan
+01477:                 skipped = qty == 0
+01478:                 if target_qty == 0:
+01479:                     skip_reason = 'LOT_TOO_LARGE'
+01480:                 elif qty == 0:
+01481:                     skip_reason = 'MARGIN_CAPACITY'
+01482:                 else:
+01483:                     skip_reason = ''
+01484:                 entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional': target_notional, 'TargetQty100': target_qty, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'PreExistingGrossNotional': pre['GrossNotional'], 'PreExistingUnrealized': pre['TotalUnrealized'], 'EntryEffectiveCollateral': margin_check['EffectiveCollateral'], 'MaxAdditionalNotionalByMargin': margin_check['MaxNotionalByMargin'], 'PreMarginPct': margin_check['PreMarginPct'], 'PostMarginPct': margin_check['PostMarginPct'], 'Quantity': qty, 'ActualNotional': actual_notional, 'UnusedTargetNotional': target_notional - actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimited': margin_check['MarginLimited'], 'MissingPrevMarks': pre['MissingPrevMarks'], 'Skipped': skipped, 'SkipReason': skip_reason})
+01485:                 if skipped:
+
+====================================================================================================
+PATTERN: calc_long_dynamic_max_positions
+====================================================================================================
+HITS: 1
+
+[1] FIX17_ROOT line=1450
+----------------------------------------------------------------------------------------------------
+01442:                 leverage = LONG_LEVERAGE if side == 'LONG' else SHORT_LEVERAGE
+01443:                 formal_notional = formal_equity * leverage
+01444:                 formal_active[trade_id] = {'Side': side, 'EntryNotional': formal_notional}
+01445:                 if broker_strategy_equity <= 0:
+01446:                     raise RuntimeError(f'Broker strategy equity <= 0: {date.date()}')
+01447:                 if side == 'LONG':
+01448:                     current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']
+01449:                     current_long_count = len(current_long_positions)
+01450:                     long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)
+01451:                     if current_long_count >= long_allowed_positions:
+01452:                         target_notional = 0.0
+01453:                     else:
+01454:                         current_long_gross = 0.0
+01455:                         for _p in current_long_positions:
+01456:                             _notional = _p.get('ActualNotional', np.nan)
+01457:                             if not np.isfinite(pd.to_numeric(_notional, errors='coerce')):
+01458:                                 _px = pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')
+01459:                                 _qty = pd.to_numeric(_p.get('Quantity', np.nan), errors='coerce')
+01460:                                 if np.isfinite(_px) and np.isfinite(_qty):
+01461:                                     _notional = float(_px) * float(_qty)
+01462:                                 else:
+
+====================================================================================================
+PATTERN: calc_entry_time_position_state
+====================================================================================================
+HITS: 1
+
+[1] FIX17_ROOT line=1472
+----------------------------------------------------------------------------------------------------
+01464:                             current_long_gross += float(_notional)
+01465:                         long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)
+01466:                         long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)
+01467:                         target_notional = long_remaining_capacity
+01468:                 else:
+01469:                     target_notional = broker_strategy_equity * leverage
+01470:                 target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)
+01471:                 lot_notional_before_margin = target_qty * entry_price
+01472:                 pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)
+01473:                 margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])
+01474:                 qty = int(margin_check['AllowedQty'])
+01475:                 actual_notional = qty * entry_price
+01476:                 utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan
+01477:                 skipped = qty == 0
+01478:                 if target_qty == 0:
+01479:                     skip_reason = 'LOT_TOO_LARGE'
+01480:                 elif qty == 0:
+01481:                     skip_reason = 'MARGIN_CAPACITY'
+01482:                 else:
+01483:                     skip_reason = ''
+01484:                 entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional': target_notional, 'TargetQty100': target_qty, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'PreExistingGrossNotional': pre['GrossNotional'], 'PreExistingUnrealized': pre['TotalUnrealized'], 'EntryEffectiveCollateral': margin_check['EffectiveCollateral'], 'MaxAdditionalNotionalByMargin': margin_check['MaxNotionalByMargin'], 'PreMarginPct': margin_check['PreMarginPct'], 'PostMarginPct': margin_check['PostMarginPct'], 'Quantity': qty, 'ActualNotional': actual_notional, 'UnusedTargetNotional': target_notional - actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimited': margin_check['MarginLimited'], 'MissingPrevMarks': pre['MissingPrevMarks'], 'Skipped': skipped, 'SkipReason': skip_reason})
+
+====================================================================================================
+PATTERN: LONG_INTEREST_ANNUAL
+====================================================================================================
+HITS: 4
+
+[1] FIX17_ROOT line=103
+----------------------------------------------------------------------------------------------------
+00095: 
+00096: 
+00097: # ============================================================
+00098: # EMBEDDED OFFICIAL FIX15 PARENT
+00099: # ============================================================
+00100: 
+00101: FIX16_EMBEDDED_PARENT_SHA256 = '2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b'
+00102: 
+00103: FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\n# FIX15 OFFICIAL STANDALONE\n#\n# Parent:\n#   FIX14_OFFICIAL_FULL_SOURCE.py\n#   File ID:\n#       1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk\n#\n# FIX15 addition:\n#   Dynamic Japanese specified-account tax model\n#   TAX_RATE = 20.315%\n#\n# Tax semantics:\n#\n#   CREDIT EXIT:\n#       TaxablePnL =\n#           BrokerPnL\n#           - LONG interest / SHORT borrow cost\n#           - commission\n#\n#   Tax:\n#       new_tax =\n#           max(yearly_taxable_pnl, 0)\n#           * 0.20315\n#\n#       positive TaxChange:\n#           immediate withholding\n#\n#       negative TaxChange:\n#           immediate same-year refund\n#\n#   No cross-year loss carryforward in this model.\n#\n#   1557 realized PnL enters the same yearly tax ledger.\n#\n# IMPORTANT:\n#   FIX14 ENTRY / EXIT / SHORT / CASH10 / margin / leverage rules are unchanged.\n#\n# Validated:\n#   MTM      : 5,271,872.91\n#   Return   : +371.63%\n#   MaxDD    : -17.13%\n#   Trades   : 647\n#   LONG     : 414\n#   SHORT    : 233\n#   Cash     : 964,472.91\n#   ETF      : 36\n#   MinCash  : 56,347.78\n#   NegCash  : 0\n#   NetTax   : 789,998.93\n#\n# ==========================================================================================\n\nimport re\nimport io\nimport copy\nimport hashlib\nimport contextlib\n\nimport numpy as np\nimport pandas as pd\n\n\n# ==========================================================================================\n# DRIVE AUTH\n# ==========================================================================================\n\ntry:\n    from google.colab import auth\n    auth.authenticate_user()\nexcept Exception:\n    pass\n\nimport google.auth\nfrom googleapiclient.discovery import build\n\n_creds, _ = google.auth.default()\n_drive = build("drive", "v3", credentials=_creds)\n\n\n# ==========================================================================================\n# CONSTANTS\n# ==========================================================================================\n\nFIX11_RECOVERY_ID = "1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n"\n\nFIX11_BASE_SHA = (\n    "cb4d239f907ec3d8377902f5a59205bb"\n    "96151da8ebf5fcd0cf21573ea3568ea9"\n)\n\nFIX14_FILE_ID = "1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk"\n\nFIX14_SHA = (\n    "53632969dec8eb36558bdf26866688f8"\n    "81f6598a90002cf89c868a3c9d136586"\n)\n\nTAX_RATE_FIX15 = 0.20315\n\nINITIAL_CAPITAL_FIX15 = 1_117_792.0\n\n\n# ==========================================================================================\n# HELPERS\n# ==========================================================================================\n\ndef _download_text(file_id):\n\n    data = (\n        _drive.files()\n        .get_media(fileId=file_id)\n        .execute()\n    )\n\n    if isinstance(data, bytes):\n        return data.decode("utf-8")\n\n    return str(data)\n\n\ndef _sha256_text(text):\n\n    return hashlib.sha256(\n        text.encode("utf-8")\n    ).hexdigest()\n\n\n# ==========================================================================================\n# 1. FIX11 RECOVERY\n# ==========================================================================================\n\nrecovery_source = _download_text(\n    FIX11_RECOVERY_ID\n)\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            recovery_source,\n            "FIX11_RECOVERY_LOADER",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nif "base_code" not in globals():\n\n    raise RuntimeError(\n        "FIX11 recovery failed: base_code missing"\n    )\n\n\nbase_sha = _sha256_text(\n    base_code\n)\n\nif base_sha != FIX11_BASE_SHA:\n\n    raise RuntimeError(\n        "FIX11 base SHA mismatch\\n"\n        f"expected={FIX11_BASE_SHA}\\n"\n        f"actual  ={base_sha}"\n    )\n\n\n# ==========================================================================================\n# 2. EXACT FIX11 BASE\n# ==========================================================================================\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            base_code,\n            "FIX11_OFFICIAL_BASE",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nfor _name in [\n    "events_by_date",\n    "entry_meta",\n    "daily_mark_map",\n]:\n\n    if _name not in globals():\n\n        raise RuntimeError(\n            f"FIX11 base restore failed: {_name}"\n        )\n\n\n# ==========================================================================================\n# 3. EXACT FIX14\n# ==========================================================================================\n\nfix14_source = _download_text(\n    FIX14_FILE_ID\n)\n\nfix14_sha = _sha256_text(\n    fix14_source\n)\n\nif fix14_sha != FIX14_SHA:\n\n    raise RuntimeError(\n        "FIX14 SHA mismatch\\n"\n        f"expected={FIX14_SHA}\\n"\n        f"actual  ={fix14_sha}"\n    )\n\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            fix14_source,\n            "FIX14_OFFICIAL",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nif "simulate_fix11" not in globals():\n\n    raise RuntimeError(\n        "FIX14 simulate_fix11 missing"\n    )\n\n\n# ==========================================================================================\n# 4. TAX ENGINE\n# ==========================================================================================\n\nFIX15_TAX_STATE = {}\nFIX15_TAX_LEDGER = []\n\nFIX15_ETF_BOOK = {\n    "avg_cost": 0.0,\n}\n\n\ndef fix15_ensure_tax_year(year):\n\n    year = int(year)\n\n    if year not in FIX15_TAX_STATE:\n\n        FIX15_TAX_STATE[year] = {\n            "TaxablePnL": 0.0,\n            "TheoreticalTax": 0.0,\n            "Withheld": 0.0,\n            "Refunded": 0.0,\n        }\n\n    return FIX15_TAX_STATE[year]\n\n\ndef fix15_apply_tax(\n    dt,\n    taxable_pnl,\n    source,\n    detail="",\n):\n\n    dt = pd.Timestamp(dt)\n\n    s = fix15_ensure_tax_year(\n        dt.year\n    )\n\n    taxable_pnl = float(\n        taxable_pnl\n    )\n\n    old_ytd = float(\n        s["TaxablePnL"]\n    )\n\n    old_tax = float(\n        s["TheoreticalTax"]\n    )\n\n    new_ytd = (\n        old_ytd\n        +\n        taxable_pnl\n    )\n\n    new_tax = (\n        max(\n            new_ytd,\n            0.0,\n        )\n        *\n        TAX_RATE_FIX15\n    )\n\n    tax_change = (\n        new_tax\n        -\n        old_tax\n    )\n\n    if tax_change > 0:\n\n        s["Withheld"] += (\n            tax_change\n        )\n\n    elif tax_change < 0:\n\n        s["Refunded"] += (\n            -tax_change\n        )\n\n    s["TaxablePnL"] = (\n        new_ytd\n    )\n\n    s["TheoreticalTax"] = (\n        new_tax\n    )\n\n    FIX15_TAX_LEDGER.append({\n        "Datetime": dt,\n        "Year": int(dt.year),\n        "Source": str(source),\n        "Detail": str(detail),\n        "TaxablePnL": taxable_pnl,\n        "TaxChange": tax_change,\n        "YTDBefore": old_ytd,\n        "YTDAfter": new_ytd,\n        "TaxBefore": old_tax,\n        "TaxAfter": new_tax,\n    })\n\n    return float(\n        tax_change\n    )\n\n\n# ==========================================================================================\n# 5. EXTRACT EXACT FIX14 simulate_fix11\n# ==========================================================================================\n\n_src_lines = fix14_source.splitlines()\n\n_start = None\n_end = None\n\nfor _i, _line in enumerate(_src_lines):\n\n    if _line.startswith("def simulate_fix11():"):\n\n        _start = _i\n        break\n\n\nif _start is None:\n\n    raise RuntimeError(\n        "FIX14 simulate_fix11 source not found"\n    )\n\n\nfor _i in range(\n    _start + 1,\n    len(_src_lines),\n):\n\n    if _src_lines[_i].startswith("def "):\n\n        _end = _i\n        break\n\n\nif _end is None:\n\n    _end = len(_src_lines)\n\n\nFIX15_SIMULATOR_SOURCE = "\\n".join(\n    _src_lines[\n        _start:_end\n    ]\n)\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE.replace(\n        "def simulate_fix11():",\n        "def simulate_fix15():",\n        1,\n    )\n)\n\n\n# ==========================================================================================\n# 6. PATCH 1557 SELL TAX\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    etf_shares\\s*-=\\s*sell_shares\\s*\\n\n    (?P=indent)cash\\s*\\+=\\s*proceeds\\s*-\\s*ETF_SELL_FEE\\s*\\n\n    (?P=indent)sold_etf_today\\s*=\\s*sell_shares\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH A failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}fix15_etf_realized = (\n{_ind}    float(sell_shares)\n{_ind}    * (\n{_ind}        float(etf_open)\n{_ind}        - float(FIX15_ETF_BOOK["avg_cost"])\n{_ind}    )\n{_ind}    - float(ETF_SELL_FEE)\n{_ind})\n\n{_ind}etf_shares -= sell_shares\n{_ind}cash += proceeds - ETF_SELL_FEE\n\n{_ind}fix15_spot_tax = fix15_apply_tax(\n{_ind}    date,\n{_ind}    fix15_etf_realized,\n{_ind}    "1557_SPOT",\n{_ind}    "SELL_CASH_RECOVERY",\n{_ind})\n\n{_ind}cash -= fix15_spot_tax\n\n{_ind}if etf_shares == 0:\n{_ind}    FIX15_ETF_BOOK["avg_cost"] = 0.0\n\n{_ind}sold_etf_today = sell_shares\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 7. PATCH 1557 BUY COST BOOK\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    cash_before\\s*=\\s*float\\(cash\\)\\s*\\n\n    (?P=indent)etf_shares\\s*\\+=\\s*buy_shares\\s*\\n\n    (?P=indent)cash\\s*-=\\s*total_cost\\s*\\n\n    (?P=indent)bought_etf_today\\s*=\\s*buy_shares\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH B failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}cash_before = float(cash)\n\n{_ind}fix15_old_etf_shares = int(\n{_ind}    etf_shares\n{_ind})\n\n{_ind}fix15_old_cost = (\n{_ind}    float(fix15_old_etf_shares)\n{_ind}    * float(FIX15_ETF_BOOK["avg_cost"])\n{_ind})\n\n{_ind}fix15_new_cost = (\n{_ind}    float(buy_shares)\n{_ind}    * float(etf_open)\n{_ind}    + float(ETF_BUY_FEE)\n{_ind})\n\n{_ind}etf_shares += buy_shares\n\n{_ind}if etf_shares > 0:\n\n{_ind}    FIX15_ETF_BOOK["avg_cost"] = (\n{_ind}        fix15_old_cost\n{_ind}        + fix15_new_cost\n{_ind}    ) / float(etf_shares)\n\n{_ind}cash -= total_cost\n\n{_ind}bought_etf_today = buy_shares\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 8. PATCH CREDIT EXIT TAX\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    broker_strategy_equity\\s*\\+=\\s*broker_pnl\\s*\\n\n    (?P=indent)cash\\s*\\+=\\s*broker_pnl\\s*\\n\n    (?P=indent)broker_realized_today\\s*\\+=\\s*broker_pnl\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH C failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}broker_strategy_equity += broker_pnl\n{_ind}cash += broker_pnl\n\n{_ind}fix15_exit_dt = pd.Timestamp(\n{_ind}    e["Datetime"]\n{_ind})\n\n{_ind}fix15_entry_dt = pd.Timestamp(\n{_ind}    bp["EntryDatetime"]\n{_ind})\n\n{_ind}fix15_raw_days = max(\n{_ind}    (\n{_ind}        fix15_exit_dt\n{_ind}        - fix15_entry_dt\n{_ind}    ).total_seconds()\n{_ind}    / 86400.0,\n{_ind}    0.0,\n{_ind})\n\n{_ind}fix15_financing_days = max(\n{_ind}    fix15_raw_days,\n{_ind}    1.0,\n{_ind})\n\n{_ind}fix15_notional = float(\n{_ind}    bp["ActualNotional"]\n{_ind})\n\n{_ind}if side == "LONG":\n\n{_ind}    fix15_financing_tax = (\n{_ind}        fix15_notional\n{_ind}        * LONG_INTEREST_ANNUAL\n{_ind}        * fix15_financing_days\n{_ind}        / DAY_COUNT\n{_ind}    )\n\n{_ind}else:\n\n{_ind}    fix15_financing_tax = (\n{_ind}        fix15_notional\n{_ind}        * SHORT_LENDING_ANNUAL\n{_ind}        * fix15_financing_days\n{_ind}        / DAY_COUNT\n{_ind}    )\n\n{_ind}fix15_taxable_pnl = (\n{_ind}    float(broker_pnl)\n{_ind}    - float(fix15_financing_tax)\n{_ind})\n\n{_ind}fix15_tax_change = fix15_apply_tax(\n{_ind}    fix15_exit_dt,\n{_ind}    fix15_taxable_pnl,\n{_ind}    f"CREDIT_{{side}}",\n{_ind}    bp["Code"],\n{_ind})\n\n{_ind}cash -= fix15_tax_change\n\n{_ind}broker_strategy_equity -= (\n{_ind}    fix15_tax_change\n{_ind})\n\n{_ind}broker_realized_today += broker_pnl\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 9. COMPILE\n# ==========================================================================================\n\ncompile(\n    FIX15_SIMULATOR_SOURCE,\n    "FIX15_DYNAMIC_TAX",\n    "exec",\n)\n\nexec(\n    compile(\n        FIX15_SIMULATOR_SOURCE,\n        "FIX15_DYNAMIC_TAX",\n        "exec",\n    ),\n    globals(),\n)\n\n\nif "simulate_fix15" not in globals():\n\n    raise RuntimeError(\n        "simulate_fix15 creation failed"\n    )\n\n\n# ==========================================================================================\n# 10. RESET + RUN\n# ==========================================================================================\n\nFIX15_TAX_STATE.clear()\nFIX15_TAX_LEDGER.clear()\n\nFIX15_ETF_BOOK["avg_cost"] = 0.0\n\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    FIX15_RESULT = simulate_fix15()\n\n\nif not isinstance(\n    FIX15_RESULT,\n    tuple,\n):\n\n    raise RuntimeError(\n        "FIX15_RESULT is not tuple"\n    )\n\n\ndaily15 = FIX15_RESULT[0]\nentry15 = FIX15_RESULT[1]\ntrade15 = FIX15_RESULT[2]\netf15 = FIX15_RESULT[3]\n\n\n# ==========================================================================================\n# 11. FINAL PERFORMANCE\n# ==========================================================================================\n\nd = daily15.copy()\n\nd["Date"] = pd.to_datetime(\n    d["Date"]\n)\n\nd = (\n    d.sort_values("Date")\n    .reset_index(drop=True)\n)\n\nfinal_mtm = float(\n    d.iloc[-1]["TotalEquityMTM"]\n)\n\nfinal_cash = float(\n    d.iloc[-1]["Cash"]\n)\n\nfinal_etf = int(\n    d.iloc[-1]["ETF_Shares"]\n)\n\nreturn_pct = (\n    final_mtm\n    / INITIAL_CAPITAL_FIX15\n    - 1.0\n) * 100.0\n\n\nrunning_max = (\n    d["TotalEquityMTM"]\n    .cummax()\n)\n\nmax_dd_pct = float(\n    (\n        d["TotalEquityMTM"]\n        / running_max\n        - 1.0\n    ).min()\n    * 100.0\n)\n\n\nmin_cash = float(\n    d["Cash"].min()\n)\n\nmin_cash_date = pd.Timestamp(\n    d.loc[\n        d["Cash"].idxmin(),\n        "Date",\n    ]\n)\n\nnegative_cash_days = int(\n    (d["Cash"] < 0).sum()\n)\n\n\ntrade_side = (\n    trade15["Side"]\n    .astype(str)\n    .str.upper()\n)\n\ntrades = int(\n    len(trade15)\n)\n\nlong_n = int(\n    (trade_side == "LONG").sum()\n)\n\nshort_n = int(\n    (trade_side == "SHORT").sum()\n)\n\n\ntax15 = pd.DataFrame(\n    FIX15_TAX_LEDGER\n)\n\nnet_tax = float(\n    tax15["TaxChange"].sum()\n)\n\n\nwithheld = float(\n    tax15.loc[\n        tax15["TaxChange"] > 0,\n        "TaxChange"\n    ].sum()\n)\n\n\nrefunded = float(\n    -tax15.loc[\n        tax15["TaxChange"] < 0,\n        "TaxChange"\n    ].sum()\n)\n\n\n# ==========================================================================================\n# 12. ENTRY / EXIT AUDIT\n# ==========================================================================================\n\nexecuted15 = entry15[\n    ~entry15["Skipped"].fillna(False)\n].copy()\n\n\nentry_ids = set(\n    executed15[\n        "TradeID"\n    ].astype(str)\n)\n\n\nexit_ids = set(\n    trade15[\n        "TradeID"\n    ].astype(str)\n)\n\n\nif entry_ids != exit_ids:\n\n    raise RuntimeError(\n        "FIX15 ENTRY/EXIT ID mismatch"\n    )\n\n\nif int(\n    d.iloc[-1][\n        "BrokerOpenPositions"\n    ]\n) != 0:\n\n    raise RuntimeError(\n        "FIX15 open position remains"\n    )\n\n\nif len(tax15) != trades:\n\n    raise RuntimeError(\n        "FIX15 TAX event count mismatch"\n    )\n\n\n# ==========================================================================================\n# 13. TAX AUDIT\n# ==========================================================================================\n\nstate_tax = float(\n    sum(\n        x["TheoreticalTax"]\n        for x in FIX15_TAX_STATE.values()\n    )\n)\n\n\nif abs(\n    state_tax\n    -\n    net_tax\n) >= 0.01:\n\n    raise RuntimeError(\n        "FIX15 TAX state mismatch"\n    )\n\n\nfor _year, _s in FIX15_TAX_STATE.items():\n\n    _expected_tax = (\n        max(\n            float(\n                _s["TaxablePnL"]\n            ),\n            0.0,\n        )\n        *\n        TAX_RATE_FIX15\n    )\n\n    if abs(\n        float(\n            _s["TheoreticalTax"]\n        )\n        -\n        _expected_tax\n    ) >= 0.01:\n\n        raise RuntimeError(\n            f"FIX15 TAX yearly mismatch: {_year}"\n        )\n\n\n# ==========================================================================================\n# 14. VALIDATED TARGET AUDIT\n# ==========================================================================================\n\nEXPECTED = {\n    "FinalMTM": 5271872.91,\n    "ReturnPct": 371.63,\n    "MaxDDPct": -17.13,\n    "Trades": 647,\n    "LONG": 414,\n    "SHORT": 233,\n    "FinalCash": 964472.91,\n    "ETF": 36,\n    "MinCash": 56347.78,\n    "NegativeCashDays": 0,\n    "NetTax": 789998.93,\n}\n\n\nchecks = [\n    abs(\n        final_mtm\n        -\n        EXPECTED["FinalMTM"]\n    ) < 1.0,\n\n    abs(\n        return_pct\n        -\n        EXPECTED["ReturnPct"]\n    ) < 0.02,\n\n    abs(\n        max_dd_pct\n        -\n        EXPECTED["MaxDDPct"]\n    ) < 0.02,\n\n    trades\n    ==\n    EXPECTED["Trades"],\n\n    long_n\n    ==\n    EXPECTED["LONG"],\n\n    short_n\n    ==\n    EXPECTED["SHORT"],\n\n    abs(\n        final_cash\n        -\n        EXPECTED["FinalCash"]\n    ) < 1.0,\n\n    final_etf\n    ==\n    EXPECTED["ETF"],\n\n    abs(\n        min_cash\n        -\n        EXPECTED["MinCash"]\n    ) < 1.0,\n\n    negative_cash_days\n    ==\n    EXPECTED["NegativeCashDays"],\n\n    abs(\n        net_tax\n        -\n        EXPECTED["NetTax"]\n    ) < 1.0,\n]\n\n\nif not all(checks):\n\n    raise RuntimeError(\n        "FIX15 validated target mismatch"\n    )\n\n\n# ==========================================================================================\n# 15. EXPORT\n# ==========================================================================================\n\nFIX15_TAX_LEDGER_DF = tax15.copy()\n\nFIX15_FINAL_METRICS = {\n    "InitialCapital":\n        INITIAL_CAPITAL_FIX15,\n\n    "FinalMTM":\n        final_mtm,\n\n    "ReturnPct":\n        return_pct,\n\n    "MaxDDPct":\n        max_dd_pct,\n\n    "Trades":\n        trades,\n\n    "LONG":\n        long_n,\n\n    "SHORT":\n        short_n,\n\n    "FinalCash":\n        final_cash,\n\n    "ETF":\n        final_etf,\n\n    "MinCash":\n        min_cash,\n\n    "MinCashDate":\n        min_cash_date,\n\n    "NegativeCashDays":\n        negative_cash_days,\n\n    "NetTax":\n        net_tax,\n\n    "Withheld":\n        withheld,\n\n    "Refunded":\n        refunded,\n}\n\n\nFIX15_DYNAMIC_TAX_READY = True\n\n\n# ==========================================================================================\n# OUTPUT\n# ==========================================================================================\n\nprint("=" * 64)\nprint("FIX15 OFFICIAL STANDALONE")\nprint("=" * 64)\n\nprint(\n    f"MTM    : {final_mtm:,.2f}"\n)\n\nprint(\n    f"Return : {return_pct:+.2f}%"\n)\n\nprint(\n    f"MaxDD  : {max_dd_pct:+.2f}%"\n)\n\nprint(\n    f"Trades : {trades}"\n)\n\nprint(\n    f"LONG   : {long_n}"\n)\n\nprint(\n    f"SHORT  : {short_n}"\n)\n\nprint(\n    f"Cash   : {final_cash:,.2f}"\n)\n\nprint(\n    f"ETF    : {final_etf}"\n)\n\nprint(\n    f"MinCash: {min_cash:,.2f}"\n)\n\nprint(\n    f"NegCash: {negative_cash_days}"\n)\n\nprint(\n    f"NetTax : {net_tax:,.2f}"\n)\n\nprint()\nprint(\n    "★★★★★ FIX15 OFFICIAL STANDALONE PASS ★★★★★"\n)\n'
+00104: 
+00105: _parent_bytes = (
+00106:     FIX16_EMBEDDED_PARENT_SOURCE
+00107:     .encode('utf-8')
+00108: )
+00109: 
+00110: _embedded_parent_sha = hashlib.sha256(
+00111:     _parent_bytes
+00112: ).hexdigest()
+00113: 
+00114: if (
+00115:     _embedded_parent_sha
+
+[2] FIX17_ROOT line=1248
+----------------------------------------------------------------------------------------------------
+01240:             etf_close = float(last_etf_close) if np.isfinite(last_etf_close) else np.nan
+01241:         long_interest_today = 0.0
+01242:         short_fee_today = 0.0
+01243:         if previous_date is not None:
+01244:             calendar_days = int((date - previous_date).days)
+01245:             for p in broker_active.values():
+01246:                 n = float(p['ActualNotional'])
+01247:                 if p['Side'] == 'LONG':
+01248:                     cost = n * LONG_INTEREST_ANNUAL * calendar_days / DAY_COUNT
+01249:                     long_interest_today += cost
+01250:                 else:
+01251:                     cost = n * SHORT_LENDING_ANNUAL * calendar_days / DAY_COUNT
+01252:                     short_fee_today += cost
+01253:         financing_today = long_interest_today + short_fee_today
+01254:         cash -= financing_today
+01255:         broker_strategy_equity -= financing_today
+01256:         cum_long_interest += long_interest_today
+01257:         cum_short_fee += short_fee_today
+01258:         bought_etf_today = 0
+01259:         sold_etf_today = 0
+01260:         recovery_sell_today = False
+
+[3] FIX17_ROOT line=1402
+----------------------------------------------------------------------------------------------------
+01394:                 fix15_notional = float(
+01395:                     bp["ActualNotional"]
+01396:                 )
+01397: 
+01398:                 if side == "LONG":
+01399: 
+01400:                     fix15_financing_tax = (
+01401:                         fix15_notional
+01402:                         * LONG_INTEREST_ANNUAL
+01403:                         * fix15_financing_days
+01404:                         / DAY_COUNT
+01405:                     )
+01406: 
+01407:                 else:
+01408: 
+01409:                     fix15_financing_tax = (
+01410:                         fix15_notional
+01411:                         * SHORT_LENDING_ANNUAL
+01412:                         * fix15_financing_days
+01413:                         / DAY_COUNT
+01414:                     )
+
+[4] FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE line=599
+----------------------------------------------------------------------------------------------------
+00591: {_ind}fix15_notional = float(
+00592: {_ind}    bp["ActualNotional"]
+00593: {_ind})
+00594: 
+00595: {_ind}if side == "LONG":
+00596: 
+00597: {_ind}    fix15_financing_tax = (
+00598: {_ind}        fix15_notional
+00599: {_ind}        * LONG_INTEREST_ANNUAL
+00600: {_ind}        * fix15_financing_days
+00601: {_ind}        / DAY_COUNT
+00602: {_ind}    )
+00603: 
+00604: {_ind}else:
+00605: 
+00606: {_ind}    fix15_financing_tax = (
+00607: {_ind}        fix15_notional
+00608: {_ind}        * SHORT_LENDING_ANNUAL
+00609: {_ind}        * fix15_financing_days
+00610: {_ind}        / DAY_COUNT
+00611: {_ind}    )
+
+====================================================================================================
+PATTERN: SHORT_LENDING_ANNUAL
+====================================================================================================
+HITS: 4
+
+[1] FIX17_ROOT line=103
+----------------------------------------------------------------------------------------------------
+00095: 
+00096: 
+00097: # ============================================================
+00098: # EMBEDDED OFFICIAL FIX15 PARENT
+00099: # ============================================================
+00100: 
+00101: FIX16_EMBEDDED_PARENT_SHA256 = '2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b'
+00102: 
+00103: FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\n# FIX15 OFFICIAL STANDALONE\n#\n# Parent:\n#   FIX14_OFFICIAL_FULL_SOURCE.py\n#   File ID:\n#       1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk\n#\n# FIX15 addition:\n#   Dynamic Japanese specified-account tax model\n#   TAX_RATE = 20.315%\n#\n# Tax semantics:\n#\n#   CREDIT EXIT:\n#       TaxablePnL =\n#           BrokerPnL\n#           - LONG interest / SHORT borrow cost\n#           - commission\n#\n#   Tax:\n#       new_tax =\n#           max(yearly_taxable_pnl, 0)\n#           * 0.20315\n#\n#       positive TaxChange:\n#           immediate withholding\n#\n#       negative TaxChange:\n#           immediate same-year refund\n#\n#   No cross-year loss carryforward in this model.\n#\n#   1557 realized PnL enters the same yearly tax ledger.\n#\n# IMPORTANT:\n#   FIX14 ENTRY / EXIT / SHORT / CASH10 / margin / leverage rules are unchanged.\n#\n# Validated:\n#   MTM      : 5,271,872.91\n#   Return   : +371.63%\n#   MaxDD    : -17.13%\n#   Trades   : 647\n#   LONG     : 414\n#   SHORT    : 233\n#   Cash     : 964,472.91\n#   ETF      : 36\n#   MinCash  : 56,347.78\n#   NegCash  : 0\n#   NetTax   : 789,998.93\n#\n# ==========================================================================================\n\nimport re\nimport io\nimport copy\nimport hashlib\nimport contextlib\n\nimport numpy as np\nimport pandas as pd\n\n\n# ==========================================================================================\n# DRIVE AUTH\n# ==========================================================================================\n\ntry:\n    from google.colab import auth\n    auth.authenticate_user()\nexcept Exception:\n    pass\n\nimport google.auth\nfrom googleapiclient.discovery import build\n\n_creds, _ = google.auth.default()\n_drive = build("drive", "v3", credentials=_creds)\n\n\n# ==========================================================================================\n# CONSTANTS\n# ==========================================================================================\n\nFIX11_RECOVERY_ID = "1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n"\n\nFIX11_BASE_SHA = (\n    "cb4d239f907ec3d8377902f5a59205bb"\n    "96151da8ebf5fcd0cf21573ea3568ea9"\n)\n\nFIX14_FILE_ID = "1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk"\n\nFIX14_SHA = (\n    "53632969dec8eb36558bdf26866688f8"\n    "81f6598a90002cf89c868a3c9d136586"\n)\n\nTAX_RATE_FIX15 = 0.20315\n\nINITIAL_CAPITAL_FIX15 = 1_117_792.0\n\n\n# ==========================================================================================\n# HELPERS\n# ==========================================================================================\n\ndef _download_text(file_id):\n\n    data = (\n        _drive.files()\n        .get_media(fileId=file_id)\n        .execute()\n    )\n\n    if isinstance(data, bytes):\n        return data.decode("utf-8")\n\n    return str(data)\n\n\ndef _sha256_text(text):\n\n    return hashlib.sha256(\n        text.encode("utf-8")\n    ).hexdigest()\n\n\n# ==========================================================================================\n# 1. FIX11 RECOVERY\n# ==========================================================================================\n\nrecovery_source = _download_text(\n    FIX11_RECOVERY_ID\n)\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            recovery_source,\n            "FIX11_RECOVERY_LOADER",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nif "base_code" not in globals():\n\n    raise RuntimeError(\n        "FIX11 recovery failed: base_code missing"\n    )\n\n\nbase_sha = _sha256_text(\n    base_code\n)\n\nif base_sha != FIX11_BASE_SHA:\n\n    raise RuntimeError(\n        "FIX11 base SHA mismatch\\n"\n        f"expected={FIX11_BASE_SHA}\\n"\n        f"actual  ={base_sha}"\n    )\n\n\n# ==========================================================================================\n# 2. EXACT FIX11 BASE\n# ==========================================================================================\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            base_code,\n            "FIX11_OFFICIAL_BASE",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nfor _name in [\n    "events_by_date",\n    "entry_meta",\n    "daily_mark_map",\n]:\n\n    if _name not in globals():\n\n        raise RuntimeError(\n            f"FIX11 base restore failed: {_name}"\n        )\n\n\n# ==========================================================================================\n# 3. EXACT FIX14\n# ==========================================================================================\n\nfix14_source = _download_text(\n    FIX14_FILE_ID\n)\n\nfix14_sha = _sha256_text(\n    fix14_source\n)\n\nif fix14_sha != FIX14_SHA:\n\n    raise RuntimeError(\n        "FIX14 SHA mismatch\\n"\n        f"expected={FIX14_SHA}\\n"\n        f"actual  ={fix14_sha}"\n    )\n\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            fix14_source,\n            "FIX14_OFFICIAL",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nif "simulate_fix11" not in globals():\n\n    raise RuntimeError(\n        "FIX14 simulate_fix11 missing"\n    )\n\n\n# ==========================================================================================\n# 4. TAX ENGINE\n# ==========================================================================================\n\nFIX15_TAX_STATE = {}\nFIX15_TAX_LEDGER = []\n\nFIX15_ETF_BOOK = {\n    "avg_cost": 0.0,\n}\n\n\ndef fix15_ensure_tax_year(year):\n\n    year = int(year)\n\n    if year not in FIX15_TAX_STATE:\n\n        FIX15_TAX_STATE[year] = {\n            "TaxablePnL": 0.0,\n            "TheoreticalTax": 0.0,\n            "Withheld": 0.0,\n            "Refunded": 0.0,\n        }\n\n    return FIX15_TAX_STATE[year]\n\n\ndef fix15_apply_tax(\n    dt,\n    taxable_pnl,\n    source,\n    detail="",\n):\n\n    dt = pd.Timestamp(dt)\n\n    s = fix15_ensure_tax_year(\n        dt.year\n    )\n\n    taxable_pnl = float(\n        taxable_pnl\n    )\n\n    old_ytd = float(\n        s["TaxablePnL"]\n    )\n\n    old_tax = float(\n        s["TheoreticalTax"]\n    )\n\n    new_ytd = (\n        old_ytd\n        +\n        taxable_pnl\n    )\n\n    new_tax = (\n        max(\n            new_ytd,\n            0.0,\n        )\n        *\n        TAX_RATE_FIX15\n    )\n\n    tax_change = (\n        new_tax\n        -\n        old_tax\n    )\n\n    if tax_change > 0:\n\n        s["Withheld"] += (\n            tax_change\n        )\n\n    elif tax_change < 0:\n\n        s["Refunded"] += (\n            -tax_change\n        )\n\n    s["TaxablePnL"] = (\n        new_ytd\n    )\n\n    s["TheoreticalTax"] = (\n        new_tax\n    )\n\n    FIX15_TAX_LEDGER.append({\n        "Datetime": dt,\n        "Year": int(dt.year),\n        "Source": str(source),\n        "Detail": str(detail),\n        "TaxablePnL": taxable_pnl,\n        "TaxChange": tax_change,\n        "YTDBefore": old_ytd,\n        "YTDAfter": new_ytd,\n        "TaxBefore": old_tax,\n        "TaxAfter": new_tax,\n    })\n\n    return float(\n        tax_change\n    )\n\n\n# ==========================================================================================\n# 5. EXTRACT EXACT FIX14 simulate_fix11\n# ==========================================================================================\n\n_src_lines = fix14_source.splitlines()\n\n_start = None\n_end = None\n\nfor _i, _line in enumerate(_src_lines):\n\n    if _line.startswith("def simulate_fix11():"):\n\n        _start = _i\n        break\n\n\nif _start is None:\n\n    raise RuntimeError(\n        "FIX14 simulate_fix11 source not found"\n    )\n\n\nfor _i in range(\n    _start + 1,\n    len(_src_lines),\n):\n\n    if _src_lines[_i].startswith("def "):\n\n        _end = _i\n        break\n\n\nif _end is None:\n\n    _end = len(_src_lines)\n\n\nFIX15_SIMULATOR_SOURCE = "\\n".join(\n    _src_lines[\n        _start:_end\n    ]\n)\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE.replace(\n        "def simulate_fix11():",\n        "def simulate_fix15():",\n        1,\n    )\n)\n\n\n# ==========================================================================================\n# 6. PATCH 1557 SELL TAX\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    etf_shares\\s*-=\\s*sell_shares\\s*\\n\n    (?P=indent)cash\\s*\\+=\\s*proceeds\\s*-\\s*ETF_SELL_FEE\\s*\\n\n    (?P=indent)sold_etf_today\\s*=\\s*sell_shares\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH A failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}fix15_etf_realized = (\n{_ind}    float(sell_shares)\n{_ind}    * (\n{_ind}        float(etf_open)\n{_ind}        - float(FIX15_ETF_BOOK["avg_cost"])\n{_ind}    )\n{_ind}    - float(ETF_SELL_FEE)\n{_ind})\n\n{_ind}etf_shares -= sell_shares\n{_ind}cash += proceeds - ETF_SELL_FEE\n\n{_ind}fix15_spot_tax = fix15_apply_tax(\n{_ind}    date,\n{_ind}    fix15_etf_realized,\n{_ind}    "1557_SPOT",\n{_ind}    "SELL_CASH_RECOVERY",\n{_ind})\n\n{_ind}cash -= fix15_spot_tax\n\n{_ind}if etf_shares == 0:\n{_ind}    FIX15_ETF_BOOK["avg_cost"] = 0.0\n\n{_ind}sold_etf_today = sell_shares\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 7. PATCH 1557 BUY COST BOOK\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    cash_before\\s*=\\s*float\\(cash\\)\\s*\\n\n    (?P=indent)etf_shares\\s*\\+=\\s*buy_shares\\s*\\n\n    (?P=indent)cash\\s*-=\\s*total_cost\\s*\\n\n    (?P=indent)bought_etf_today\\s*=\\s*buy_shares\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH B failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}cash_before = float(cash)\n\n{_ind}fix15_old_etf_shares = int(\n{_ind}    etf_shares\n{_ind})\n\n{_ind}fix15_old_cost = (\n{_ind}    float(fix15_old_etf_shares)\n{_ind}    * float(FIX15_ETF_BOOK["avg_cost"])\n{_ind})\n\n{_ind}fix15_new_cost = (\n{_ind}    float(buy_shares)\n{_ind}    * float(etf_open)\n{_ind}    + float(ETF_BUY_FEE)\n{_ind})\n\n{_ind}etf_shares += buy_shares\n\n{_ind}if etf_shares > 0:\n\n{_ind}    FIX15_ETF_BOOK["avg_cost"] = (\n{_ind}        fix15_old_cost\n{_ind}        + fix15_new_cost\n{_ind}    ) / float(etf_shares)\n\n{_ind}cash -= total_cost\n\n{_ind}bought_etf_today = buy_shares\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 8. PATCH CREDIT EXIT TAX\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    broker_strategy_equity\\s*\\+=\\s*broker_pnl\\s*\\n\n    (?P=indent)cash\\s*\\+=\\s*broker_pnl\\s*\\n\n    (?P=indent)broker_realized_today\\s*\\+=\\s*broker_pnl\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH C failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}broker_strategy_equity += broker_pnl\n{_ind}cash += broker_pnl\n\n{_ind}fix15_exit_dt = pd.Timestamp(\n{_ind}    e["Datetime"]\n{_ind})\n\n{_ind}fix15_entry_dt = pd.Timestamp(\n{_ind}    bp["EntryDatetime"]\n{_ind})\n\n{_ind}fix15_raw_days = max(\n{_ind}    (\n{_ind}        fix15_exit_dt\n{_ind}        - fix15_entry_dt\n{_ind}    ).total_seconds()\n{_ind}    / 86400.0,\n{_ind}    0.0,\n{_ind})\n\n{_ind}fix15_financing_days = max(\n{_ind}    fix15_raw_days,\n{_ind}    1.0,\n{_ind})\n\n{_ind}fix15_notional = float(\n{_ind}    bp["ActualNotional"]\n{_ind})\n\n{_ind}if side == "LONG":\n\n{_ind}    fix15_financing_tax = (\n{_ind}        fix15_notional\n{_ind}        * LONG_INTEREST_ANNUAL\n{_ind}        * fix15_financing_days\n{_ind}        / DAY_COUNT\n{_ind}    )\n\n{_ind}else:\n\n{_ind}    fix15_financing_tax = (\n{_ind}        fix15_notional\n{_ind}        * SHORT_LENDING_ANNUAL\n{_ind}        * fix15_financing_days\n{_ind}        / DAY_COUNT\n{_ind}    )\n\n{_ind}fix15_taxable_pnl = (\n{_ind}    float(broker_pnl)\n{_ind}    - float(fix15_financing_tax)\n{_ind})\n\n{_ind}fix15_tax_change = fix15_apply_tax(\n{_ind}    fix15_exit_dt,\n{_ind}    fix15_taxable_pnl,\n{_ind}    f"CREDIT_{{side}}",\n{_ind}    bp["Code"],\n{_ind})\n\n{_ind}cash -= fix15_tax_change\n\n{_ind}broker_strategy_equity -= (\n{_ind}    fix15_tax_change\n{_ind})\n\n{_ind}broker_realized_today += broker_pnl\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 9. COMPILE\n# ==========================================================================================\n\ncompile(\n    FIX15_SIMULATOR_SOURCE,\n    "FIX15_DYNAMIC_TAX",\n    "exec",\n)\n\nexec(\n    compile(\n        FIX15_SIMULATOR_SOURCE,\n        "FIX15_DYNAMIC_TAX",\n        "exec",\n    ),\n    globals(),\n)\n\n\nif "simulate_fix15" not in globals():\n\n    raise RuntimeError(\n        "simulate_fix15 creation failed"\n    )\n\n\n# ==========================================================================================\n# 10. RESET + RUN\n# ==========================================================================================\n\nFIX15_TAX_STATE.clear()\nFIX15_TAX_LEDGER.clear()\n\nFIX15_ETF_BOOK["avg_cost"] = 0.0\n\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    FIX15_RESULT = simulate_fix15()\n\n\nif not isinstance(\n    FIX15_RESULT,\n    tuple,\n):\n\n    raise RuntimeError(\n        "FIX15_RESULT is not tuple"\n    )\n\n\ndaily15 = FIX15_RESULT[0]\nentry15 = FIX15_RESULT[1]\ntrade15 = FIX15_RESULT[2]\netf15 = FIX15_RESULT[3]\n\n\n# ==========================================================================================\n# 11. FINAL PERFORMANCE\n# ==========================================================================================\n\nd = daily15.copy()\n\nd["Date"] = pd.to_datetime(\n    d["Date"]\n)\n\nd = (\n    d.sort_values("Date")\n    .reset_index(drop=True)\n)\n\nfinal_mtm = float(\n    d.iloc[-1]["TotalEquityMTM"]\n)\n\nfinal_cash = float(\n    d.iloc[-1]["Cash"]\n)\n\nfinal_etf = int(\n    d.iloc[-1]["ETF_Shares"]\n)\n\nreturn_pct = (\n    final_mtm\n    / INITIAL_CAPITAL_FIX15\n    - 1.0\n) * 100.0\n\n\nrunning_max = (\n    d["TotalEquityMTM"]\n    .cummax()\n)\n\nmax_dd_pct = float(\n    (\n        d["TotalEquityMTM"]\n        / running_max\n        - 1.0\n    ).min()\n    * 100.0\n)\n\n\nmin_cash = float(\n    d["Cash"].min()\n)\n\nmin_cash_date = pd.Timestamp(\n    d.loc[\n        d["Cash"].idxmin(),\n        "Date",\n    ]\n)\n\nnegative_cash_days = int(\n    (d["Cash"] < 0).sum()\n)\n\n\ntrade_side = (\n    trade15["Side"]\n    .astype(str)\n    .str.upper()\n)\n\ntrades = int(\n    len(trade15)\n)\n\nlong_n = int(\n    (trade_side == "LONG").sum()\n)\n\nshort_n = int(\n    (trade_side == "SHORT").sum()\n)\n\n\ntax15 = pd.DataFrame(\n    FIX15_TAX_LEDGER\n)\n\nnet_tax = float(\n    tax15["TaxChange"].sum()\n)\n\n\nwithheld = float(\n    tax15.loc[\n        tax15["TaxChange"] > 0,\n        "TaxChange"\n    ].sum()\n)\n\n\nrefunded = float(\n    -tax15.loc[\n        tax15["TaxChange"] < 0,\n        "TaxChange"\n    ].sum()\n)\n\n\n# ==========================================================================================\n# 12. ENTRY / EXIT AUDIT\n# ==========================================================================================\n\nexecuted15 = entry15[\n    ~entry15["Skipped"].fillna(False)\n].copy()\n\n\nentry_ids = set(\n    executed15[\n        "TradeID"\n    ].astype(str)\n)\n\n\nexit_ids = set(\n    trade15[\n        "TradeID"\n    ].astype(str)\n)\n\n\nif entry_ids != exit_ids:\n\n    raise RuntimeError(\n        "FIX15 ENTRY/EXIT ID mismatch"\n    )\n\n\nif int(\n    d.iloc[-1][\n        "BrokerOpenPositions"\n    ]\n) != 0:\n\n    raise RuntimeError(\n        "FIX15 open position remains"\n    )\n\n\nif len(tax15) != trades:\n\n    raise RuntimeError(\n        "FIX15 TAX event count mismatch"\n    )\n\n\n# ==========================================================================================\n# 13. TAX AUDIT\n# ==========================================================================================\n\nstate_tax = float(\n    sum(\n        x["TheoreticalTax"]\n        for x in FIX15_TAX_STATE.values()\n    )\n)\n\n\nif abs(\n    state_tax\n    -\n    net_tax\n) >= 0.01:\n\n    raise RuntimeError(\n        "FIX15 TAX state mismatch"\n    )\n\n\nfor _year, _s in FIX15_TAX_STATE.items():\n\n    _expected_tax = (\n        max(\n            float(\n                _s["TaxablePnL"]\n            ),\n            0.0,\n        )\n        *\n        TAX_RATE_FIX15\n    )\n\n    if abs(\n        float(\n            _s["TheoreticalTax"]\n        )\n        -\n        _expected_tax\n    ) >= 0.01:\n\n        raise RuntimeError(\n            f"FIX15 TAX yearly mismatch: {_year}"\n        )\n\n\n# ==========================================================================================\n# 14. VALIDATED TARGET AUDIT\n# ==========================================================================================\n\nEXPECTED = {\n    "FinalMTM": 5271872.91,\n    "ReturnPct": 371.63,\n    "MaxDDPct": -17.13,\n    "Trades": 647,\n    "LONG": 414,\n    "SHORT": 233,\n    "FinalCash": 964472.91,\n    "ETF": 36,\n    "MinCash": 56347.78,\n    "NegativeCashDays": 0,\n    "NetTax": 789998.93,\n}\n\n\nchecks = [\n    abs(\n        final_mtm\n        -\n        EXPECTED["FinalMTM"]\n    ) < 1.0,\n\n    abs(\n        return_pct\n        -\n        EXPECTED["ReturnPct"]\n    ) < 0.02,\n\n    abs(\n        max_dd_pct\n        -\n        EXPECTED["MaxDDPct"]\n    ) < 0.02,\n\n    trades\n    ==\n    EXPECTED["Trades"],\n\n    long_n\n    ==\n    EXPECTED["LONG"],\n\n    short_n\n    ==\n    EXPECTED["SHORT"],\n\n    abs(\n        final_cash\n        -\n        EXPECTED["FinalCash"]\n    ) < 1.0,\n\n    final_etf\n    ==\n    EXPECTED["ETF"],\n\n    abs(\n        min_cash\n        -\n        EXPECTED["MinCash"]\n    ) < 1.0,\n\n    negative_cash_days\n    ==\n    EXPECTED["NegativeCashDays"],\n\n    abs(\n        net_tax\n        -\n        EXPECTED["NetTax"]\n    ) < 1.0,\n]\n\n\nif not all(checks):\n\n    raise RuntimeError(\n        "FIX15 validated target mismatch"\n    )\n\n\n# ==========================================================================================\n# 15. EXPORT\n# ==========================================================================================\n\nFIX15_TAX_LEDGER_DF = tax15.copy()\n\nFIX15_FINAL_METRICS = {\n    "InitialCapital":\n        INITIAL_CAPITAL_FIX15,\n\n    "FinalMTM":\n        final_mtm,\n\n    "ReturnPct":\n        return_pct,\n\n    "MaxDDPct":\n        max_dd_pct,\n\n    "Trades":\n        trades,\n\n    "LONG":\n        long_n,\n\n    "SHORT":\n        short_n,\n\n    "FinalCash":\n        final_cash,\n\n    "ETF":\n        final_etf,\n\n    "MinCash":\n        min_cash,\n\n    "MinCashDate":\n        min_cash_date,\n\n    "NegativeCashDays":\n        negative_cash_days,\n\n    "NetTax":\n        net_tax,\n\n    "Withheld":\n        withheld,\n\n    "Refunded":\n        refunded,\n}\n\n\nFIX15_DYNAMIC_TAX_READY = True\n\n\n# ==========================================================================================\n# OUTPUT\n# ==========================================================================================\n\nprint("=" * 64)\nprint("FIX15 OFFICIAL STANDALONE")\nprint("=" * 64)\n\nprint(\n    f"MTM    : {final_mtm:,.2f}"\n)\n\nprint(\n    f"Return : {return_pct:+.2f}%"\n)\n\nprint(\n    f"MaxDD  : {max_dd_pct:+.2f}%"\n)\n\nprint(\n    f"Trades : {trades}"\n)\n\nprint(\n    f"LONG   : {long_n}"\n)\n\nprint(\n    f"SHORT  : {short_n}"\n)\n\nprint(\n    f"Cash   : {final_cash:,.2f}"\n)\n\nprint(\n    f"ETF    : {final_etf}"\n)\n\nprint(\n    f"MinCash: {min_cash:,.2f}"\n)\n\nprint(\n    f"NegCash: {negative_cash_days}"\n)\n\nprint(\n    f"NetTax : {net_tax:,.2f}"\n)\n\nprint()\nprint(\n    "★★★★★ FIX15 OFFICIAL STANDALONE PASS ★★★★★"\n)\n'
+00104: 
+00105: _parent_bytes = (
+00106:     FIX16_EMBEDDED_PARENT_SOURCE
+00107:     .encode('utf-8')
+00108: )
+00109: 
+00110: _embedded_parent_sha = hashlib.sha256(
+00111:     _parent_bytes
+00112: ).hexdigest()
+00113: 
+00114: if (
+00115:     _embedded_parent_sha
+
+[2] FIX17_ROOT line=1251
+----------------------------------------------------------------------------------------------------
+01243:         if previous_date is not None:
+01244:             calendar_days = int((date - previous_date).days)
+01245:             for p in broker_active.values():
+01246:                 n = float(p['ActualNotional'])
+01247:                 if p['Side'] == 'LONG':
+01248:                     cost = n * LONG_INTEREST_ANNUAL * calendar_days / DAY_COUNT
+01249:                     long_interest_today += cost
+01250:                 else:
+01251:                     cost = n * SHORT_LENDING_ANNUAL * calendar_days / DAY_COUNT
+01252:                     short_fee_today += cost
+01253:         financing_today = long_interest_today + short_fee_today
+01254:         cash -= financing_today
+01255:         broker_strategy_equity -= financing_today
+01256:         cum_long_interest += long_interest_today
+01257:         cum_short_fee += short_fee_today
+01258:         bought_etf_today = 0
+01259:         sold_etf_today = 0
+01260:         recovery_sell_today = False
+01261:         if has_quote and np.isfinite(etf_open) and (etf_open > 0):
+01262:             if cash < CASH_FLOOR:
+01263:                 deficit = CASH_FLOOR - cash
+
+[3] FIX17_ROOT line=1411
+----------------------------------------------------------------------------------------------------
+01403:                         * fix15_financing_days
+01404:                         / DAY_COUNT
+01405:                     )
+01406: 
+01407:                 else:
+01408: 
+01409:                     fix15_financing_tax = (
+01410:                         fix15_notional
+01411:                         * SHORT_LENDING_ANNUAL
+01412:                         * fix15_financing_days
+01413:                         / DAY_COUNT
+01414:                     )
+01415: 
+01416:                 fix15_taxable_pnl = (
+01417:                     float(broker_pnl)
+01418:                     - float(fix15_financing_tax)
+01419:                 )
+01420: 
+01421:                 fix15_tax_change = fix15_apply_tax(
+01422:                     fix15_exit_dt,
+01423:                     fix15_taxable_pnl,
+
+[4] FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE line=608
+----------------------------------------------------------------------------------------------------
+00600: {_ind}        * fix15_financing_days
+00601: {_ind}        / DAY_COUNT
+00602: {_ind}    )
+00603: 
+00604: {_ind}else:
+00605: 
+00606: {_ind}    fix15_financing_tax = (
+00607: {_ind}        fix15_notional
+00608: {_ind}        * SHORT_LENDING_ANNUAL
+00609: {_ind}        * fix15_financing_days
+00610: {_ind}        / DAY_COUNT
+00611: {_ind}    )
+00612: 
+00613: {_ind}fix15_taxable_pnl = (
+00614: {_ind}    float(broker_pnl)
+00615: {_ind}    - float(fix15_financing_tax)
+00616: {_ind})
+00617: 
+00618: {_ind}fix15_tax_change = fix15_apply_tax(
+00619: {_ind}    fix15_exit_dt,
+00620: {_ind}    fix15_taxable_pnl,
+
+====================================================================================================
+PATTERN: is_lending
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: TAX_RATE_FIX15
+====================================================================================================
+HITS: 4
+
+[1] FIX17_ROOT line=103
+----------------------------------------------------------------------------------------------------
+00095: 
+00096: 
+00097: # ============================================================
+00098: # EMBEDDED OFFICIAL FIX15 PARENT
+00099: # ============================================================
+00100: 
+00101: FIX16_EMBEDDED_PARENT_SHA256 = '2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b'
+00102: 
+00103: FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\n# FIX15 OFFICIAL STANDALONE\n#\n# Parent:\n#   FIX14_OFFICIAL_FULL_SOURCE.py\n#   File ID:\n#       1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk\n#\n# FIX15 addition:\n#   Dynamic Japanese specified-account tax model\n#   TAX_RATE = 20.315%\n#\n# Tax semantics:\n#\n#   CREDIT EXIT:\n#       TaxablePnL =\n#           BrokerPnL\n#           - LONG interest / SHORT borrow cost\n#           - commission\n#\n#   Tax:\n#       new_tax =\n#           max(yearly_taxable_pnl, 0)\n#           * 0.20315\n#\n#       positive TaxChange:\n#           immediate withholding\n#\n#       negative TaxChange:\n#           immediate same-year refund\n#\n#   No cross-year loss carryforward in this model.\n#\n#   1557 realized PnL enters the same yearly tax ledger.\n#\n# IMPORTANT:\n#   FIX14 ENTRY / EXIT / SHORT / CASH10 / margin / leverage rules are unchanged.\n#\n# Validated:\n#   MTM      : 5,271,872.91\n#   Return   : +371.63%\n#   MaxDD    : -17.13%\n#   Trades   : 647\n#   LONG     : 414\n#   SHORT    : 233\n#   Cash     : 964,472.91\n#   ETF      : 36\n#   MinCash  : 56,347.78\n#   NegCash  : 0\n#   NetTax   : 789,998.93\n#\n# ==========================================================================================\n\nimport re\nimport io\nimport copy\nimport hashlib\nimport contextlib\n\nimport numpy as np\nimport pandas as pd\n\n\n# ==========================================================================================\n# DRIVE AUTH\n# ==========================================================================================\n\ntry:\n    from google.colab import auth\n    auth.authenticate_user()\nexcept Exception:\n    pass\n\nimport google.auth\nfrom googleapiclient.discovery import build\n\n_creds, _ = google.auth.default()\n_drive = build("drive", "v3", credentials=_creds)\n\n\n# ==========================================================================================\n# CONSTANTS\n# ==========================================================================================\n\nFIX11_RECOVERY_ID = "1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n"\n\nFIX11_BASE_SHA = (\n    "cb4d239f907ec3d8377902f5a59205bb"\n    "96151da8ebf5fcd0cf21573ea3568ea9"\n)\n\nFIX14_FILE_ID = "1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk"\n\nFIX14_SHA = (\n    "53632969dec8eb36558bdf26866688f8"\n    "81f6598a90002cf89c868a3c9d136586"\n)\n\nTAX_RATE_FIX15 = 0.20315\n\nINITIAL_CAPITAL_FIX15 = 1_117_792.0\n\n\n# ==========================================================================================\n# HELPERS\n# ==========================================================================================\n\ndef _download_text(file_id):\n\n    data = (\n        _drive.files()\n        .get_media(fileId=file_id)\n        .execute()\n    )\n\n    if isinstance(data, bytes):\n        return data.decode("utf-8")\n\n    return str(data)\n\n\ndef _sha256_text(text):\n\n    return hashlib.sha256(\n        text.encode("utf-8")\n    ).hexdigest()\n\n\n# ==========================================================================================\n# 1. FIX11 RECOVERY\n# ==========================================================================================\n\nrecovery_source = _download_text(\n    FIX11_RECOVERY_ID\n)\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            recovery_source,\n            "FIX11_RECOVERY_LOADER",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nif "base_code" not in globals():\n\n    raise RuntimeError(\n        "FIX11 recovery failed: base_code missing"\n    )\n\n\nbase_sha = _sha256_text(\n    base_code\n)\n\nif base_sha != FIX11_BASE_SHA:\n\n    raise RuntimeError(\n        "FIX11 base SHA mismatch\\n"\n        f"expected={FIX11_BASE_SHA}\\n"\n        f"actual  ={base_sha}"\n    )\n\n\n# ==========================================================================================\n# 2. EXACT FIX11 BASE\n# ==========================================================================================\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            base_code,\n            "FIX11_OFFICIAL_BASE",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nfor _name in [\n    "events_by_date",\n    "entry_meta",\n    "daily_mark_map",\n]:\n\n    if _name not in globals():\n\n        raise RuntimeError(\n            f"FIX11 base restore failed: {_name}"\n        )\n\n\n# ==========================================================================================\n# 3. EXACT FIX14\n# ==========================================================================================\n\nfix14_source = _download_text(\n    FIX14_FILE_ID\n)\n\nfix14_sha = _sha256_text(\n    fix14_source\n)\n\nif fix14_sha != FIX14_SHA:\n\n    raise RuntimeError(\n        "FIX14 SHA mismatch\\n"\n        f"expected={FIX14_SHA}\\n"\n        f"actual  ={fix14_sha}"\n    )\n\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    exec(\n        compile(\n            fix14_source,\n            "FIX14_OFFICIAL",\n            "exec",\n        ),\n        globals(),\n    )\n\n\nif "simulate_fix11" not in globals():\n\n    raise RuntimeError(\n        "FIX14 simulate_fix11 missing"\n    )\n\n\n# ==========================================================================================\n# 4. TAX ENGINE\n# ==========================================================================================\n\nFIX15_TAX_STATE = {}\nFIX15_TAX_LEDGER = []\n\nFIX15_ETF_BOOK = {\n    "avg_cost": 0.0,\n}\n\n\ndef fix15_ensure_tax_year(year):\n\n    year = int(year)\n\n    if year not in FIX15_TAX_STATE:\n\n        FIX15_TAX_STATE[year] = {\n            "TaxablePnL": 0.0,\n            "TheoreticalTax": 0.0,\n            "Withheld": 0.0,\n            "Refunded": 0.0,\n        }\n\n    return FIX15_TAX_STATE[year]\n\n\ndef fix15_apply_tax(\n    dt,\n    taxable_pnl,\n    source,\n    detail="",\n):\n\n    dt = pd.Timestamp(dt)\n\n    s = fix15_ensure_tax_year(\n        dt.year\n    )\n\n    taxable_pnl = float(\n        taxable_pnl\n    )\n\n    old_ytd = float(\n        s["TaxablePnL"]\n    )\n\n    old_tax = float(\n        s["TheoreticalTax"]\n    )\n\n    new_ytd = (\n        old_ytd\n        +\n        taxable_pnl\n    )\n\n    new_tax = (\n        max(\n            new_ytd,\n            0.0,\n        )\n        *\n        TAX_RATE_FIX15\n    )\n\n    tax_change = (\n        new_tax\n        -\n        old_tax\n    )\n\n    if tax_change > 0:\n\n        s["Withheld"] += (\n            tax_change\n        )\n\n    elif tax_change < 0:\n\n        s["Refunded"] += (\n            -tax_change\n        )\n\n    s["TaxablePnL"] = (\n        new_ytd\n    )\n\n    s["TheoreticalTax"] = (\n        new_tax\n    )\n\n    FIX15_TAX_LEDGER.append({\n        "Datetime": dt,\n        "Year": int(dt.year),\n        "Source": str(source),\n        "Detail": str(detail),\n        "TaxablePnL": taxable_pnl,\n        "TaxChange": tax_change,\n        "YTDBefore": old_ytd,\n        "YTDAfter": new_ytd,\n        "TaxBefore": old_tax,\n        "TaxAfter": new_tax,\n    })\n\n    return float(\n        tax_change\n    )\n\n\n# ==========================================================================================\n# 5. EXTRACT EXACT FIX14 simulate_fix11\n# ==========================================================================================\n\n_src_lines = fix14_source.splitlines()\n\n_start = None\n_end = None\n\nfor _i, _line in enumerate(_src_lines):\n\n    if _line.startswith("def simulate_fix11():"):\n\n        _start = _i\n        break\n\n\nif _start is None:\n\n    raise RuntimeError(\n        "FIX14 simulate_fix11 source not found"\n    )\n\n\nfor _i in range(\n    _start + 1,\n    len(_src_lines),\n):\n\n    if _src_lines[_i].startswith("def "):\n\n        _end = _i\n        break\n\n\nif _end is None:\n\n    _end = len(_src_lines)\n\n\nFIX15_SIMULATOR_SOURCE = "\\n".join(\n    _src_lines[\n        _start:_end\n    ]\n)\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE.replace(\n        "def simulate_fix11():",\n        "def simulate_fix15():",\n        1,\n    )\n)\n\n\n# ==========================================================================================\n# 6. PATCH 1557 SELL TAX\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    etf_shares\\s*-=\\s*sell_shares\\s*\\n\n    (?P=indent)cash\\s*\\+=\\s*proceeds\\s*-\\s*ETF_SELL_FEE\\s*\\n\n    (?P=indent)sold_etf_today\\s*=\\s*sell_shares\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH A failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}fix15_etf_realized = (\n{_ind}    float(sell_shares)\n{_ind}    * (\n{_ind}        float(etf_open)\n{_ind}        - float(FIX15_ETF_BOOK["avg_cost"])\n{_ind}    )\n{_ind}    - float(ETF_SELL_FEE)\n{_ind})\n\n{_ind}etf_shares -= sell_shares\n{_ind}cash += proceeds - ETF_SELL_FEE\n\n{_ind}fix15_spot_tax = fix15_apply_tax(\n{_ind}    date,\n{_ind}    fix15_etf_realized,\n{_ind}    "1557_SPOT",\n{_ind}    "SELL_CASH_RECOVERY",\n{_ind})\n\n{_ind}cash -= fix15_spot_tax\n\n{_ind}if etf_shares == 0:\n{_ind}    FIX15_ETF_BOOK["avg_cost"] = 0.0\n\n{_ind}sold_etf_today = sell_shares\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 7. PATCH 1557 BUY COST BOOK\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    cash_before\\s*=\\s*float\\(cash\\)\\s*\\n\n    (?P=indent)etf_shares\\s*\\+=\\s*buy_shares\\s*\\n\n    (?P=indent)cash\\s*-=\\s*total_cost\\s*\\n\n    (?P=indent)bought_etf_today\\s*=\\s*buy_shares\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH B failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}cash_before = float(cash)\n\n{_ind}fix15_old_etf_shares = int(\n{_ind}    etf_shares\n{_ind})\n\n{_ind}fix15_old_cost = (\n{_ind}    float(fix15_old_etf_shares)\n{_ind}    * float(FIX15_ETF_BOOK["avg_cost"])\n{_ind})\n\n{_ind}fix15_new_cost = (\n{_ind}    float(buy_shares)\n{_ind}    * float(etf_open)\n{_ind}    + float(ETF_BUY_FEE)\n{_ind})\n\n{_ind}etf_shares += buy_shares\n\n{_ind}if etf_shares > 0:\n\n{_ind}    FIX15_ETF_BOOK["avg_cost"] = (\n{_ind}        fix15_old_cost\n{_ind}        + fix15_new_cost\n{_ind}    ) / float(etf_shares)\n\n{_ind}cash -= total_cost\n\n{_ind}bought_etf_today = buy_shares\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 8. PATCH CREDIT EXIT TAX\n# ==========================================================================================\n\n_pattern = re.compile(\n    r"""\n    (?P<indent>\\s*)\n    broker_strategy_equity\\s*\\+=\\s*broker_pnl\\s*\\n\n    (?P=indent)cash\\s*\\+=\\s*broker_pnl\\s*\\n\n    (?P=indent)broker_realized_today\\s*\\+=\\s*broker_pnl\n    """,\n    re.VERBOSE,\n)\n\n_m = _pattern.search(\n    FIX15_SIMULATOR_SOURCE\n)\n\nif not _m:\n\n    raise RuntimeError(\n        "FIX15 PATCH C failed"\n    )\n\n_ind = _m.group("indent")\n\n_replacement = f"""\n{_ind}broker_strategy_equity += broker_pnl\n{_ind}cash += broker_pnl\n\n{_ind}fix15_exit_dt = pd.Timestamp(\n{_ind}    e["Datetime"]\n{_ind})\n\n{_ind}fix15_entry_dt = pd.Timestamp(\n{_ind}    bp["EntryDatetime"]\n{_ind})\n\n{_ind}fix15_raw_days = max(\n{_ind}    (\n{_ind}        fix15_exit_dt\n{_ind}        - fix15_entry_dt\n{_ind}    ).total_seconds()\n{_ind}    / 86400.0,\n{_ind}    0.0,\n{_ind})\n\n{_ind}fix15_financing_days = max(\n{_ind}    fix15_raw_days,\n{_ind}    1.0,\n{_ind})\n\n{_ind}fix15_notional = float(\n{_ind}    bp["ActualNotional"]\n{_ind})\n\n{_ind}if side == "LONG":\n\n{_ind}    fix15_financing_tax = (\n{_ind}        fix15_notional\n{_ind}        * LONG_INTEREST_ANNUAL\n{_ind}        * fix15_financing_days\n{_ind}        / DAY_COUNT\n{_ind}    )\n\n{_ind}else:\n\n{_ind}    fix15_financing_tax = (\n{_ind}        fix15_notional\n{_ind}        * SHORT_LENDING_ANNUAL\n{_ind}        * fix15_financing_days\n{_ind}        / DAY_COUNT\n{_ind}    )\n\n{_ind}fix15_taxable_pnl = (\n{_ind}    float(broker_pnl)\n{_ind}    - float(fix15_financing_tax)\n{_ind})\n\n{_ind}fix15_tax_change = fix15_apply_tax(\n{_ind}    fix15_exit_dt,\n{_ind}    fix15_taxable_pnl,\n{_ind}    f"CREDIT_{{side}}",\n{_ind}    bp["Code"],\n{_ind})\n\n{_ind}cash -= fix15_tax_change\n\n{_ind}broker_strategy_equity -= (\n{_ind}    fix15_tax_change\n{_ind})\n\n{_ind}broker_realized_today += broker_pnl\n""".strip("\\n")\n\n\nFIX15_SIMULATOR_SOURCE = (\n    FIX15_SIMULATOR_SOURCE[:_m.start()]\n    +\n    _replacement\n    +\n    FIX15_SIMULATOR_SOURCE[_m.end():]\n)\n\n\n# ==========================================================================================\n# 9. COMPILE\n# ==========================================================================================\n\ncompile(\n    FIX15_SIMULATOR_SOURCE,\n    "FIX15_DYNAMIC_TAX",\n    "exec",\n)\n\nexec(\n    compile(\n        FIX15_SIMULATOR_SOURCE,\n        "FIX15_DYNAMIC_TAX",\n        "exec",\n    ),\n    globals(),\n)\n\n\nif "simulate_fix15" not in globals():\n\n    raise RuntimeError(\n        "simulate_fix15 creation failed"\n    )\n\n\n# ==========================================================================================\n# 10. RESET + RUN\n# ==========================================================================================\n\nFIX15_TAX_STATE.clear()\nFIX15_TAX_LEDGER.clear()\n\nFIX15_ETF_BOOK["avg_cost"] = 0.0\n\n\nwith contextlib.redirect_stdout(io.StringIO()):\n\n    FIX15_RESULT = simulate_fix15()\n\n\nif not isinstance(\n    FIX15_RESULT,\n    tuple,\n):\n\n    raise RuntimeError(\n        "FIX15_RESULT is not tuple"\n    )\n\n\ndaily15 = FIX15_RESULT[0]\nentry15 = FIX15_RESULT[1]\ntrade15 = FIX15_RESULT[2]\netf15 = FIX15_RESULT[3]\n\n\n# ==========================================================================================\n# 11. FINAL PERFORMANCE\n# ==========================================================================================\n\nd = daily15.copy()\n\nd["Date"] = pd.to_datetime(\n    d["Date"]\n)\n\nd = (\n    d.sort_values("Date")\n    .reset_index(drop=True)\n)\n\nfinal_mtm = float(\n    d.iloc[-1]["TotalEquityMTM"]\n)\n\nfinal_cash = float(\n    d.iloc[-1]["Cash"]\n)\n\nfinal_etf = int(\n    d.iloc[-1]["ETF_Shares"]\n)\n\nreturn_pct = (\n    final_mtm\n    / INITIAL_CAPITAL_FIX15\n    - 1.0\n) * 100.0\n\n\nrunning_max = (\n    d["TotalEquityMTM"]\n    .cummax()\n)\n\nmax_dd_pct = float(\n    (\n        d["TotalEquityMTM"]\n        / running_max\n        - 1.0\n    ).min()\n    * 100.0\n)\n\n\nmin_cash = float(\n    d["Cash"].min()\n)\n\nmin_cash_date = pd.Timestamp(\n    d.loc[\n        d["Cash"].idxmin(),\n        "Date",\n    ]\n)\n\nnegative_cash_days = int(\n    (d["Cash"] < 0).sum()\n)\n\n\ntrade_side = (\n    trade15["Side"]\n    .astype(str)\n    .str.upper()\n)\n\ntrades = int(\n    len(trade15)\n)\n\nlong_n = int(\n    (trade_side == "LONG").sum()\n)\n\nshort_n = int(\n    (trade_side == "SHORT").sum()\n)\n\n\ntax15 = pd.DataFrame(\n    FIX15_TAX_LEDGER\n)\n\nnet_tax = float(\n    tax15["TaxChange"].sum()\n)\n\n\nwithheld = float(\n    tax15.loc[\n        tax15["TaxChange"] > 0,\n        "TaxChange"\n    ].sum()\n)\n\n\nrefunded = float(\n    -tax15.loc[\n        tax15["TaxChange"] < 0,\n        "TaxChange"\n    ].sum()\n)\n\n\n# ==========================================================================================\n# 12. ENTRY / EXIT AUDIT\n# ==========================================================================================\n\nexecuted15 = entry15[\n    ~entry15["Skipped"].fillna(False)\n].copy()\n\n\nentry_ids = set(\n    executed15[\n        "TradeID"\n    ].astype(str)\n)\n\n\nexit_ids = set(\n    trade15[\n        "TradeID"\n    ].astype(str)\n)\n\n\nif entry_ids != exit_ids:\n\n    raise RuntimeError(\n        "FIX15 ENTRY/EXIT ID mismatch"\n    )\n\n\nif int(\n    d.iloc[-1][\n        "BrokerOpenPositions"\n    ]\n) != 0:\n\n    raise RuntimeError(\n        "FIX15 open position remains"\n    )\n\n\nif len(tax15) != trades:\n\n    raise RuntimeError(\n        "FIX15 TAX event count mismatch"\n    )\n\n\n# ==========================================================================================\n# 13. TAX AUDIT\n# ==========================================================================================\n\nstate_tax = float(\n    sum(\n        x["TheoreticalTax"]\n        for x in FIX15_TAX_STATE.values()\n    )\n)\n\n\nif abs(\n    state_tax\n    -\n    net_tax\n) >= 0.01:\n\n    raise RuntimeError(\n        "FIX15 TAX state mismatch"\n    )\n\n\nfor _year, _s in FIX15_TAX_STATE.items():\n\n    _expected_tax = (\n        max(\n            float(\n                _s["TaxablePnL"]\n            ),\n            0.0,\n        )\n        *\n        TAX_RATE_FIX15\n    )\n\n    if abs(\n        float(\n            _s["TheoreticalTax"]\n        )\n        -\n        _expected_tax\n    ) >= 0.01:\n\n        raise RuntimeError(\n            f"FIX15 TAX yearly mismatch: {_year}"\n        )\n\n\n# ==========================================================================================\n# 14. VALIDATED TARGET AUDIT\n# ==========================================================================================\n\nEXPECTED = {\n    "FinalMTM": 5271872.91,\n    "ReturnPct": 371.63,\n    "MaxDDPct": -17.13,\n    "Trades": 647,\n    "LONG": 414,\n    "SHORT": 233,\n    "FinalCash": 964472.91,\n    "ETF": 36,\n    "MinCash": 56347.78,\n    "NegativeCashDays": 0,\n    "NetTax": 789998.93,\n}\n\n\nchecks = [\n    abs(\n        final_mtm\n        -\n        EXPECTED["FinalMTM"]\n    ) < 1.0,\n\n    abs(\n        return_pct\n        -\n        EXPECTED["ReturnPct"]\n    ) < 0.02,\n\n    abs(\n        max_dd_pct\n        -\n        EXPECTED["MaxDDPct"]\n    ) < 0.02,\n\n    trades\n    ==\n    EXPECTED["Trades"],\n\n    long_n\n    ==\n    EXPECTED["LONG"],\n\n    short_n\n    ==\n    EXPECTED["SHORT"],\n\n    abs(\n        final_cash\n        -\n        EXPECTED["FinalCash"]\n    ) < 1.0,\n\n    final_etf\n    ==\n    EXPECTED["ETF"],\n\n    abs(\n        min_cash\n        -\n        EXPECTED["MinCash"]\n    ) < 1.0,\n\n    negative_cash_days\n    ==\n    EXPECTED["NegativeCashDays"],\n\n    abs(\n        net_tax\n        -\n        EXPECTED["NetTax"]\n    ) < 1.0,\n]\n\n\nif not all(checks):\n\n    raise RuntimeError(\n        "FIX15 validated target mismatch"\n    )\n\n\n# ==========================================================================================\n# 15. EXPORT\n# ==========================================================================================\n\nFIX15_TAX_LEDGER_DF = tax15.copy()\n\nFIX15_FINAL_METRICS = {\n    "InitialCapital":\n        INITIAL_CAPITAL_FIX15,\n\n    "FinalMTM":\n        final_mtm,\n\n    "ReturnPct":\n        return_pct,\n\n    "MaxDDPct":\n        max_dd_pct,\n\n    "Trades":\n        trades,\n\n    "LONG":\n        long_n,\n\n    "SHORT":\n        short_n,\n\n    "FinalCash":\n        final_cash,\n\n    "ETF":\n        final_etf,\n\n    "MinCash":\n        min_cash,\n\n    "MinCashDate":\n        min_cash_date,\n\n    "NegativeCashDays":\n        negative_cash_days,\n\n    "NetTax":\n        net_tax,\n\n    "Withheld":\n        withheld,\n\n    "Refunded":\n        refunded,\n}\n\n\nFIX15_DYNAMIC_TAX_READY = True\n\n\n# ==========================================================================================\n# OUTPUT\n# ==========================================================================================\n\nprint("=" * 64)\nprint("FIX15 OFFICIAL STANDALONE")\nprint("=" * 64)\n\nprint(\n    f"MTM    : {final_mtm:,.2f}"\n)\n\nprint(\n    f"Return : {return_pct:+.2f}%"\n)\n\nprint(\n    f"MaxDD  : {max_dd_pct:+.2f}%"\n)\n\nprint(\n    f"Trades : {trades}"\n)\n\nprint(\n    f"LONG   : {long_n}"\n)\n\nprint(\n    f"SHORT  : {short_n}"\n)\n\nprint(\n    f"Cash   : {final_cash:,.2f}"\n)\n\nprint(\n    f"ETF    : {final_etf}"\n)\n\nprint(\n    f"MinCash: {min_cash:,.2f}"\n)\n\nprint(\n    f"NegCash: {negative_cash_days}"\n)\n\nprint(\n    f"NetTax : {net_tax:,.2f}"\n)\n\nprint()\nprint(\n    "★★★★★ FIX15 OFFICIAL STANDALONE PASS ★★★★★"\n)\n'
+00104: 
+00105: _parent_bytes = (
+00106:     FIX16_EMBEDDED_PARENT_SOURCE
+00107:     .encode('utf-8')
+00108: )
+00109: 
+00110: _embedded_parent_sha = hashlib.sha256(
+00111:     _parent_bytes
+00112: ).hexdigest()
+00113: 
+00114: if (
+00115:     _embedded_parent_sha
+
+[2] FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE line=99
+----------------------------------------------------------------------------------------------------
+00091: 
+00092: FIX14_FILE_ID = "1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk"
+00093: 
+00094: FIX14_SHA = (
+00095:     "53632969dec8eb36558bdf26866688f8"
+00096:     "81f6598a90002cf89c868a3c9d136586"
+00097: )
+00098: 
+00099: TAX_RATE_FIX15 = 0.20315
+00100: 
+00101: INITIAL_CAPITAL_FIX15 = 1_117_792.0
+00102: 
+00103: 
+00104: # ==========================================================================================
+00105: # HELPERS
+00106: # ==========================================================================================
+00107: 
+00108: def _download_text(file_id):
+00109: 
+00110:     data = (
+00111:         _drive.files()
+
+[3] FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE line=303
+----------------------------------------------------------------------------------------------------
+00295:     )
+00296: 
+00297:     new_tax = (
+00298:         max(
+00299:             new_ytd,
+00300:             0.0,
+00301:         )
+00302:         *
+00303:         TAX_RATE_FIX15
+00304:     )
+00305: 
+00306:     tax_change = (
+00307:         new_tax
+00308:         -
+00309:         old_tax
+00310:     )
+00311: 
+00312:     if tax_change > 0:
+00313: 
+00314:         s["Withheld"] += (
+00315:             tax_change
+
+[4] FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE line=892
+----------------------------------------------------------------------------------------------------
+00884:     _expected_tax = (
+00885:         max(
+00886:             float(
+00887:                 _s["TaxablePnL"]
+00888:             ),
+00889:             0.0,
+00890:         )
+00891:         *
+00892:         TAX_RATE_FIX15
+00893:     )
+00894: 
+00895:     if abs(
+00896:         float(
+00897:             _s["TheoreticalTax"]
+00898:         )
+00899:         -
+00900:         _expected_tax
+00901:     ) >= 0.01:
+00902: 
+00903:         raise RuntimeError(
+00904:             f"FIX15 TAX yearly mismatch: {_year}"
+
+====================================================================================================
+PATTERN: 09:00
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: 09:29
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: 14:30
+====================================================================================================
+HITS: 0
+
+====================================================================================================
+PATTERN: 14:59
+====================================================================================================
+HITS: 0

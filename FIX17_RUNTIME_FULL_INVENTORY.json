@@ -1,0 +1,488 @@
+{
+  "version": "FIX17",
+  "official_file": "FIX17_OFFICIAL_FULL_SOURCE.py",
+  "official_sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4",
+  "verified_sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4",
+  "summary": {
+    "source_layers": 2,
+    "functions_total": 7,
+    "function_names_unique": 7,
+    "classes_total": 0,
+    "exec_calls_total": 5
+  },
+  "layers": [
+    {
+      "layer_name": "FIX17_ROOT",
+      "parent_name": null,
+      "variable_name": null,
+      "depth": 0,
+      "sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4",
+      "chars": 225199,
+      "lines": 1579,
+      "functions": [
+        {
+          "name": "_fix16_download_bytes",
+          "start_line": 71,
+          "end_line": 89
+        },
+        {
+          "name": "simulate_profit_floor_trail",
+          "start_line": 330,
+          "end_line": 730
+        },
+        {
+          "name": "simulate_fix15",
+          "start_line": 1202,
+          "end_line": 1537
+        }
+      ],
+      "classes": [],
+      "constants": {
+        "FIX16_TRIGGER_PCT": 0.0375,
+        "FIX16_WIDTH_PCT": 0.0175,
+        "EXIT_SLIPPAGE": 0.0005,
+        "FIX16_PARENT_FILE_ID": "1SpTJNDpsxwCoid16_yKdMtly4duEaxXN",
+        "FIX16_PARENT_SHA256": "2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b",
+        "FIX16_TARGET_MTM": 6136042.33,
+        "FIX16_TARGET_RETURN": 448.94,
+        "FIX16_TARGET_MAXDD": -17.11,
+        "FIX16_TARGET_TRADES": 663,
+        "FIX16_TARGET_LONG": 430,
+        "FIX16_TARGET_SHORT": 233,
+        "FIX16_TARGET_NETTAX": 993875.77,
+        "FIX16_TRADE474_B64": {
+          "type": "large_string",
+          "chars": 161908,
+          "sha256": "92d662dd429300014939415e2aa3fe253b2ac194e31ac054e1c0790b8c8325ae"
+        },
+        "_fix16_drive": null,
+        "FIX16_EMBEDDED_PARENT_SHA256": "2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b",
+        "FIX16_EMBEDDED_PARENT_SOURCE": {
+          "type": "large_string",
+          "chars": 19749,
+          "sha256": "2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b"
+        },
+        "_parent_bytes": null,
+        "_embedded_parent_sha": null,
+        "trade474": null,
+        "_candidate_codes": null,
+        "_tmpdir": "/content/fix16_1min",
+        "_missing_codes": null,
+        "FIX16_PARENT_EVENTS_BACKUP": null,
+        "_fix16_replaced": 0,
+        "_fix16_metadata_changes": 0,
+        "events_by_date": null,
+        "FIX16_RESULT": null,
+        "daily16": null,
+        "candidate16": null,
+        "trade16": null,
+        "etf16": null,
+        "FIX16_TAX_STATE": null,
+        "FIX16_TAX_LEDGER_DF": null,
+        "_last": null,
+        "_fix16_mtm": null,
+        "_fix16_return": null,
+        "_fix16_maxdd": null,
+        "_fix16_trades": null,
+        "_fix16_long": null,
+        "_fix16_short": null,
+        "_fix16_withheld": null,
+        "_fix16_refunded": null,
+        "_fix16_nettax": null,
+        "FIX16_FINAL_METRICS": null,
+        "_checks": null,
+        "FIX17_VERSION": "FIX17",
+        "FIX17_PARENT": "FIX16_OFFICIAL_FULL_SOURCE.py",
+        "FIX17_PARENT_FILE_ID": "1JR-Sr6R0YYgzQmcShbRFXAcbwPNawYiO",
+        "FIX17_PARENT_SHA256": "fa9cad62f446feeed6478d283d6f06bca25ff4e3d073693c614081a752a9aca8",
+        "FIX17_RULE": "REMOVE_FIXED_LONG_PER_STOCK_CAP",
+        "FIX17_LONG_TOTAL_LEVERAGE": 1.0,
+        "INITIAL_CAPITAL": 1117792.0,
+        "FIX17_RESULT": null,
+        "daily17": null,
+        "candidate17": null,
+        "trade17": null,
+        "etf17": null,
+        "FIX17_TAX_STATE": null,
+        "FIX17_TAX_LEDGER_DF": null
+      },
+      "embedded_sources": [
+        {
+          "variable": "FIX16_EMBEDDED_PARENT_SOURCE",
+          "child_name": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+          "sha256": "2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b",
+          "chars": 19749
+        }
+      ],
+      "exec_calls": [
+        {
+          "line": 122,
+          "argument": "compile(\n        FIX16_EMBEDDED_PARENT_SOURCE,\n        'FIX15_OFFICIAL_FULL_SOURCE.py',\n        'exec',\n    )"
+        }
+      ]
+    },
+    {
+      "layer_name": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "parent_name": "FIX17_ROOT",
+      "variable_name": "FIX16_EMBEDDED_PARENT_SOURCE",
+      "depth": 1,
+      "sha256": "2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b",
+      "chars": 19749,
+      "lines": 1105,
+      "functions": [
+        {
+          "name": "_download_text",
+          "start_line": 108,
+          "end_line": 119
+        },
+        {
+          "name": "_sha256_text",
+          "start_line": 122,
+          "end_line": 126
+        },
+        {
+          "name": "fix15_ensure_tax_year",
+          "start_line": 250,
+          "end_line": 263
+        },
+        {
+          "name": "fix15_apply_tax",
+          "start_line": 266,
+          "end_line": 347
+        }
+      ],
+      "classes": [],
+      "constants": {
+        "_drive": null,
+        "FIX11_RECOVERY_ID": "1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n",
+        "FIX11_BASE_SHA": "cb4d239f907ec3d8377902f5a59205bb96151da8ebf5fcd0cf21573ea3568ea9",
+        "FIX14_FILE_ID": "1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+        "FIX14_SHA": "53632969dec8eb36558bdf26866688f881f6598a90002cf89c868a3c9d136586",
+        "TAX_RATE_FIX15": 0.20315,
+        "INITIAL_CAPITAL_FIX15": 1117792.0,
+        "recovery_source": null,
+        "base_sha": null,
+        "fix14_source": null,
+        "fix14_sha": null,
+        "_src_lines": null,
+        "_start": null,
+        "_end": null,
+        "FIX15_SIMULATOR_SOURCE": null,
+        "_pattern": null,
+        "_m": null,
+        "_ind": null,
+        "_replacement": null,
+        "daily15": null,
+        "entry15": null,
+        "trade15": null,
+        "etf15": null,
+        "d": null,
+        "final_mtm": null,
+        "final_cash": null,
+        "final_etf": null,
+        "return_pct": null,
+        "running_max": null,
+        "max_dd_pct": null,
+        "min_cash": null,
+        "min_cash_date": null,
+        "negative_cash_days": null,
+        "trade_side": null,
+        "trades": null,
+        "long_n": null,
+        "short_n": null,
+        "tax15": null,
+        "net_tax": null,
+        "withheld": null,
+        "refunded": null,
+        "executed15": null,
+        "entry_ids": null,
+        "exit_ids": null,
+        "state_tax": null,
+        "checks": null,
+        "FIX15_TAX_LEDGER_DF": null,
+        "FIX15_FINAL_METRICS": null,
+        "FIX15_DYNAMIC_TAX_READY": true
+      },
+      "embedded_sources": [],
+      "exec_calls": [
+        {
+          "line": 654,
+          "argument": "compile(\n        FIX15_SIMULATOR_SOURCE,\n        \"FIX15_DYNAMIC_TAX\",\n        \"exec\",\n    )"
+        },
+        {
+          "line": 139,
+          "argument": "compile(\n            recovery_source,\n            \"FIX11_RECOVERY_LOADER\",\n            \"exec\",\n        )"
+        },
+        {
+          "line": 175,
+          "argument": "compile(\n            base_code,\n            \"FIX11_OFFICIAL_BASE\",\n            \"exec\",\n        )"
+        },
+        {
+          "line": 221,
+          "argument": "compile(\n            fix14_source,\n            \"FIX14_OFFICIAL\",\n            \"exec\",\n        )"
+        }
+      ]
+    }
+  ],
+  "all_functions": [
+    {
+      "name": "_fix16_download_bytes",
+      "layer": "FIX17_ROOT",
+      "depth": 0,
+      "start_line": 71,
+      "end_line": 89
+    },
+    {
+      "name": "simulate_profit_floor_trail",
+      "layer": "FIX17_ROOT",
+      "depth": 0,
+      "start_line": 330,
+      "end_line": 730
+    },
+    {
+      "name": "simulate_fix15",
+      "layer": "FIX17_ROOT",
+      "depth": 0,
+      "start_line": 1202,
+      "end_line": 1537
+    },
+    {
+      "name": "_download_text",
+      "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "depth": 1,
+      "start_line": 108,
+      "end_line": 119
+    },
+    {
+      "name": "_sha256_text",
+      "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "depth": 1,
+      "start_line": 122,
+      "end_line": 126
+    },
+    {
+      "name": "fix15_ensure_tax_year",
+      "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "depth": 1,
+      "start_line": 250,
+      "end_line": 263
+    },
+    {
+      "name": "fix15_apply_tax",
+      "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "depth": 1,
+      "start_line": 266,
+      "end_line": 347
+    }
+  ],
+  "all_classes": [],
+  "duplicate_function_names": {},
+  "rule_hits": {
+    "target_notional = long_remaining_capacity": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1467
+      }
+    ],
+    "LONG_CAP_PER_STOCK": [],
+    "RS20_corrected": [],
+    "RVOL20": [],
+    "turnover_median_20d_oku": [],
+    "ORB15_LongSignal": [],
+    "ORB15_ShortSignal": [],
+    "CrossPass_EXACT": [],
+    "EntryPriceFormal": [],
+    "FormalEntryPrice": [],
+    "ENTRY": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 103
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 391
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1490
+      },
+      {
+        "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+        "line": 37
+      },
+      {
+        "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+        "line": 812
+      },
+      {
+        "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+        "line": 837
+      }
+    ],
+    "ExitReason": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 456
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 583
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 644
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 711
+      }
+    ],
+    "ExitDatetime": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 349
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 448
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 575
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 636
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 705
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 754
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1435
+      }
+    ],
+    "OPEN_BELOW_STOP": [],
+    "OPEN_BELOW_TRAIL": [],
+    "OPEN_ABOVE_TP": [],
+    "FixedStopPrice": [],
+    "EffectiveStopPrice": [],
+    "TrailActive": [],
+    "FIX16_TRIGGER_PCT": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 45
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 743
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1071
+      }
+    ],
+    "FIX16_WIDTH_PCT": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 46
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 744
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1074
+      }
+    ],
+    "calc_target_qty": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1470
+      }
+    ],
+    "calc_margin_capped_qty": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1473
+      }
+    ],
+    "calc_long_dynamic_max_positions": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1450
+      }
+    ],
+    "calc_entry_time_position_state": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1472
+      }
+    ],
+    "LONG_INTEREST_ANNUAL": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 103
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1248
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1402
+      },
+      {
+        "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+        "line": 599
+      }
+    ],
+    "SHORT_LENDING_ANNUAL": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 103
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1251
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1411
+      },
+      {
+        "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+        "line": 608
+      }
+    ],
+    "is_lending": [],
+    "TAX_RATE_FIX15": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 103
+      },
+      {
+        "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+        "line": 99
+      },
+      {
+        "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+        "line": 303
+      },
+      {
+        "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+        "line": 892
+      }
+    ],
+    "09:00": [],
+    "09:29": [],
+    "14:30": [],
+    "14:59": []
+  }
+}
