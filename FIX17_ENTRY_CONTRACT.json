@@ -1,0 +1,2589 @@
+{
+  "version": "FIX17",
+  "official_file": "FIX17_OFFICIAL_FULL_SOURCE.py",
+  "official_sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4",
+  "source_origin": {
+    "simulate_fix11": "FIX17_RUNTIME_RESOLVED_FUNCTIONS.py",
+    "simulate_fix15": "FIX17_LIVE_FUNCTION_SOURCES.json"
+  },
+  "functions": {
+    "simulate_fix11": {
+      "comparisons": [
+        {
+          "function": "simulate_fix11",
+          "line": 23,
+          "expression": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 195,
+          "expression": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 46,
+          "expression": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 117,
+          "expression": "side == 'LONG'"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 136,
+          "expression": "side == 'LONG'"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 131,
+          "expression": "side == 'LONG'"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 140,
+          "expression": "current_long_count >= long_allowed_positions"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 165,
+          "expression": "target_notional > 0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 137,
+          "expression": "str(p.get('Side', '')).upper() == 'LONG'"
+        }
+      ],
+      "assignments": [
+        {
+          "function": "simulate_fix11",
+          "line": 10,
+          "targets": [
+            "entry_rows"
+          ],
+          "expression": "entry_rows = []"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 16,
+          "targets": [
+            "cum_long_interest"
+          ],
+          "expression": "cum_long_interest = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 17,
+          "targets": [
+            "cum_short_fee"
+          ],
+          "expression": "cum_short_fee = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 220,
+          "targets": [
+            "entries"
+          ],
+          "expression": "entries = pd.DataFrame(entry_rows)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 20,
+          "targets": [
+            "long_n"
+          ],
+          "expression": "long_n = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 21,
+          "targets": [
+            "short_n"
+          ],
+          "expression": "short_n = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 40,
+          "targets": [
+            "long_interest_today"
+          ],
+          "expression": "long_interest_today = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 41,
+          "targets": [
+            "short_fee_today"
+          ],
+          "expression": "short_fee_today = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 52,
+          "targets": [
+            "financing_today"
+          ],
+          "expression": "financing_today = long_interest_today + short_fee_today"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 181,
+          "targets": [
+            "long_notional"
+          ],
+          "expression": "long_notional = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 182,
+          "targets": [
+            "short_notional"
+          ],
+          "expression": "short_notional = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 183,
+          "targets": [
+            "long_unrealized"
+          ],
+          "expression": "long_unrealized = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 184,
+          "targets": [
+            "short_unrealized"
+          ],
+          "expression": "short_unrealized = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 203,
+          "targets": [
+            "gross_notional"
+          ],
+          "expression": "gross_notional = long_notional + short_notional"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 204,
+          "targets": [
+            "total_unrealized"
+          ],
+          "expression": "total_unrealized = long_unrealized + short_unrealized"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 91,
+          "targets": [
+            "entry_etf_mark"
+          ],
+          "expression": "entry_etf_mark = etf_open"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 93,
+          "targets": [
+            "entry_etf_mark"
+          ],
+          "expression": "entry_etf_mark = last_etf_close if np.isfinite(last_etf_close) else np.nan"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 98,
+          "targets": [
+            "side"
+          ],
+          "expression": "side = str(e['Side']).upper()"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 188,
+          "targets": [
+            "entry_price"
+          ],
+          "expression": "entry_price = float(p['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 75,
+          "targets": [],
+          "expression": "long_n, short_n = current_broker_notional()"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 76,
+          "targets": [
+            "gross_n"
+          ],
+          "expression": "gross_n = long_n + short_n"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 104,
+          "targets": [
+            "formal_pnl"
+          ],
+          "expression": "formal_pnl = fp['EntryNotional'] * formal_r"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 114,
+          "targets": [
+            "entry_price"
+          ],
+          "expression": "entry_price = float(bp['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 115,
+          "targets": [],
+          "expression": "broker_r, exit_price = get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e['ReturnPct'])"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 127,
+          "targets": [
+            "meta"
+          ],
+          "expression": "meta = entry_meta.get(trade_id)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 130,
+          "targets": [
+            "entry_price"
+          ],
+          "expression": "entry_price = float(meta['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 131,
+          "targets": [
+            "leverage"
+          ],
+          "expression": "leverage = LONG_LEVERAGE if side == 'LONG' else SHORT_LEVERAGE"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 133,
+          "targets": [],
+          "expression": "formal_active[trade_id] = {'Side': side, 'EntryNotional': formal_notional}"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 159,
+          "targets": [
+            "target_qty"
+          ],
+          "expression": "target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 160,
+          "targets": [
+            "lot_notional_before_margin"
+          ],
+          "expression": "lot_notional_before_margin = target_qty * entry_price"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 161,
+          "targets": [
+            "pre"
+          ],
+          "expression": "pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 162,
+          "targets": [
+            "margin_check"
+          ],
+          "expression": "margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 164,
+          "targets": [
+            "actual_notional"
+          ],
+          "expression": "actual_notional = qty * entry_price"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 165,
+          "targets": [
+            "utilization"
+          ],
+          "expression": "utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 180,
+          "targets": [],
+          "expression": "broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'ActualNotional': actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimitedAtEntry': margin_check['MarginLimited']}"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 196,
+          "targets": [
+            "u"
+          ],
+          "expression": "u = qty * (mark - entry_price)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 200,
+          "targets": [
+            "u"
+          ],
+          "expression": "u = qty * (entry_price - mark)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 47,
+          "targets": [
+            "cost"
+          ],
+          "expression": "cost = n * LONG_INTEREST_ANNUAL * calendar_days / DAY_COUNT"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 50,
+          "targets": [
+            "cost"
+          ],
+          "expression": "cost = n * SHORT_LENDING_ANNUAL * calendar_days / DAY_COUNT"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 118,
+          "targets": [
+            "broker_pnl"
+          ],
+          "expression": "broker_pnl = qty * (exit_price - entry_price)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 120,
+          "targets": [
+            "broker_pnl"
+          ],
+          "expression": "broker_pnl = qty * (entry_price - exit_price)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 137,
+          "targets": [
+            "current_long_positions"
+          ],
+          "expression": "current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 138,
+          "targets": [
+            "current_long_count"
+          ],
+          "expression": "current_long_count = len(current_long_positions)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 139,
+          "targets": [
+            "long_allowed_positions"
+          ],
+          "expression": "long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 158,
+          "targets": [
+            "target_notional"
+          ],
+          "expression": "target_notional = broker_strategy_equity * leverage"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 141,
+          "targets": [
+            "target_notional"
+          ],
+          "expression": "target_notional = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 143,
+          "targets": [
+            "current_long_gross"
+          ],
+          "expression": "current_long_gross = 0.0"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 154,
+          "targets": [
+            "long_total_limit"
+          ],
+          "expression": "long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 155,
+          "targets": [
+            "long_remaining_capacity"
+          ],
+          "expression": "long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 156,
+          "targets": [
+            "target_notional"
+          ],
+          "expression": "target_notional = min(LONG_CAP_PER_STOCK, long_remaining_capacity)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 147,
+          "targets": [
+            "_px"
+          ],
+          "expression": "_px = pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')"
+        }
+      ],
+      "ifs": [
+        {
+          "function": "simulate_fix11",
+          "line": 23,
+          "condition": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 195,
+          "condition": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 46,
+          "condition": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 117,
+          "condition": "side == 'LONG'"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 136,
+          "condition": "side == 'LONG'"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 140,
+          "condition": "current_long_count >= long_allowed_positions"
+        }
+      ],
+      "calls": [
+        {
+          "function": "simulate_fix11",
+          "line": 220,
+          "call": "pd.DataFrame(entry_rows)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 217,
+          "call": "daily_rows.append({'Date': date, 'ETF_Shares': etf_shares, 'ETF_Value': etf_value, 'BoughtETFToday': bought_etf_today, 'SoldETFToday': sold_etf_today, 'Cash': cash, 'CashNegative': cash < 0, 'FormalStrategyEquity': formal_equity, 'BrokerStrategyEquity': broker_strategy_equity, 'FormalRealizedPnLToday': formal_realized_today, 'BrokerRealizedPnLToday': broker_realized_today, 'LongInterestToday': long_interest_today, 'ShortFeeToday': short_fee_today, 'FinancingToday': financing_today, 'CumLongInterest': cum_long_interest, 'CumShortFee': cum_short_fee, 'CumFinancingCost': cum_long_interest + cum_short_fee, 'LongNotional': long_notional, 'ShortNotional': short_notional, 'GrossNotional': gross_notional, 'LongUnrealized': long_unrealized, 'ShortUnrealized': short_unrealized, 'TotalUnrealized': total_unrealized, 'Substitute80': substitute80, 'EffectiveCollateralMTM': effective_collateral, 'MarginRatioMTMPct': margin_ratio * 100.0 if np.isfinite(margin_ratio) else np.nan, 'Below30': gross_notional > 0 and margin_ratio < MIN_MARGIN_RATIO, 'Below20': gross_notional > 0 and margin_ratio < MARGIN_CALL_LINE, 'Below15': gross_notional > 0 and margin_ratio < SEVERE_LINE, 'MissingMarks': len(missing_marks), 'BrokerOpenPositions': len(broker_active), 'BrokerSkippedOpen': len(broker_skipped), 'RealizedTotalEquity': realized_total_equity, 'TotalEquityMTM': total_equity_mtm})"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 98,
+          "call": "str(e['Side']).upper()"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 188,
+          "call": "float(p['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 114,
+          "call": "float(bp['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 115,
+          "call": "get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e['ReturnPct'])"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 124,
+          "call": "trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'TargetNotional': bp['TargetNotional'], 'LotNotionalBeforeMargin': bp['LotNotionalBeforeMargin'], 'ActualNotional': bp['ActualNotional'], 'TargetUtilizationPct': bp['TargetUtilizationPct'], 'FormalReturnPct': float(e['ReturnPct']), 'BrokerReturnPct': broker_r * 100.0, 'BrokerPnL': broker_pnl, 'MarginLimitedAtEntry': bp['MarginLimitedAtEntry']})"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 127,
+          "call": "entry_meta.get(trade_id)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 130,
+          "call": "float(meta['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 159,
+          "call": "calc_target_qty(target_notional=target_notional, entry_price=entry_price)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 161,
+          "call": "calc_entry_time_position_state(broker_active=broker_active, current_date=date)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 162,
+          "call": "calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 173,
+          "call": "entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional': target_notional, 'TargetQty100': target_qty, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'PreExistingGrossNotional': pre['GrossNotional'], 'PreExistingUnrealized': pre['TotalUnrealized'], 'EntryEffectiveCollateral': margin_check['EffectiveCollateral'], 'MaxAdditionalNotionalByMargin': margin_check['MaxNotionalByMargin'], 'PreMarginPct': margin_check['PreMarginPct'], 'PostMarginPct': margin_check['PostMarginPct'], 'Quantity': qty, 'ActualNotional': actual_notional, 'UnusedTargetNotional': target_notional - actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimited': margin_check['MarginLimited'], 'MissingPrevMarks': pre['MissingPrevMarks'], 'Skipped': skipped, 'SkipReason': skip_reason})"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 98,
+          "call": "str(e['Side'])"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 129,
+          "call": "RuntimeError(f'entry_metaなし: {trade_id}')"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 138,
+          "call": "len(current_long_positions)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 139,
+          "call": "calc_long_dynamic_max_positions(broker_strategy_equity)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 179,
+          "call": "RuntimeError(f'ENTRY margin check failure: {trade_id} {post_margin_pct:.6f}%')"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 154,
+          "call": "max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 155,
+          "call": "max(0.0, long_total_limit - current_long_gross)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 156,
+          "call": "min(LONG_CAP_PER_STOCK, long_remaining_capacity)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 137,
+          "call": "str(p.get('Side', '')).upper()"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 147,
+          "call": "pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 147,
+          "call": "_p.get('EntryPrice', np.nan)"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 137,
+          "call": "str(p.get('Side', ''))"
+        },
+        {
+          "function": "simulate_fix11",
+          "line": 137,
+          "call": "p.get('Side', '')"
+        }
+      ]
+    },
+    "simulate_fix15": {
+      "comparisons": [
+        {
+          "function": "simulate_fix15",
+          "line": 23,
+          "expression": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 305,
+          "expression": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 46,
+          "expression": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 164,
+          "expression": "side == 'LONG'"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 197,
+          "expression": "side == \"LONG\""
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 246,
+          "expression": "side == 'LONG'"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 241,
+          "expression": "side == 'LONG'"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 250,
+          "expression": "current_long_count >= long_allowed_positions"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 275,
+          "expression": "target_notional > 0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 247,
+          "expression": "str(p.get('Side', '')).upper() == 'LONG'"
+        }
+      ],
+      "assignments": [
+        {
+          "function": "simulate_fix15",
+          "line": 10,
+          "targets": [
+            "entry_rows"
+          ],
+          "expression": "entry_rows = []"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 16,
+          "targets": [
+            "cum_long_interest"
+          ],
+          "expression": "cum_long_interest = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 17,
+          "targets": [
+            "cum_short_fee"
+          ],
+          "expression": "cum_short_fee = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 330,
+          "targets": [
+            "entries"
+          ],
+          "expression": "entries = pd.DataFrame(entry_rows)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 20,
+          "targets": [
+            "long_n"
+          ],
+          "expression": "long_n = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 21,
+          "targets": [
+            "short_n"
+          ],
+          "expression": "short_n = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 40,
+          "targets": [
+            "long_interest_today"
+          ],
+          "expression": "long_interest_today = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 41,
+          "targets": [
+            "short_fee_today"
+          ],
+          "expression": "short_fee_today = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 52,
+          "targets": [
+            "financing_today"
+          ],
+          "expression": "financing_today = long_interest_today + short_fee_today"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 291,
+          "targets": [
+            "long_notional"
+          ],
+          "expression": "long_notional = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 292,
+          "targets": [
+            "short_notional"
+          ],
+          "expression": "short_notional = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 293,
+          "targets": [
+            "long_unrealized"
+          ],
+          "expression": "long_unrealized = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 294,
+          "targets": [
+            "short_unrealized"
+          ],
+          "expression": "short_unrealized = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 313,
+          "targets": [
+            "gross_notional"
+          ],
+          "expression": "gross_notional = long_notional + short_notional"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 314,
+          "targets": [
+            "total_unrealized"
+          ],
+          "expression": "total_unrealized = long_unrealized + short_unrealized"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 138,
+          "targets": [
+            "entry_etf_mark"
+          ],
+          "expression": "entry_etf_mark = etf_open"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 140,
+          "targets": [
+            "entry_etf_mark"
+          ],
+          "expression": "entry_etf_mark = last_etf_close if np.isfinite(last_etf_close) else np.nan"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 145,
+          "targets": [
+            "side"
+          ],
+          "expression": "side = str(e['Side']).upper()"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 298,
+          "targets": [
+            "entry_price"
+          ],
+          "expression": "entry_price = float(p['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 97,
+          "targets": [],
+          "expression": "long_n, short_n = current_broker_notional()"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 98,
+          "targets": [
+            "gross_n"
+          ],
+          "expression": "gross_n = long_n + short_n"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 151,
+          "targets": [
+            "formal_pnl"
+          ],
+          "expression": "formal_pnl = fp['EntryNotional'] * formal_r"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 161,
+          "targets": [
+            "entry_price"
+          ],
+          "expression": "entry_price = float(bp['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 162,
+          "targets": [],
+          "expression": "broker_r, exit_price = get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e['ReturnPct'])"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 175,
+          "targets": [
+            "fix15_entry_dt"
+          ],
+          "expression": "fix15_entry_dt = pd.Timestamp(\n                    bp[\"EntryDatetime\"]\n                )"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 179,
+          "targets": [
+            "fix15_raw_days"
+          ],
+          "expression": "fix15_raw_days = max(\n                    (\n                        fix15_exit_dt\n                        - fix15_entry_dt\n                    ).total_seconds()\n                    / 86400.0,\n                    0.0,\n                )"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 220,
+          "targets": [
+            "fix15_tax_change"
+          ],
+          "expression": "fix15_tax_change = fix15_apply_tax(\n                    fix15_exit_dt,\n                    fix15_taxable_pnl,\n                    f\"CREDIT_{side}\",\n                    bp[\"Code\"],\n                )"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 237,
+          "targets": [
+            "meta"
+          ],
+          "expression": "meta = entry_meta.get(trade_id)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 240,
+          "targets": [
+            "entry_price"
+          ],
+          "expression": "entry_price = float(meta['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 241,
+          "targets": [
+            "leverage"
+          ],
+          "expression": "leverage = LONG_LEVERAGE if side == 'LONG' else SHORT_LEVERAGE"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 243,
+          "targets": [],
+          "expression": "formal_active[trade_id] = {'Side': side, 'EntryNotional': formal_notional}"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 269,
+          "targets": [
+            "target_qty"
+          ],
+          "expression": "target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 270,
+          "targets": [
+            "lot_notional_before_margin"
+          ],
+          "expression": "lot_notional_before_margin = target_qty * entry_price"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 271,
+          "targets": [
+            "pre"
+          ],
+          "expression": "pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 272,
+          "targets": [
+            "margin_check"
+          ],
+          "expression": "margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 274,
+          "targets": [
+            "actual_notional"
+          ],
+          "expression": "actual_notional = qty * entry_price"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 275,
+          "targets": [
+            "utilization"
+          ],
+          "expression": "utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 290,
+          "targets": [],
+          "expression": "broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'ActualNotional': actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimitedAtEntry': margin_check['MarginLimited']}"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 306,
+          "targets": [
+            "u"
+          ],
+          "expression": "u = qty * (mark - entry_price)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 310,
+          "targets": [
+            "u"
+          ],
+          "expression": "u = qty * (entry_price - mark)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 47,
+          "targets": [
+            "cost"
+          ],
+          "expression": "cost = n * LONG_INTEREST_ANNUAL * calendar_days / DAY_COUNT"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 50,
+          "targets": [
+            "cost"
+          ],
+          "expression": "cost = n * SHORT_LENDING_ANNUAL * calendar_days / DAY_COUNT"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 165,
+          "targets": [
+            "broker_pnl"
+          ],
+          "expression": "broker_pnl = qty * (exit_price - entry_price)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 167,
+          "targets": [
+            "broker_pnl"
+          ],
+          "expression": "broker_pnl = qty * (entry_price - exit_price)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 199,
+          "targets": [
+            "fix15_financing_tax"
+          ],
+          "expression": "fix15_financing_tax = (\n                        fix15_notional\n                        * LONG_INTEREST_ANNUAL\n                        * fix15_financing_days\n                        / DAY_COUNT\n                    )"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 208,
+          "targets": [
+            "fix15_financing_tax"
+          ],
+          "expression": "fix15_financing_tax = (\n                        fix15_notional\n                        * SHORT_LENDING_ANNUAL\n                        * fix15_financing_days\n                        / DAY_COUNT\n                    )"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 247,
+          "targets": [
+            "current_long_positions"
+          ],
+          "expression": "current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 248,
+          "targets": [
+            "current_long_count"
+          ],
+          "expression": "current_long_count = len(current_long_positions)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 249,
+          "targets": [
+            "long_allowed_positions"
+          ],
+          "expression": "long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 268,
+          "targets": [
+            "target_notional"
+          ],
+          "expression": "target_notional = broker_strategy_equity * leverage"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 251,
+          "targets": [
+            "target_notional"
+          ],
+          "expression": "target_notional = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 253,
+          "targets": [
+            "current_long_gross"
+          ],
+          "expression": "current_long_gross = 0.0"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 264,
+          "targets": [
+            "long_total_limit"
+          ],
+          "expression": "long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 265,
+          "targets": [
+            "long_remaining_capacity"
+          ],
+          "expression": "long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 266,
+          "targets": [
+            "target_notional"
+          ],
+          "expression": "target_notional = long_remaining_capacity"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 257,
+          "targets": [
+            "_px"
+          ],
+          "expression": "_px = pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')"
+        }
+      ],
+      "ifs": [
+        {
+          "function": "simulate_fix15",
+          "line": 23,
+          "condition": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 305,
+          "condition": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 46,
+          "condition": "p['Side'] == 'LONG'"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 164,
+          "condition": "side == 'LONG'"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 197,
+          "condition": "side == \"LONG\""
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 246,
+          "condition": "side == 'LONG'"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 250,
+          "condition": "current_long_count >= long_allowed_positions"
+        }
+      ],
+      "calls": [
+        {
+          "function": "simulate_fix15",
+          "line": 330,
+          "call": "pd.DataFrame(entry_rows)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 327,
+          "call": "daily_rows.append({'Date': date, 'ETF_Shares': etf_shares, 'ETF_Value': etf_value, 'BoughtETFToday': bought_etf_today, 'SoldETFToday': sold_etf_today, 'Cash': cash, 'CashNegative': cash < 0, 'FormalStrategyEquity': formal_equity, 'BrokerStrategyEquity': broker_strategy_equity, 'FormalRealizedPnLToday': formal_realized_today, 'BrokerRealizedPnLToday': broker_realized_today, 'LongInterestToday': long_interest_today, 'ShortFeeToday': short_fee_today, 'FinancingToday': financing_today, 'CumLongInterest': cum_long_interest, 'CumShortFee': cum_short_fee, 'CumFinancingCost': cum_long_interest + cum_short_fee, 'LongNotional': long_notional, 'ShortNotional': short_notional, 'GrossNotional': gross_notional, 'LongUnrealized': long_unrealized, 'ShortUnrealized': short_unrealized, 'TotalUnrealized': total_unrealized, 'Substitute80': substitute80, 'EffectiveCollateralMTM': effective_collateral, 'MarginRatioMTMPct': margin_ratio * 100.0 if np.isfinite(margin_ratio) else np.nan, 'Below30': gross_notional > 0 and margin_ratio < MIN_MARGIN_RATIO, 'Below20': gross_notional > 0 and margin_ratio < MARGIN_CALL_LINE, 'Below15': gross_notional > 0 and margin_ratio < SEVERE_LINE, 'MissingMarks': len(missing_marks), 'BrokerOpenPositions': len(broker_active), 'BrokerSkippedOpen': len(broker_skipped), 'RealizedTotalEquity': realized_total_equity, 'TotalEquityMTM': total_equity_mtm})"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 145,
+          "call": "str(e['Side']).upper()"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 298,
+          "call": "float(p['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 161,
+          "call": "float(bp['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 162,
+          "call": "get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e['ReturnPct'])"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 175,
+          "call": "pd.Timestamp(\n                    bp[\"EntryDatetime\"]\n                )"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 179,
+          "call": "max(\n                    (\n                        fix15_exit_dt\n                        - fix15_entry_dt\n                    ).total_seconds()\n                    / 86400.0,\n                    0.0,\n                )"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 220,
+          "call": "fix15_apply_tax(\n                    fix15_exit_dt,\n                    fix15_taxable_pnl,\n                    f\"CREDIT_{side}\",\n                    bp[\"Code\"],\n                )"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 234,
+          "call": "trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'TargetNotional': bp['TargetNotional'], 'LotNotionalBeforeMargin': bp['LotNotionalBeforeMargin'], 'ActualNotional': bp['ActualNotional'], 'TargetUtilizationPct': bp['TargetUtilizationPct'], 'FormalReturnPct': float(e['ReturnPct']), 'BrokerReturnPct': broker_r * 100.0, 'BrokerPnL': broker_pnl, 'MarginLimitedAtEntry': bp['MarginLimitedAtEntry']})"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 237,
+          "call": "entry_meta.get(trade_id)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 240,
+          "call": "float(meta['EntryPrice'])"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 269,
+          "call": "calc_target_qty(target_notional=target_notional, entry_price=entry_price)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 271,
+          "call": "calc_entry_time_position_state(broker_active=broker_active, current_date=date)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 272,
+          "call": "calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 283,
+          "call": "entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional': target_notional, 'TargetQty100': target_qty, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'PreExistingGrossNotional': pre['GrossNotional'], 'PreExistingUnrealized': pre['TotalUnrealized'], 'EntryEffectiveCollateral': margin_check['EffectiveCollateral'], 'MaxAdditionalNotionalByMargin': margin_check['MaxNotionalByMargin'], 'PreMarginPct': margin_check['PreMarginPct'], 'PostMarginPct': margin_check['PostMarginPct'], 'Quantity': qty, 'ActualNotional': actual_notional, 'UnusedTargetNotional': target_notional - actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimited': margin_check['MarginLimited'], 'MissingPrevMarks': pre['MissingPrevMarks'], 'Skipped': skipped, 'SkipReason': skip_reason})"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 145,
+          "call": "str(e['Side'])"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 239,
+          "call": "RuntimeError(f'entry_metaなし: {trade_id}')"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 248,
+          "call": "len(current_long_positions)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 249,
+          "call": "calc_long_dynamic_max_positions(broker_strategy_equity)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 289,
+          "call": "RuntimeError(f'ENTRY margin check failure: {trade_id} {post_margin_pct:.6f}%')"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 180,
+          "call": "(\n                        fix15_exit_dt\n                        - fix15_entry_dt\n                    ).total_seconds()"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 264,
+          "call": "max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 265,
+          "call": "max(0.0, long_total_limit - current_long_gross)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 247,
+          "call": "str(p.get('Side', '')).upper()"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 257,
+          "call": "pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 257,
+          "call": "_p.get('EntryPrice', np.nan)"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 247,
+          "call": "str(p.get('Side', ''))"
+        },
+        {
+          "function": "simulate_fix15",
+          "line": 247,
+          "call": "p.get('Side', '')"
+        }
+      ]
+    }
+  },
+  "comparisons": [
+    {
+      "function": "simulate_fix11",
+      "line": 23,
+      "expression": "p['Side'] == 'LONG'"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 117,
+      "expression": "side == 'LONG'"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 140,
+      "expression": "current_long_count >= long_allowed_positions"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 165,
+      "expression": "target_notional > 0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 137,
+      "expression": "str(p.get('Side', '')).upper() == 'LONG'"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 23,
+      "expression": "p['Side'] == 'LONG'"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 164,
+      "expression": "side == 'LONG'"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 197,
+      "expression": "side == \"LONG\""
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 250,
+      "expression": "current_long_count >= long_allowed_positions"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 275,
+      "expression": "target_notional > 0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 247,
+      "expression": "str(p.get('Side', '')).upper() == 'LONG'"
+    }
+  ],
+  "assignments": [
+    {
+      "function": "simulate_fix11",
+      "line": 10,
+      "targets": [
+        "entry_rows"
+      ],
+      "expression": "entry_rows = []"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 16,
+      "targets": [
+        "cum_long_interest"
+      ],
+      "expression": "cum_long_interest = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 17,
+      "targets": [
+        "cum_short_fee"
+      ],
+      "expression": "cum_short_fee = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 220,
+      "targets": [
+        "entries"
+      ],
+      "expression": "entries = pd.DataFrame(entry_rows)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 20,
+      "targets": [
+        "long_n"
+      ],
+      "expression": "long_n = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 21,
+      "targets": [
+        "short_n"
+      ],
+      "expression": "short_n = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 40,
+      "targets": [
+        "long_interest_today"
+      ],
+      "expression": "long_interest_today = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 41,
+      "targets": [
+        "short_fee_today"
+      ],
+      "expression": "short_fee_today = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 52,
+      "targets": [
+        "financing_today"
+      ],
+      "expression": "financing_today = long_interest_today + short_fee_today"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 181,
+      "targets": [
+        "long_notional"
+      ],
+      "expression": "long_notional = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 182,
+      "targets": [
+        "short_notional"
+      ],
+      "expression": "short_notional = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 183,
+      "targets": [
+        "long_unrealized"
+      ],
+      "expression": "long_unrealized = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 184,
+      "targets": [
+        "short_unrealized"
+      ],
+      "expression": "short_unrealized = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 203,
+      "targets": [
+        "gross_notional"
+      ],
+      "expression": "gross_notional = long_notional + short_notional"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 204,
+      "targets": [
+        "total_unrealized"
+      ],
+      "expression": "total_unrealized = long_unrealized + short_unrealized"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 91,
+      "targets": [
+        "entry_etf_mark"
+      ],
+      "expression": "entry_etf_mark = etf_open"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 93,
+      "targets": [
+        "entry_etf_mark"
+      ],
+      "expression": "entry_etf_mark = last_etf_close if np.isfinite(last_etf_close) else np.nan"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 98,
+      "targets": [
+        "side"
+      ],
+      "expression": "side = str(e['Side']).upper()"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 188,
+      "targets": [
+        "entry_price"
+      ],
+      "expression": "entry_price = float(p['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 75,
+      "targets": [],
+      "expression": "long_n, short_n = current_broker_notional()"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 76,
+      "targets": [
+        "gross_n"
+      ],
+      "expression": "gross_n = long_n + short_n"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 104,
+      "targets": [
+        "formal_pnl"
+      ],
+      "expression": "formal_pnl = fp['EntryNotional'] * formal_r"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 114,
+      "targets": [
+        "entry_price"
+      ],
+      "expression": "entry_price = float(bp['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 115,
+      "targets": [],
+      "expression": "broker_r, exit_price = get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e['ReturnPct'])"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 127,
+      "targets": [
+        "meta"
+      ],
+      "expression": "meta = entry_meta.get(trade_id)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 130,
+      "targets": [
+        "entry_price"
+      ],
+      "expression": "entry_price = float(meta['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 131,
+      "targets": [
+        "leverage"
+      ],
+      "expression": "leverage = LONG_LEVERAGE if side == 'LONG' else SHORT_LEVERAGE"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 133,
+      "targets": [],
+      "expression": "formal_active[trade_id] = {'Side': side, 'EntryNotional': formal_notional}"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 159,
+      "targets": [
+        "target_qty"
+      ],
+      "expression": "target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 160,
+      "targets": [
+        "lot_notional_before_margin"
+      ],
+      "expression": "lot_notional_before_margin = target_qty * entry_price"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 161,
+      "targets": [
+        "pre"
+      ],
+      "expression": "pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 162,
+      "targets": [
+        "margin_check"
+      ],
+      "expression": "margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 164,
+      "targets": [
+        "actual_notional"
+      ],
+      "expression": "actual_notional = qty * entry_price"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 165,
+      "targets": [
+        "utilization"
+      ],
+      "expression": "utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 180,
+      "targets": [],
+      "expression": "broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'ActualNotional': actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimitedAtEntry': margin_check['MarginLimited']}"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 196,
+      "targets": [
+        "u"
+      ],
+      "expression": "u = qty * (mark - entry_price)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 200,
+      "targets": [
+        "u"
+      ],
+      "expression": "u = qty * (entry_price - mark)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 47,
+      "targets": [
+        "cost"
+      ],
+      "expression": "cost = n * LONG_INTEREST_ANNUAL * calendar_days / DAY_COUNT"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 50,
+      "targets": [
+        "cost"
+      ],
+      "expression": "cost = n * SHORT_LENDING_ANNUAL * calendar_days / DAY_COUNT"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 118,
+      "targets": [
+        "broker_pnl"
+      ],
+      "expression": "broker_pnl = qty * (exit_price - entry_price)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 120,
+      "targets": [
+        "broker_pnl"
+      ],
+      "expression": "broker_pnl = qty * (entry_price - exit_price)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 137,
+      "targets": [
+        "current_long_positions"
+      ],
+      "expression": "current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 138,
+      "targets": [
+        "current_long_count"
+      ],
+      "expression": "current_long_count = len(current_long_positions)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 139,
+      "targets": [
+        "long_allowed_positions"
+      ],
+      "expression": "long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 158,
+      "targets": [
+        "target_notional"
+      ],
+      "expression": "target_notional = broker_strategy_equity * leverage"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 141,
+      "targets": [
+        "target_notional"
+      ],
+      "expression": "target_notional = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 143,
+      "targets": [
+        "current_long_gross"
+      ],
+      "expression": "current_long_gross = 0.0"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 154,
+      "targets": [
+        "long_total_limit"
+      ],
+      "expression": "long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 155,
+      "targets": [
+        "long_remaining_capacity"
+      ],
+      "expression": "long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 156,
+      "targets": [
+        "target_notional"
+      ],
+      "expression": "target_notional = min(LONG_CAP_PER_STOCK, long_remaining_capacity)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 147,
+      "targets": [
+        "_px"
+      ],
+      "expression": "_px = pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 10,
+      "targets": [
+        "entry_rows"
+      ],
+      "expression": "entry_rows = []"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 16,
+      "targets": [
+        "cum_long_interest"
+      ],
+      "expression": "cum_long_interest = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 17,
+      "targets": [
+        "cum_short_fee"
+      ],
+      "expression": "cum_short_fee = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 330,
+      "targets": [
+        "entries"
+      ],
+      "expression": "entries = pd.DataFrame(entry_rows)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 20,
+      "targets": [
+        "long_n"
+      ],
+      "expression": "long_n = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 21,
+      "targets": [
+        "short_n"
+      ],
+      "expression": "short_n = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 40,
+      "targets": [
+        "long_interest_today"
+      ],
+      "expression": "long_interest_today = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 41,
+      "targets": [
+        "short_fee_today"
+      ],
+      "expression": "short_fee_today = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 52,
+      "targets": [
+        "financing_today"
+      ],
+      "expression": "financing_today = long_interest_today + short_fee_today"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 291,
+      "targets": [
+        "long_notional"
+      ],
+      "expression": "long_notional = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 292,
+      "targets": [
+        "short_notional"
+      ],
+      "expression": "short_notional = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 293,
+      "targets": [
+        "long_unrealized"
+      ],
+      "expression": "long_unrealized = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 294,
+      "targets": [
+        "short_unrealized"
+      ],
+      "expression": "short_unrealized = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 313,
+      "targets": [
+        "gross_notional"
+      ],
+      "expression": "gross_notional = long_notional + short_notional"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 314,
+      "targets": [
+        "total_unrealized"
+      ],
+      "expression": "total_unrealized = long_unrealized + short_unrealized"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 138,
+      "targets": [
+        "entry_etf_mark"
+      ],
+      "expression": "entry_etf_mark = etf_open"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 140,
+      "targets": [
+        "entry_etf_mark"
+      ],
+      "expression": "entry_etf_mark = last_etf_close if np.isfinite(last_etf_close) else np.nan"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 145,
+      "targets": [
+        "side"
+      ],
+      "expression": "side = str(e['Side']).upper()"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 298,
+      "targets": [
+        "entry_price"
+      ],
+      "expression": "entry_price = float(p['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 97,
+      "targets": [],
+      "expression": "long_n, short_n = current_broker_notional()"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 98,
+      "targets": [
+        "gross_n"
+      ],
+      "expression": "gross_n = long_n + short_n"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 151,
+      "targets": [
+        "formal_pnl"
+      ],
+      "expression": "formal_pnl = fp['EntryNotional'] * formal_r"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 161,
+      "targets": [
+        "entry_price"
+      ],
+      "expression": "entry_price = float(bp['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 162,
+      "targets": [],
+      "expression": "broker_r, exit_price = get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e['ReturnPct'])"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 175,
+      "targets": [
+        "fix15_entry_dt"
+      ],
+      "expression": "fix15_entry_dt = pd.Timestamp(\n                    bp[\"EntryDatetime\"]\n                )"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 179,
+      "targets": [
+        "fix15_raw_days"
+      ],
+      "expression": "fix15_raw_days = max(\n                    (\n                        fix15_exit_dt\n                        - fix15_entry_dt\n                    ).total_seconds()\n                    / 86400.0,\n                    0.0,\n                )"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 220,
+      "targets": [
+        "fix15_tax_change"
+      ],
+      "expression": "fix15_tax_change = fix15_apply_tax(\n                    fix15_exit_dt,\n                    fix15_taxable_pnl,\n                    f\"CREDIT_{side}\",\n                    bp[\"Code\"],\n                )"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 237,
+      "targets": [
+        "meta"
+      ],
+      "expression": "meta = entry_meta.get(trade_id)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 240,
+      "targets": [
+        "entry_price"
+      ],
+      "expression": "entry_price = float(meta['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 241,
+      "targets": [
+        "leverage"
+      ],
+      "expression": "leverage = LONG_LEVERAGE if side == 'LONG' else SHORT_LEVERAGE"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 243,
+      "targets": [],
+      "expression": "formal_active[trade_id] = {'Side': side, 'EntryNotional': formal_notional}"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 269,
+      "targets": [
+        "target_qty"
+      ],
+      "expression": "target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 270,
+      "targets": [
+        "lot_notional_before_margin"
+      ],
+      "expression": "lot_notional_before_margin = target_qty * entry_price"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 271,
+      "targets": [
+        "pre"
+      ],
+      "expression": "pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 272,
+      "targets": [
+        "margin_check"
+      ],
+      "expression": "margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 274,
+      "targets": [
+        "actual_notional"
+      ],
+      "expression": "actual_notional = qty * entry_price"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 275,
+      "targets": [
+        "utilization"
+      ],
+      "expression": "utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 290,
+      "targets": [],
+      "expression": "broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'ActualNotional': actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimitedAtEntry': margin_check['MarginLimited']}"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 306,
+      "targets": [
+        "u"
+      ],
+      "expression": "u = qty * (mark - entry_price)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 310,
+      "targets": [
+        "u"
+      ],
+      "expression": "u = qty * (entry_price - mark)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 47,
+      "targets": [
+        "cost"
+      ],
+      "expression": "cost = n * LONG_INTEREST_ANNUAL * calendar_days / DAY_COUNT"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 50,
+      "targets": [
+        "cost"
+      ],
+      "expression": "cost = n * SHORT_LENDING_ANNUAL * calendar_days / DAY_COUNT"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 165,
+      "targets": [
+        "broker_pnl"
+      ],
+      "expression": "broker_pnl = qty * (exit_price - entry_price)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 167,
+      "targets": [
+        "broker_pnl"
+      ],
+      "expression": "broker_pnl = qty * (entry_price - exit_price)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 199,
+      "targets": [
+        "fix15_financing_tax"
+      ],
+      "expression": "fix15_financing_tax = (\n                        fix15_notional\n                        * LONG_INTEREST_ANNUAL\n                        * fix15_financing_days\n                        / DAY_COUNT\n                    )"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 208,
+      "targets": [
+        "fix15_financing_tax"
+      ],
+      "expression": "fix15_financing_tax = (\n                        fix15_notional\n                        * SHORT_LENDING_ANNUAL\n                        * fix15_financing_days\n                        / DAY_COUNT\n                    )"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 247,
+      "targets": [
+        "current_long_positions"
+      ],
+      "expression": "current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 248,
+      "targets": [
+        "current_long_count"
+      ],
+      "expression": "current_long_count = len(current_long_positions)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 249,
+      "targets": [
+        "long_allowed_positions"
+      ],
+      "expression": "long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 268,
+      "targets": [
+        "target_notional"
+      ],
+      "expression": "target_notional = broker_strategy_equity * leverage"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 251,
+      "targets": [
+        "target_notional"
+      ],
+      "expression": "target_notional = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 253,
+      "targets": [
+        "current_long_gross"
+      ],
+      "expression": "current_long_gross = 0.0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 264,
+      "targets": [
+        "long_total_limit"
+      ],
+      "expression": "long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 265,
+      "targets": [
+        "long_remaining_capacity"
+      ],
+      "expression": "long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 266,
+      "targets": [
+        "target_notional"
+      ],
+      "expression": "target_notional = long_remaining_capacity"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 257,
+      "targets": [
+        "_px"
+      ],
+      "expression": "_px = pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')"
+    }
+  ],
+  "ifs": [
+    {
+      "function": "simulate_fix11",
+      "line": 23,
+      "condition": "p['Side'] == 'LONG'"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 117,
+      "condition": "side == 'LONG'"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 140,
+      "condition": "current_long_count >= long_allowed_positions"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 23,
+      "condition": "p['Side'] == 'LONG'"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 164,
+      "condition": "side == 'LONG'"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 197,
+      "condition": "side == \"LONG\""
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 250,
+      "condition": "current_long_count >= long_allowed_positions"
+    }
+  ],
+  "calls": [
+    {
+      "function": "simulate_fix11",
+      "line": 220,
+      "call": "pd.DataFrame(entry_rows)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 217,
+      "call": "daily_rows.append({'Date': date, 'ETF_Shares': etf_shares, 'ETF_Value': etf_value, 'BoughtETFToday': bought_etf_today, 'SoldETFToday': sold_etf_today, 'Cash': cash, 'CashNegative': cash < 0, 'FormalStrategyEquity': formal_equity, 'BrokerStrategyEquity': broker_strategy_equity, 'FormalRealizedPnLToday': formal_realized_today, 'BrokerRealizedPnLToday': broker_realized_today, 'LongInterestToday': long_interest_today, 'ShortFeeToday': short_fee_today, 'FinancingToday': financing_today, 'CumLongInterest': cum_long_interest, 'CumShortFee': cum_short_fee, 'CumFinancingCost': cum_long_interest + cum_short_fee, 'LongNotional': long_notional, 'ShortNotional': short_notional, 'GrossNotional': gross_notional, 'LongUnrealized': long_unrealized, 'ShortUnrealized': short_unrealized, 'TotalUnrealized': total_unrealized, 'Substitute80': substitute80, 'EffectiveCollateralMTM': effective_collateral, 'MarginRatioMTMPct': margin_ratio * 100.0 if np.isfinite(margin_ratio) else np.nan, 'Below30': gross_notional > 0 and margin_ratio < MIN_MARGIN_RATIO, 'Below20': gross_notional > 0 and margin_ratio < MARGIN_CALL_LINE, 'Below15': gross_notional > 0 and margin_ratio < SEVERE_LINE, 'MissingMarks': len(missing_marks), 'BrokerOpenPositions': len(broker_active), 'BrokerSkippedOpen': len(broker_skipped), 'RealizedTotalEquity': realized_total_equity, 'TotalEquityMTM': total_equity_mtm})"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 98,
+      "call": "str(e['Side']).upper()"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 188,
+      "call": "float(p['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 114,
+      "call": "float(bp['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 115,
+      "call": "get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e['ReturnPct'])"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 124,
+      "call": "trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'TargetNotional': bp['TargetNotional'], 'LotNotionalBeforeMargin': bp['LotNotionalBeforeMargin'], 'ActualNotional': bp['ActualNotional'], 'TargetUtilizationPct': bp['TargetUtilizationPct'], 'FormalReturnPct': float(e['ReturnPct']), 'BrokerReturnPct': broker_r * 100.0, 'BrokerPnL': broker_pnl, 'MarginLimitedAtEntry': bp['MarginLimitedAtEntry']})"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 127,
+      "call": "entry_meta.get(trade_id)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 130,
+      "call": "float(meta['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 159,
+      "call": "calc_target_qty(target_notional=target_notional, entry_price=entry_price)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 161,
+      "call": "calc_entry_time_position_state(broker_active=broker_active, current_date=date)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 162,
+      "call": "calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 173,
+      "call": "entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional': target_notional, 'TargetQty100': target_qty, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'PreExistingGrossNotional': pre['GrossNotional'], 'PreExistingUnrealized': pre['TotalUnrealized'], 'EntryEffectiveCollateral': margin_check['EffectiveCollateral'], 'MaxAdditionalNotionalByMargin': margin_check['MaxNotionalByMargin'], 'PreMarginPct': margin_check['PreMarginPct'], 'PostMarginPct': margin_check['PostMarginPct'], 'Quantity': qty, 'ActualNotional': actual_notional, 'UnusedTargetNotional': target_notional - actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimited': margin_check['MarginLimited'], 'MissingPrevMarks': pre['MissingPrevMarks'], 'Skipped': skipped, 'SkipReason': skip_reason})"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 98,
+      "call": "str(e['Side'])"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 129,
+      "call": "RuntimeError(f'entry_metaなし: {trade_id}')"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 138,
+      "call": "len(current_long_positions)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 139,
+      "call": "calc_long_dynamic_max_positions(broker_strategy_equity)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 179,
+      "call": "RuntimeError(f'ENTRY margin check failure: {trade_id} {post_margin_pct:.6f}%')"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 154,
+      "call": "max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 155,
+      "call": "max(0.0, long_total_limit - current_long_gross)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 156,
+      "call": "min(LONG_CAP_PER_STOCK, long_remaining_capacity)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 137,
+      "call": "str(p.get('Side', '')).upper()"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 147,
+      "call": "pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 147,
+      "call": "_p.get('EntryPrice', np.nan)"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 137,
+      "call": "str(p.get('Side', ''))"
+    },
+    {
+      "function": "simulate_fix11",
+      "line": 137,
+      "call": "p.get('Side', '')"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 330,
+      "call": "pd.DataFrame(entry_rows)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 327,
+      "call": "daily_rows.append({'Date': date, 'ETF_Shares': etf_shares, 'ETF_Value': etf_value, 'BoughtETFToday': bought_etf_today, 'SoldETFToday': sold_etf_today, 'Cash': cash, 'CashNegative': cash < 0, 'FormalStrategyEquity': formal_equity, 'BrokerStrategyEquity': broker_strategy_equity, 'FormalRealizedPnLToday': formal_realized_today, 'BrokerRealizedPnLToday': broker_realized_today, 'LongInterestToday': long_interest_today, 'ShortFeeToday': short_fee_today, 'FinancingToday': financing_today, 'CumLongInterest': cum_long_interest, 'CumShortFee': cum_short_fee, 'CumFinancingCost': cum_long_interest + cum_short_fee, 'LongNotional': long_notional, 'ShortNotional': short_notional, 'GrossNotional': gross_notional, 'LongUnrealized': long_unrealized, 'ShortUnrealized': short_unrealized, 'TotalUnrealized': total_unrealized, 'Substitute80': substitute80, 'EffectiveCollateralMTM': effective_collateral, 'MarginRatioMTMPct': margin_ratio * 100.0 if np.isfinite(margin_ratio) else np.nan, 'Below30': gross_notional > 0 and margin_ratio < MIN_MARGIN_RATIO, 'Below20': gross_notional > 0 and margin_ratio < MARGIN_CALL_LINE, 'Below15': gross_notional > 0 and margin_ratio < SEVERE_LINE, 'MissingMarks': len(missing_marks), 'BrokerOpenPositions': len(broker_active), 'BrokerSkippedOpen': len(broker_skipped), 'RealizedTotalEquity': realized_total_equity, 'TotalEquityMTM': total_equity_mtm})"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 145,
+      "call": "str(e['Side']).upper()"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 298,
+      "call": "float(p['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 161,
+      "call": "float(bp['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 162,
+      "call": "get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e['ReturnPct'])"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 175,
+      "call": "pd.Timestamp(\n                    bp[\"EntryDatetime\"]\n                )"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 179,
+      "call": "max(\n                    (\n                        fix15_exit_dt\n                        - fix15_entry_dt\n                    ).total_seconds()\n                    / 86400.0,\n                    0.0,\n                )"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 220,
+      "call": "fix15_apply_tax(\n                    fix15_exit_dt,\n                    fix15_taxable_pnl,\n                    f\"CREDIT_{side}\",\n                    bp[\"Code\"],\n                )"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 234,
+      "call": "trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'TargetNotional': bp['TargetNotional'], 'LotNotionalBeforeMargin': bp['LotNotionalBeforeMargin'], 'ActualNotional': bp['ActualNotional'], 'TargetUtilizationPct': bp['TargetUtilizationPct'], 'FormalReturnPct': float(e['ReturnPct']), 'BrokerReturnPct': broker_r * 100.0, 'BrokerPnL': broker_pnl, 'MarginLimitedAtEntry': bp['MarginLimitedAtEntry']})"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 237,
+      "call": "entry_meta.get(trade_id)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 240,
+      "call": "float(meta['EntryPrice'])"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 269,
+      "call": "calc_target_qty(target_notional=target_notional, entry_price=entry_price)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 271,
+      "call": "calc_entry_time_position_state(broker_active=broker_active, current_date=date)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 272,
+      "call": "calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 283,
+      "call": "entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional': target_notional, 'TargetQty100': target_qty, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'PreExistingGrossNotional': pre['GrossNotional'], 'PreExistingUnrealized': pre['TotalUnrealized'], 'EntryEffectiveCollateral': margin_check['EffectiveCollateral'], 'MaxAdditionalNotionalByMargin': margin_check['MaxNotionalByMargin'], 'PreMarginPct': margin_check['PreMarginPct'], 'PostMarginPct': margin_check['PostMarginPct'], 'Quantity': qty, 'ActualNotional': actual_notional, 'UnusedTargetNotional': target_notional - actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimited': margin_check['MarginLimited'], 'MissingPrevMarks': pre['MissingPrevMarks'], 'Skipped': skipped, 'SkipReason': skip_reason})"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 145,
+      "call": "str(e['Side'])"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 239,
+      "call": "RuntimeError(f'entry_metaなし: {trade_id}')"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 248,
+      "call": "len(current_long_positions)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 249,
+      "call": "calc_long_dynamic_max_positions(broker_strategy_equity)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 289,
+      "call": "RuntimeError(f'ENTRY margin check failure: {trade_id} {post_margin_pct:.6f}%')"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 180,
+      "call": "(\n                        fix15_exit_dt\n                        - fix15_entry_dt\n                    ).total_seconds()"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 264,
+      "call": "max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 265,
+      "call": "max(0.0, long_total_limit - current_long_gross)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 247,
+      "call": "str(p.get('Side', '')).upper()"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 257,
+      "call": "pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 257,
+      "call": "_p.get('EntryPrice', np.nan)"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 247,
+      "call": "str(p.get('Side', ''))"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 247,
+      "call": "p.get('Side', '')"
+    }
+  ],
+  "possible_signal_columns": [
+    "\n                entry_rows.append({",
+    " else SHORT_LEVERAGE\n                formal_notional = formal_equity * leverage\n                formal_active[trade_id] = {",
+    ")\n                                if np.isfinite(_px) and np.isfinite(_qty):\n                                    _notional = float(_px) * float(_qty)\n                                else:\n                                    _notional = 0.0\n                            current_long_gross += float(_notional)\n                        long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)\n                        long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)\n                        target_notional = long_remaining_capacity\n                else:\n                    target_notional = broker_strategy_equity * leverage\n                target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)\n                lot_notional_before_margin = target_qty * entry_price\n                pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)\n                margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre[",
+    ")\n                                if np.isfinite(_px) and np.isfinite(_qty):\n                                    _notional = float(_px) * float(_qty)\n                                else:\n                                    _notional = 0.0\n                            current_long_gross += float(_notional)\n                        long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)\n                        long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)\n                        target_notional = min(LONG_CAP_PER_STOCK, long_remaining_capacity)\n                else:\n                    target_notional = broker_strategy_equity * leverage\n                target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)\n                lot_notional_before_margin = target_qty * entry_price\n                pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)\n                margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre[",
+    ")\n                bp = broker_active[trade_id]\n                entry_price = float(bp[",
+    ")\n                entry_price = float(meta[",
+    ")\n                if side == ",
+    ":\n\n                    fix15_financing_tax = (\n                        fix15_notional\n                        * LONG_INTEREST_ANNUAL\n                        * fix15_financing_days\n                        / DAY_COUNT\n                    )\n\n                else:\n\n                    fix15_financing_tax = (\n                        fix15_notional\n                        * SHORT_LENDING_ANNUAL\n                        * fix15_financing_days\n                        / DAY_COUNT\n                    )\n\n                fix15_taxable_pnl = (\n                    float(broker_pnl)\n                    - float(fix15_financing_tax)\n                )\n\n                fix15_tax_change = fix15_apply_tax(\n                    fix15_exit_dt,\n                    fix15_taxable_pnl,\n                    f",
+    ":\n                    broker_pnl = qty * (exit_price - entry_price)\n                else:\n                    broker_pnl = qty * (entry_price - exit_price)\n                broker_strategy_equity += broker_pnl\n                cash += broker_pnl\n\n                fix15_exit_dt = pd.Timestamp(\n                    e[",
+    ":\n                    cost = n * LONG_INTEREST_ANNUAL * calendar_days / DAY_COUNT\n                    long_interest_today += cost\n                else:\n                    cost = n * SHORT_LENDING_ANNUAL * calendar_days / DAY_COUNT\n                    short_fee_today += cost\n        financing_today = long_interest_today + short_fee_today\n        cash -= financing_today\n        broker_strategy_equity -= financing_today\n        cum_long_interest += long_interest_today\n        cum_short_fee += short_fee_today\n        bought_etf_today = 0\n        sold_etf_today = 0\n        recovery_sell_today = False\n        if has_quote and np.isfinite(etf_open) and (etf_open > 0):\n            if cash < CASH_FLOOR:\n                deficit = CASH_FLOOR - cash\n                required_sell = int(np.ceil(deficit / etf_open))\n                sell_shares = min(required_sell, etf_shares)\n                if sell_shares > 0:\n                    proceeds = sell_shares * etf_open\n                    cash_before = float(cash)\n                    fix15_etf_realized = (\n                        float(sell_shares)\n                        * (\n                            float(etf_open)\n                            - float(FIX15_ETF_BOOK[",
+    ":\n                    current_long_positions = [p for p in broker_active.values() if str(p.get(",
+    ":\n                long_n += float(p[",
+    ":\n                u = qty * (mark - entry_price)\n                long_notional += actual_notional\n                long_unrealized += u\n            else:\n                u = qty * (entry_price - mark)\n                short_notional += actual_notional\n                short_unrealized += u\n        gross_notional = long_notional + short_notional\n        total_unrealized = long_unrealized + short_unrealized\n        if np.isfinite(etf_close):\n            etf_value = etf_shares * etf_close\n        else:\n            etf_value = 0.0\n        substitute80 = etf_value * SUBSTITUTE_HAIRCUT\n        effective_collateral = cash + substitute80 + total_unrealized\n        if gross_notional > 0:\n            margin_ratio = effective_collateral / gross_notional\n        else:\n            margin_ratio = np.nan\n        realized_total_equity = cash + etf_value\n        total_equity_mtm = realized_total_equity + total_unrealized\n        daily_rows.append({",
+    ": cum_long_interest + cum_short_fee, ",
+    ": cum_long_interest, ",
+    ": cum_short_fee, ",
+    ": entry_price, ",
+    ": etf_shares})\n                        initial_purchase_done = True\n        if has_quote and np.isfinite(etf_open) and (etf_open > 0):\n            entry_etf_mark = etf_open\n        else:\n            entry_etf_mark = last_etf_close if np.isfinite(last_etf_close) else np.nan\n        formal_realized_today = 0.0\n        broker_realized_today = 0.0\n        for e in events_by_date.get(date, []):\n            trade_id = str(e[",
+    ": etf_shares})\n            should_buy = not initial_purchase_done or is_monthly_buy\n            if should_buy and (not recovery_sell_today):\n                long_n, short_n = current_broker_notional()\n                gross_n = long_n + short_n\n                buy_shares = calc_max_etf_buy_shares(cash_now=cash, shares_now=etf_shares, etf_open=etf_open, gross_notional=gross_n)\n                if buy_shares > 0:\n                    total_cost = buy_shares * etf_open + ETF_BUY_FEE\n                    if cash - total_cost < CASH_FLOOR:\n                        buy_shares = int(max(0, (cash - CASH_FLOOR - ETF_BUY_FEE) // etf_open))\n                        total_cost = buy_shares * etf_open + ETF_BUY_FEE\n                    if buy_shares > 0:\n                        cash_before = float(cash)\n\n                        fix15_old_etf_shares = int(\n                            etf_shares\n                        )\n\n                        fix15_old_cost = (\n                            float(fix15_old_etf_shares)\n                            * float(FIX15_ETF_BOOK[",
+    ": long_interest_today, ",
+    ": long_notional, ",
+    ": long_unrealized, ",
+    ": short_fee_today, ",
+    ": short_notional, ",
+    ": short_unrealized, ",
+    ": side, ",
+    ": target_notional - actual_notional, ",
+    ": target_notional, ",
+    ": total_equity_mtm})\n        previous_date = date\n    daily = pd.DataFrame(daily_rows)\n    entries = pd.DataFrame(entry_rows)\n    trades = pd.DataFrame(trade_rows)\n    tx = pd.DataFrame(tx_rows)\n    eq = daily[",
+    "EntryDatetime",
+    "EntryNotional",
+    "EntryPrice",
+    "LONG",
+    "MarginLimitedAtEntry",
+    "Side",
+    "]\n                    current_long_count = len(current_long_positions)\n                    long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)\n                    if current_long_count >= long_allowed_positions:\n                        target_notional = 0.0\n                    else:\n                        current_long_gross = 0.0\n                        for _p in current_long_positions:\n                            _notional = _p.get(",
+    "]\n                )\n\n                fix15_entry_dt = pd.Timestamp(\n                    bp[",
+    "]\n                )\n\n                fix15_raw_days = max(\n                    (\n                        fix15_exit_dt\n                        - fix15_entry_dt\n                    ).total_seconds()\n                    / 86400.0,\n                    0.0,\n                )\n\n                fix15_financing_days = max(\n                    fix15_raw_days,\n                    1.0,\n                )\n\n                fix15_notional = float(\n                    bp[",
+    "]\n                )\n\n                if side == ",
+    "]\n            entry_price = float(p[",
+    "] = (eq / peak - 1.0) * 100.0\n    return (daily, entries, trades, tx, formal_active, broker_active, broker_skipped)\ndef simulate_fix15():\n    cash = float(INITIAL_CAPITAL)\n    etf_shares = 0\n    formal_equity = float(INITIAL_CAPITAL)\n    broker_strategy_equity = float(INITIAL_CAPITAL)\n    formal_active = {}\n    broker_active = {}\n    broker_skipped = set()\n    tx_rows = []\n    entry_rows = []\n    trade_rows = []\n    daily_rows = []\n    previous_date = None\n    last_etf_close = np.nan\n    initial_purchase_done = False\n    cum_long_interest = 0.0\n    cum_short_fee = 0.0\n\n    def current_broker_notional():\n        long_n = 0.0\n        short_n = 0.0\n        for p in broker_active.values():\n            if p[",
+    "])\n                actual_notional = qty * entry_price\n                utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan\n                skipped = qty == 0\n                if target_qty == 0:\n                    skip_reason = ",
+    "])\n                broker_r, exit_price = get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e[",
+    "])\n                if side == ",
+    "])\n                leverage = LONG_LEVERAGE if side == ",
+    "])\n            else:\n                short_n += float(p[",
+    "])\n            side = str(e[",
+    "])\n        return (long_n, short_n)\n    for date in sorted(pd.to_datetime(sim_dates)):\n        date = pd.Timestamp(date).normalize()\n        has_quote = date in quote_dates\n        is_monthly_buy = date in monthly_buy_dates\n        if has_quote:\n            etf_open = float(open_map[date])\n            etf_close = float(close_map[date])\n            if np.isfinite(etf_close) and etf_close > 0:\n                last_etf_close = etf_close\n        else:\n            etf_open = np.nan\n            etf_close = float(last_etf_close) if np.isfinite(last_etf_close) else np.nan\n        long_interest_today = 0.0\n        short_fee_today = 0.0\n        if previous_date is not None:\n            calendar_days = int((date - previous_date).days)\n            for p in broker_active.values():\n                n = float(p[",
+    "]}\n        long_notional = 0.0\n        short_notional = 0.0\n        long_unrealized = 0.0\n        short_unrealized = 0.0\n        missing_marks = []\n        for trade_id, p in broker_active.items():\n            code = p[",
+    "]})\n                del broker_active[trade_id]\n            else:\n                meta = entry_meta.get(trade_id)\n                if meta is None:\n                    raise RuntimeError(f",
+    "entry_metaなし: {trade_id}"
+  ],
+  "numeric_threshold_comparisons": [
+    {
+      "function": "simulate_fix11",
+      "line": 165,
+      "expression": "target_notional > 0"
+    },
+    {
+      "function": "simulate_fix15",
+      "line": 275,
+      "expression": "target_notional > 0"
+    }
+  ],
+  "fix17_sizing_rule": {
+    "expected": "target_notional = long_remaining_capacity",
+    "new_rule_count": 1,
+    "old_rule_count": 0
+  }
+}
