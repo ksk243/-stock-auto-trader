@@ -1,0 +1,72 @@
+FIX17 EXACT ENTRY BOOLEAN RULES
+========================================================================================================================
+Official SHA256: 9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4
+
+COUNTS
+------------------------------------------------------------------------------------------------------------------------
+expanded_source_blocks           25
+statement_hits                   67
+window_hits                      8
+audit_hits                       48
+comparison_hits                  0
+boolean_hits                     0
+
+EXPLICIT COMPARISONS
+------------------------------------------------------------------------------------------------------------------------
+NONE
+
+BOOLEAN REQUIREMENTS
+------------------------------------------------------------------------------------------------------------------------
+NONE
+
+TOP ENTRY AUDIT BLOCK
+------------------------------------------------------------------------------------------------------------------------
+FIX17_RUNTIME_FULL_INVENTORY.json L273-319 score=45
+
+      "depth": 1,
+      "start_line": 266,
+      "end_line": 347
+    }
+  ],
+  "all_classes": [],
+  "duplicate_function_names": {},
+  "rule_hits": {
+    "target_notional = long_remaining_capacity": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1467
+      }
+    ],
+    "LONG_CAP_PER_STOCK": [],
+    "RS20_corrected": [],
+    "RVOL20": [],
+    "turnover_median_20d_oku": [],
+    "ORB15_LongSignal": [],
+    "ORB15_ShortSignal": [],
+    "CrossPass_EXACT": [],
+    "EntryPriceFormal": [],
+    "FormalEntryPrice": [],
+    "ENTRY": [
+      {
+        "layer": "FIX17_ROOT",
+        "line": 103
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 391
+      },
+      {
+        "layer": "FIX17_ROOT",
+        "line": 1490
+      },
+      {
+        "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+        "line": 37
+      },
+      {
+        "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+        "line": 812
+      },
+      {
+        "layer": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+        "line": 837
