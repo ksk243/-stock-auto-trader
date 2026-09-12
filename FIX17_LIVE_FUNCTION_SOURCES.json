@@ -1,0 +1,158 @@
+{
+  "_fix16_download_bytes": {
+    "signature": "(file_id)",
+    "source_file": "/content/-stock-auto-trader/FIX17_OFFICIAL_FULL_SOURCE.py",
+    "source_line": 71,
+    "source": "def _fix16_download_bytes(file_id):\n\n    req = _fix16_drive.files().get_media(\n        fileId=file_id\n    )\n\n    buf = io.BytesIO()\n\n    dl = MediaIoBaseDownload(\n        buf,\n        req\n    )\n\n    done = False\n\n    while not done:\n        _, done = dl.next_chunk()\n\n    return buf.getvalue()\n"
+  },
+  "_download_text": {
+    "signature": "(file_id)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "_sha256_text": {
+    "signature": "(text)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "download_drive_file": {
+    "signature": "(file_id, filename)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "pick_runtime_value": {
+    "signature": "(*names)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "calc_long_dynamic_max_positions": {
+    "signature": "(equity)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "reconstruct_exit_price": {
+    "signature": "(side, entry_price, formal_return_pct)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "get_broker_return": {
+    "signature": "(side, entry_price, formal_return_pct)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "get_last_close_before": {
+    "signature": "(code, date)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "calc_target_qty": {
+    "signature": "(target_notional, entry_price)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "calc_max_etf_buy_shares": {
+    "signature": "(cash_now, shares_now, etf_open, gross_notional)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "calc_entry_time_position_state": {
+    "signature": "(broker_active, current_date)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "calc_margin_capped_qty": {
+    "signature": "(target_qty, entry_price, cash_now, etf_mark, etf_shares, existing_gross_notional, existing_unrealized)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "simulate_fix11": {
+    "signature": "()",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "_fix13_calc_max_etf_buy_shares": {
+    "signature": "(cash_now, shares_now, etf_open, gross_notional)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "_fix13_first_value": {
+    "signature": "(d, names)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "_fix13_event_type": {
+    "signature": "(e)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "_fix13_side": {
+    "signature": "(e)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "_fix13_trade_id": {
+    "signature": "(e)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "_fix13_datetime": {
+    "signature": "(e)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "_fix13_ban_reason": {
+    "signature": "(e)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "_fix13_apply_event_filter": {
+    "signature": "(src_events_by_date)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "fix15_ensure_tax_year": {
+    "signature": "(year)",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "fix15_apply_tax": {
+    "signature": "(dt, taxable_pnl, source, detail='')",
+    "source_file": null,
+    "source_line": null,
+    "source": null
+  },
+  "simulate_fix15": {
+    "signature": "()",
+    "source_file": "/content/-stock-auto-trader/FIX17_OFFICIAL_FULL_SOURCE.py",
+    "source_line": 1202,
+    "source": "def simulate_fix15():\n    cash = float(INITIAL_CAPITAL)\n    etf_shares = 0\n    formal_equity = float(INITIAL_CAPITAL)\n    broker_strategy_equity = float(INITIAL_CAPITAL)\n    formal_active = {}\n    broker_active = {}\n    broker_skipped = set()\n    tx_rows = []\n    entry_rows = []\n    trade_rows = []\n    daily_rows = []\n    previous_date = None\n    last_etf_close = np.nan\n    initial_purchase_done = False\n    cum_long_interest = 0.0\n    cum_short_fee = 0.0\n\n    def current_broker_notional():\n        long_n = 0.0\n        short_n = 0.0\n        for p in broker_active.values():\n            if p['Side'] == 'LONG':\n                long_n += float(p['ActualNotional'])\n            else:\n                short_n += float(p['ActualNotional'])\n        return (long_n, short_n)\n    for date in sorted(pd.to_datetime(sim_dates)):\n        date = pd.Timestamp(date).normalize()\n        has_quote = date in quote_dates\n        is_monthly_buy = date in monthly_buy_dates\n        if has_quote:\n            etf_open = float(open_map[date])\n            etf_close = float(close_map[date])\n            if np.isfinite(etf_close) and etf_close > 0:\n                last_etf_close = etf_close\n        else:\n            etf_open = np.nan\n            etf_close = float(last_etf_close) if np.isfinite(last_etf_close) else np.nan\n        long_interest_today = 0.0\n        short_fee_today = 0.0\n        if previous_date is not None:\n            calendar_days = int((date - previous_date).days)\n            for p in broker_active.values():\n                n = float(p['ActualNotional'])\n                if p['Side'] == 'LONG':\n                    cost = n * LONG_INTEREST_ANNUAL * calendar_days / DAY_COUNT\n                    long_interest_today += cost\n                else:\n                    cost = n * SHORT_LENDING_ANNUAL * calendar_days / DAY_COUNT\n                    short_fee_today += cost\n        financing_today = long_interest_today + short_fee_today\n        cash -= financing_today\n        broker_strategy_equity -= financing_today\n        cum_long_interest += long_interest_today\n        cum_short_fee += short_fee_today\n        bought_etf_today = 0\n        sold_etf_today = 0\n        recovery_sell_today = False\n        if has_quote and np.isfinite(etf_open) and (etf_open > 0):\n            if cash < CASH_FLOOR:\n                deficit = CASH_FLOOR - cash\n                required_sell = int(np.ceil(deficit / etf_open))\n                sell_shares = min(required_sell, etf_shares)\n                if sell_shares > 0:\n                    proceeds = sell_shares * etf_open\n                    cash_before = float(cash)\n                    fix15_etf_realized = (\n                        float(sell_shares)\n                        * (\n                            float(etf_open)\n                            - float(FIX15_ETF_BOOK[\"avg_cost\"])\n                        )\n                        - float(ETF_SELL_FEE)\n                    )\n\n                    etf_shares -= sell_shares\n                    cash += proceeds - ETF_SELL_FEE\n\n                    fix15_spot_tax = fix15_apply_tax(\n                        date,\n                        fix15_etf_realized,\n                        \"1557_SPOT\",\n                        \"SELL_CASH_RECOVERY\",\n                    )\n\n                    cash -= fix15_spot_tax\n\n                    if etf_shares == 0:\n                        FIX15_ETF_BOOK[\"avg_cost\"] = 0.0\n\n                    sold_etf_today = sell_shares\n                    recovery_sell_today = True\n                    tx_rows.append({'Date': date, 'Type': 'SELL_CASH_RECOVERY', 'Price': etf_open, 'Shares': sell_shares, 'CashBefore': cash_before, 'CashAfter': cash, 'ETF_SharesAfter': etf_shares})\n            should_buy = not initial_purchase_done or is_monthly_buy\n            if should_buy and (not recovery_sell_today):\n                long_n, short_n = current_broker_notional()\n                gross_n = long_n + short_n\n                buy_shares = calc_max_etf_buy_shares(cash_now=cash, shares_now=etf_shares, etf_open=etf_open, gross_notional=gross_n)\n                if buy_shares > 0:\n                    total_cost = buy_shares * etf_open + ETF_BUY_FEE\n                    if cash - total_cost < CASH_FLOOR:\n                        buy_shares = int(max(0, (cash - CASH_FLOOR - ETF_BUY_FEE) // etf_open))\n                        total_cost = buy_shares * etf_open + ETF_BUY_FEE\n                    if buy_shares > 0:\n                        cash_before = float(cash)\n\n                        fix15_old_etf_shares = int(\n                            etf_shares\n                        )\n\n                        fix15_old_cost = (\n                            float(fix15_old_etf_shares)\n                            * float(FIX15_ETF_BOOK[\"avg_cost\"])\n                        )\n\n                        fix15_new_cost = (\n                            float(buy_shares)\n                            * float(etf_open)\n                            + float(ETF_BUY_FEE)\n                        )\n\n                        etf_shares += buy_shares\n\n                        if etf_shares > 0:\n\n                            FIX15_ETF_BOOK[\"avg_cost\"] = (\n                                fix15_old_cost\n                                + fix15_new_cost\n                            ) / float(etf_shares)\n\n                        cash -= total_cost\n\n                        bought_etf_today = buy_shares\n                        tx_rows.append({'Date': date, 'Type': 'INITIAL_BUY' if not initial_purchase_done else 'MONTHLY_BUY', 'Price': etf_open, 'Shares': buy_shares, 'CashBefore': cash_before, 'CashAfter': cash, 'ETF_SharesAfter': etf_shares})\n                        initial_purchase_done = True\n        if has_quote and np.isfinite(etf_open) and (etf_open > 0):\n            entry_etf_mark = etf_open\n        else:\n            entry_etf_mark = last_etf_close if np.isfinite(last_etf_close) else np.nan\n        formal_realized_today = 0.0\n        broker_realized_today = 0.0\n        for e in events_by_date.get(date, []):\n            trade_id = str(e['TradeID'])\n            side = str(e['Side']).upper()\n            if e['Event'] == 'EXIT':\n                if trade_id not in formal_active:\n                    raise RuntimeError(f\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\")\n                fp = formal_active[trade_id]\n                formal_r = float(e['ReturnPct']) / 100.0\n                formal_pnl = fp['EntryNotional'] * formal_r\n                formal_equity += formal_pnl\n                formal_realized_today += formal_pnl\n                del formal_active[trade_id]\n                if trade_id in broker_skipped:\n                    broker_skipped.remove(trade_id)\n                    continue\n                if trade_id not in broker_active:\n                    raise RuntimeError(f\"{e['Datetime']} Broker EXIT positionなし: {trade_id}\")\n                bp = broker_active[trade_id]\n                entry_price = float(bp['EntryPrice'])\n                broker_r, exit_price = get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e['ReturnPct'])\n                qty = int(bp['Quantity'])\n                if side == 'LONG':\n                    broker_pnl = qty * (exit_price - entry_price)\n                else:\n                    broker_pnl = qty * (entry_price - exit_price)\n                broker_strategy_equity += broker_pnl\n                cash += broker_pnl\n\n                fix15_exit_dt = pd.Timestamp(\n                    e[\"Datetime\"]\n                )\n\n                fix15_entry_dt = pd.Timestamp(\n                    bp[\"EntryDatetime\"]\n                )\n\n                fix15_raw_days = max(\n                    (\n                        fix15_exit_dt\n                        - fix15_entry_dt\n                    ).total_seconds()\n                    / 86400.0,\n                    0.0,\n                )\n\n                fix15_financing_days = max(\n                    fix15_raw_days,\n                    1.0,\n                )\n\n                fix15_notional = float(\n                    bp[\"ActualNotional\"]\n                )\n\n                if side == \"LONG\":\n\n                    fix15_financing_tax = (\n                        fix15_notional\n                        * LONG_INTEREST_ANNUAL\n                        * fix15_financing_days\n                        / DAY_COUNT\n                    )\n\n                else:\n\n                    fix15_financing_tax = (\n                        fix15_notional\n                        * SHORT_LENDING_ANNUAL\n                        * fix15_financing_days\n                        / DAY_COUNT\n                    )\n\n                fix15_taxable_pnl = (\n                    float(broker_pnl)\n                    - float(fix15_financing_tax)\n                )\n\n                fix15_tax_change = fix15_apply_tax(\n                    fix15_exit_dt,\n                    fix15_taxable_pnl,\n                    f\"CREDIT_{side}\",\n                    bp[\"Code\"],\n                )\n\n                cash -= fix15_tax_change\n\n                broker_strategy_equity -= (\n                    fix15_tax_change\n                )\n\n                broker_realized_today += broker_pnl\n                trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'TargetNotional': bp['TargetNotional'], 'LotNotionalBeforeMargin': bp['LotNotionalBeforeMargin'], 'ActualNotional': bp['ActualNotional'], 'TargetUtilizationPct': bp['TargetUtilizationPct'], 'FormalReturnPct': float(e['ReturnPct']), 'BrokerReturnPct': broker_r * 100.0, 'BrokerPnL': broker_pnl, 'MarginLimitedAtEntry': bp['MarginLimitedAtEntry']})\n                del broker_active[trade_id]\n            else:\n                meta = entry_meta.get(trade_id)\n                if meta is None:\n                    raise RuntimeError(f'entry_metaなし: {trade_id}')\n                entry_price = float(meta['EntryPrice'])\n                leverage = LONG_LEVERAGE if side == 'LONG' else SHORT_LEVERAGE\n                formal_notional = formal_equity * leverage\n                formal_active[trade_id] = {'Side': side, 'EntryNotional': formal_notional}\n                if broker_strategy_equity <= 0:\n                    raise RuntimeError(f'Broker strategy equity <= 0: {date.date()}')\n                if side == 'LONG':\n                    current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']\n                    current_long_count = len(current_long_positions)\n                    long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)\n                    if current_long_count >= long_allowed_positions:\n                        target_notional = 0.0\n                    else:\n                        current_long_gross = 0.0\n                        for _p in current_long_positions:\n                            _notional = _p.get('ActualNotional', np.nan)\n                            if not np.isfinite(pd.to_numeric(_notional, errors='coerce')):\n                                _px = pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')\n                                _qty = pd.to_numeric(_p.get('Quantity', np.nan), errors='coerce')\n                                if np.isfinite(_px) and np.isfinite(_qty):\n                                    _notional = float(_px) * float(_qty)\n                                else:\n                                    _notional = 0.0\n                            current_long_gross += float(_notional)\n                        long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)\n                        long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)\n                        target_notional = long_remaining_capacity\n                else:\n                    target_notional = broker_strategy_equity * leverage\n                target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)\n                lot_notional_before_margin = target_qty * entry_price\n                pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)\n                margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])\n                qty = int(margin_check['AllowedQty'])\n                actual_notional = qty * entry_price\n                utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan\n                skipped = qty == 0\n                if target_qty == 0:\n                    skip_reason = 'LOT_TOO_LARGE'\n                elif qty == 0:\n                    skip_reason = 'MARGIN_CAPACITY'\n                else:\n                    skip_reason = ''\n                entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional': target_notional, 'TargetQty100': target_qty, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'PreExistingGrossNotional': pre['GrossNotional'], 'PreExistingUnrealized': pre['TotalUnrealized'], 'EntryEffectiveCollateral': margin_check['EffectiveCollateral'], 'MaxAdditionalNotionalByMargin': margin_check['MaxNotionalByMargin'], 'PreMarginPct': margin_check['PreMarginPct'], 'PostMarginPct': margin_check['PostMarginPct'], 'Quantity': qty, 'ActualNotional': actual_notional, 'UnusedTargetNotional': target_notional - actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimited': margin_check['MarginLimited'], 'MissingPrevMarks': pre['MissingPrevMarks'], 'Skipped': skipped, 'SkipReason': skip_reason})\n                if skipped:\n                    broker_skipped.add(trade_id)\n                    continue\n                post_margin_pct = margin_check['PostMarginPct']\n                if np.isfinite(post_margin_pct) and post_margin_pct < MIN_MARGIN_RATIO * 100.0 - 1e-09:\n                    raise RuntimeError(f'ENTRY margin check failure: {trade_id} {post_margin_pct:.6f}%')\n                broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'ActualNotional': actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimitedAtEntry': margin_check['MarginLimited']}\n        long_notional = 0.0\n        short_notional = 0.0\n        long_unrealized = 0.0\n        short_unrealized = 0.0\n        missing_marks = []\n        for trade_id, p in broker_active.items():\n            code = p['Code']\n            entry_price = float(p['EntryPrice'])\n            qty = int(p['Quantity'])\n            actual_notional = float(p['ActualNotional'])\n            mark = daily_mark_map.get((date, code), np.nan)\n            if not np.isfinite(mark):\n                missing_marks.append((trade_id, code))\n                continue\n            if p['Side'] == 'LONG':\n                u = qty * (mark - entry_price)\n                long_notional += actual_notional\n                long_unrealized += u\n            else:\n                u = qty * (entry_price - mark)\n                short_notional += actual_notional\n                short_unrealized += u\n        gross_notional = long_notional + short_notional\n        total_unrealized = long_unrealized + short_unrealized\n        if np.isfinite(etf_close):\n            etf_value = etf_shares * etf_close\n        else:\n            etf_value = 0.0\n        substitute80 = etf_value * SUBSTITUTE_HAIRCUT\n        effective_collateral = cash + substitute80 + total_unrealized\n        if gross_notional > 0:\n            margin_ratio = effective_collateral / gross_notional\n        else:\n            margin_ratio = np.nan\n        realized_total_equity = cash + etf_value\n        total_equity_mtm = realized_total_equity + total_unrealized\n        daily_rows.append({'Date': date, 'ETF_Shares': etf_shares, 'ETF_Value': etf_value, 'BoughtETFToday': bought_etf_today, 'SoldETFToday': sold_etf_today, 'Cash': cash, 'CashNegative': cash < 0, 'FormalStrategyEquity': formal_equity, 'BrokerStrategyEquity': broker_strategy_equity, 'FormalRealizedPnLToday': formal_realized_today, 'BrokerRealizedPnLToday': broker_realized_today, 'LongInterestToday': long_interest_today, 'ShortFeeToday': short_fee_today, 'FinancingToday': financing_today, 'CumLongInterest': cum_long_interest, 'CumShortFee': cum_short_fee, 'CumFinancingCost': cum_long_interest + cum_short_fee, 'LongNotional': long_notional, 'ShortNotional': short_notional, 'GrossNotional': gross_notional, 'LongUnrealized': long_unrealized, 'ShortUnrealized': short_unrealized, 'TotalUnrealized': total_unrealized, 'Substitute80': substitute80, 'EffectiveCollateralMTM': effective_collateral, 'MarginRatioMTMPct': margin_ratio * 100.0 if np.isfinite(margin_ratio) else np.nan, 'Below30': gross_notional > 0 and margin_ratio < MIN_MARGIN_RATIO, 'Below20': gross_notional > 0 and margin_ratio < MARGIN_CALL_LINE, 'Below15': gross_notional > 0 and margin_ratio < SEVERE_LINE, 'MissingMarks': len(missing_marks), 'BrokerOpenPositions': len(broker_active), 'BrokerSkippedOpen': len(broker_skipped), 'RealizedTotalEquity': realized_total_equity, 'TotalEquityMTM': total_equity_mtm})\n        previous_date = date\n    daily = pd.DataFrame(daily_rows)\n    entries = pd.DataFrame(entry_rows)\n    trades = pd.DataFrame(trade_rows)\n    tx = pd.DataFrame(tx_rows)\n    eq = daily['TotalEquityMTM'].to_numpy(dtype=float)\n    peak = np.maximum.accumulate(eq)\n    daily['DrawdownMTMPct'] = (eq / peak - 1.0) * 100.0\n    return (daily, entries, trades, tx, formal_active, broker_active, broker_skipped)\n"
+  },
+  "simulate_profit_floor_trail": {
+    "signature": "(trade, trigger_pct, width_pct)",
+    "source_file": "/content/-stock-auto-trader/FIX17_OFFICIAL_FULL_SOURCE.py",
+    "source_line": 330,
+    "source": "def simulate_profit_floor_trail(\n    trade,\n    trigger_pct,\n    width_pct,\n):\n\n    code = str(\n        trade[\"Code\"]\n    ).zfill(5)\n\n    entry_dt = np.datetime64(\n        pd.Timestamp(\n            trade[\"EntryDatetime\"]\n        ),\n        \"ns\",\n    )\n\n    formal_exit_dt = np.datetime64(\n        pd.Timestamp(\n            trade[\"ExitDatetime\"]\n        ),\n        \"ns\",\n    )\n\n    entry_price = float(\n        trade[\"EntryPrice\"]\n    )\n\n    formal_ret = float(\n        trade[\"BrokerReturnPct\"]\n    )\n\n    arr = minute_np15.get(code)\n\n    if arr is None:\n        raise RuntimeError(\n            f\"1分足なし: {code}\"\n        )\n\n    dt = arr[\"dt\"]\n    dates = arr[\"date\"]\n\n    oo = arr[\"o\"]\n    hh = arr[\"h\"]\n    ll = arr[\"l\"]\n\n\n    # ========================================================\n    # Trigger価格\n    # ========================================================\n\n    trigger_price = (\n        entry_price\n        * (\n            1.0\n            + trigger_pct\n        )\n    )\n\n\n    # ========================================================\n    # ENTRYの次の1分足から開始\n    # ========================================================\n\n    start = int(\n        np.searchsorted(\n            dt,\n            entry_dt,\n            side=\"right\",\n        )\n    )\n\n\n    # ========================================================\n    # 正式FIX15 EXIT位置\n    # 同じ1分足でTriggerした場合は正式EXIT優先\n    # ========================================================\n\n    formal_idx = int(\n        np.searchsorted(\n            dt,\n            formal_exit_dt,\n            side=\"left\",\n        )\n    )\n\n\n    # ========================================================\n    # 正式EXITより前にTriggerしたか\n    # ========================================================\n\n    trigger_idx = None\n\n    for i in range(\n        start,\n        min(\n            formal_idx,\n            len(dt),\n        ),\n    ):\n\n        if float(\n            hh[i]\n        ) >= trigger_price:\n\n            trigger_idx = i\n            break\n\n\n    # ========================================================\n    # Triggerなし\n    #\n    # → FIX15正式EXITを完全維持\n    # ========================================================\n\n    if trigger_idx is None:\n\n        return {\n            \"ExitDatetime\":\n                pd.Timestamp(\n                    formal_exit_dt\n                ),\n\n            \"ReturnPct\":\n                formal_ret,\n\n            \"ExitReason\":\n                \"FORMAL_EXIT\",\n\n            \"TriggerHit\":\n                False,\n\n            \"TriggerDatetime\":\n                pd.NaT,\n\n            \"TrailExit\":\n                False,\n\n            \"MaxHigh\":\n                np.nan,\n\n            \"FinalStop\":\n                np.nan,\n        }\n\n\n    # ========================================================\n    # Trigger成立\n    # ========================================================\n\n    trigger_dt = dt[\n        trigger_idx\n    ]\n\n    running_high = max(\n        trigger_price,\n        float(\n            hh[trigger_idx]\n        ),\n    )\n\n\n    # ========================================================\n    # 最初の売却ライン\n    #\n    # Trigger価格を絶対床にする\n    # ========================================================\n\n    trail_component = (\n        running_high\n        * (\n            1.0\n            - width_pct\n        )\n    )\n\n    stop_price = max(\n        trigger_price,\n        trail_component,\n    )\n\n\n    # ========================================================\n    # Triggerの次の1分足からEXIT判定\n    # ========================================================\n\n    for i in range(\n        trigger_idx + 1,\n        len(dt),\n    ):\n\n        o = float(\n            oo[i]\n        )\n\n        h = float(\n            hh[i]\n        )\n\n        l = float(\n            ll[i]\n        )\n\n\n        # ====================================================\n        # 営業日最初のバー\n        # ====================================================\n\n        session_first = (\n            i == 0\n            or\n            dates[i]\n            != dates[i - 1]\n        )\n\n\n        # ====================================================\n        # 1. GAP DOWN\n        #\n        # Stopより下で寄った場合はOPENでEXIT\n        # ====================================================\n\n        if (\n            session_first\n            and\n            o <= stop_price\n        ):\n\n            exit_market = o\n\n            exit_exec = (\n                exit_market\n                * (\n                    1.0\n                    - EXIT_SLIPPAGE\n                )\n            )\n\n            ret = (\n                exit_exec\n                / entry_price\n                - 1.0\n            ) * 100.0\n\n            return {\n                \"ExitDatetime\":\n                    pd.Timestamp(\n                        dt[i]\n                    ),\n\n                \"ReturnPct\":\n                    ret,\n\n                \"ExitReason\":\n                    \"OPEN_BELOW_PROFIT_STOP\",\n\n                \"TriggerHit\":\n                    True,\n\n                \"TriggerDatetime\":\n                    pd.Timestamp(\n                        trigger_dt\n                    ),\n\n                \"TrailExit\":\n                    True,\n\n                \"MaxHigh\":\n                    running_high,\n\n                \"FinalStop\":\n                    stop_price,\n            }\n\n\n        # ====================================================\n        # 2. 現在有効な売却ライン\n        #\n        # Trigger直後:\n        #     stop = trigger価格\n        #\n        # 十分上昇後:\n        #     stop = high × (1-width)\n        # ====================================================\n\n        if l <= stop_price:\n\n            exit_market = (\n                stop_price\n            )\n\n            exit_exec = (\n                exit_market\n                * (\n                    1.0\n                    - EXIT_SLIPPAGE\n                )\n            )\n\n            ret = (\n                exit_exec\n                / entry_price\n                - 1.0\n            ) * 100.0\n\n            return {\n                \"ExitDatetime\":\n                    pd.Timestamp(\n                        dt[i]\n                    ),\n\n                \"ReturnPct\":\n                    ret,\n\n                \"ExitReason\":\n                    (\n                        \"TRIGGER_FLOOR\"\n                        if stop_price\n                        <= trigger_price\n                        * (\n                            1.0\n                            + 1e-12\n                        )\n                        else\n                        \"TRAIL\"\n                    ),\n\n                \"TriggerHit\":\n                    True,\n\n                \"TriggerDatetime\":\n                    pd.Timestamp(\n                        trigger_dt\n                    ),\n\n                \"TrailExit\":\n                    True,\n\n                \"MaxHigh\":\n                    running_high,\n\n                \"FinalStop\":\n                    stop_price,\n            }\n\n\n        # ====================================================\n        # 3. High更新\n        #\n        # 更新したstopは次の1分足から有効\n        # ====================================================\n\n        if h > running_high:\n\n            running_high = h\n\n            trail_component = (\n                running_high\n                * (\n                    1.0\n                    - width_pct\n                )\n            )\n\n            stop_price = max(\n                trigger_price,\n                trail_component,\n            )\n\n\n    # ========================================================\n    # データ終了\n    # ========================================================\n\n    return {\n        \"ExitDatetime\":\n            pd.NaT,\n\n        \"ReturnPct\":\n            np.nan,\n\n        \"ExitReason\":\n            \"NO_EXIT\",\n\n        \"TriggerHit\":\n            True,\n\n        \"TriggerDatetime\":\n            pd.Timestamp(\n                trigger_dt\n            ),\n\n        \"TrailExit\":\n            False,\n\n        \"MaxHigh\":\n            running_high,\n\n        \"FinalStop\":\n            stop_price,\n    }\n"
+  }
+}

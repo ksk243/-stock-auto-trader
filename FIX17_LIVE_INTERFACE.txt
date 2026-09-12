@@ -1,0 +1,296 @@
+FIX17 LIVE INTERFACE
+==============================================================================================================
+Official SHA256: 9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4
+Runtime functions: 26
+
+IMPORTANT FUNCTION SIGNATURES
+--------------------------------------------------------------------------------------------------------------
+simulate_fix11()
+simulate_fix15()
+simulate_profit_floor_trail(trade, trigger_pct, width_pct)
+calc_entry_time_position_state(broker_active, current_date)
+calc_long_dynamic_max_positions(equity)
+calc_margin_capped_qty(target_qty, entry_price, cash_now, etf_mark, etf_shares, existing_gross_notional, existing_unrealized)
+calc_max_etf_buy_shares(cash_now, shares_now, etf_open, gross_notional)
+calc_target_qty(target_notional, entry_price)
+get_broker_return(side, entry_price, formal_return_pct)
+get_last_close_before(code, date)
+reconstruct_exit_price(side, entry_price, formal_return_pct)
+fix15_apply_tax(dt, taxable_pnl, source, detail='')
+fix15_ensure_tax_year(year)
+_fix13_apply_event_filter(src_events_by_date)
+_fix13_ban_reason(e)
+_fix13_calc_max_etf_buy_shares(cash_now, shares_now, etf_open, gross_notional)
+_fix13_datetime(e)
+_fix13_event_type(e)
+_fix13_first_value(d, names)
+_fix13_side(e)
+_fix13_trade_id(e)
+
+==============================================================================================================
+PARAMETERS / REFERENCED GLOBALS
+==============================================================================================================
+
+[simulate_fix11]
+SIGNATURE: simulate_fix11()
+PARAMETERS:
+  (none)
+REFERENCED GLOBALS:
+  CASH_FLOOR | float | 0.0
+  DAY_COUNT | float | 365.0
+  ETF_BUY_FEE | float | 0.0
+  ETF_SELL_FEE | float | 0.0
+  INITIAL_CAPITAL | float | 1117792.0
+  LONG_CAP_PER_STOCK | float | 2000000.0
+  LONG_INTEREST_ANNUAL | float | 0.0285
+  LONG_LEVERAGE | float | 1.0
+  MARGIN_CALL_LINE | float | 0.2
+  MIN_MARGIN_RATIO | float | 0.3
+  SEVERE_LINE | float | 0.15
+  SHORT_LENDING_ANNUAL | float | 0.011
+  SHORT_LEVERAGE | float | 0.5
+  SUBSTITUTE_HAIRCUT | float | 0.8
+  calc_entry_time_position_state | function | calc_entry_time_position_state
+  calc_long_dynamic_max_positions | function | calc_long_dynamic_max_positions
+  calc_margin_capped_qty | function | calc_margin_capped_qty
+  calc_max_etf_buy_shares | function | calc_max_etf_buy_shares
+  calc_target_qty | function | calc_target_qty
+  close_map | dict | {Timestamp('2024-09-02 00:00:00'): 80339.0859375, Timestamp('2024-09-03 00:00:00'): 80485.59375, Timestamp('2024-09-04 00:00:00'): 77887.3984375, Timestamp('2024-09-05 00:00:00'): 77145.0625, Timestamp('2024-09-06 00:00:00'): 76422.2578125, Timestamp('2024-09-09 00:00:00'): 75748.28125, Timestamp('2...<truncated>
+  daily_mark_map | dict | {(Timestamp('2024-04-01 00:00:00'), '14070'): 2767.0, (Timestamp('2024-04-02 00:00:00'), '14070'): 2780.0, (Timestamp('2024-04-03 00:00:00'), '14070'): 2869.0, (Timestamp('2024-04-04 00:00:00'), '14070'): 2864.0, (Timestamp('2024-04-05 00:00:00'), '14070'): 2735.0, (Timestamp('2024-04-08 00:00:00'),...<truncated>
+  date | Timestamp | Timestamp('2026-07-31 00:00:00')
+  entry_meta | dict | {'CAP200_000001': {'Code': '58440', 'EntryPrice': 2293.5}, 'CAP200_000002': {'Code': '48940', 'EntryPrice': 8350.0}, 'CAP200_000003': {'Code': '72400', 'EntryPrice': 2449.0}, 'CAP200_000004': {'Code': '70710', 'EntryPrice': 2129.0}, 'CAP200_000005': {'Code': '18780', 'EntryPrice': 3544.0}, 'CAP200_0...<truncated>
+  events_by_date | dict | {Timestamp('2024-09-02 00:00:00'): [{'TradeID': 'CAP200_000001', 'Side': 'SHORT', 'Event': 'ENTRY', 'Datetime': Timestamp('2024-09-02 09:16:00'), 'Priority': 1, 'ReturnPct': nan}, {'TradeID': 'CAP200_000003', 'Side': 'LONG', 'Event': 'ENTRY', 'Datetime': Timestamp('2024-09-02 10:23:00'), 'Priority':...<truncated>
+  get_broker_return | function | get_broker_return
+  monthly_buy_dates | set | {Timestamp('2025-12-01 00:00:00'), Timestamp('2025-09-01 00:00:00'), Timestamp('2026-07-01 00:00:00'), Timestamp('2025-05-01 00:00:00'), Timestamp('2026-03-02 00:00:00'), Timestamp('2026-06-01 00:00:00'), Timestamp('2026-05-01 00:00:00'), Timestamp('2025-03-03 00:00:00'), Timestamp('2025-07-01 00:00...<truncated>
+  np | module | numpy
+  open_map | dict | {Timestamp('2024-09-02 00:00:00'): 80495.3764855623, Timestamp('2024-09-03 00:00:00'): 80632.11661388805, Timestamp('2024-09-04 00:00:00'): 78326.95143199775, Timestamp('2024-09-05 00:00:00'): 77105.99181754874, Timestamp('2024-09-06 00:00:00'): 76969.2395194274, Timestamp('2024-09-09 00:00:00'): 75...<truncated>
+  pd | module | pandas
+  quote_dates | list | [Timestamp('2025-09-12 00:00:00'), Timestamp('2026-01-26 00:00:00'), Timestamp('2025-07-11 00:00:00'), Timestamp('2026-02-20 00:00:00'), Timestamp('2026-01-16 00:00:00'), Timestamp('2025-05-09 00:00:00'), Timestamp('2026-05-21 00:00:00'), Timestamp('2026-07-15 00:00:00'), Timestamp('2025-10-08 00:00...<truncated>
+  sim_dates | list | [Timestamp('2024-09-02 00:00:00'), Timestamp('2024-09-03 00:00:00'), Timestamp('2024-09-04 00:00:00'), Timestamp('2024-09-05 00:00:00'), Timestamp('2024-09-06 00:00:00'), Timestamp('2024-09-09 00:00:00'), Timestamp('2024-09-10 00:00:00'), Timestamp('2024-09-11 00:00:00'), Timestamp('2024-09-12 00:00...<truncated>
+
+[simulate_fix15]
+SIGNATURE: simulate_fix15()
+PARAMETERS:
+  (none)
+REFERENCED GLOBALS:
+  CASH_FLOOR | float | 0.0
+  DAY_COUNT | float | 365.0
+  ETF_BUY_FEE | float | 0.0
+  ETF_SELL_FEE | float | 0.0
+  FIX15_ETF_BOOK | dict | {'avg_cost': 96049.11528673414}
+  INITIAL_CAPITAL | float | 1117792.0
+  LONG_INTEREST_ANNUAL | float | 0.0285
+  LONG_LEVERAGE | float | 1.0
+  MARGIN_CALL_LINE | float | 0.2
+  MIN_MARGIN_RATIO | float | 0.3
+  SEVERE_LINE | float | 0.15
+  SHORT_LENDING_ANNUAL | float | 0.011
+  SHORT_LEVERAGE | float | 0.5
+  SUBSTITUTE_HAIRCUT | float | 0.8
+  calc_entry_time_position_state | function | calc_entry_time_position_state
+  calc_long_dynamic_max_positions | function | calc_long_dynamic_max_positions
+  calc_margin_capped_qty | function | calc_margin_capped_qty
+  calc_max_etf_buy_shares | function | calc_max_etf_buy_shares
+  calc_target_qty | function | calc_target_qty
+  close_map | dict | {Timestamp('2024-09-02 00:00:00'): 80339.0859375, Timestamp('2024-09-03 00:00:00'): 80485.59375, Timestamp('2024-09-04 00:00:00'): 77887.3984375, Timestamp('2024-09-05 00:00:00'): 77145.0625, Timestamp('2024-09-06 00:00:00'): 76422.2578125, Timestamp('2024-09-09 00:00:00'): 75748.28125, Timestamp('2...<truncated>
+  daily_mark_map | dict | {(Timestamp('2024-04-01 00:00:00'), '14070'): 2767.0, (Timestamp('2024-04-02 00:00:00'), '14070'): 2780.0, (Timestamp('2024-04-03 00:00:00'), '14070'): 2869.0, (Timestamp('2024-04-04 00:00:00'), '14070'): 2864.0, (Timestamp('2024-04-05 00:00:00'), '14070'): 2735.0, (Timestamp('2024-04-08 00:00:00'),...<truncated>
+  date | Timestamp | Timestamp('2026-07-31 00:00:00')
+  entry_meta | dict | {'CAP200_000001': {'Code': '58440', 'EntryPrice': 2293.5}, 'CAP200_000002': {'Code': '48940', 'EntryPrice': 8350.0}, 'CAP200_000003': {'Code': '72400', 'EntryPrice': 2449.0}, 'CAP200_000004': {'Code': '70710', 'EntryPrice': 2129.0}, 'CAP200_000005': {'Code': '18780', 'EntryPrice': 3544.0}, 'CAP200_0...<truncated>
+  events_by_date | dict | {Timestamp('2024-09-02 00:00:00'): [{'TradeID': 'CAP200_000001', 'Side': 'SHORT', 'Event': 'ENTRY', 'Datetime': Timestamp('2024-09-02 09:16:00'), 'Priority': 1, 'ReturnPct': nan}, {'TradeID': 'CAP200_000003', 'Side': 'LONG', 'Event': 'ENTRY', 'Datetime': Timestamp('2024-09-02 10:23:00'), 'Priority':...<truncated>
+  fix15_apply_tax | function | fix15_apply_tax
+  get_broker_return | function | get_broker_return
+  monthly_buy_dates | set | {Timestamp('2025-12-01 00:00:00'), Timestamp('2025-09-01 00:00:00'), Timestamp('2026-07-01 00:00:00'), Timestamp('2025-05-01 00:00:00'), Timestamp('2026-03-02 00:00:00'), Timestamp('2026-06-01 00:00:00'), Timestamp('2026-05-01 00:00:00'), Timestamp('2025-03-03 00:00:00'), Timestamp('2025-07-01 00:00...<truncated>
+  np | module | numpy
+  open_map | dict | {Timestamp('2024-09-02 00:00:00'): 80495.3764855623, Timestamp('2024-09-03 00:00:00'): 80632.11661388805, Timestamp('2024-09-04 00:00:00'): 78326.95143199775, Timestamp('2024-09-05 00:00:00'): 77105.99181754874, Timestamp('2024-09-06 00:00:00'): 76969.2395194274, Timestamp('2024-09-09 00:00:00'): 75...<truncated>
+  pd | module | pandas
+  quote_dates | list | [Timestamp('2025-09-12 00:00:00'), Timestamp('2026-01-26 00:00:00'), Timestamp('2025-07-11 00:00:00'), Timestamp('2026-02-20 00:00:00'), Timestamp('2026-01-16 00:00:00'), Timestamp('2025-05-09 00:00:00'), Timestamp('2026-05-21 00:00:00'), Timestamp('2026-07-15 00:00:00'), Timestamp('2025-10-08 00:00...<truncated>
+  sim_dates | list | [Timestamp('2024-09-02 00:00:00'), Timestamp('2024-09-03 00:00:00'), Timestamp('2024-09-04 00:00:00'), Timestamp('2024-09-05 00:00:00'), Timestamp('2024-09-06 00:00:00'), Timestamp('2024-09-09 00:00:00'), Timestamp('2024-09-10 00:00:00'), Timestamp('2024-09-11 00:00:00'), Timestamp('2024-09-12 00:00...<truncated>
+
+[simulate_profit_floor_trail]
+SIGNATURE: simulate_profit_floor_trail(trade, trigger_pct, width_pct)
+PARAMETERS:
+  trade | POSITIONAL_OR_KEYWORD
+  trigger_pct | POSITIONAL_OR_KEYWORD
+  width_pct | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  EXIT_SLIPPAGE | float | 0.0005
+  minute_np15 | dict | {'18610': {'dt': array(['2024-09-02T09:00:00.000000000', '2024-09-02T09:01:00.000000000',
+       '2024-09-02T09:06:00.000000000', ...,
+       '2026-07-31T15:23:00.000000000', '2026-07-31T15:24:00.000000000',
+       '2026-07-31T15:30:00.000000000'], dtype='datetime64[ns]'), 'date': array(['2024-09-02...<truncated>
+  np | module | numpy
+  pd | module | pandas
+
+[calc_entry_time_position_state]
+SIGNATURE: calc_entry_time_position_state(broker_active, current_date)
+PARAMETERS:
+  broker_active | POSITIONAL_OR_KEYWORD
+  current_date | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  get_last_close_before | function | get_last_close_before
+  np | module | numpy
+  pd | module | pandas
+
+[calc_long_dynamic_max_positions]
+SIGNATURE: calc_long_dynamic_max_positions(equity)
+PARAMETERS:
+  equity | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  LONG_CAP_PER_STOCK | float | 2000000.0
+  np | module | numpy
+
+[calc_margin_capped_qty]
+SIGNATURE: calc_margin_capped_qty(target_qty, entry_price, cash_now, etf_mark, etf_shares, existing_gross_notional, existing_unrealized)
+PARAMETERS:
+  target_qty | POSITIONAL_OR_KEYWORD
+  entry_price | POSITIONAL_OR_KEYWORD
+  cash_now | POSITIONAL_OR_KEYWORD
+  etf_mark | POSITIONAL_OR_KEYWORD
+  etf_shares | POSITIONAL_OR_KEYWORD
+  existing_gross_notional | POSITIONAL_OR_KEYWORD
+  existing_unrealized | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  LOT_SIZE | int | 100
+  MIN_MARGIN_RATIO | float | 0.3
+  SUBSTITUTE_HAIRCUT | float | 0.8
+  np | module | numpy
+
+[calc_max_etf_buy_shares]
+SIGNATURE: calc_max_etf_buy_shares(cash_now, shares_now, etf_open, gross_notional)
+PARAMETERS:
+  cash_now | POSITIONAL_OR_KEYWORD
+  shares_now | POSITIONAL_OR_KEYWORD
+  etf_open | POSITIONAL_OR_KEYWORD
+  gross_notional | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  ETF_BUY_FEE | float | 0.0
+  _fix13_calc_max_etf_buy_shares | function | _fix13_calc_max_etf_buy_shares
+
+[calc_target_qty]
+SIGNATURE: calc_target_qty(target_notional, entry_price)
+PARAMETERS:
+  target_notional | POSITIONAL_OR_KEYWORD
+  entry_price | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  LOT_SIZE | int | 100
+  np | module | numpy
+
+[get_broker_return]
+SIGNATURE: get_broker_return(side, entry_price, formal_return_pct)
+PARAMETERS:
+  side | POSITIONAL_OR_KEYWORD
+  entry_price | POSITIONAL_OR_KEYWORD
+  formal_return_pct | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  reconstruct_exit_price | function | reconstruct_exit_price
+
+[get_last_close_before]
+SIGNATURE: get_last_close_before(code, date)
+PARAMETERS:
+  code | POSITIONAL_OR_KEYWORD
+  date | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  np | module | numpy
+  pd | module | pandas
+  prev_history | dict | {'14070': (array(['2024-04-01T00:00:00.000000000', '2024-04-02T00:00:00.000000000',
+       '2024-04-03T00:00:00.000000000', '2024-04-04T00:00:00.000000000',
+       '2024-04-05T00:00:00.000000000', '2024-04-08T00:00:00.000000000',
+       '2024-04-09T00:00:00.000000000', '2024-04-10T00:00:00.000000000...<truncated>
+
+[reconstruct_exit_price]
+SIGNATURE: reconstruct_exit_price(side, entry_price, formal_return_pct)
+PARAMETERS:
+  side | POSITIONAL_OR_KEYWORD
+  entry_price | POSITIONAL_OR_KEYWORD
+  formal_return_pct | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  (none)
+
+[fix15_apply_tax]
+SIGNATURE: fix15_apply_tax(dt, taxable_pnl, source, detail='')
+PARAMETERS:
+  dt | POSITIONAL_OR_KEYWORD
+  taxable_pnl | POSITIONAL_OR_KEYWORD
+  source | POSITIONAL_OR_KEYWORD
+  detail | POSITIONAL_OR_KEYWORD default=''
+REFERENCED GLOBALS:
+  FIX15_TAX_LEDGER | list | [{'Datetime': Timestamp('2024-09-03 09:02:00'), 'Year': 2024, 'Source': 'CREDIT_SHORT', 'Detail': '58440', 'TaxablePnL': -6894.3238356163765, 'TaxChange': 0.0, 'YTDBefore': 0.0, 'YTDAfter': -6894.3238356163765, 'TaxBefore': 0.0, 'TaxAfter': 0.0}, {'Datetime': Timestamp('2024-09-03 10:12:00'), 'Year'...<truncated>
+  TAX_RATE_FIX15 | float | 0.20315
+  fix15_ensure_tax_year | function | fix15_ensure_tax_year
+  pd | module | pandas
+
+[fix15_ensure_tax_year]
+SIGNATURE: fix15_ensure_tax_year(year)
+PARAMETERS:
+  year | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  FIX15_TAX_STATE | dict | {2024: {'TaxablePnL': 390554.2208604276, 'TheoreticalTax': 79341.08996779587, 'Withheld': 165434.13597376703, 'Refunded': 86093.04600597107}, 2025: {'TaxablePnL': 2220527.083381332, 'TheoreticalTax': 451100.0769889176, 'Withheld': 1171233.129718059, 'Refunded': 720133.0527291414}, 2026: {'TaxablePnL...<truncated>
+
+[_fix13_apply_event_filter]
+SIGNATURE: _fix13_apply_event_filter(src_events_by_date)
+PARAMETERS:
+  src_events_by_date | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  FIX13_PARENT_SHA256 | str | cb4d239f907ec3d8377902f5a59205bb96151da8ebf5fcd0cf21573ea3568ea9
+  _fix13_ban_reason | function | _fix13_ban_reason
+  _fix13_event_type | function | _fix13_event_type
+  _fix13_trade_id | function | _fix13_trade_id
+
+[_fix13_ban_reason]
+SIGNATURE: _fix13_ban_reason(e)
+PARAMETERS:
+  e | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  _fix13_datetime | function | _fix13_datetime
+  _fix13_event_type | function | _fix13_event_type
+  _fix13_side | function | _fix13_side
+
+[_fix13_calc_max_etf_buy_shares]
+SIGNATURE: _fix13_calc_max_etf_buy_shares(cash_now, shares_now, etf_open, gross_notional)
+PARAMETERS:
+  cash_now | POSITIONAL_OR_KEYWORD
+  shares_now | POSITIONAL_OR_KEYWORD
+  etf_open | POSITIONAL_OR_KEYWORD
+  gross_notional | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  CASH_FLOOR | float | 0.0
+  MIN_MARGIN_RATIO | float | 0.3
+  SUBSTITUTE_HAIRCUT | float | 0.8
+  np | module | numpy
+
+[_fix13_datetime]
+SIGNATURE: _fix13_datetime(e)
+PARAMETERS:
+  e | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  _fix13_first_value | function | _fix13_first_value
+  pd | module | pandas
+
+[_fix13_event_type]
+SIGNATURE: _fix13_event_type(e)
+PARAMETERS:
+  e | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  _fix13_first_value | function | _fix13_first_value
+
+[_fix13_first_value]
+SIGNATURE: _fix13_first_value(d, names)
+PARAMETERS:
+  d | POSITIONAL_OR_KEYWORD
+  names | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  (none)
+
+[_fix13_side]
+SIGNATURE: _fix13_side(e)
+PARAMETERS:
+  e | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  _fix13_first_value | function | _fix13_first_value
+
+[_fix13_trade_id]
+SIGNATURE: _fix13_trade_id(e)
+PARAMETERS:
+  e | POSITIONAL_OR_KEYWORD
+REFERENCED GLOBALS:
+  _fix13_first_value | function | _fix13_first_value
