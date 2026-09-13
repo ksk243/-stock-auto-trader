@@ -1,0 +1,112 @@
+FIX17 ENTRY CONTRACT - PROVEN
+==============================================================================================================
+
+Git HEAD before save:
+d454378
+
+OFFICIAL FIX17
+--------------------------------------------------------------------------------------------------------------
+File:
+FIX17_OFFICIAL_FULL_SOURCE.py
+
+Drive ID:
+1vEUHcDrW7Bi-JUiKzu9C5n_AexKKPMji
+
+SHA256:
+9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4
+
+FIX17 change:
+FIX16:
+target_notional = min(LONG_CAP_PER_STOCK, long_remaining_capacity)
+
+FIX17:
+target_notional = long_remaining_capacity
+
+
+RUNTIME ENTRY FLOW
+--------------------------------------------------------------------------------------------------------------
+trade_master_fix6 + events_by_date
+    ↓
+entry_events
+    ↓
+entry_meta_df
+    ↓ TradeID merge
+entry_meta
+    ↓
+ENTRY processing
+    ↓
+broker_active
+
+
+LONG - PROVEN EFFECTIVE FORMAL FILTER
+--------------------------------------------------------------------------------------------------------------
+RS20_corrected >= 80
+RVOL20 >= 2
+turnover_median_20d_oku >= 3
+ORB15_LongSignal == True
+CrossPass_EXACT == True
+BacktestReady == True
+
+Formal rows:
+7,822
+
+All 7,822 rows satisfy the above conditions.
+
+
+SHORT - PROVEN EFFECTIVE FORMAL FILTER
+--------------------------------------------------------------------------------------------------------------
+RS20_corrected <= 20
+RVOL20 >= 2
+turnover_median_20d_oku >= 3
+ORB15_ShortSignal == True
+is_lending == True
+_entered == True
+
+Formal rows:
+5,409
+
+All 5,409 rows satisfy the above conditions.
+
+IMPORTANT:
+SHORT CrossPass_EXACT is NOT PROVEN.
+SHORT formal data has no CrossPass_EXACT column.
+DO NOT INVENT THIS RULE.
+
+
+UPSTREAM GENERATOR PROVENANCE
+--------------------------------------------------------------------------------------------------------------
+STATUS:
+NOT RECOVERED
+
+The FIX11 checkpoint contains only two Python files:
+
+1.
+FIX11_RESEARCH_MASTER_ONE_CELL_RECOVERY_LOADER.py
+
+2.
+STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py
+
+Neither creates:
+
+CAP200_ORIGINAL_867_trade_master.parquet
+CAP200_ORIGINAL_867_events_by_date.pkl
+
+They consume those artifacts.
+
+README.txt and MANIFEST.json contain no producer SOURCE,
+producer Drive ID, or parent folder.
+
+DECISION:
+STOP_UPSTREAM_SEARCH
+
+
+LIVE IMPLEMENTATION SAFETY
+--------------------------------------------------------------------------------------------------------------
+1. Missing upstream logic must not be guessed.
+2. SHORT CrossPass must remain unproven until independently validated.
+3. Official FIX17 sizing change must remain exact.
+4. Candidate generation and broker/position management must remain separate.
+5. Reconstructed live candidate generation must be validated against official recovered data before production use.
+
+==============================================================================================================
+★★★★★ FIX17 ENTRY CONTRACT PROVEN / UPSTREAM SEARCH CLOSED ★★★★★
