@@ -1,0 +1,3 @@
+# FIX17 official/live universe
+# 1行1銘柄コード
+# 正式ユニバース確定前は空のままにする
