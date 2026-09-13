@@ -1,7 +1,7 @@
 name: FIX17 Error Mail Test
 
-on:
-  workflow_dispatch:
+"on":
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -29,32 +29,15 @@ jobs:
           python-version: "3.11"
 
       - name: Send FIX17 error test mail
+        shell: bash
         run: |
-          python - <<'PY'
+          python -c "
           from mailer import send_error_mail
-
-          subject = "FIX17 SAVE_1M ERROR MAIL TEST"
-
-          body = """これはFIX17のエラーメール実送信テストです。
-
-GitHub Actions
-↓
-mailer.py
-↓
-SMTP
-↓
-メール受信
-
-まで正常につながっているか確認しています。
-
-これはテストです。
-実際の1分足保存エラーではありません。
-"""
-
           send_error_mail(
-              subject,
-              body,
+              'FIX17 SAVE_1M ERROR MAIL TEST',
+              'これはFIX17のエラーメール実送信テストです。\\n\\n'
+              'GitHub Actions → mailer.py → SMTP → メール受信の確認です。\\n\\n'
+              '実際の1分足保存エラーではありません。'
           )
-
-          print("ERROR MAIL TEST SEND: PASS")
-          PY
+          print('ERROR MAIL TEST SEND: PASS')
+          "
