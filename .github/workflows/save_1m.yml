@@ -1,17 +1,29 @@
-name: FIX17 Save 1m Mail Test
+name: FIX17 Save 1m
 
 on:
   workflow_dispatch:
 
+  schedule:
+    # 16:15 JST
+    - cron: "15 7 * * 1-5"
+
 permissions:
   contents: read
+  id-token: write
 
 jobs:
-  mail-test:
+  save-1m:
+
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+
+    timeout-minutes: 30
 
     env:
+      TZ: Asia/Tokyo
+
+      GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+      GCS_1M_PREFIX: fix17/minute_1m
+
       SMTP_HOST: ${{ secrets.SMTP_HOST }}
       SMTP_PORT: ${{ secrets.SMTP_PORT }}
       SMTP_USER: ${{ secrets.SMTP_USER }}
@@ -20,14 +32,26 @@ jobs:
       MAIL_TO: ${{ secrets.MAIL_TO }}
 
     steps:
+
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v3
         with:
-          python-version: "3.11"
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
-      - name: Send error mail test
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
         run: |
-          python -c "from mailer import send_error_mail; send_error_mail('FIX17 SAVE_1M', 'ERROR MAIL TEST', 'これはFIX17のエラーメール実送信テストです。実際の1分足保存エラーではありません。'); print('MAIL TEST SEND PASS')"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Save 1-minute data
+        run: |
+          python save_1m.py
