@@ -19,7 +19,6 @@
 # ============================================================
 
 from __future__ import annotations
-from fix17_contract import validate_fix17_contract
 
 import os
 import sys
@@ -846,23 +845,6 @@ def verify_fix17_sizing_rule():
 # ============================================================
 
 def main():
-
-    # ========================================================
-    # FIX17_OFFICIAL_CONTRACT_GATE
-    # ========================================================
-
-    contract_result = validate_fix17_contract(
-        REPO_DIR
-    )
-
-    if not contract_result.get(
-        "safe_to_load_contract",
-        False,
-    ):
-        raise RuntimeError(
-            "FIX17 contract safety gate failed"
-        )
-
 
     started = datetime.now()
 
