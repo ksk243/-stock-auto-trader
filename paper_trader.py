@@ -2056,23 +2056,7 @@ def calculate_fix17_order(
     #   Therefore execution is blocked.
     # --------------------------------------------------------
 
-    if not candidate.get(
-        "_fix17_live_entry_allowed",
-        False,
-    ):
-
-        return {
-
-            "status":
-                "SKIP",
-
-            "reason":
-                "SHORT_ENTRY_CONTRACT_NOT_FULLY_PROVEN",
-
-            "candidate":
-                candidate,
-
-        }
+    # SHORT: existing audited FIX11 path connected.
 
     code = candidate[
 
@@ -3017,13 +3001,351 @@ def generate_fix17_long_live_candidates():
     }
 
 
+def generate_fix17_live_candidates():
+    """
+    Generate combined FIX17 paper candidates.
+
+    LONG:
+        Existing FIX17 LONG bridge.
+
+    SHORT:
+        Existing FIX11 find_first_signal / choose_candidate.
+
+    No new SHORT threshold is defined here.
+    """
+
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    import runpy
+    from pathlib import Path
+
+
+    minute_by_code, feature_by_code = (
+        build_fix17_long_live_inputs()
+    )
+
+
+    market_date = datetime.now(
+        ZoneInfo("Asia/Tokyo")
+    ).date().isoformat()
+
+
+    # Non-trading day
+    if not minute_by_code:
+        return {
+            "market_date": market_date,
+            "candidates": [],
+        }
+
+
+    # --------------------------------------------------------
+    # LONG
+    # --------------------------------------------------------
+
+    long_generator = (
+        get_fix17_long_candidate_generator()
+    )
+
+    if long_generator is None:
+        raise RuntimeError(
+            "FIX17 LONG generator missing"
+        )
+
+
+    long_candidates = long_generator(
+        minute_by_code,
+        feature_by_code,
+    )
+
+
+    if long_candidates is None:
+        long_candidates = []
+
+    long_candidates = list(
+        long_candidates
+    )
+
+
+    # --------------------------------------------------------
+    # LOAD EXISTING FIX11 ENTRY FUNCTIONS
+    # --------------------------------------------------------
+
+    repo_dir = Path(
+        __file__
+    ).resolve().parent
+
+    fix11_path = (
+        repo_dir
+        / ".github"
+        / "workflows"
+        / "fix11_paper_trader.py"
+    )
+
+
+    if not fix11_path.exists():
+        raise RuntimeError(
+            "FIX11 paper trader missing"
+        )
+
+
+    ns = runpy.run_path(
+        str(fix11_path),
+        run_name="__fix17_short_live__",
+    )
+
+
+    find_first_signal = ns.get(
+        "find_first_signal"
+    )
+
+    choose_candidate = ns.get(
+        "choose_candidate"
+    )
+
+
+    if find_first_signal is None:
+        raise RuntimeError(
+            "FIX11 find_first_signal missing"
+        )
+
+    if choose_candidate is None:
+        raise RuntimeError(
+            "FIX11 choose_candidate missing"
+        )
+
+
+    # --------------------------------------------------------
+    # SHORT SIGNALS
+    # --------------------------------------------------------
+
+    short_signals = []
+
+
+    for code, minute_df in minute_by_code.items():
+
+        signal = None
+
+
+        try:
+            signal = find_first_signal(
+                code,
+                minute_df,
+            )
+
+        except TypeError:
+
+            try:
+                signal = find_first_signal(
+                    minute_df,
+                    code,
+                )
+
+            except Exception:
+                signal = None
+
+        except Exception:
+            signal = None
+
+
+        if signal is None:
+            continue
+
+
+        if hasattr(
+            signal,
+            "to_dict",
+        ):
+            try:
+                signal = signal.to_dict()
+            except Exception:
+                pass
+
+
+        if not isinstance(
+            signal,
+            dict,
+        ):
+            continue
+
+
+        side = str(
+            signal.get(
+                "Side",
+                signal.get(
+                    "side",
+                    "",
+                ),
+            )
+        ).upper()
+
+
+        if side != "SHORT":
+            continue
+
+
+        item = dict(
+            signal
+        )
+
+        item["side"] = "SHORT"
+
+        item["code"] = str(
+            item.get(
+                "code",
+                item.get(
+                    "Code",
+                    code,
+                ),
+            )
+        )
+
+
+        short_signals.append(
+            item
+        )
+
+
+    # --------------------------------------------------------
+    # EXISTING FIX11 SHORT RANKING
+    # --------------------------------------------------------
+
+    short_candidates = []
+
+
+    if short_signals:
+
+        selected = None
+        last_type_error = None
+
+
+        # Do not recreate ranking.
+        # Use the existing FIX11 function.
+        for args in (
+            (short_signals,),
+            (short_signals, "SHORT"),
+            ("SHORT", short_signals),
+        ):
+
+            try:
+                selected = choose_candidate(
+                    *args
+                )
+                last_type_error = None
+                break
+
+            except TypeError as e:
+                last_type_error = e
+
+
+        if (
+            selected is None
+            and
+            last_type_error is not None
+        ):
+            raise RuntimeError(
+                "FIX11 choose_candidate signature mismatch"
+            ) from last_type_error
+
+
+        if selected is not None:
+
+            if hasattr(
+                selected,
+                "to_dict",
+            ):
+                try:
+                    selected = selected.to_dict()
+                except Exception:
+                    pass
+
+
+            if isinstance(
+                selected,
+                dict,
+            ):
+
+                selected = dict(
+                    selected
+                )
+
+                selected["side"] = "SHORT"
+
+                selected["code"] = str(
+                    selected.get(
+                        "code",
+                        selected.get(
+                            "Code",
+                            "",
+                        ),
+                    )
+                )
+
+                short_candidates = [
+                    selected
+                ]
+
+
+            elif isinstance(
+                selected,
+                (list, tuple),
+            ):
+
+                for x in selected:
+
+                    if hasattr(
+                        x,
+                        "to_dict",
+                    ):
+                        try:
+                            x = x.to_dict()
+                        except Exception:
+                            continue
+
+
+                    if not isinstance(
+                        x,
+                        dict,
+                    ):
+                        continue
+
+
+                    x = dict(
+                        x
+                    )
+
+                    x["side"] = "SHORT"
+
+                    x["code"] = str(
+                        x.get(
+                            "code",
+                            x.get(
+                                "Code",
+                                "",
+                            ),
+                        )
+                    )
+
+                    short_candidates.append(
+                        x
+                    )
+
+
+    return {
+        "market_date": market_date,
+        "candidates": (
+            long_candidates
+            + short_candidates
+        ),
+    }
+
+
 
 def execute_fix17_candidate_batch():
 
     state = ensure_paper_state()
 
     # STEP23C: FIX17 LONG live candidates
-    payload = generate_fix17_long_live_candidates()
+    payload = generate_fix17_live_candidates()
 
     market_date = payload.get(
 
@@ -3200,6 +3522,7 @@ def execute_fix17_candidate_batch():
     )
 
     return result
+
 
 # ============================================================
 
