@@ -1,36 +1,28 @@
 # ============================================================
 # FIX17 1-MINUTE DATA SAVER
 #
-# yfinance 1-minute data
-# ↓
-# batch download
-# ↓
-# strict validation
-# ↓
-# parquet
-# ↓
-# GCS persistent storage
+# PURPOSE
+#   yfinance 1分足取得
+#   厳格検査
+#   Parquet作成
+#   GCS永続保存
 #
 # SUCCESS:
-#   emailなし
-#
-# MARKET CLOSED:
-#   正常SKIP
-#   emailなし
+#   メール送信なし
 #
 # ERROR:
 #   即エラーメール
 #
-# paper_traderとは完全別ジョブ
+# paper_trader.pyとは完全分離
 # ============================================================
 
 from __future__ import annotations
 
 import os
 import sys
-import re
 import json
 import traceback
+import re
 from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -79,7 +71,6 @@ LAST_RESULT_FILE = (
     / "save_1m_last_result.json"
 )
 
-
 GCS_BUCKET = os.environ.get(
     "GCS_BUCKET",
     "",
@@ -91,25 +82,8 @@ GCS_PREFIX = os.environ.get(
 ).strip().strip("/")
 
 
-# 4208銘柄を一括で投げない。
-# yfinance側負荷・レスポンスサイズを抑える。
-BATCH_SIZE = int(
-    os.environ.get(
-        "SAVE1M_BATCH_SIZE",
-        "100",
-    )
-)
-
-MIN_SUCCESS_RATIO = float(
-    os.environ.get(
-        "SAVE1M_MIN_SUCCESS_RATIO",
-        "0.95",
-    )
-)
-
-
 # ============================================================
-# HELPERS
+# BASIC HELPERS
 # ============================================================
 
 def save_json(
@@ -153,17 +127,27 @@ def normalize_code(
         s = s[:-2]
 
     # JPX/J-Quants:
+    #
+    # 通常銘柄:
     #   72030 -> 7203
     #   130A0 -> 130A
     #
     # 優先株・種類株:
     #   25935 -> 25935
+    #   94346 -> 94346
+    #
+    # 末尾0だけpaddingとして除去する。
     if (
         len(s) == 5
         and
         s.endswith("0")
     ):
         s = s[:-1]
+
+    if not s:
+        raise RuntimeError(
+            "空の銘柄コードがあります"
+        )
 
     valid_4 = bool(
         re.fullmatch(
@@ -191,17 +175,6 @@ def normalize_code(
     return s
 
 
-def yahoo_symbol(
-    code,
-):
-
-    return (
-        normalize_code(
-            code
-        )
-        + ".T"
-    )
-
 
 # ============================================================
 # UNIVERSE
@@ -212,7 +185,9 @@ def load_universe():
     if not UNIVERSE_FILE.exists():
 
         raise RuntimeError(
-            "config/fix17_universe.txt がありません"
+            "config/fix17_universe.txt がありません。\n"
+            "FIX17の正式な対象銘柄を確定するまで、"
+            "銘柄を勝手に生成して1分足取得は行いません。"
         )
 
     codes = []
@@ -235,7 +210,6 @@ def load_universe():
         )
 
         if code not in codes:
-
             codes.append(
                 code
             )
@@ -243,160 +217,75 @@ def load_universe():
     if not codes:
 
         raise RuntimeError(
-            "FIX17 universeが空です"
+            "fix17_universe.txt が空です"
         )
 
     return codes
 
 
 # ============================================================
-# DATE / SESSION
+# MARKET TIME
 # ============================================================
 
-def now_jst():
+def market_date_jst():
 
     return datetime.now(
         JST
-    )
-
-
-def today_jst():
-
-    return now_jst().date()
-
-
-def is_weekend():
-
-    return (
-        today_jst().weekday()
-        >= 5
-    )
+    ).date()
 
 
 # ============================================================
-# YFINANCE SHAPE NORMALIZATION
+# YFINANCE DOWNLOAD
 # ============================================================
 
-def extract_symbol_frame(
-    downloaded,
-    symbol,
+def download_one_symbol(
+    code: str,
 ):
 
-    if downloaded is None:
+    ticker = (
+        code
+        + ".T"
+    )
 
+    df = yf.download(
+        ticker,
+        period="1d",
+        interval="1m",
+        auto_adjust=False,
+        progress=False,
+        prepost=False,
+        threads=False,
+        timeout=20,
+    )
+
+    if df is None:
         return None
 
-    if downloaded.empty:
-
+    if len(
+        df
+    ) == 0:
         return None
 
-
-    # --------------------------------------------------------
-    # MultiIndex
-    #
-    # yfinanceはバッチ取得時、
-    # (Price, Ticker) または (Ticker, Price)
-    # のどちらかになる場合があるため両方対応。
-    # --------------------------------------------------------
+    # --------------------------------------------
+    # MultiIndex対策
+    # --------------------------------------------
 
     if isinstance(
-        downloaded.columns,
+        df.columns,
         pd.MultiIndex,
     ):
 
-        level0 = set(
-            map(
-                str,
-                downloaded.columns.get_level_values(
-                    0
-                ),
+        df.columns = [
+            x[0]
+            if isinstance(
+                x,
+                tuple,
             )
-        )
+            else x
+            for x in df.columns
+        ]
 
-        level1 = set(
-            map(
-                str,
-                downloaded.columns.get_level_values(
-                    1
-                ),
-            )
-        )
-
-
-        if symbol in level0:
-
-            frame = downloaded[
-                symbol
-            ].copy()
-
-        elif symbol in level1:
-
-            frame = downloaded.xs(
-                symbol,
-                axis=1,
-                level=1,
-            ).copy()
-
-        else:
-
-            return None
-
-    else:
-
-        # 単一tickerだけ返ったケース
-        frame = downloaded.copy()
-
-
-    if frame.empty:
-
-        return None
-
-
-    wanted = [
-        "Open",
-        "High",
-        "Low",
-        "Close",
-        "Volume",
-    ]
-
-
-    if not all(
-        x in frame.columns
-        for x in wanted
-    ):
-
-        return None
-
-
-    frame = frame[
-        wanted
-    ].copy()
-
-
-    return frame
-
-
-# ============================================================
-# ONE FRAME -> STANDARD FORMAT
-# ============================================================
-
-def standardize_symbol_frame(
-    frame,
-    code,
-):
-
-    if frame is None:
-
-        return None
-
-    if frame.empty:
-
-        return None
-
-
-    temp = frame.reset_index()
-
+    df = df.reset_index()
 
     dt_col = None
 
@@ -406,42 +295,39 @@ def standardize_symbol_frame(
         "index",
     ]:
 
-        if c in temp.columns:
-
+        if c in df.columns:
             dt_col = c
-
             break
-
 
     if dt_col is None:
 
-        return None
-
+        raise RuntimeError(
+            f"{code}: Datetime列なし"
+        )
 
     dt = pd.to_datetime(
-        temp[
+        df[
             dt_col
         ],
         errors="coerce",
         utc=True,
     )
 
-
     if dt.isna().all():
 
-        return None
-
+        raise RuntimeError(
+            f"{code}: Datetime変換失敗"
+        )
 
     dt = dt.dt.tz_convert(
         JST
     )
 
-
     out = pd.DataFrame(
         {
             "Date":
-                dt.dt.strftime(
-                    "%Y-%m-%d"
+                dt.dt.date.astype(
+                    str
                 ),
 
             "Time":
@@ -459,62 +345,57 @@ def standardize_symbol_frame(
 
             "Open":
                 pd.to_numeric(
-                    temp[
+                    df.get(
                         "Open"
-                    ],
+                    ),
                     errors="coerce",
                 ),
 
             "High":
                 pd.to_numeric(
-                    temp[
+                    df.get(
                         "High"
-                    ],
+                    ),
                     errors="coerce",
                 ),
 
             "Low":
                 pd.to_numeric(
-                    temp[
+                    df.get(
                         "Low"
-                    ],
+                    ),
                     errors="coerce",
                 ),
 
             "Close":
                 pd.to_numeric(
-                    temp[
+                    df.get(
                         "Close"
-                    ],
+                    ),
                     errors="coerce",
                 ),
 
             "Volume":
                 pd.to_numeric(
-                    temp[
+                    df.get(
                         "Volume"
-                    ],
+                    ),
                     errors="coerce",
                 ),
         }
     )
 
-
-    # --------------------------------------------------------
-    # JPX session
-    #
-    # 2024/11以降の現物株:
-    # 09:00-11:30 / 12:30-15:30
-    #
-    # 取得データに11:30/15:30が存在する場合も許容。
-    # --------------------------------------------------------
+    # --------------------------------------------
+    # 日本市場時間のみ
+    # 09:00-11:30
+    # 12:30-15:30
+    # --------------------------------------------
 
     t = out[
         "Time"
     ]
 
-
-    market_mask = (
+    mask = (
         (
             (t >= "09:00")
             &
@@ -528,11 +409,9 @@ def standardize_symbol_frame(
         )
     )
 
-
     out = out.loc[
-        market_mask
+        mask
     ].copy()
-
 
     out = out.dropna(
         subset=[
@@ -543,29 +422,21 @@ def standardize_symbol_frame(
         ]
     )
 
-
-    if out.empty:
-
-        return None
-
+    out[
+        "Volume"
+    ] = out[
+        "Volume"
+    ].fillna(
+        0
+    )
 
     out[
         "Volume"
-    ] = (
-        out[
-            "Volume"
-        ]
-        .fillna(
-            0
-        )
-        .clip(
-            lower=0
-        )
-        .astype(
-            "int64"
-        )
+    ] = out[
+        "Volume"
+    ].astype(
+        "int64"
     )
-
 
     out = out.drop_duplicates(
         subset=[
@@ -576,84 +447,54 @@ def standardize_symbol_frame(
         keep="last",
     )
 
-
     out = out.sort_values(
         [
             "Date",
             "Time",
+            "Code",
         ]
     ).reset_index(
         drop=True
     )
 
+    if out.empty:
+        return None
 
     return out
 
 
 # ============================================================
-# BATCH DOWNLOAD
+# DOWNLOAD ALL
 # ============================================================
 
-def download_batch(
+def download_all(
     codes,
 ):
 
-    symbols = [
-        yahoo_symbol(
-            x
-        )
-        for x in codes
-    ]
-
-
-    downloaded = yf.download(
-        tickers=symbols,
-        period="1d",
-        interval="1m",
-        auto_adjust=False,
-        progress=False,
-        prepost=False,
-        threads=True,
-        group_by="column",
-        timeout=30,
-    )
-
-
     frames = []
 
-    failures = []
+    failed = []
 
-
-    for code, symbol in zip(
+    for i, code in enumerate(
         codes,
-        symbols,
+        start=1,
     ):
 
         try:
 
-            frame = extract_symbol_frame(
-                downloaded,
-                symbol,
+            df = download_one_symbol(
+                code
             )
-
-            frame = standardize_symbol_frame(
-                frame,
-                code,
-            )
-
 
             if (
-                frame is None
-                or frame.empty
+                df is None
+                or df.empty
             ):
 
-                failures.append(
+                failed.append(
                     {
                         "code":
                             code,
-
-                        "symbol":
-                            symbol,
 
                         "reason":
                             "NO_DATA",
@@ -662,21 +503,16 @@ def download_batch(
 
                 continue
 
-
             frames.append(
-                frame
+                df
             )
-
 
         except Exception as e:
 
-            failures.append(
+            failed.append(
                 {
                     "code":
                         code,
-
-                    "symbol":
-                        symbol,
 
                     "reason":
                         (
@@ -691,142 +527,71 @@ def download_batch(
                 }
             )
 
+        if (
+            i % 50 == 0
+            or i == len(
+                codes
+            )
+        ):
 
-    return (
-        frames,
-        failures,
-    )
+            print(
+                f"{i}/{len(codes)} "
+                f"成功={len(frames)} "
+                f"失敗={len(failed)}"
+            )
 
+    if not frames:
 
-# ============================================================
-# DOWNLOAD ALL
-# ============================================================
-
-def download_all(
-    codes,
-):
-
-    all_frames = []
-
-    all_failures = []
-
-
-    total = len(
-        codes
-    )
-
-
-    for start in range(
-        0,
-        total,
-        BATCH_SIZE,
-    ):
-
-        batch_codes = codes[
-            start:
-            start + BATCH_SIZE
-        ]
-
-
-        frames, failures = download_batch(
-            batch_codes
+        raise RuntimeError(
+            "1分足を1銘柄も取得できませんでした"
         )
-
-
-        all_frames.extend(
-            frames
-        )
-
-        all_failures.extend(
-            failures
-        )
-
-
-        done = min(
-            start + len(
-                batch_codes
-            ),
-            total,
-        )
-
-
-        print(
-            f"{done}/{total} "
-            f"成功={len(all_frames)} "
-            f"失敗={len(all_failures)}"
-        )
-
-
-    if not all_frames:
-
-        return (
-            pd.DataFrame(),
-            all_failures,
-        )
-
 
     data = pd.concat(
-        all_frames,
+        frames,
         ignore_index=True,
     )
 
-
     return (
         data,
-        all_failures,
+        failed,
     )
 
 
 # ============================================================
-# MARKET CLOSED DETECTION
-# ============================================================
-
-def is_market_closed_result(
-    data,
-):
-
-    if data is None:
-
-        return True
-
-    if data.empty:
-
-        return True
-
-
-    today = str(
-        today_jst()
-    )
-
-
-    dates = set(
-        data[
-            "Date"
-        ].astype(
-            str
-        )
-    )
-
-
-    return (
-        today not in dates
-    )
-
-
-# ============================================================
-# VALIDATION
+# STRICT VALIDATION
 # ============================================================
 
 def validate_data(
     data,
     codes,
-    failures,
+    failed,
 ):
 
+    if data.empty:
+
+        raise RuntimeError(
+            "1分足データが空です"
+        )
+
     today = str(
-        today_jst()
+        market_date_jst()
     )
 
+    available_dates = sorted(
+        data[
+            "Date"
+        ].astype(
+            str
+        ).unique()
+    )
+
+    if today not in available_dates:
+
+        raise RuntimeError(
+            "当日の1分足がありません\n"
+            f"today={today}\n"
+            f"dates={available_dates[-5:]}"
+        )
 
     today_df = data[
         data[
@@ -837,13 +602,11 @@ def validate_data(
         == today
     ].copy()
 
-
     if today_df.empty:
 
         raise RuntimeError(
             "当日データが0行です"
         )
-
 
     duplicate_count = int(
         today_df.duplicated(
@@ -855,14 +618,16 @@ def validate_data(
         ).sum()
     )
 
-
     if duplicate_count:
 
         raise RuntimeError(
-            "重複1分足があります: "
+            f"重複1分足があります: "
             f"{duplicate_count}"
         )
 
+    # --------------------------------------------
+    # 取得成功率
+    # --------------------------------------------
 
     success_codes = set(
         today_df[
@@ -872,17 +637,14 @@ def validate_data(
         ).unique()
     )
 
-
     expected_codes = set(
         codes
     )
-
 
     missing_codes = sorted(
         expected_codes
         - success_codes
     )
-
 
     total = len(
         expected_codes
@@ -892,7 +654,6 @@ def validate_data(
         success_codes
     )
 
-
     success_ratio = (
         success
         / total
@@ -900,82 +661,88 @@ def validate_data(
         else 0.0
     )
 
+    # --------------------------------------------
+    # データ源障害を候補ゼロとして扱わない
+    #
+    # 95%未満ならその日のデータ保存自体を失敗扱い
+    # --------------------------------------------
 
-    if success_ratio < MIN_SUCCESS_RATIO:
+    if success_ratio < 0.95:
 
         raise RuntimeError(
-            "1分足取得成功率不足\n"
+            "1分足取得成功率が95%未満です。\n"
             f"成功={success}/{total}\n"
             f"成功率={success_ratio:.2%}\n"
-            f"必要={MIN_SUCCESS_RATIO:.2%}\n"
             f"missing例={missing_codes[:30]}"
         )
 
+    # --------------------------------------------
+    # OHLC validity
+    # --------------------------------------------
 
-    prices = today_df[
-        [
-            "Open",
-            "High",
-            "Low",
-            "Close",
-        ]
+    bad_price = today_df[
+        (
+            today_df[
+                [
+                    "Open",
+                    "High",
+                    "Low",
+                    "Close",
+                ]
+            ]
+            <= 0
+        ).any(
+            axis=1
+        )
     ]
 
-
-    if (
-        prices
-        <= 0
-    ).any(
-        axis=None
-    ):
+    if not bad_price.empty:
 
         raise RuntimeError(
             "0以下の価格データがあります"
         )
 
+    # --------------------------------------------
+    # high / low sanity
+    # --------------------------------------------
 
-    bad_high = (
-        today_df[
-            "High"
-        ]
-        <
-        today_df[
-            [
-                "Open",
-                "Close",
+    bad_ohlc = today_df[
+        (
+            today_df[
+                "High"
             ]
-        ].max(
-            axis=1
+            <
+            today_df[
+                [
+                    "Open",
+                    "Close",
+                ]
+            ].max(
+                axis=1
+            )
         )
-    )
-
-
-    bad_low = (
-        today_df[
-            "Low"
-        ]
-        >
-        today_df[
-            [
-                "Open",
-                "Close",
-            ]
-        ].min(
-            axis=1
-        )
-    )
-
-
-    if (
-        bad_high
         |
-        bad_low
-    ).any():
+        (
+            today_df[
+                "Low"
+            ]
+            >
+            today_df[
+                [
+                    "Open",
+                    "Close",
+                ]
+            ].min(
+                axis=1
+            )
+        )
+    ]
+
+    if not bad_ohlc.empty:
 
         raise RuntimeError(
             "OHLC整合性エラーがあります"
         )
-
 
     return {
         "market_date":
@@ -990,21 +757,11 @@ def validate_data(
         "success_ratio":
             success_ratio,
 
-        "missing_count":
-            len(
-                missing_codes
-            ),
-
         "missing_codes":
             missing_codes,
 
-        "download_failure_count":
-            len(
-                failures
-            ),
-
         "download_failures":
-            failures,
+            failed,
 
         "rows":
             int(
@@ -1043,12 +800,10 @@ def write_local_parquet(
         exist_ok=True,
     )
 
-
     path = (
         DATA_DIR
         / f"{market_date}.parquet"
     )
-
 
     today_df = data[
         data[
@@ -1059,13 +814,11 @@ def write_local_parquet(
         == market_date
     ].copy()
 
-
     today_df.to_parquet(
         path,
         index=False,
         compression="snappy",
     )
-
 
     return path
 
@@ -1085,14 +838,11 @@ def upload_to_gcs(
             "GCS_BUCKET が設定されていません"
         )
 
-
     client = storage.Client()
-
 
     bucket = client.bucket(
         GCS_BUCKET
     )
-
 
     object_name = (
         f"{GCS_PREFIX}/"
@@ -1100,11 +850,9 @@ def upload_to_gcs(
         f"minute_1m.parquet"
     )
 
-
     blob = bucket.blob(
         object_name
     )
-
 
     blob.upload_from_filename(
         str(
@@ -1114,7 +862,6 @@ def upload_to_gcs(
             "application/octet-stream"
         ),
     )
-
 
     return {
         "bucket":
@@ -1133,73 +880,21 @@ def upload_to_gcs(
 
 
 # ============================================================
-# SKIP RESULT
-# ============================================================
-
-def write_skip_result(
-    reason,
-):
-
-    result = {
-        "status":
-            "SKIP",
-
-        "reason":
-            reason,
-
-        "time":
-            now_jst().isoformat(),
-
-        "market_date":
-            str(
-                today_jst()
-            ),
-    }
-
-
-    save_json(
-        LAST_RESULT_FILE,
-        result,
-    )
-
-
-    print(
-        "SKIP:",
-        reason
-    )
-
-
-    return result
-
-
-# ============================================================
 # MAIN
 # ============================================================
 
 def main():
 
-    started = now_jst()
-
+    started = datetime.now(
+        JST
+    )
 
     print(
         "FIX17 1分足保存開始:",
         started.isoformat()
     )
 
-
-    # --------------------------------------------------------
-    # Saturday / Sunday
-    # --------------------------------------------------------
-
-    if is_weekend():
-
-        return write_skip_result(
-            "WEEKEND"
-        )
-
-
     codes = load_universe()
-
 
     print(
         "対象銘柄数:",
@@ -1208,64 +903,38 @@ def main():
         )
     )
 
-
-    print(
-        "Batch size:",
-        BATCH_SIZE
-    )
-
-
-    data, failures = download_all(
+    data, failed = download_all(
         codes
     )
-
-
-    # --------------------------------------------------------
-    # 平日祝日 / 市場全休場
-    #
-    # 全銘柄で当日データが無ければ、
-    # データ障害とはせず市場休場としてSKIP。
-    # --------------------------------------------------------
-
-    if is_market_closed_result(
-        data
-    ):
-
-        return write_skip_result(
-            "NO_MARKET_DATA_MARKET_CLOSED"
-        )
-
 
     validation = validate_data(
         data,
         codes,
-        failures,
+        failed,
     )
-
 
     market_date = validation[
         "market_date"
     ]
-
 
     local_path = write_local_parquet(
         data,
         market_date,
     )
 
-
     gcs = upload_to_gcs(
         local_path,
         market_date,
     )
-
 
     result = {
         "status":
             "SUCCESS",
 
         "time":
-            now_jst().isoformat(),
+            datetime.now(
+                JST
+            ).isoformat(),
 
         "market_date":
             market_date,
@@ -1282,25 +951,20 @@ def main():
             gcs,
     }
 
-
     save_json(
         LAST_RESULT_FILE,
         result,
     )
 
-
     print()
-
     print(
         "保存成功"
     )
-
 
     print(
         "market_date:",
         market_date
     )
-
 
     print(
         "rows:",
@@ -1308,7 +972,6 @@ def main():
             "rows"
         ]
     )
-
 
     print(
         "codes:",
@@ -1318,13 +981,6 @@ def main():
         )
     )
 
-
-    print(
-        "success ratio:",
-        f"{validation['success_ratio']:.2%}"
-    )
-
-
     print(
         "GCS:",
         gcs[
@@ -1332,11 +988,10 @@ def main():
         ]
     )
 
-
+    print()
     print(
         "SUCCESS EMAIL: NONE"
     )
-
 
     return result
 
@@ -1351,13 +1006,9 @@ if __name__ == "__main__":
 
         main()
 
-
     except Exception as e:
 
-        error_text = (
-            traceback.format_exc()
-        )
-
+        error_text = traceback.format_exc()
 
         try:
 
@@ -1368,12 +1019,9 @@ if __name__ == "__main__":
                         "ERROR",
 
                     "time":
-                        now_jst().isoformat(),
-
-                    "market_date":
-                        str(
-                            today_jst()
-                        ),
+                        datetime.now(
+                            JST
+                        ).isoformat(),
 
                     "error_type":
                         type(
@@ -1391,9 +1039,7 @@ if __name__ == "__main__":
             )
 
         except Exception:
-
             pass
-
 
         try:
 
@@ -1401,7 +1047,6 @@ if __name__ == "__main__":
                 "1分足保存エラー",
                 error_text,
             )
-
 
         except Exception as mail_error:
 
@@ -1411,12 +1056,10 @@ if __name__ == "__main__":
                 file=sys.stderr,
             )
 
-
         print(
             error_text,
             file=sys.stderr,
         )
-
 
         sys.exit(
             1
