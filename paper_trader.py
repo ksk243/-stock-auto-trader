@@ -545,6 +545,19 @@ if not result[
 
 def check_official_engine():
 
+    # FIX17_GITHUB_COLAB_STUB_V1
+    import tempfile as _fix17_tempfile
+    import os as _fix17_os
+    from pathlib import Path as _Fix17Path
+    _fix17_stub_root = _Fix17Path(_fix17_tempfile.gettempdir()) / "fix17_colab_stub"
+    _fix17_google = _fix17_stub_root / "google"
+    _fix17_colab = _fix17_google / "colab"
+    _fix17_colab.mkdir(parents=True, exist_ok=True)
+    (_fix17_google / "__init__.py").touch()
+    (_fix17_colab / "__init__.py").write_text("class _Auth:\n    @staticmethod\n    def authenticate_user(*args, **kwargs):\n        return None\nauth = _Auth()\n", encoding="utf-8")
+    _fix17_old_pythonpath = _fix17_os.environ.get("PYTHONPATH", "")
+    _fix17_stub_path = str(_fix17_stub_root)
+    _fix17_os.environ["PYTHONPATH"] = _fix17_stub_path + (_fix17_os.pathsep + _fix17_old_pythonpath if _fix17_old_pythonpath else "")
     RUNTIME_DIR.mkdir(
         parents=True,
         exist_ok=True
