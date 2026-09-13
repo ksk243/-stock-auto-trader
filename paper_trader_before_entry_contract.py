@@ -1662,377 +1662,165 @@ def calculate_equity(
 
 # ============================================================
 
+def validate_candidate(
 
-def validate_candidate(candidate):
+    candidate
 
-    if not isinstance(
-        candidate,
-        dict,
-    ):
-        raise RuntimeError(
-            "candidate はdictである必要があります。"
-        )
+):
 
-    # --------------------------------------------------------
-    # Common required fields
-    # --------------------------------------------------------
+    required = [
 
-    required_common = [
         "code",
+
         "side",
+
         "entry_price",
+
         "target_notional",
-        "RS20_corrected",
-        "RVOL20",
-        "turnover_median_20d_oku",
+
     ]
 
     missing = [
+
         x
-        for x in required_common
+
+        for x in required
+
         if x not in candidate
+
     ]
 
     if missing:
+
         raise RuntimeError(
+
             "candidate必須項目不足: "
+
             + ",".join(
+
                 missing
+
             )
+
         )
 
     code = normalize_code(
+
         candidate[
+
             "code"
+
         ]
+
     )
 
     side = normalize_side(
+
         candidate[
+
             "side"
+
         ]
+
     )
 
     entry_price = float(
+
         candidate[
+
             "entry_price"
+
         ]
+
     )
 
     target_notional = float(
+
         candidate[
+
             "target_notional"
+
         ]
+
     )
 
-    rs20 = float(
-        candidate[
-            "RS20_corrected"
-        ]
-    )
+    if (
 
-    rvol20 = float(
-        candidate[
-            "RVOL20"
-        ]
-    )
+        not math.isfinite(
 
-    turnover20 = float(
-        candidate[
-            "turnover_median_20d_oku"
-        ]
-    )
+            entry_price
 
-    # --------------------------------------------------------
-    # Numeric validity
-    # --------------------------------------------------------
+        )
 
-    numeric_values = {
-        "entry_price":
-            entry_price,
+        or entry_price <= 0
 
-        "target_notional":
-            target_notional,
-
-        "RS20_corrected":
-            rs20,
-
-        "RVOL20":
-            rvol20,
-
-        "turnover_median_20d_oku":
-            turnover20,
-    }
-
-    for name, value in numeric_values.items():
-
-        if not math.isfinite(
-            value
-        ):
-            raise RuntimeError(
-                f"{name} がfiniteではありません: "
-                f"{value}"
-            )
-
-    if entry_price <= 0:
+    ):
 
         raise RuntimeError(
-            f"entry_price不正: "
-            f"{entry_price}"
+
+            f"entry_price不正: {entry_price}"
+
         )
 
-    if target_notional <= 0:
+    if (
+
+        not math.isfinite(
+
+            target_notional
+
+        )
+
+        or target_notional <= 0
+
+    ):
 
         raise RuntimeError(
-            f"target_notional不正: "
-            f"{target_notional}"
+
+            f"target_notional不正: {target_notional}"
+
         )
-
-    # --------------------------------------------------------
-    # Shared proven filters
-    # --------------------------------------------------------
-
-    if rvol20 < 2.0:
-
-        raise RuntimeError(
-            "FIX17 ENTRY CONTRACT違反: "
-            f"RVOL20={rvol20} < 2"
-        )
-
-    if turnover20 < 3.0:
-
-        raise RuntimeError(
-            "FIX17 ENTRY CONTRACT違反: "
-            "turnover_median_20d_oku="
-            f"{turnover20} < 3"
-        )
-
-    # --------------------------------------------------------
-    # LONG
-    # --------------------------------------------------------
-
-    if side == "LONG":
-
-        required_long = [
-            "ORB15_LongSignal",
-            "CrossPass_EXACT",
-            "BacktestReady",
-        ]
-
-        missing_long = [
-            x
-            for x in required_long
-            if x not in candidate
-        ]
-
-        if missing_long:
-            raise RuntimeError(
-                "LONG candidate必須項目不足: "
-                + ",".join(
-                    missing_long
-                )
-            )
-
-        if rs20 < 80.0:
-
-            raise RuntimeError(
-                "FIX17 LONG ENTRY CONTRACT違反: "
-                f"RS20_corrected={rs20} < 80"
-            )
-
-        if (
-            candidate[
-                "ORB15_LongSignal"
-            ]
-            is not True
-        ):
-
-            raise RuntimeError(
-                "FIX17 LONG ENTRY CONTRACT違反: "
-                "ORB15_LongSignal != True"
-            )
-
-        if (
-            candidate[
-                "CrossPass_EXACT"
-            ]
-            is not True
-        ):
-
-            raise RuntimeError(
-                "FIX17 LONG ENTRY CONTRACT違反: "
-                "CrossPass_EXACT != True"
-            )
-
-        if (
-            candidate[
-                "BacktestReady"
-            ]
-            is not True
-        ):
-
-            raise RuntimeError(
-                "FIX17 LONG ENTRY CONTRACT違反: "
-                "BacktestReady != True"
-            )
-
-        contract_status = (
-            "PROVEN_LONG"
-        )
-
-        live_entry_allowed = True
-
-    # --------------------------------------------------------
-    # SHORT
-    # --------------------------------------------------------
-
-    elif side == "SHORT":
-
-        required_short = [
-            "ORB15_ShortSignal",
-            "is_lending",
-            "_entered",
-        ]
-
-        missing_short = [
-            x
-            for x in required_short
-            if x not in candidate
-        ]
-
-        if missing_short:
-            raise RuntimeError(
-                "SHORT candidate必須項目不足: "
-                + ",".join(
-                    missing_short
-                )
-            )
-
-        # Effective surviving formal-data bound
-        if rs20 > 20.0:
-
-            raise RuntimeError(
-                "FIX17 SHORT ENTRY CONTRACT違反: "
-                f"RS20_corrected={rs20} > 20"
-            )
-
-        if (
-            candidate[
-                "ORB15_ShortSignal"
-            ]
-            is not True
-        ):
-
-            raise RuntimeError(
-                "FIX17 SHORT ENTRY CONTRACT違反: "
-                "ORB15_ShortSignal != True"
-            )
-
-        if (
-            candidate[
-                "is_lending"
-            ]
-            is not True
-        ):
-
-            raise RuntimeError(
-                "FIX17 SHORT ENTRY CONTRACT違反: "
-                "is_lending != True"
-            )
-
-        if (
-            candidate[
-                "_entered"
-            ]
-            is not True
-        ):
-
-            raise RuntimeError(
-                "FIX17 SHORT ENTRY CONTRACT違反: "
-                "_entered != True"
-            )
-
-        # ----------------------------------------------------
-        # IMPORTANT
-        #
-        # SHORT CrossPass_EXACT is not proven.
-        #
-        # Candidate can be validated against the recovered
-        # effective formal dataset, but execution must remain
-        # blocked until exact upstream semantics are proven.
-        # ----------------------------------------------------
-
-        contract_status = (
-            "PROVEN_EFFECTIVE_SHORT"
-        )
-
-        live_entry_allowed = False
-
-    else:
-
-        raise RuntimeError(
-            f"side不正: {side}"
-        )
-
-    # --------------------------------------------------------
-    # Trade ID
-    # --------------------------------------------------------
 
     trade_id = candidate.get(
+
         "trade_id"
+
     )
 
     if trade_id is None:
 
         trade_id = (
-            code
-            + "-"
-            + side
-            + "-"
-            + uuid.uuid4().hex[:12]
-        )
 
-    # --------------------------------------------------------
-    # Normalized candidate
-    # --------------------------------------------------------
+            code
+
+            + "-"
+
+            + side
+
+            + "-"
+
+            + uuid.uuid4().hex[:12]
+
+        )
 
     return {
 
         **candidate,
 
-        "trade_id":
-            str(
-                trade_id
-            ),
+        "trade_id": str(
 
-        "code":
-            code,
+            trade_id
 
-        "side":
-            side,
+        ),
 
-        "entry_price":
-            entry_price,
+        "code": code,
 
-        "target_notional":
-            target_notional,
+        "side": side,
 
-        "RS20_corrected":
-            rs20,
+        "entry_price": entry_price,
 
-        "RVOL20":
-            rvol20,
+        "target_notional": target_notional,
 
-        "turnover_median_20d_oku":
-            turnover20,
-
-        "_fix17_contract_status":
-            contract_status,
-
-        "_fix17_live_entry_allowed":
-            live_entry_allowed,
     }
-
 
 # ============================================================
 
@@ -2055,37 +1843,6 @@ def calculate_fix17_order(
         candidate
 
     )
-
-
-    # --------------------------------------------------------
-    # FIX17 ENTRY CONTRACT EXECUTION GATE
-    #
-    # LONG:
-    #   proven contract -> execution allowed
-    #
-    # SHORT:
-    #   effective filters are proven,
-    #   but CrossPass semantics are NOT proven.
-    #   Therefore execution is blocked.
-    # --------------------------------------------------------
-
-    if not candidate.get(
-        "_fix17_live_entry_allowed",
-        False,
-    ):
-
-        return {
-
-            "status":
-                "SKIP",
-
-            "reason":
-                "SHORT_ENTRY_CONTRACT_NOT_FULLY_PROVEN",
-
-            "candidate":
-                candidate,
-
-        }
 
     code = candidate[
 
