@@ -2460,12 +2460,85 @@ def get_fix17_position_state(
 
 def build_fix17_long_live_inputs():
     """
-    Audited FIX11 components -> FIX17 LONG bridge.
-    SHORTは未接続（後で実装）。
+    FIX17 LONG live input builder.
+
+    1m data:
+        Yahoo Finance batch download
+
+    Feature / signal:
+        Existing audited FIX11 find_first_signal()
+
+    No LONG thresholds are changed here.
     """
+
+    import logging
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    import pandas as pd
+    import yfinance as yf
+
+    try:
+        import jpholiday
+    except Exception:
+        jpholiday = None
 
     import runpy
     from pathlib import Path
+
+
+    # --------------------------------------------------------
+    # JPX TRADING DAY
+    # --------------------------------------------------------
+
+    now_jst = datetime.now(
+        ZoneInfo("Asia/Tokyo")
+    )
+
+    today = now_jst.date()
+
+
+    is_trading_day = True
+
+    if today.weekday() >= 5:
+        is_trading_day = False
+
+    if (
+        today.month == 1
+        and
+        today.day in (1, 2, 3)
+    ):
+        is_trading_day = False
+
+    if (
+        today.month == 12
+        and
+        today.day == 31
+    ):
+        is_trading_day = False
+
+    if (
+        is_trading_day
+        and
+        jpholiday is not None
+        and
+        jpholiday.is_holiday(today)
+    ):
+        is_trading_day = False
+
+
+    if not is_trading_day:
+
+        print(
+            "LONG 1m batch: NON_TRADING_DAY"
+        )
+
+        return {}, {}
+
+
+    # --------------------------------------------------------
+    # FIX11 ENTRY FUNCTIONS
+    # --------------------------------------------------------
 
     repo_dir = Path(__file__).resolve().parent
 
@@ -2481,29 +2554,26 @@ def build_fix17_long_live_inputs():
             "FIX11 paper trader source missing"
         )
 
+
     ns = runpy.run_path(
         str(fix11_path),
-        run_name="__fix17_fix11_entry__",
+        run_name="__fix17_fix11_batch_entry__",
     )
 
-    fetch_today_1m = ns.get(
-        "fetch_today_1m"
-    )
 
     find_first_signal = ns.get(
         "find_first_signal"
     )
-
-    if fetch_today_1m is None:
-        raise RuntimeError(
-            "fetch_today_1m missing"
-        )
 
     if find_first_signal is None:
         raise RuntimeError(
             "find_first_signal missing"
         )
 
+
+    # --------------------------------------------------------
+    # UNIVERSE
+    # --------------------------------------------------------
 
     universe_path = (
         repo_dir
@@ -2518,13 +2588,14 @@ def build_fix17_long_live_inputs():
 
 
     codes = [
-        line.strip()
-        for line in universe_path.read_text(
+        x.strip()
+        for x in universe_path.read_text(
             encoding="utf-8"
         ).splitlines()
-        if line.strip()
-        and not line.strip().startswith("#")
+        if x.strip()
+        and not x.strip().startswith("#")
     ]
+
 
     if not codes:
         raise RuntimeError(
@@ -2532,51 +2603,303 @@ def build_fix17_long_live_inputs():
         )
 
 
+    # --------------------------------------------------------
+    # BATCH DOWNLOAD SETTINGS
+    # --------------------------------------------------------
+
+    BATCH_SIZE = 100
+    MIN_SUCCESS_RATIO = 0.95
+
+
+    logging.getLogger(
+        "yfinance"
+    ).setLevel(
+        logging.CRITICAL
+    )
+
+
     minute_by_code = {}
+
+
+    # --------------------------------------------------------
+    # HELPER: EXTRACT ONE SYMBOL FROM BATCH
+    # --------------------------------------------------------
+
+    def extract_symbol_df(
+        raw,
+        symbol,
+        batch_len,
+    ):
+
+        if raw is None:
+            return None
+
+        if getattr(
+            raw,
+            "empty",
+            True,
+        ):
+            return None
+
+
+        # MultiIndex output
+        if isinstance(
+            raw.columns,
+            pd.MultiIndex,
+        ):
+
+            level0 = set(
+                map(
+                    str,
+                    raw.columns.get_level_values(0),
+                )
+            )
+
+            level1 = set(
+                map(
+                    str,
+                    raw.columns.get_level_values(1),
+                )
+            )
+
+
+            if symbol in level0:
+
+                try:
+                    df = raw[symbol].copy()
+                except Exception:
+                    return None
+
+
+            elif symbol in level1:
+
+                try:
+                    df = raw.xs(
+                        symbol,
+                        axis=1,
+                        level=1,
+                    ).copy()
+
+                except Exception:
+                    return None
+
+            else:
+                return None
+
+
+        else:
+
+            if batch_len != 1:
+                return None
+
+            df = raw.copy()
+
+
+        if df is None or df.empty:
+            return None
+
+
+        # ----------------------------------------------------
+        # DATETIME NORMALIZATION
+        # ----------------------------------------------------
+
+        idx = pd.to_datetime(
+            df.index,
+            errors="coerce",
+        )
+
+
+        if getattr(
+            idx,
+            "tz",
+            None,
+        ) is None:
+
+            try:
+                idx = idx.tz_localize(
+                    "Asia/Tokyo"
+                )
+            except Exception:
+                pass
+
+        else:
+
+            try:
+                idx = idx.tz_convert(
+                    "Asia/Tokyo"
+                )
+            except Exception:
+                pass
+
+
+        df.index = idx
+        df.index.name = "Datetime"
+
+
+        # Only today's JST bars
+        try:
+
+            mask = [
+                (
+                    x is not pd.NaT
+                    and
+                    x.date() == today
+                )
+                for x in df.index
+            ]
+
+            df = df.loc[
+                mask
+            ].copy()
+
+        except Exception:
+            return None
+
+
+        if df.empty:
+            return None
+
+
+        # Remove completely empty price rows
+        price_cols = [
+            c
+            for c in [
+                "Open",
+                "High",
+                "Low",
+                "Close",
+            ]
+            if c in df.columns
+        ]
+
+
+        if price_cols:
+
+            df = df.dropna(
+                how="all",
+                subset=price_cols,
+            )
+
+
+        if df.empty:
+            return None
+
+
+        # Keep both Datetime index and column.
+        # Existing FIX11 code can use either form.
+        df["Datetime"] = df.index
+
+
+        return df
+
+
+    # --------------------------------------------------------
+    # DOWNLOAD 100 SYMBOLS AT A TIME
+    # --------------------------------------------------------
+
+    for start in range(
+        0,
+        len(codes),
+        BATCH_SIZE,
+    ):
+
+        batch_codes = codes[
+            start:start + BATCH_SIZE
+        ]
+
+        symbols = [
+            (
+                code
+                if code.endswith(".T")
+                else f"{code}.T"
+            )
+            for code in batch_codes
+        ]
+
+
+        try:
+
+            raw = yf.download(
+                tickers=symbols,
+                period="1d",
+                interval="1m",
+                group_by="ticker",
+                auto_adjust=False,
+                prepost=False,
+                threads=True,
+                progress=False,
+            )
+
+        except Exception:
+
+            continue
+
+
+        for code, symbol in zip(
+            batch_codes,
+            symbols,
+        ):
+
+            df = extract_symbol_df(
+                raw,
+                symbol,
+                len(symbols),
+            )
+
+            if df is None:
+                continue
+
+
+            minute_by_code[
+                str(code)
+            ] = df
+
+
+    # --------------------------------------------------------
+    # COVERAGE GATE
+    # --------------------------------------------------------
+
+    success_count = len(
+        minute_by_code
+    )
+
+    success_ratio = (
+        success_count
+        / len(codes)
+    )
+
+
+    print(
+        "LONG 1m batch:",
+        f"{success_count}/{len(codes)}",
+        f"({success_ratio:.1%})",
+    )
+
+
+    if success_ratio < MIN_SUCCESS_RATIO:
+
+        raise RuntimeError(
+            "FIX17 LONG 1m coverage too low: "
+            f"{success_count}/{len(codes)} "
+            f"({success_ratio:.2%})"
+        )
+
+
+    # --------------------------------------------------------
+    # EXISTING FIX11 FEATURE / SIGNAL LOGIC
+    # --------------------------------------------------------
+
     feature_by_code = {}
 
 
-    for code in codes:
-
-        minute_df = None
-
-        try:
-            minute_df = fetch_today_1m(
-                code
-            )
-
-        except TypeError:
-
-            try:
-                minute_df = fetch_today_1m(
-                    f"{code}.T"
-                )
-
-            except Exception:
-                minute_df = None
-
-        except Exception:
-            minute_df = None
-
-
-        if minute_df is None:
-            continue
-
-        try:
-            if len(minute_df) == 0:
-                continue
-        except Exception:
-            continue
-
-
-        minute_by_code[
-            str(code)
-        ] = minute_df
-
+    for code, minute_df in minute_by_code.items():
 
         signal = None
 
+
+        # Preserve existing two-call compatibility only.
         try:
+
             signal = find_first_signal(
                 code,
                 minute_df,
@@ -2585,15 +2908,18 @@ def build_fix17_long_live_inputs():
         except TypeError:
 
             try:
+
                 signal = find_first_signal(
                     minute_df,
                     code,
                 )
 
             except Exception:
+
                 signal = None
 
         except Exception:
+
             signal = None
 
 
@@ -2601,16 +2927,21 @@ def build_fix17_long_live_inputs():
             continue
 
 
-        if hasattr(signal, "to_dict"):
+        if hasattr(
+            signal,
+            "to_dict",
+        ):
 
             try:
                 signal = signal.to_dict()
-
             except Exception:
                 pass
 
 
-        if isinstance(signal, dict):
+        if isinstance(
+            signal,
+            dict,
+        ):
 
             feature_by_code[
                 str(code)
@@ -2621,6 +2952,7 @@ def build_fix17_long_live_inputs():
         minute_by_code,
         feature_by_code,
     )
+
 
 
 def generate_fix17_long_live_candidates():
