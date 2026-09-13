@@ -1,0 +1,194 @@
+FIX17 FORMAL ENTRY DATA SCHEMA
+==============================================================================================================
+HEAD: 112a912
+
+long_formal_exit
+--------------------------------------------------------------------------------------------------------------
+ID: 137TAIITPYbow0x2qNhTdRdAUFhZuWiv_
+FILE: LONG_FORMAL_EXIT_7822_EXACT.parquet
+ROWS: 7822
+
+COLUMNS:
+  Date
+  Datetime
+  Time
+  Code
+  C
+  ORB15_LongSignal
+  ORB15_ShortSignal
+  NextDatetime
+  NextOpen
+  Minute
+  RS20_corrected
+  turnover_median_20d_oku
+  EligiblePrev20Exact
+  ATR14_prev
+  ATR14_pct_prev
+  RVOL20_Baseline
+  RVOL20
+  BacktestReady
+  EntryTime
+  EntryPrice
+  ATR_pct
+  Month
+  EntryDatetime
+  EntryMonth
+  ORBHighRaw_EXACT
+  SignalCloseRaw_EXACT
+  PrevCloseRaw_EXACT
+  BreakoutPct_EXACT
+  CrossPass_EXACT
+  ExitDatetime_REBUILT
+  ExitPrice_REBUILT
+  ReturnPct_REBUILT
+  ExitReason_REBUILT
+  UnderlyingExitReason
+  DeadlineDate
+  RebuildStatus
+  FormalEntryPrice
+  UnderlyingExit_REBUILT
+
+TARGETS:
+  RS20_corrected                   True
+  RVOL20                           True
+  turnover_median_20d_oku          True
+  ORB15_LongSignal                 True
+  ORB15_ShortSignal                True
+  CrossPass_EXACT                  True
+  EntryPriceFormal                 False
+  FormalEntryPrice                 True
+  EntryDatetime                    True
+  EntryPrice                       True
+  Code                             True
+  Side                             False
+
+short_state
+--------------------------------------------------------------------------------------------------------------
+ID: 1hfYpTSJRN8hgUp-iZaNowrcmjCvTYj-a
+FILE: SHORT_FORMAL_STATE_5409_EXACT.parquet
+ROWS: 5409
+
+COLUMNS:
+  Date
+  Datetime
+  Time
+  Code
+  C
+  ORB15_LongSignal
+  ORB15_ShortSignal
+  NextDatetime
+  NextOpen
+  Minute
+  RS20_corrected
+  turnover_median_20d_oku
+  EligiblePrev20Exact
+  ATR14_prev
+  ATR14_pct_prev
+  RVOL20_Baseline
+  RVOL20
+  BacktestReady
+  EntryTime
+  EntryPrice
+  ATR_pct
+  Month
+  EntryDatetime
+  is_lending
+  CandidateID
+  Scale
+  FastEntryAdjO
+  CarryExitDatetime
+  CarryReturnPct
+  CarryExitReason
+  _entered
+  _active
+  _fixed_stop
+  _trigger
+  _favorable
+  _active_trail
+  _pending_trail
+  SecurityLastDate
+  SecurityLastAdjClose
+
+TARGETS:
+  RS20_corrected                   True
+  RVOL20                           True
+  turnover_median_20d_oku          True
+  ORB15_LongSignal                 True
+  ORB15_ShortSignal                True
+  CrossPass_EXACT                  False
+  EntryPriceFormal                 False
+  FormalEntryPrice                 False
+  EntryDatetime                    True
+  EntryPrice                       True
+  Code                             True
+  Side                             False
+
+baseline_summary
+--------------------------------------------------------------------------------------------------------------
+ID: 1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ
+FILE: BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv
+ROWS: 1
+
+COLUMNS:
+  InitialCapital
+  FormalStage5Final
+  FormalStage5Diff
+  BrokerStrategyFinal
+  FinalRealizedEquity
+  FinalOpenUnrealized
+  FinalMTMEquity
+  MTMReturnPct
+  MTMCAGR_Pct
+  MTMMaxDDPct
+  CandidateEntries
+  ExecutedEntries
+  SkippedEntries
+  LotTooLargeSkipped
+  MarginCapacitySkipped
+  MarginLimitedEntries
+  MarginReducedExecuted
+  MinimumPostEntryMarginPct
+  EntryMissingPrevMarkRows
+  LongInterestTotal
+  ShortLendingTotal
+  TotalFinancingCost
+  Final1557Shares
+  Final1557Value
+  FinalCash
+  MinimumCash
+  NegativeCashDays
+  RecoverySellEvents
+  MinimumEODMarginPct
+  Below30Days
+  Below20Days
+  Below15Days
+  MissingEODMarkDays
+
+TARGETS:
+  RS20_corrected                   False
+  RVOL20                           False
+  turnover_median_20d_oku          False
+  ORB15_LongSignal                 False
+  ORB15_ShortSignal                False
+  CrossPass_EXACT                  False
+  EntryPriceFormal                 False
+  FormalEntryPrice                 False
+  EntryDatetime                    False
+  EntryPrice                       False
+  Code                             False
+  Side                             False
+
+CROSS FILE TARGET CHECK
+--------------------------------------------------------------------------------------------------------------
+RS20_corrected                   ['long_formal_exit', 'short_state']
+RVOL20                           ['long_formal_exit', 'short_state']
+turnover_median_20d_oku          ['long_formal_exit', 'short_state']
+ORB15_LongSignal                 ['long_formal_exit', 'short_state']
+ORB15_ShortSignal                ['long_formal_exit', 'short_state']
+CrossPass_EXACT                  ['long_formal_exit']
+EntryPriceFormal                 NONE
+FormalEntryPrice                 ['long_formal_exit']
+EntryDatetime                    ['long_formal_exit', 'short_state']
+EntryPrice                       ['long_formal_exit', 'short_state']
+Code                             ['long_formal_exit', 'short_state']
+Side                             NONE
