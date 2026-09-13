@@ -1,0 +1,100 @@
+FIX17 MASTER FOLDER INVENTORY
+==============================================================================================================
+HEAD: d5bf2ab
+Folder ID: 1bcU29Jcs5H78mAPaUyJnTXChTdsBfAJM
+Folder Name: FIX11_RESEARCH_MASTER_CHECKPOINT
+Files: 20
+
+DIRECT CHILDREN
+--------------------------------------------------------------------------------------------------------------
+CSV        BASELINE_stage5_1557_FIX10_vs_FIX11_comparison.csv
+  ID: 1tAwaEyWCXefTbsds5pCX7JFcAdDKNQOp
+  Size: 222
+  Modified: 2026-09-05T08:10:00.512Z
+PARQUET    BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_daily.parquet
+  ID: 1-jz9w80-QqCJpYAYc7ageEPt8_-HCYgp
+  Size: 102365
+  Modified: 2026-09-05T08:10:01.687Z
+PARQUET    BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_entry_audit.parquet
+  ID: 1_8P34Byggj2w3PAfy1bRQLtNM0abfBw-
+  Size: 107786
+  Modified: 2026-09-05T08:10:02.912Z
+CSV        BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_etf_transactions.csv
+  ID: 1czJs9SBtM2r89m2jV7NjK4bXPzM6O3Jz
+  Size: 3169
+  Modified: 2026-09-05T08:10:04.173Z
+CSV        BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv
+  ID: 1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ
+  Size: 891
+  Modified: 2026-09-05T08:10:05.495Z
+PARQUET    BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_trade_audit.parquet
+  ID: 1KFfpPKfhpnDBlTKCesjkQnT_vp7GnvSS
+  Size: 78546
+  Modified: 2026-09-05T08:10:06.667Z
+CSV        BASELINE_stage5_1557_FIX11_margin_limited_entries.csv
+  ID: 1ZAtbxOl2u0892EM8IC0MeE5odyVsMYhx
+  Size: 370
+  Modified: 2026-09-05T08:10:07.765Z
+CSV        BASELINE_stage5_1557_FIX11_skipped_entries.csv
+  ID: 1iVij19_N60A20EqlH8Y8FSE7Q78qvDF_
+  Size: 18121
+  Modified: 2026-09-05T08:10:09.006Z
+PICKLE     CAP200_ORIGINAL_867_events_by_date.pkl
+  ID: 1wKmommitNwE8esQZbyxt9z2zvLuVHR2D
+  Size: 117576
+  Modified: 2026-09-05T08:10:10.146Z
+PARQUET    CAP200_ORIGINAL_867_trade_master.parquet
+  ID: 1WZAUjmhzqfhLfObLQy_t66VbthEIMj98
+  Size: 39657
+  Modified: 2026-09-05T08:10:11.185Z
+PARQUET    FIX11_1557_RUNTIME.parquet
+  ID: 1cCBeZJjfjB79OLxoiY08qT1G5zZB7GRn
+  Size: 13457
+  Modified: 2026-09-05T08:10:12.248Z
+PARQUET    FIX11_daily_stock_EXACT.parquet
+  ID: 1vR8UQo00HOS4w8bKxWpQBAzHxId92-XG
+  Size: 78497210
+  Modified: 2026-09-05T08:10:14.666Z
+PYTHON     FIX11_RESEARCH_MASTER_ONE_CELL_RECOVERY_LOADER.py
+  ID: 1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n
+  Size: 14014
+  Modified: 2026-09-05T08:17:48.476Z
+PICKLE     FIX11_runtime_maps.pkl
+  ID: 1OU8gSO1KhHxKfaPrZuSNRzQb-2vZeVdD
+  Size: 47724
+  Modified: 2026-09-05T08:10:15.930Z
+PARQUET    LONG_FORMAL_EXIT_7822_EXACT.parquet
+  ID: 137TAIITPYbow0x2qNhTdRdAUFhZuWiv_
+  Size: 1195839
+  Modified: 2026-09-05T08:10:17.089Z
+PARQUET    MA200_REGIME_464_EXACT.parquet
+  ID: 1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW
+  Size: 25496
+  Modified: 2026-09-05T08:10:18.288Z
+JSON       MANIFEST.json
+  ID: 1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_
+  Size: 1435
+  Modified: 2026-09-05T08:10:19.457Z
+OTHER      README.txt
+  ID: 1Or0BXWY08n8vL8gjLjnUFCQfB2QjrVBK
+  Size: 1076
+  Modified: 2026-09-05T08:10:20.626Z
+PARQUET    SHORT_FORMAL_STATE_5409_EXACT.parquet
+  ID: 1hfYpTSJRN8hgUp-iZaNowrcmjCvTYj-a
+  Size: 804589
+  Modified: 2026-09-05T08:10:21.770Z
+PYTHON     STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py
+  ID: 1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw
+  Size: 88051
+  Modified: 2026-09-05T08:10:23.056Z
+
+UPSTREAM SOURCE CANDIDATES
+--------------------------------------------------------------------------------------------------------------
+FIX11_RESEARCH_MASTER_ONE_CELL_RECOVERY_LOADER.py
+  ID: 1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n
+  Type: PYTHON
+  Modified: 2026-09-05T08:17:48.476Z
+STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py
+  ID: 1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw
+  Type: PYTHON
+  Modified: 2026-09-05T08:10:23.056Z
