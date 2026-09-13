@@ -2455,11 +2455,218 @@ def get_fix17_position_state(
 
 # ============================================================
 
+
+# === STEP23C FIX17 LONG LIVE INPUT ===
+
+def build_fix17_long_live_inputs():
+    """
+    Audited FIX11 components -> FIX17 LONG bridge.
+    SHORTは未接続（後で実装）。
+    """
+
+    import runpy
+    from pathlib import Path
+
+    repo_dir = Path(__file__).resolve().parent
+
+    fix11_path = (
+        repo_dir
+        / ".github"
+        / "workflows"
+        / "fix11_paper_trader.py"
+    )
+
+    if not fix11_path.exists():
+        raise RuntimeError(
+            "FIX11 paper trader source missing"
+        )
+
+    ns = runpy.run_path(
+        str(fix11_path),
+        run_name="__fix17_fix11_entry__",
+    )
+
+    fetch_today_1m = ns.get(
+        "fetch_today_1m"
+    )
+
+    find_first_signal = ns.get(
+        "find_first_signal"
+    )
+
+    if fetch_today_1m is None:
+        raise RuntimeError(
+            "fetch_today_1m missing"
+        )
+
+    if find_first_signal is None:
+        raise RuntimeError(
+            "find_first_signal missing"
+        )
+
+
+    universe_path = (
+        repo_dir
+        / "config"
+        / "fix17_universe.txt"
+    )
+
+    if not universe_path.exists():
+        raise RuntimeError(
+            "FIX17 universe missing"
+        )
+
+
+    codes = [
+        line.strip()
+        for line in universe_path.read_text(
+            encoding="utf-8"
+        ).splitlines()
+        if line.strip()
+        and not line.strip().startswith("#")
+    ]
+
+    if not codes:
+        raise RuntimeError(
+            "FIX17 universe empty"
+        )
+
+
+    minute_by_code = {}
+    feature_by_code = {}
+
+
+    for code in codes:
+
+        minute_df = None
+
+        try:
+            minute_df = fetch_today_1m(
+                code
+            )
+
+        except TypeError:
+
+            try:
+                minute_df = fetch_today_1m(
+                    f"{code}.T"
+                )
+
+            except Exception:
+                minute_df = None
+
+        except Exception:
+            minute_df = None
+
+
+        if minute_df is None:
+            continue
+
+        try:
+            if len(minute_df) == 0:
+                continue
+        except Exception:
+            continue
+
+
+        minute_by_code[
+            str(code)
+        ] = minute_df
+
+
+        signal = None
+
+        try:
+            signal = find_first_signal(
+                code,
+                minute_df,
+            )
+
+        except TypeError:
+
+            try:
+                signal = find_first_signal(
+                    minute_df,
+                    code,
+                )
+
+            except Exception:
+                signal = None
+
+        except Exception:
+            signal = None
+
+
+        if signal is None:
+            continue
+
+
+        if hasattr(signal, "to_dict"):
+
+            try:
+                signal = signal.to_dict()
+
+            except Exception:
+                pass
+
+
+        if isinstance(signal, dict):
+
+            feature_by_code[
+                str(code)
+            ] = signal
+
+
+    return (
+        minute_by_code,
+        feature_by_code,
+    )
+
+
+def generate_fix17_long_live_candidates():
+
+    (
+        minute_by_code,
+        feature_by_code,
+    ) = build_fix17_long_live_inputs()
+
+
+    generator = (
+        get_fix17_long_candidate_generator()
+    )
+
+    if generator is None:
+        raise RuntimeError(
+            "FIX17 LONG generator missing"
+        )
+
+
+    candidates = generator(
+        minute_by_code,
+        feature_by_code,
+    )
+
+
+    if candidates is None:
+        return []
+
+
+    if isinstance(
+        candidates,
+        list,
+    ):
+        return candidates
+
+
+    return list(candidates)
+
+
 def execute_fix17_candidate_batch():
 
     state = ensure_paper_state()
 
-    payload = load_fix17_candidates()
+    # STEP23C: FIX17 LONG live candidates
+    payload = generate_fix17_long_live_candidates()
 
     market_date = payload.get(
 
