@@ -1,0 +1,1173 @@
+{
+  "github_head": "0f8e494",
+  "files": {
+    "save_1m.py": {
+      "exists": true,
+      "path": "save_1m.py",
+      "bytes": 879,
+      "lines": 52,
+      "ast": "PASS",
+      "functions": [
+        {
+          "name": "main",
+          "line": 12,
+          "args": []
+        }
+      ],
+      "hits": {
+        "GCS": [],
+        "google.cloud.storage": [],
+        "storage.Client": [],
+        "bucket": [],
+        "blob": [],
+        "gs://": [],
+        "GCS_BUCKET": [],
+        "BUCKET_NAME": [],
+        "runtime": [],
+        "data": [],
+        "parquet": [],
+        "csv": [],
+        "json": [],
+        "1m": [],
+        "minute": [],
+        "minute_data": [],
+        "save_1m": [],
+        "yfinance": [],
+        "yf.download": [],
+        "history(": [],
+        "interval=\"1m\"": [],
+        "interval='1m'": [],
+        "period=": [],
+        "RS20": [],
+        "RS20_corrected": [],
+        "RVOL20": [],
+        "turnover_median_20d_oku": [],
+        "ORB15": [],
+        "CrossPass": [],
+        "BacktestReady": [],
+        "is_lending": [],
+        "09:00": [],
+        "09:14": [],
+        "09:15": [],
+        "14:30": [],
+        "14:59": [],
+        "15:00": [],
+        "cron": [],
+        "restore": [],
+        "save": [],
+        "upload": [],
+        "download": []
+      }
+    },
+    "paper_trader.py": {
+      "exists": true,
+      "path": "paper_trader.py",
+      "bytes": 41234,
+      "lines": 2656,
+      "ast": "PASS",
+      "functions": [
+        {
+          "name": "sha256_file",
+          "line": 105,
+          "args": [
+            "path"
+          ]
+        },
+        {
+          "name": "save_json",
+          "line": 129,
+          "args": [
+            "path",
+            "obj"
+          ]
+        },
+        {
+          "name": "load_json",
+          "line": 161,
+          "args": [
+            "path",
+            "default"
+          ]
+        },
+        {
+          "name": "send_mail",
+          "line": 183,
+          "args": [
+            "subject",
+            "body"
+          ]
+        },
+        {
+          "name": "send_error_mail",
+          "line": 285,
+          "args": [
+            "title",
+            "error_text"
+          ]
+        },
+        {
+          "name": "verify_official_source",
+          "line": 317,
+          "args": []
+        },
+        {
+          "name": "check_official_engine",
+          "line": 545,
+          "args": []
+        },
+        {
+          "name": "ensure_paper_state",
+          "line": 727,
+          "args": []
+        },
+        {
+          "name": "verify_fix17_sizing_rule",
+          "line": 795,
+          "args": []
+        },
+        {
+          "name": "main",
+          "line": 848,
+          "args": []
+        },
+        {
+          "name": "load_fix17_runtime_module",
+          "line": 1141,
+          "args": []
+        },
+        {
+          "name": "normalize_code",
+          "line": 1237,
+          "args": [
+            "code"
+          ]
+        },
+        {
+          "name": "normalize_side",
+          "line": 1267,
+          "args": [
+            "side"
+          ]
+        },
+        {
+          "name": "position_key",
+          "line": 1295,
+          "args": [
+            "code",
+            "side"
+          ]
+        },
+        {
+          "name": "active_positions",
+          "line": 1321,
+          "args": [
+            "state"
+          ]
+        },
+        {
+          "name": "active_position_exists",
+          "line": 1349,
+          "args": [
+            "state",
+            "code",
+            "side"
+          ]
+        },
+        {
+          "name": "active_trade_id_exists",
+          "line": 1393,
+          "args": [
+            "state",
+            "trade_id"
+          ]
+        },
+        {
+          "name": "load_fix17_candidates",
+          "line": 1439,
+          "args": []
+        },
+        {
+          "name": "calculate_existing_exposure",
+          "line": 1513,
+          "args": [
+            "state"
+          ]
+        },
+        {
+          "name": "calculate_equity",
+          "line": 1623,
+          "args": [
+            "state"
+          ]
+        },
+        {
+          "name": "validate_candidate",
+          "line": 1666,
+          "args": [
+            "candidate"
+          ]
+        },
+        {
+          "name": "calculate_fix17_order",
+          "line": 2043,
+          "args": [
+            "runtime",
+            "candidate",
+            "state"
+          ]
+        },
+        {
+          "name": "apply_paper_fill",
+          "line": 2306,
+          "args": [
+            "state",
+            "order",
+            "market_date"
+          ]
+        },
+        {
+          "name": "get_fix17_position_state",
+          "line": 2440,
+          "args": [
+            "runtime",
+            "state",
+            "market_date"
+          ]
+        },
+        {
+          "name": "execute_fix17_candidate_batch",
+          "line": 2470,
+          "args": []
+        }
+      ],
+      "hits": {
+        "GCS": [],
+        "google.cloud.storage": [],
+        "storage.Client": [],
+        "bucket": [],
+        "blob": [],
+        "gs://": [],
+        "GCS_BUCKET": [],
+        "BUCKET_NAME": [],
+        "runtime": [
+          {
+            "line": 55,
+            "text": "RUNTIME_DIR = ("
+          },
+          {
+            "line": 57,
+            "text": "/ \"runtime\""
+          },
+          {
+            "line": 61,
+            "text": "RUNTIME_DIR"
+          },
+          {
+            "line": 66,
+            "text": "RUNTIME_DIR"
+          },
+          {
+            "line": 71,
+            "text": "RUNTIME_DIR"
+          },
+          {
+            "line": 321,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 336,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 547,
+            "text": "RUNTIME_DIR.mkdir("
+          },
+          {
+            "line": 571,
+            "text": "/ \"runtime.log\""
+          },
+          {
+            "line": 605,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 633,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 660,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 673,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 674,
+            "text": "\"FIX17 runtime function数が正式監査値と不一致\\n\""
+          },
+          {
+            "line": 690,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 691,
+            "text": "\"FIX17 runtime class数が正式監査値と不一致\\n\""
+          },
+          {
+            "line": 771,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 783,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 824,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 833,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 862,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1063,
+            "text": "#   runtime/fix17_candidates.json"
+          },
+          {
+            "line": 1109,
+            "text": "RUNTIME_DIR"
+          },
+          {
+            "line": 1117,
+            "text": "RUNTIME_DIR"
+          },
+          {
+            "line": 1125,
+            "text": "# OFFICIAL RUNTIME LOADER"
+          },
+          {
+            "line": 1141,
+            "text": "def load_fix17_runtime_module():"
+          },
+          {
+            "line": 1147,
+            "text": "\"_fix17_official_runtime_\""
+          },
+          {
+            "line": 1169,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1171,
+            "text": "\"FIX17正式runtime moduleを作成できません。\""
+          },
+          {
+            "line": 1217,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1219,
+            "text": "\"FIX17 runtime必須関数不足:\\n\""
+          },
+          {
+            "line": 1287,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1467,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1489,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1672,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1697,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1772,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1779,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1786,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1797,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1804,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1829,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1838,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1850,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1862,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1874,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1904,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1914,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1926,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1938,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1950,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 1973,
+            "text": "raise RuntimeError("
+          },
+          {
+            "line": 2045,
+            "text": "runtime,"
+          },
+          {
+            "line": 2162,
+            "text": "target_qty = runtime.calc_target_qty("
+          },
+          {
+            "line": 2242,
+            "text": "capped_qty = runtime.calc_margin_capped_qty("
+          },
+          {
+            "line": 2442,
+            "text": "runtime,"
+          },
+          {
+            "line": 2456,
+            "text": "return runtime.calc_entry_time_position_state("
+          },
+          {
+            "line": 2518,
+            "text": "runtime = load_fix17_runtime_module()"
+          },
+          {
+            "line": 2530,
+            "text": "runtime,"
+          },
+          {
+            "line": 2548,
+            "text": "runtime,"
+          }
+        ],
+        "data": [
+          {
+            "line": 886,
+            "text": "#   current market data"
+          },
+          {
+            "line": 1911,
+            "text": "# Effective surviving formal-data bound"
+          },
+          {
+            "line": 1961,
+            "text": "# effective formal dataset, but execution must remain"
+          }
+        ],
+        "parquet": [],
+        "csv": [],
+        "json": [
+          {
+            "line": 26,
+            "text": "import json"
+          },
+          {
+            "line": 62,
+            "text": "/ \"paper_state.json\""
+          },
+          {
+            "line": 67,
+            "text": "/ \"fix17_engine_check.json\""
+          },
+          {
+            "line": 72,
+            "text": "/ \"paper_trader_last_run.json\""
+          },
+          {
+            "line": 129,
+            "text": "def save_json("
+          },
+          {
+            "line": 148,
+            "text": "json.dump("
+          },
+          {
+            "line": 161,
+            "text": "def load_json("
+          },
+          {
+            "line": 174,
+            "text": "return json.load("
+          },
+          {
+            "line": 354,
+            "text": "import json"
+          },
+          {
+            "line": 527,
+            "text": "json.dump("
+          },
+          {
+            "line": 566,
+            "text": "/ \"result.json\""
+          },
+          {
+            "line": 619,
+            "text": "result = json.load("
+          },
+          {
+            "line": 697,
+            "text": "save_json("
+          },
+          {
+            "line": 729,
+            "text": "state = load_json("
+          },
+          {
+            "line": 758,
+            "text": "save_json("
+          },
+          {
+            "line": 956,
+            "text": "save_json("
+          },
+          {
+            "line": 1012,
+            "text": "save_json("
+          },
+          {
+            "line": 1063,
+            "text": "#   runtime/fix17_candidates.json"
+          },
+          {
+            "line": 1111,
+            "text": "/ \"fix17_candidates.json\""
+          },
+          {
+            "line": 1119,
+            "text": "/ \"fix17_execution_result.json\""
+          },
+          {
+            "line": 1451,
+            "text": "obj = load_json("
+          },
+          {
+            "line": 1469,
+            "text": "\"fix17_candidates.json形式不正\""
+          },
+          {
+            "line": 2508,
+            "text": "save_json("
+          },
+          {
+            "line": 2588,
+            "text": "save_json("
+          },
+          {
+            "line": 2642,
+            "text": "save_json("
+          }
+        ],
+        "1m": [],
+        "minute": [],
+        "minute_data": [],
+        "save_1m": [],
+        "yfinance": [],
+        "yf.download": [],
+        "history(": [],
+        "interval=\"1m\"": [],
+        "interval='1m'": [],
+        "period=": [],
+        "RS20": [
+          {
+            "line": 1685,
+            "text": "\"RS20_corrected\","
+          },
+          {
+            "line": 1728,
+            "text": "rs20 = float("
+          },
+          {
+            "line": 1730,
+            "text": "\"RS20_corrected\""
+          },
+          {
+            "line": 1757,
+            "text": "\"RS20_corrected\":"
+          },
+          {
+            "line": 1758,
+            "text": "rs20,"
+          },
+          {
+            "line": 1836,
+            "text": "if rs20 < 80.0:"
+          },
+          {
+            "line": 1840,
+            "text": "f\"RS20_corrected={rs20} < 80\""
+          },
+          {
+            "line": 1912,
+            "text": "if rs20 > 20.0:"
+          },
+          {
+            "line": 1916,
+            "text": "f\"RS20_corrected={rs20} > 20\""
+          },
+          {
+            "line": 2020,
+            "text": "\"RS20_corrected\":"
+          },
+          {
+            "line": 2021,
+            "text": "rs20,"
+          }
+        ],
+        "RS20_corrected": [
+          {
+            "line": 1685,
+            "text": "\"RS20_corrected\","
+          },
+          {
+            "line": 1730,
+            "text": "\"RS20_corrected\""
+          },
+          {
+            "line": 1757,
+            "text": "\"RS20_corrected\":"
+          },
+          {
+            "line": 1840,
+            "text": "f\"RS20_corrected={rs20} < 80\""
+          },
+          {
+            "line": 1916,
+            "text": "f\"RS20_corrected={rs20} > 20\""
+          },
+          {
+            "line": 2020,
+            "text": "\"RS20_corrected\":"
+          }
+        ],
+        "RVOL20": [
+          {
+            "line": 1686,
+            "text": "\"RVOL20\","
+          },
+          {
+            "line": 1734,
+            "text": "rvol20 = float("
+          },
+          {
+            "line": 1736,
+            "text": "\"RVOL20\""
+          },
+          {
+            "line": 1760,
+            "text": "\"RVOL20\":"
+          },
+          {
+            "line": 1761,
+            "text": "rvol20,"
+          },
+          {
+            "line": 1795,
+            "text": "if rvol20 < 2.0:"
+          },
+          {
+            "line": 1799,
+            "text": "f\"RVOL20={rvol20} < 2\""
+          },
+          {
+            "line": 2023,
+            "text": "\"RVOL20\":"
+          },
+          {
+            "line": 2024,
+            "text": "rvol20,"
+          }
+        ],
+        "turnover_median_20d_oku": [
+          {
+            "line": 1687,
+            "text": "\"turnover_median_20d_oku\","
+          },
+          {
+            "line": 1742,
+            "text": "\"turnover_median_20d_oku\""
+          },
+          {
+            "line": 1763,
+            "text": "\"turnover_median_20d_oku\":"
+          },
+          {
+            "line": 1806,
+            "text": "\"turnover_median_20d_oku=\""
+          },
+          {
+            "line": 2026,
+            "text": "\"turnover_median_20d_oku\":"
+          }
+        ],
+        "ORB15": [
+          {
+            "line": 1817,
+            "text": "\"ORB15_LongSignal\","
+          },
+          {
+            "line": 1845,
+            "text": "\"ORB15_LongSignal\""
+          },
+          {
+            "line": 1852,
+            "text": "\"ORB15_LongSignal != True\""
+          },
+          {
+            "line": 1892,
+            "text": "\"ORB15_ShortSignal\","
+          },
+          {
+            "line": 1921,
+            "text": "\"ORB15_ShortSignal\""
+          },
+          {
+            "line": 1928,
+            "text": "\"ORB15_ShortSignal != True\""
+          }
+        ],
+        "CrossPass": [
+          {
+            "line": 1818,
+            "text": "\"CrossPass_EXACT\","
+          },
+          {
+            "line": 1857,
+            "text": "\"CrossPass_EXACT\""
+          },
+          {
+            "line": 1864,
+            "text": "\"CrossPass_EXACT != True\""
+          },
+          {
+            "line": 1958,
+            "text": "# SHORT CrossPass_EXACT is not proven."
+          },
+          {
+            "line": 2068,
+            "text": "#   but CrossPass semantics are NOT proven."
+          }
+        ],
+        "BacktestReady": [
+          {
+            "line": 1819,
+            "text": "\"BacktestReady\","
+          },
+          {
+            "line": 1869,
+            "text": "\"BacktestReady\""
+          },
+          {
+            "line": 1876,
+            "text": "\"BacktestReady != True\""
+          }
+        ],
+        "is_lending": [
+          {
+            "line": 1893,
+            "text": "\"is_lending\","
+          },
+          {
+            "line": 1933,
+            "text": "\"is_lending\""
+          },
+          {
+            "line": 1940,
+            "text": "\"is_lending != True\""
+          }
+        ],
+        "09:00": [],
+        "09:14": [],
+        "09:15": [],
+        "14:30": [],
+        "14:59": [],
+        "15:00": [],
+        "cron": [],
+        "restore": [],
+        "save": [
+          {
+            "line": 129,
+            "text": "def save_json("
+          },
+          {
+            "line": 697,
+            "text": "save_json("
+          },
+          {
+            "line": 758,
+            "text": "save_json("
+          },
+          {
+            "line": 956,
+            "text": "save_json("
+          },
+          {
+            "line": 1012,
+            "text": "save_json("
+          },
+          {
+            "line": 2508,
+            "text": "save_json("
+          },
+          {
+            "line": 2588,
+            "text": "save_json("
+          },
+          {
+            "line": 2642,
+            "text": "save_json("
+          }
+        ],
+        "upload": [],
+        "download": []
+      }
+    },
+    ".github/workflows/save_1m.yml": {
+      "exists": true,
+      "path": ".github/workflows/save_1m.yml",
+      "bytes": 875,
+      "lines": 44,
+      "hits": {
+        "GCS": [],
+        "google.cloud.storage": [],
+        "storage.Client": [],
+        "bucket": [],
+        "blob": [],
+        "gs://": [],
+        "GCS_BUCKET": [],
+        "BUCKET_NAME": [],
+        "runtime": [],
+        "data": [
+          {
+            "line": 1,
+            "text": "name: Save 1-Minute Data"
+          },
+          {
+            "line": 35,
+            "text": "- name: Save 1-Minute Data"
+          }
+        ],
+        "parquet": [],
+        "csv": [],
+        "json": [],
+        "1m": [
+          {
+            "line": 11,
+            "text": "save-1m:"
+          },
+          {
+            "line": 44,
+            "text": "python save_1m.py"
+          }
+        ],
+        "minute": [
+          {
+            "line": 1,
+            "text": "name: Save 1-Minute Data"
+          },
+          {
+            "line": 15,
+            "text": "timeout-minutes: 60"
+          },
+          {
+            "line": 35,
+            "text": "- name: Save 1-Minute Data"
+          }
+        ],
+        "minute_data": [],
+        "save_1m": [
+          {
+            "line": 44,
+            "text": "python save_1m.py"
+          }
+        ],
+        "yfinance": [],
+        "yf.download": [],
+        "history(": [],
+        "interval=\"1m\"": [],
+        "interval='1m'": [],
+        "period=": [],
+        "RS20": [],
+        "RS20_corrected": [],
+        "RVOL20": [],
+        "turnover_median_20d_oku": [],
+        "ORB15": [],
+        "CrossPass": [],
+        "BacktestReady": [],
+        "is_lending": [],
+        "09:00": [],
+        "09:14": [],
+        "09:15": [],
+        "14:30": [],
+        "14:59": [],
+        "15:00": [],
+        "cron": [
+          {
+            "line": 7,
+            "text": "- cron: \"15 7 * * 1-5\""
+          }
+        ],
+        "restore": [],
+        "save": [
+          {
+            "line": 1,
+            "text": "name: Save 1-Minute Data"
+          },
+          {
+            "line": 11,
+            "text": "save-1m:"
+          },
+          {
+            "line": 35,
+            "text": "- name: Save 1-Minute Data"
+          },
+          {
+            "line": 44,
+            "text": "python save_1m.py"
+          }
+        ],
+        "upload": [],
+        "download": []
+      }
+    },
+    ".github/workflows/paper_trader.yml": {
+      "exists": true,
+      "path": ".github/workflows/paper_trader.yml",
+      "bytes": 889,
+      "lines": 44,
+      "hits": {
+        "GCS": [],
+        "google.cloud.storage": [],
+        "storage.Client": [],
+        "bucket": [],
+        "blob": [],
+        "gs://": [],
+        "GCS_BUCKET": [],
+        "BUCKET_NAME": [],
+        "runtime": [],
+        "data": [],
+        "parquet": [],
+        "csv": [],
+        "json": [],
+        "1m": [],
+        "minute": [
+          {
+            "line": 15,
+            "text": "timeout-minutes: 30"
+          }
+        ],
+        "minute_data": [],
+        "save_1m": [],
+        "yfinance": [],
+        "yf.download": [],
+        "history(": [],
+        "interval=\"1m\"": [],
+        "interval='1m'": [],
+        "period=": [],
+        "RS20": [],
+        "RS20_corrected": [],
+        "RVOL20": [],
+        "turnover_median_20d_oku": [],
+        "ORB15": [],
+        "CrossPass": [],
+        "BacktestReady": [],
+        "is_lending": [],
+        "09:00": [],
+        "09:14": [],
+        "09:15": [],
+        "14:30": [],
+        "14:59": [],
+        "15:00": [],
+        "cron": [
+          {
+            "line": 7,
+            "text": "- cron: \"45 6 * * 1-5\""
+          }
+        ],
+        "restore": [],
+        "save": [],
+        "upload": [],
+        "download": []
+      }
+    },
+    "requirements.txt": {
+      "exists": true,
+      "path": "requirements.txt",
+      "bytes": 86,
+      "lines": 7,
+      "hits": {
+        "GCS": [],
+        "google.cloud.storage": [],
+        "storage.Client": [],
+        "bucket": [],
+        "blob": [],
+        "gs://": [],
+        "GCS_BUCKET": [],
+        "BUCKET_NAME": [],
+        "runtime": [],
+        "data": [],
+        "parquet": [],
+        "csv": [],
+        "json": [],
+        "1m": [],
+        "minute": [],
+        "minute_data": [],
+        "save_1m": [],
+        "yfinance": [],
+        "yf.download": [],
+        "history(": [],
+        "interval=\"1m\"": [],
+        "interval='1m'": [],
+        "period=": [],
+        "RS20": [],
+        "RS20_corrected": [],
+        "RVOL20": [],
+        "turnover_median_20d_oku": [],
+        "ORB15": [],
+        "CrossPass": [],
+        "BacktestReady": [],
+        "is_lending": [],
+        "09:00": [],
+        "09:14": [],
+        "09:15": [],
+        "14:30": [],
+        "14:59": [],
+        "15:00": [],
+        "cron": [],
+        "restore": [],
+        "save": [],
+        "upload": [],
+        "download": []
+      }
+    }
+  },
+  "environment_variables": {
+    "save_1m.py": [],
+    "paper_trader.py": [
+      "SMTP_HOST",
+      "SMTP_PORT",
+      "SMTP_USER",
+      "SMTP_PASSWORD",
+      "MAIL_FROM",
+      "MAIL_TO"
+    ],
+    ".github/workflows/save_1m.yml": [
+      "SMTP_HOST",
+      "SMTP_PORT",
+      "SMTP_USER",
+      "SMTP_PASSWORD",
+      "MAIL_FROM",
+      "MAIL_TO"
+    ],
+    ".github/workflows/paper_trader.yml": [
+      "SMTP_HOST",
+      "SMTP_PORT",
+      "SMTP_USER",
+      "SMTP_PASSWORD",
+      "MAIL_FROM",
+      "MAIL_TO"
+    ],
+    "requirements.txt": []
+  },
+  "path_strings": {
+    "save_1m.py": [],
+    "paper_trader.py": [
+      "paper_state.json",
+      "fix17_engine_check.json",
+      "paper_trader_last_run.json",
+      "result.json",
+      ": error_text,\n                }\n            )\n\n        except Exception:\n\n            pass\n\n\n        send_error_mail(\n            type(\n                e\n            ).__name__,\n            error_text,\n        )\n\n\n        print(\n            error_text,\n            file=sys.stderr\n        )\n\n        sys.exit(\n            1\n        )\n\n# ============================================================\n\n# FIX17 OFFICIAL LIVE EXECUTION LAYER\n\n# ============================================================\n\n#\n\n# この層ではFIX17のENTRY条件自体を再構築しない。\n\n#\n\n# 入力:\n\n#   runtime/fix17_candidates.json\n\n#\n\n# candidate例:\n\n# {\n\n#   ",
+      "fix17_candidates.json",
+      "fix17_execution_result.json",
+      "fix17_candidates.json形式不正"
+    ],
+    ".github/workflows/save_1m.yml": [],
+    ".github/workflows/paper_trader.yml": [],
+    "requirements.txt": []
+  },
+  "workflows": {
+    ".github/workflows/save_1m.yml": {
+      "cron": [
+        {
+          "line": 7,
+          "text": "- cron: \"15 7 * * 1-5\""
+        }
+      ],
+      "full_text": "name: Save 1-Minute Data\n\non:\n  workflow_dispatch:\n\n  schedule:\n    - cron: \"15 7 * * 1-5\"\n\njobs:\n\n  save-1m:\n\n    runs-on: ubuntu-latest\n\n    timeout-minutes: 60\n\n    permissions:\n      contents: read\n\n    steps:\n\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: \"3.11\"\n\n      - name: Install\n        run: |\n          python -m pip install --upgrade pip\n          pip install -r requirements.txt\n\n      - name: Save 1-Minute Data\n        env:\n          SMTP_HOST: ${{ secrets.SMTP_HOST }}\n          SMTP_PORT: ${{ secrets.SMTP_PORT }}\n          SMTP_USER: ${{ secrets.SMTP_USER }}\n          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}\n          MAIL_FROM: ${{ secrets.MAIL_FROM }}\n          MAIL_TO: ${{ secrets.MAIL_TO }}\n        run: |\n          python save_1m.py\n"
+    },
+    ".github/workflows/paper_trader.yml": {
+      "cron": [
+        {
+          "line": 7,
+          "text": "- cron: \"45 6 * * 1-5\""
+        }
+      ],
+      "full_text": "name: FIX17 Paper Trader\n\non:\n  workflow_dispatch:\n\n  schedule:\n    - cron: \"45 6 * * 1-5\"\n\njobs:\n\n  paper-trader:\n\n    runs-on: ubuntu-latest\n\n    timeout-minutes: 30\n\n    permissions:\n      contents: read\n\n    steps:\n\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: \"3.11\"\n\n      - name: Install\n        run: |\n          python -m pip install --upgrade pip\n          pip install -r requirements.txt\n\n      - name: Run FIX17 Paper Trader\n        env:\n          SMTP_HOST: ${{ secrets.SMTP_HOST }}\n          SMTP_PORT: ${{ secrets.SMTP_PORT }}\n          SMTP_USER: ${{ secrets.SMTP_USER }}\n          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}\n          MAIL_FROM: ${{ secrets.MAIL_FROM }}\n          MAIL_TO: ${{ secrets.MAIL_TO }}\n        run: |\n          python paper_trader.py\n"
+    }
+  },
+  "summary": {
+    "save_1m_exists": true,
+    "save_1m_function_count": 1,
+    "has_storage_library": false,
+    "has_gcs_reference": false,
+    "has_parquet": false,
+    "has_yfinance": false,
+    "has_explicit_1m_interval": false,
+    "has_RS20": false,
+    "has_RVOL20": false,
+    "has_ORB15": false,
+    "has_CrossPass": false,
+    "has_turnover": false
+  }
+}
