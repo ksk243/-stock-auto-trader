@@ -37,7 +37,6 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 import yfinance as yf
-import jpholiday
 from google.cloud import storage
 
 from mailer import send_error_mail
@@ -272,141 +271,6 @@ def is_weekend():
         today_jst().weekday()
         >= 5
     )
-
-
-def is_jpx_trading_day(
-    target_date=None,
-):
-    """
-    JPX現物株の営業日判定。
-
-    非営業:
-      ・土曜日
-      ・日曜日
-      ・日本の祝日
-      ・1月1日〜3日
-      ・12月31日
-
-    ここではyfinanceのデータ有無を営業日判定には使わない。
-    Yahoo側障害と市場休場を分離するため。
-    """
-
-    if target_date is None:
-
-        target_date = (
-            today_jst()
-        )
-
-
-    # Saturday / Sunday
-    if (
-        target_date.weekday()
-        >= 5
-    ):
-
-        return False
-
-
-    # JPX year-end / new-year closure
-    if (
-        target_date.month == 1
-        and
-        target_date.day
-        in (
-            1,
-            2,
-            3,
-        )
-    ):
-
-        return False
-
-
-    if (
-        target_date.month == 12
-        and
-        target_date.day == 31
-    ):
-
-        return False
-
-
-    # Japanese national holiday
-    if jpholiday.is_holiday(
-        target_date
-    ):
-
-        return False
-
-
-    return True
-
-
-def jpx_non_trading_reason(
-    target_date=None,
-):
-
-    if target_date is None:
-
-        target_date = (
-            today_jst()
-        )
-
-
-    if (
-        target_date.weekday()
-        >= 5
-    ):
-
-        return "WEEKEND"
-
-
-    if (
-        target_date.month == 1
-        and
-        target_date.day
-        in (
-            1,
-            2,
-            3,
-        )
-    ):
-
-        return (
-            "JPX_NEW_YEAR_CLOSED"
-        )
-
-
-    if (
-        target_date.month == 12
-        and
-        target_date.day == 31
-    ):
-
-        return (
-            "JPX_YEAR_END_CLOSED"
-        )
-
-
-    holiday_name = (
-        jpholiday.is_holiday_name(
-            target_date
-        )
-    )
-
-
-    if holiday_name:
-
-        return (
-            "JAPANESE_HOLIDAY:"
-            + str(
-                holiday_name
-            )
-        )
-
-
-    return None
-
 
 
 # ============================================================
@@ -1323,29 +1187,14 @@ def main():
     )
 
 
-    market_date = today_jst()
-
-
     # --------------------------------------------------------
-    # JPX営業日を先に判定
-    #
-    # 非営業日はYahooへ4208銘柄を投げない。
+    # Saturday / Sunday
     # --------------------------------------------------------
 
-    if not is_jpx_trading_day(
-        market_date
-    ):
-
-        reason = (
-            jpx_non_trading_reason(
-                market_date
-            )
-            or
-            "JPX_NON_TRADING_DAY"
-        )
+    if is_weekend():
 
         return write_skip_result(
-            reason
+            "WEEKEND"
         )
 
 
@@ -1366,35 +1215,24 @@ def main():
     )
 
 
-    print(
-        "JPX trading day:",
-        market_date
-    )
-
-
     data, failures = download_all(
         codes
     )
 
 
     # --------------------------------------------------------
-    # ここまで来ている時点でJPX営業日。
+    # 平日祝日 / 市場全休場
     #
-    # したがって全銘柄で当日データ0件なら、
-    # 「祝日」ではなくデータ取得障害。
+    # 全銘柄で当日データが無ければ、
+    # データ障害とはせず市場休場としてSKIP。
     # --------------------------------------------------------
 
     if is_market_closed_result(
         data
     ):
 
-        raise RuntimeError(
-            "JPX営業日なのに当日1分足が"
-            "全銘柄0件です。\n"
-            "Yahoo Finance取得障害・遅延・"
-            "ネットワーク障害の可能性があります。\n"
-            f"market_date={market_date}\n"
-            f"universe={len(codes)}"
+        return write_skip_result(
+            "NO_MARKET_DATA_MARKET_CLOSED"
         )
 
 
@@ -1405,20 +1243,20 @@ def main():
     )
 
 
-    market_date_str = validation[
+    market_date = validation[
         "market_date"
     ]
 
 
     local_path = write_local_parquet(
         data,
-        market_date_str,
+        market_date,
     )
 
 
     gcs = upload_to_gcs(
         local_path,
-        market_date_str,
+        market_date,
     )
 
 
@@ -1430,10 +1268,7 @@ def main():
             now_jst().isoformat(),
 
         "market_date":
-            market_date_str,
-
-        "jpx_trading_day":
-            True,
+            market_date,
 
         "validation":
             validation,
@@ -1463,7 +1298,7 @@ def main():
 
     print(
         "market_date:",
-        market_date_str
+        market_date
     )
 
 
@@ -1504,7 +1339,6 @@ def main():
 
 
     return result
-
 
 
 # ============================================================
