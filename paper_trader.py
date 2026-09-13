@@ -19,6 +19,7 @@
 # ============================================================
 
 from __future__ import annotations
+from mailer import send_error_mail, send_mail
 from fix17_contract import validate_fix17_contract
 
 import os
@@ -990,61 +991,12 @@ def main():
     return result
 
 
+
 # ============================================================
-# ENTRY POINT
+# ENTRY POINT MOVED TO END OF FILE
+#
+# LIVE EXECUTION FUNCTIONS MUST BE DEFINED FIRST.
 # ============================================================
-
-if __name__ == "__main__":
-
-    try:
-
-        main()
-
-    except Exception as e:
-
-        error_text = (
-            traceback.format_exc()
-        )
-
-
-        try:
-
-            save_json(
-                RUN_LOG_FILE,
-                {
-                    "status": "ERROR",
-                    "time": datetime.now().isoformat(),
-                    "error_type": type(
-                        e
-                    ).__name__,
-                    "error": str(
-                        e
-                    ),
-                    "traceback": error_text,
-                }
-            )
-
-        except Exception:
-
-            pass
-
-
-        send_error_mail(
-            type(
-                e
-            ).__name__,
-            error_text,
-        )
-
-
-        print(
-            error_text,
-            file=sys.stderr
-        )
-
-        sys.exit(
-            1
-        )
 
 # ============================================================
 
@@ -1678,14 +1630,13 @@ def validate_candidate(candidate):
     # --------------------------------------------------------
 
     required_common = [
-        "code",
-        "side",
-        "entry_price",
-        "target_notional",
-        "RS20_corrected",
-        "RVOL20",
-        "turnover_median_20d_oku",
-    ]
+                          'code',
+                          'side',
+                          'entry_price',
+                          'RS20_corrected',
+                          'RVOL20',
+                          'turnover_median_20d_oku',
+                      ]
 
     missing = [
         x
@@ -2040,6 +1991,125 @@ def validate_candidate(candidate):
 
 # ============================================================
 
+
+# === FIX17 STEP9B LONG SIZING ===
+
+FIX17_LONG_TOTAL_LEVERAGE = 1.0
+
+
+def calculate_fix17_long_remaining_capacity(
+    state,
+):
+    """
+    FIX17 official sizing:
+        target_notional = long_remaining_capacity
+    """
+
+    try:
+        equity = float(
+            state.get(
+                "equity",
+                state.get(
+                    "cash",
+                    state.get(
+                        "initial_equity",
+                        0.0,
+                    ),
+                ),
+            )
+        )
+    except Exception:
+        equity = 0.0
+
+    if equity <= 0:
+        return 0.0
+
+    existing_long_notional = 0.0
+
+    for p in state.get(
+        "positions",
+        []
+    ):
+
+        side = str(
+            p.get(
+                "side",
+                p.get(
+                    "Side",
+                    ""
+                ),
+            )
+        ).upper()
+
+        status = str(
+            p.get(
+                "status",
+                p.get(
+                    "Status",
+                    "OPEN",
+                ),
+            )
+        ).upper()
+
+        if side != "LONG":
+            continue
+
+        if status not in {
+            "OPEN",
+            "ACTIVE",
+        }:
+            continue
+
+        qty = p.get(
+            "qty",
+            p.get(
+                "Qty",
+                p.get(
+                    "quantity",
+                    0,
+                ),
+            ),
+        )
+
+        price = p.get(
+            "entry_price",
+            p.get(
+                "EntryPrice",
+                p.get(
+                    "price",
+                    0,
+                ),
+            ),
+        )
+
+        try:
+            qty = float(qty)
+            price = float(price)
+        except Exception:
+            continue
+
+        if (
+            qty > 0
+            and price > 0
+        ):
+            existing_long_notional += (
+                qty * price
+            )
+
+    max_long_notional = (
+        equity
+        * FIX17_LONG_TOTAL_LEVERAGE
+    )
+
+    return max(
+        0.0,
+        max_long_notional
+        - existing_long_notional,
+    )
+
+# === END FIX17 STEP9B LONG SIZING ===
+
+
 def calculate_fix17_order(
 
     runtime,
@@ -2050,10 +2120,19 @@ def calculate_fix17_order(
 
 ):
 
+    long_remaining_capacity = (
+        calculate_fix17_long_remaining_capacity(
+            state
+        )
+    )
+
+    candidate_for_validation = dict(candidate)
+    candidate_for_validation["target_notional"] = (
+        long_remaining_capacity
+    )
+
     candidate = validate_candidate(
-
-        candidate
-
+        candidate_for_validation
     )
 
 
@@ -2105,11 +2184,13 @@ def calculate_fix17_order(
 
     ]
 
-    target_notional = candidate[
+    long_remaining_capacity = (
+        calculate_fix17_long_remaining_capacity(
+            state
+        )
+    )
 
-        "target_notional"
-
-    ]
+    target_notional = long_remaining_capacity
 
     if active_trade_id_exists(
 
@@ -2257,11 +2338,10 @@ def calculate_fix17_order(
 
     )
 
-    capped_qty = int(
+    if isinstance(capped_qty, dict):
+        capped_qty = capped_qty['TargetQty']
 
-        capped_qty
-
-    )
+    capped_qty = int(capped_qty)
 
     if capped_qty <= 0:
 
@@ -2654,3 +2734,468 @@ def execute_fix17_candidate_batch():
 # END FIX17 OFFICIAL LIVE EXECUTION LAYER
 
 # ============================================================
+
+
+# ============================================================
+# FIX17 NORMAL EVENING RESULT MAIL
+# ============================================================
+
+def send_normal_result_mail(
+    engine_result,
+    execution_result,
+):
+
+    state = load_json(
+        STATE_FILE,
+        default={},
+    )
+
+    market_date = execution_result.get(
+        "market_date"
+    )
+
+    status = execution_result.get(
+        "status",
+        "UNKNOWN",
+    )
+
+    candidate_count = int(
+        execution_result.get(
+            "candidate_count",
+            0,
+        )
+    )
+
+    order_count = int(
+        execution_result.get(
+            "order_count",
+            0,
+        )
+    )
+
+    fill_count = int(
+        execution_result.get(
+            "fill_count",
+            0,
+        )
+    )
+
+    open_positions = active_positions(
+        state
+    )
+
+    cash_now = float(
+        state.get(
+            "cash",
+            0.0,
+        )
+    )
+
+    closed_trades = state.get(
+        "closed_trades",
+        [],
+    )
+
+    engine_status = engine_result.get(
+        "status",
+        "UNKNOWN",
+    )
+
+    lines = []
+
+    lines.append(
+        "FIX17 仮想取引 当日結果"
+    )
+
+    lines.append(
+        ""
+    )
+
+    lines.append(
+        f"市場日: {market_date or '未設定'}"
+    )
+
+    lines.append(
+        f"エンジン: {engine_status}"
+    )
+
+    lines.append(
+        f"実行状態: {status}"
+    )
+
+    lines.append(
+        ""
+    )
+
+    lines.append(
+        f"候補数: {candidate_count}"
+    )
+
+    lines.append(
+        f"注文数: {order_count}"
+    )
+
+    lines.append(
+        f"仮想約定数: {fill_count}"
+    )
+
+    lines.append(
+        f"保有建玉数: {len(open_positions)}"
+    )
+
+    lines.append(
+        f"累計決済数: {len(closed_trades)}"
+    )
+
+    lines.append(
+        f"現金: {cash_now:,.0f}円"
+    )
+
+    if open_positions:
+
+        lines.append(
+            ""
+        )
+
+        lines.append(
+            "【保有建玉】"
+        )
+
+        for p in open_positions:
+
+            code = p.get(
+                "code",
+                "?"
+            )
+
+            side = p.get(
+                "side",
+                "?"
+            )
+
+            qty = p.get(
+                "qty",
+                0,
+            )
+
+            entry_price = float(
+                p.get(
+                    "entry_price",
+                    0.0,
+                )
+            )
+
+            lines.append(
+                f"{code} {side} "
+                f"{qty}株 "
+                f"@{entry_price:,.2f}"
+            )
+
+    orders = execution_result.get(
+        "orders",
+        [],
+    )
+
+    skipped = [
+        x
+        for x in orders
+        if x.get(
+            "status"
+        ) == "SKIP"
+    ]
+
+    if skipped:
+
+        lines.append(
+            ""
+        )
+
+        lines.append(
+            "【SKIP】"
+        )
+
+        for x in skipped:
+
+            c = x.get(
+                "candidate",
+                {},
+            )
+
+            lines.append(
+                f"{c.get('code', '?')} "
+                f"{c.get('side', '?')} "
+                f"{x.get('reason', '?')}"
+            )
+
+    lines.append(
+        ""
+    )
+
+    lines.append(
+        "※1分足保存Jobとは独立しています。"
+    )
+
+    lines.append(
+        "※このメールは15:45の仮想取引結果です。"
+    )
+
+    body = "\n".join(
+        lines
+    )
+
+    return send_mail(
+        "FIX17 仮想取引 当日結果",
+        body,
+    )
+
+
+# ============================================================
+# FINAL DAILY RUN
+# ============================================================
+
+def run_fix17_paper_trader_daily():
+
+    # --------------------------------------------------------
+    # 1. Official engine / contract verification
+    # --------------------------------------------------------
+
+    engine_result = main()
+
+    # --------------------------------------------------------
+    # 2. Candidate execution
+    #
+    # 現段階では runtime/fix17_candidates.json を使用。
+    # Candidate generator itself is NOT reconstructed here.
+    # --------------------------------------------------------
+
+    execution_result = (
+        execute_fix17_candidate_batch()
+    )
+
+    # --------------------------------------------------------
+    # 3. Normal evening mail
+    # --------------------------------------------------------
+
+    mail_sent = send_normal_result_mail(
+        engine_result,
+        execution_result,
+    )
+
+    # --------------------------------------------------------
+    # 4. Combined run log
+    # --------------------------------------------------------
+
+    combined = {
+        "status":
+            "COMPLETE",
+
+        "version":
+            "FIX17",
+
+        "time":
+            datetime.now().isoformat(),
+
+        "engine":
+            engine_result,
+
+        "execution":
+            execution_result,
+
+        "normal_mail_sent":
+            bool(
+                mail_sent
+            ),
+    }
+
+    save_json(
+        RUN_LOG_FILE,
+        combined,
+    )
+
+    return combined
+
+
+# ============================================================
+# FINAL ENTRY POINT
+# ============================================================
+
+
+
+# === FIX17 STEP8 LONG GENERATOR BRIDGE ===
+
+def get_fix17_long_candidate_generator():
+
+    """
+    Load the audited LONG candidate bridge.
+
+    This function only exposes the generator.
+    It does not manufacture missing live inputs.
+    """
+
+    import importlib.util
+    from pathlib import Path
+
+    bridge_path = (
+        Path(__file__).resolve().parent
+        / "fix17_long_candidate_bridge.py"
+    )
+
+    if not bridge_path.exists():
+
+        raise RuntimeError(
+            "FIX17 LONG bridge missing: "
+            + str(bridge_path)
+        )
+
+    spec = importlib.util.spec_from_file_location(
+        "fix17_long_candidate_bridge",
+        bridge_path,
+    )
+
+    if (
+        spec is None
+        or spec.loader is None
+    ):
+
+        raise RuntimeError(
+            "FIX17 LONG bridge import failed"
+        )
+
+    module = importlib.util.module_from_spec(
+        spec
+    )
+
+    spec.loader.exec_module(
+        module
+    )
+
+    return (
+        module.generate_fix17_long_candidates
+    )
+
+
+def get_fix17_short_generator_status():
+
+    return {
+        "enabled": False,
+        "reason":
+            "SHORT_ENTRY_CONTRACT_NOT_FULLY_PROVEN",
+    }
+
+# === END FIX17 STEP8 LONG GENERATOR BRIDGE ===
+
+
+if __name__ == "__main__":
+
+    try:
+
+        result = (
+            run_fix17_paper_trader_daily()
+        )
+
+        print(
+            "★★★★★ FIX17 PAPER TRADER DAILY COMPLETE ★★★★★"
+        )
+
+        print(
+            "Execution status:",
+            result.get(
+                "execution",
+                {}
+            ).get(
+                "status"
+            )
+        )
+
+        print(
+            "Candidates:",
+            result.get(
+                "execution",
+                {}
+            ).get(
+                "candidate_count",
+                0
+            )
+        )
+
+        print(
+            "Orders:",
+            result.get(
+                "execution",
+                {}
+            ).get(
+                "order_count",
+                0
+            )
+        )
+
+        print(
+            "Fills:",
+            result.get(
+                "execution",
+                {}
+            ).get(
+                "fill_count",
+                0
+            )
+        )
+
+        print(
+            "Normal mail:",
+            result.get(
+                "normal_mail_sent"
+            )
+        )
+
+    except Exception as e:
+
+        error_text = (
+            traceback.format_exc()
+        )
+
+        try:
+
+            save_json(
+                RUN_LOG_FILE,
+                {
+                    "status":
+                        "ERROR",
+
+                    "time":
+                        datetime.now().isoformat(),
+
+                    "error_type":
+                        type(
+                            e
+                        ).__name__,
+
+                    "error":
+                        str(
+                            e
+                        ),
+
+                    "traceback":
+                        error_text,
+                }
+            )
+
+        except Exception:
+
+            pass
+
+        send_error_mail(
+            type(
+                e
+            ).__name__,
+            error_text,
+        )
+
+        print(
+            error_text,
+            file=sys.stderr
+        )
+
+        sys.exit(
+            1
+        )
+
