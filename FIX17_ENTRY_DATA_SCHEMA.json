@@ -1,0 +1,116 @@
+{
+  "github_head": "4ca98f5",
+  "trade_master": {
+    "id": "1WZAUjmhzqfhLfObLQy_t66VbthEIMj98",
+    "name": "CAP200_ORIGINAL_867_trade_master.parquet",
+    "rows": 867,
+    "columns": [
+      "TradeID",
+      "Side",
+      "Code",
+      "EntryDatetime",
+      "EntryPrice",
+      "ExitDatetime",
+      "ReturnPct"
+    ],
+    "sample": [
+      {
+        "TradeID": "CAP200_000001",
+        "Side": "SHORT",
+        "Code": "58440",
+        "EntryDatetime": "2024-09-02 09:16:00",
+        "EntryPrice": 2293.5,
+        "ExitDatetime": "2024-09-03 09:02:00",
+        "ReturnPct": -1.477832512315258
+      },
+      {
+        "TradeID": "CAP200_000002",
+        "Side": "LONG",
+        "Code": "48940",
+        "EntryDatetime": "2024-09-02 09:17:00",
+        "EntryPrice": 8350.0,
+        "ExitDatetime": "2024-09-02 10:07:00",
+        "ReturnPct": -2.500000000000002
+      },
+      {
+        "TradeID": "CAP200_000003",
+        "Side": "LONG",
+        "Code": "72400",
+        "EntryDatetime": "2024-09-02 10:23:00",
+        "EntryPrice": 2449.0,
+        "ExitDatetime": "2024-09-05 09:00:00",
+        "ReturnPct": -3.266639444671293
+      }
+    ]
+  },
+  "events_by_date": {
+    "id": "1wKmommitNwE8esQZbyxt9z2zvLuVHR2D",
+    "name": "CAP200_ORIGINAL_867_events_by_date.pkl",
+    "type": "dict",
+    "key_count": 372,
+    "first_key": "2024-09-02 00:00:00",
+    "first_value_type": "list",
+    "first_event_keys": [
+      "TradeID",
+      "Side",
+      "Event",
+      "Datetime",
+      "Priority",
+      "ReturnPct"
+    ],
+    "first_event": {
+      "TradeID": "CAP200_000001",
+      "Side": "SHORT",
+      "Event": "ENTRY",
+      "Datetime": "2024-09-02 09:16:00",
+      "Priority": "1",
+      "ReturnPct": "nan"
+    }
+  },
+  "target_presence": {
+    "RS20_corrected": {
+      "trade_master": false,
+      "events_by_date": false
+    },
+    "RVOL20": {
+      "trade_master": false,
+      "events_by_date": false
+    },
+    "turnover_median_20d_oku": {
+      "trade_master": false,
+      "events_by_date": false
+    },
+    "ORB15_LongSignal": {
+      "trade_master": false,
+      "events_by_date": false
+    },
+    "ORB15_ShortSignal": {
+      "trade_master": false,
+      "events_by_date": false
+    },
+    "CrossPass_EXACT": {
+      "trade_master": false,
+      "events_by_date": false
+    },
+    "EntryPriceFormal": {
+      "trade_master": false,
+      "events_by_date": false
+    },
+    "FormalEntryPrice": {
+      "trade_master": false,
+      "events_by_date": false
+    },
+    "EntryDatetime": {
+      "trade_master": true,
+      "events_by_date": false
+    },
+    "Code": {
+      "trade_master": true,
+      "events_by_date": false
+    },
+    "Side": {
+      "trade_master": true,
+      "events_by_date": true
+    }
+  }
+}
