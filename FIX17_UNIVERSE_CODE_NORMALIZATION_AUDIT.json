@@ -1,0 +1,36 @@
+{
+  "github_head_before": "676743d",
+  "input_count": 4772,
+  "output_count": 4772,
+  "four_char_count": 4764,
+  "five_char_count": 8,
+  "five_char_codes": [
+    "21649",
+    "25935",
+    "50765",
+    "75505",
+    "92015",
+    "92025",
+    "94345",
+    "94346"
+  ],
+  "invalid_count": 0,
+  "normalization_rule": {
+    "trailing_zero_5char": "drop final zero",
+    "nonzero_5digit": "preserve as preferred/classified issue"
+  },
+  "examples": {
+    "13010": "1301",
+    "130A0": "130A",
+    "72030": "7203",
+    "99840": "9984",
+    "21649": "21649",
+    "25935": "25935",
+    "50765": "50765",
+    "75505": "75505",
+    "92015": "92015",
+    "92025": "92025",
+    "94345": "94345",
+    "94346": "94346"
+  }
+}

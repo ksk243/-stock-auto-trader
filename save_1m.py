@@ -22,6 +22,7 @@ import os
 import sys
 import json
 import traceback
+import re
 from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -113,24 +114,66 @@ def normalize_code(
 
     s = str(
         value
-    ).strip()
-
-    if s.endswith(
-        ".0"
-    ):
-        s = s[:-2]
+    ).strip().upper()
 
     if s.endswith(
         ".T"
     ):
         s = s[:-2]
 
+    if s.endswith(
+        ".0"
+    ):
+        s = s[:-2]
+
+    # JPX/J-Quants:
+    #
+    # 通常銘柄:
+    #   72030 -> 7203
+    #   130A0 -> 130A
+    #
+    # 優先株・種類株:
+    #   25935 -> 25935
+    #   94346 -> 94346
+    #
+    # 末尾0だけpaddingとして除去する。
+    if (
+        len(s) == 5
+        and
+        s.endswith("0")
+    ):
+        s = s[:-1]
+
     if not s:
         raise RuntimeError(
             "空の銘柄コードがあります"
         )
 
+    valid_4 = bool(
+        re.fullmatch(
+            r"[0-9A-Z]{4}",
+            s,
+        )
+    )
+
+    valid_5 = bool(
+        re.fullmatch(
+            r"[0-9]{5}",
+            s,
+        )
+    )
+
+    if not (
+        valid_4
+        or valid_5
+    ):
+
+        raise RuntimeError(
+            f"銘柄コード形式不正: {s}"
+        )
+
     return s
+
 
 
 # ============================================================
