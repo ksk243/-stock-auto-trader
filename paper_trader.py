@@ -544,193 +544,85 @@ if not result[
 
 
 def check_official_engine():
+    """
+    FIX17 official source static integrity audit.
 
-    # FIX17_GITHUB_COLAB_STUB_V1
-    import tempfile as _fix17_tempfile
-    import os as _fix17_os
-    from pathlib import Path as _Fix17Path
-    _fix17_stub_root = _Fix17Path(_fix17_tempfile.gettempdir()) / "fix17_colab_stub"
-    _fix17_google = _fix17_stub_root / "google"
-    _fix17_colab = _fix17_google / "colab"
-    _fix17_colab.mkdir(parents=True, exist_ok=True)
-    (_fix17_colab / "__init__.py").write_text("class _Auth:\n    @staticmethod\n    def authenticate_user(*args, **kwargs):\n        return None\nauth = _Auth()\n", encoding="utf-8")
-    _fix17_old_pythonpath = _fix17_os.environ.get("PYTHONPATH", "")
-    _fix17_stub_path = str(_fix17_stub_root)
-    _fix17_os.environ["PYTHONPATH"] = _fix17_stub_path + (_fix17_os.pathsep + _fix17_old_pythonpath if _fix17_old_pythonpath else "")
-    RUNTIME_DIR.mkdir(
-        parents=True,
-        exist_ok=True
+    Daily GitHub Actionsではofficial sourceをrunpy実行しない。
+    Official sourceはColab/Drive復元処理を含むため、
+    SHA・compile・AST・FIX17 sizing ruleのみを検証する。
+    """
+
+    official_path = REPO_DIR / "FIX17_OFFICIAL_FULL_SOURCE.py"
+
+    if not official_path.exists():
+        raise RuntimeError(
+            "FIX17_OFFICIAL_FULL_SOURCE.py がありません"
+        )
+
+    expected_sha = (
+        "9598156080b81445e5754c7b0f561389"
+        "00862e8fd7f35ac89960491bec7222c4"
     )
 
+    import hashlib
+    import ast
+    import py_compile
 
-    with tempfile.TemporaryDirectory() as td:
+    h = hashlib.sha256()
 
-        td = Path(
-            td
-        )
-
-        runner = (
-            td
-            / "runner.py"
-        )
-
-        result_path = (
-            td
-            / "result.json"
-        )
-
-        log_path = (
-            td
-            / "runtime.log"
-        )
-
-
-        runner.write_text(
-            ENGINE_AUDIT_SCRIPT,
-            encoding="utf-8"
-        )
-
-
-        p = subprocess.run(
-            [
-                sys.executable,
-                str(
-                    runner
-                ),
-                str(
-                    OFFICIAL_FILE
-                ),
-                str(
-                    result_path
-                ),
-                str(
-                    log_path
-                ),
-            ],
-            text=True,
-            capture_output=True,
-            timeout=3600,
-        )
-
-
-        if not result_path.exists():
-
-            raise RuntimeError(
-                "FIX17 engine audit結果が作成されませんでした。\n"
-                + (
-                    p.stderr
-                    or ""
-                )
-            )
-
-
-        with result_path.open(
-            "r",
-            encoding="utf-8"
-        ) as f:
-
-            result = json.load(
-                f
-            )
-
-
-        if not result.get(
-            "success"
+    with open(official_path, "rb") as f:
+        for chunk in iter(
+            lambda: f.read(1024 * 1024),
+            b"",
         ):
+            h.update(chunk)
 
-            err = result.get(
-                "error",
-                {}
-            )
+    actual_sha = h.hexdigest()
 
-            raise RuntimeError(
-                "FIX17 engine load失敗\n"
-                + err.get(
-                    "traceback",
-                    ""
-                )
-            )
-
-
-    functions = set(
-        result.get(
-            "functions",
-            []
+    if actual_sha != expected_sha:
+        raise RuntimeError(
+            "FIX17 official SHA mismatch"
         )
+
+    source = official_path.read_text(
+        encoding="utf-8"
     )
 
+    ast.parse(source)
 
-    missing = [
-        name
-        for name
-        in REQUIRED_FUNCTIONS
-        if name not in functions
-    ]
-
-
-    if missing:
-
-        raise RuntimeError(
-            "FIX17必須関数不足:\n"
-            + "\n".join(
-                missing
-            )
-        )
-
-
-    # 正式監査結果は26関数・0クラス
-    if len(
-        functions
-    ) != 26:
-
-        raise RuntimeError(
-            "FIX17 runtime function数が正式監査値と不一致\n"
-            f"actual={len(functions)}\n"
-            "expected=26"
-        )
-
-
-    classes = result.get(
-        "classes",
-        []
+    py_compile.compile(
+        str(official_path),
+        doraise=True,
     )
 
-
-    if len(
-        classes
-    ) != 0:
-
-        raise RuntimeError(
-            "FIX17 runtime class数が正式監査値と不一致\n"
-            f"actual={len(classes)}\n"
-            "expected=0"
-        )
-
-
-    save_json(
-        ENGINE_CHECK_FILE,
-        {
-            "checked_at": datetime.now().isoformat(),
-            "official_sha256": OFFICIAL_SHA256,
-            "function_count": len(
-                functions
-            ),
-            "functions": sorted(
-                functions
-            ),
-            "class_count": len(
-                classes
-            ),
-            "classes": classes,
-            "scalars": result.get(
-                "scalars",
-                {}
-            ),
-        }
+    new_rule_count = source.count(
+        "target_notional = long_remaining_capacity"
     )
 
+    old_rule_count = source.count(
+        "target_notional = min(LONG_CAP_PER_STOCK, long_remaining_capacity)"
+    )
 
-    return result
+    if new_rule_count != 1:
+        raise RuntimeError(
+            f"FIX17 sizing rule count異常: {new_rule_count}"
+        )
+
+    if old_rule_count != 0:
+        raise RuntimeError(
+            "旧FIX16 sizing ruleが残っています"
+        )
+
+    return {
+        "status": "PASS",
+        "mode": "STATIC_OFFICIAL_AUDIT",
+        "sha256": actual_sha,
+        "compile": True,
+        "new_sizing_rule_count": new_rule_count,
+        "old_sizing_rule_count": old_rule_count,
+    }
+
+
 
 
 # ============================================================
