@@ -1,0 +1,130 @@
+{
+  "version": "FIX17",
+  "status": "PROVEN_FROM_RECOVERED_OFFICIAL_ARTIFACTS",
+  "important_note": "Unknown upstream generator source was not recovered. Do not invent missing logic.",
+  "official_fix17": {
+    "file": "FIX17_OFFICIAL_FULL_SOURCE.py",
+    "drive_id": "1vEUHcDrW7Bi-JUiKzu9C5n_AexKKPMji",
+    "sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4",
+    "parent_version": "FIX16",
+    "fix17_change_only": {
+      "fix16": "target_notional = min(LONG_CAP_PER_STOCK, long_remaining_capacity)",
+      "fix17": "target_notional = long_remaining_capacity"
+    }
+  },
+  "runtime_input_contract": {
+    "required_globals": [
+      "trade_master_fix6",
+      "events_by_date",
+      "sim_dates",
+      "daily_stock",
+      "d1557_fix",
+      "open_map",
+      "close_map",
+      "quote_dates",
+      "START_DATE",
+      "END_DATE"
+    ],
+    "entry_flow": [
+      "events_by_date",
+      "entry_events",
+      "entry_meta_df",
+      "entry_meta",
+      "ENTRY processing",
+      "broker_active"
+    ],
+    "entry_meta_join_key": "TradeID",
+    "entry_meta_sources": {
+      "event_side_datetime": "events_by_date -> entry_events",
+      "code_entryprice": "trade_master_fix6"
+    }
+  },
+  "official_recovered_inputs": {
+    "trade_master_fix6": {
+      "file": "CAP200_ORIGINAL_867_trade_master.parquet",
+      "drive_id": "1WZAUjmhzqfhLfObLQy_t66VbthEIMj98",
+      "rows": 867,
+      "long": 625,
+      "short": 242
+    },
+    "events_by_date": {
+      "file": "CAP200_ORIGINAL_867_events_by_date.pkl",
+      "drive_id": "1wKmommitNwE8esQZbyxt9z2zvLuVHR2D",
+      "entry_events": 867,
+      "exit_events": 865
+    },
+    "long_formal": {
+      "file": "LONG_FORMAL_EXIT_7822_EXACT.parquet",
+      "drive_id": "137TAIITPYbow0x2qNhTdRdAUFhZuWiv_",
+      "rows": 7822
+    },
+    "short_formal": {
+      "file": "SHORT_FORMAL_STATE_5409_EXACT.parquet",
+      "drive_id": "1hfYpTSJRN8hgUp-iZaNowrcmjCvTYj-a",
+      "rows": 5409
+    }
+  },
+  "long_entry_candidate_contract": {
+    "status": "PROVEN_EFFECTIVE_FILTER_ON_FORMAL_DATA",
+    "conditions": {
+      "RS20_corrected": ">= 80",
+      "RVOL20": ">= 2",
+      "turnover_median_20d_oku": ">= 3",
+      "ORB15_LongSignal": true,
+      "CrossPass_EXACT": true,
+      "BacktestReady": true
+    },
+    "formal_dataset_check": {
+      "rows": 7822,
+      "all_rows_pass": true,
+      "rs_min": 80.0,
+      "rvol_min": 2.0,
+      "turnover_min_greater_equal_3": true,
+      "formal_entry_price_present_all_rows": true
+    },
+    "important_limitation": "This proves the effective surviving formal dataset. The original upstream generator source itself was not recovered."
+  },
+  "short_entry_candidate_contract": {
+    "status": "PROVEN_EFFECTIVE_FILTER_ON_FORMAL_DATA",
+    "conditions": {
+      "RS20_corrected": "<= 20 EFFECTIVE BOUND",
+      "RVOL20": ">= 2",
+      "turnover_median_20d_oku": ">= 3",
+      "ORB15_ShortSignal": true,
+      "is_lending": true,
+      "_entered": true
+    },
+    "formal_dataset_check": {
+      "rows": 5409,
+      "all_rows_pass": true,
+      "rs_max": 20.0,
+      "rvol_min": 2.0,
+      "turnover_min_greater_equal_3": true
+    },
+    "crosspass": {
+      "status": "NOT_PROVEN",
+      "reason": "SHORT_FORMAL_STATE_5409_EXACT.parquet does not contain CrossPass_EXACT.",
+      "rule": "DO_NOT INVENT SHORT CrossPass LOGIC"
+    },
+    "important_limitation": "RS<=20 is proven as the effective surviving formal-data bound. Exact original source predicate syntax was not recovered."
+  },
+  "upstream_generator_provenance": {
+    "status": "NOT_RECOVERED",
+    "searched_official_checkpoint": "FIX11_RESEARCH_MASTER_CHECKPOINT",
+    "checkpoint_folder_id": "1bcU29Jcs5H78mAPaUyJnTXChTdsBfAJM",
+    "checkpoint_python_files": [
+      "FIX11_RESEARCH_MASTER_ONE_CELL_RECOVERY_LOADER.py",
+      "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py"
+    ],
+    "result": "Neither file generates trade_master_fix6 or events_by_date. Both consume already-created artifacts.",
+    "readme_manifest_result": "No upstream generator source ID, producer file, or parent folder was recorded.",
+    "decision": "STOP_UPSTREAM_SEARCH"
+  },
+  "live_implementation_rules": [
+    "Do not rebuild missing upstream logic by guesswork.",
+    "Do not claim SHORT CrossPass semantics are proven.",
+    "Preserve official FIX17 position sizing change exactly.",
+    "Keep candidate generation separate from broker/position management.",
+    "Validate any reconstructed live candidate generator against the recovered formal datasets before production use."
+  ]
+}

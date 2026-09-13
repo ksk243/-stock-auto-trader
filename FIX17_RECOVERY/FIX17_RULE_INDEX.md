@@ -1,0 +1,499 @@
+# FIX17 RULE INDEX
+
+Known-good runtime commit: `dfba056f1e8a86d7f6ee7b9507f16830d9dfaeda`
+
+FIX17の売買条件を変更するときは、まずこの索引を見る。
+
+過去Drive/FIX11探索を先に行わない。
+
+## RS20
+
+- `.github/workflows/fix11_paper_trader.py:29` `#   RS20 >= 80`
+- `.github/workflows/fix11_paper_trader.py:43` `#   RS20 <= 20`
+- `.github/workflows/fix11_paper_trader.py:1277` `f["RS20"] = np.nan`
+- `.github/workflows/fix11_paper_trader.py:1287` `valid["RS20"] = (`
+- `.github/workflows/fix11_paper_trader.py:1313` `"RS20",`
+- `.github/workflows/fix11_paper_trader.py:1609` `rs20 = safe_float(`
+- `.github/workflows/fix11_paper_trader.py:1611` `feature.get("RS20")`
+- `.github/workflows/fix11_paper_trader.py:1625` `if not np.isfinite(rs20):`
+- `.github/workflows/fix11_paper_trader.py:1725` `rs20 >= RS_LONG_MIN`
+- `.github/workflows/fix11_paper_trader.py:1763` `"RS20":`
+- `.github/workflows/fix11_paper_trader.py:1765` `rs20,`
+- `.github/workflows/fix11_paper_trader.py:1807` `rs20 <= RS_SHORT_MAX`
+- `.github/workflows/fix11_paper_trader.py:1845` `"RS20":`
+- `.github/workflows/fix11_paper_trader.py:1847` `rs20,`
+- `.github/workflows/fix11_paper_trader.py:1985` `"RS20",`
+- `.github/workflows/fix11_paper_trader.py:2017` `"RS20",`
+- `.github/workflows/fix11_paper_trader.py:2379` `"RS20":`
+- `.github/workflows/fix11_paper_trader.py:2381` `candidate["RS20"],`
+- `.github/workflows/fix11_paper_trader.py:2749` `"RS20":`
+- `.github/workflows/fix11_paper_trader.py:2753` `"RS20"`
+- `.github/workflows/fix11_paper_trader.py:2867` `"RS20":`
+- `.github/workflows/fix11_paper_trader.py:2871` `"RS20"`
+- `fix17_contract.py:23` `"RS20_corrected": ">= 80",`
+- `fix17_contract.py:33` `"RS20_corrected":`
+- `fix17_long_candidate_bridge.py:212` `"RS20"`
+- `fix17_long_candidate_bridge.py:295` `"RS20_corrected":`
+- `paper_trader.py:1544` `'RS20_corrected',`
+- `paper_trader.py:1587` `rs20 = float(`
+- `paper_trader.py:1589` `"RS20_corrected"`
+- `paper_trader.py:1616` `"RS20_corrected":`
+- `paper_trader.py:1617` `rs20,`
+- `paper_trader.py:1695` `if rs20 < 80.0:`
+- `paper_trader.py:1699` `f"RS20_corrected={rs20} < 80"`
+- `paper_trader.py:1771` `if rs20 > 20.0:`
+- `paper_trader.py:1775` `f"RS20_corrected={rs20} > 20"`
+- `paper_trader.py:1879` `"RS20_corrected":`
+- `paper_trader.py:1880` `rs20,`
+
+## RVOL20
+
+- `.github/workflows/fix11_paper_trader.py:33` `#   RVOL20 >= 2.0`
+- `.github/workflows/fix11_paper_trader.py:47` `#   RVOL20 >= 2.0`
+- `.github/workflows/fix11_paper_trader.py:1329` `# RVOL20 HISTORY`
+- `.github/workflows/fix11_paper_trader.py:1383` `def calc_rvol20(`
+- `.github/workflows/fix11_paper_trader.py:1683` `rvol, prev_days = calc_rvol20(`
+- `.github/workflows/fix11_paper_trader.py:1767` `"RVOL20":`
+- `.github/workflows/fix11_paper_trader.py:1849` `"RVOL20":`
+- `.github/workflows/fix11_paper_trader.py:1987` `"RVOL20",`
+- `.github/workflows/fix11_paper_trader.py:2019` `"RVOL20",`
+- `.github/workflows/fix11_paper_trader.py:2383` `"RVOL20":`
+- `.github/workflows/fix11_paper_trader.py:2385` `candidate["RVOL20"],`
+- `.github/workflows/fix11_paper_trader.py:2743` `"NOT_READY_RVOL20",`
+- `.github/workflows/fix11_paper_trader.py:2875` `"RVOL20":`
+- `.github/workflows/fix11_paper_trader.py:2879` `"RVOL20"`
+- `.github/workflows/fix11_paper_trader.py:3051` `f"RVOL20 not ready: "`
+- `fix17_contract.py:24` `"RVOL20": ">= 2",`
+- `fix17_contract.py:36` `"RVOL20":`
+- `fix17_long_candidate_bridge.py:55` `"calc_rvol20",`
+- `fix17_long_candidate_bridge.py:216` `"RVOL20"`
+- `fix17_long_candidate_bridge.py:298` `"RVOL20":`
+- `paper_trader.py:1545` `'RVOL20',`
+- `paper_trader.py:1593` `rvol20 = float(`
+- `paper_trader.py:1595` `"RVOL20"`
+- `paper_trader.py:1619` `"RVOL20":`
+- `paper_trader.py:1620` `rvol20,`
+- `paper_trader.py:1654` `if rvol20 < 2.0:`
+- `paper_trader.py:1658` `f"RVOL20={rvol20} < 2"`
+- `paper_trader.py:1882` `"RVOL20":`
+- `paper_trader.py:1883` `rvol20,`
+
+## TURNOVER
+
+- `.github/workflows/fix11_paper_trader.py:1245` `"turnover_median_20d_oku":`
+- `.github/workflows/fix11_paper_trader.py:1619` `"turnover_median_20d_oku"`
+- `.github/workflows/fix11_paper_trader.py:1771` `"Turnover20Oku":`
+- `.github/workflows/fix11_paper_trader.py:1853` `"Turnover20Oku":`
+- `.github/workflows/fix11_paper_trader.py:1989` `"Turnover20Oku",`
+- `.github/workflows/fix11_paper_trader.py:2021` `"Turnover20Oku",`
+- `.github/workflows/fix11_paper_trader.py:2387` `"Turnover20Oku":`
+- `.github/workflows/fix11_paper_trader.py:2391` `"Turnover20Oku"`
+- `.github/workflows/fix11_paper_trader.py:2757` `"Turnover20Oku":`
+- `.github/workflows/fix11_paper_trader.py:2761` `"turnover_median_20d_oku"`
+- `.github/workflows/fix11_paper_trader.py:2883` `"Turnover20Oku":`
+- `.github/workflows/fix11_paper_trader.py:2887` `"Turnover20Oku"`
+- `fix17_contract.py:25` `"turnover_median_20d_oku": ">= 3",`
+- `fix17_contract.py:39` `"turnover_median_20d_oku":`
+- `fix17_long_candidate_bridge.py:220` `"Turnover20Oku"`
+- `fix17_long_candidate_bridge.py:301` `"turnover_median_20d_oku":`
+- `paper_trader.py:1546` `'turnover_median_20d_oku',`
+- `paper_trader.py:1601` `"turnover_median_20d_oku"`
+- `paper_trader.py:1622` `"turnover_median_20d_oku":`
+- `paper_trader.py:1665` `"turnover_median_20d_oku="`
+- `paper_trader.py:1885` `"turnover_median_20d_oku":`
+
+## ORB15
+
+- `.github/workflows/fix11_paper_trader.py:21` `#   ORB15 = 09:00-09:14`
+- `.github/workflows/fix11_paper_trader.py:35` `#   PrevClose <= ORB15 High`
+- `.github/workflows/fix11_paper_trader.py:37` `#   CurrentClose > ORB15 High`
+- `.github/workflows/fix11_paper_trader.py:49` `#   PrevClose >= ORB15 Low`
+- `.github/workflows/fix11_paper_trader.py:51` `#   CurrentClose < ORB15 Low`
+- `.github/workflows/fix11_paper_trader.py:1587` `orb_high = float(`
+- `.github/workflows/fix11_paper_trader.py:1593` `orb_low = float(`
+- `.github/workflows/fix11_paper_trader.py:1711` `orb_high`
+- `.github/workflows/fix11_paper_trader.py:1719` `orb_high`
+- `.github/workflows/fix11_paper_trader.py:1757` `orb_high,`
+- `.github/workflows/fix11_paper_trader.py:1761` `orb_low,`
+- `.github/workflows/fix11_paper_trader.py:1793` `orb_low`
+- `.github/workflows/fix11_paper_trader.py:1801` `orb_low`
+- `.github/workflows/fix11_paper_trader.py:1839` `orb_high,`
+- `.github/workflows/fix11_paper_trader.py:1843` `orb_low,`
+- `fix17_contract.py:26` `"ORB15_LongSignal": True,`
+- `fix17_contract.py:42` `"ORB15_ShortSignal":`
+- `fix17_long_candidate_bridge.py:304` `"ORB15_LongSignal":`
+- `paper_trader.py:1676` `"ORB15_LongSignal",`
+- `paper_trader.py:1704` `"ORB15_LongSignal"`
+- `paper_trader.py:1711` `"ORB15_LongSignal != True"`
+- `paper_trader.py:1751` `"ORB15_ShortSignal",`
+- `paper_trader.py:1780` `"ORB15_ShortSignal"`
+- `paper_trader.py:1787` `"ORB15_ShortSignal != True"`
+
+## CROSS
+
+- `fix17_contract.py:27` `"CrossPass_EXACT": True,`
+- `fix17_long_candidate_bridge.py:307` `"CrossPass_EXACT":`
+- `paper_trader.py:1677` `"CrossPass_EXACT",`
+- `paper_trader.py:1716` `"CrossPass_EXACT"`
+- `paper_trader.py:1723` `"CrossPass_EXACT != True"`
+- `paper_trader.py:1817` `# SHORT CrossPass_EXACT is not proven.`
+
+## LONG_ENTRY
+
+- `.github/workflows/fix11_paper_trader.py:1547` `def find_first_signal(`
+- `.github/workflows/fix11_paper_trader.py:2769` `sig = find_first_signal(`
+- `fix17_long_candidate_bridge.py:56` `"find_first_signal",`
+- `fix17_long_candidate_bridge.py:245` `# find_first_signal() only returns LONG after`
+- `fix17_long_candidate_bridge.py:340` `def generate_fix17_long_candidates(`
+- `fix17_long_candidate_bridge.py:363` `find_first_signal = ns[`
+- `fix17_long_candidate_bridge.py:364` `"find_first_signal"`
+- `fix17_long_candidate_bridge.py:384` `signal = find_first_signal(`
+- `paper_trader.py:2453` `Existing audited FIX11 find_first_signal()`
+- `paper_trader.py:2548` `find_first_signal = ns.get(`
+- `paper_trader.py:2549` `"find_first_signal"`
+- `paper_trader.py:2552` `if find_first_signal is None:`
+- `paper_trader.py:2554` `"find_first_signal missing"`
+- `paper_trader.py:2887` `signal = find_first_signal(`
+- `paper_trader.py:2896` `signal = find_first_signal(`
+- `paper_trader.py:2942` `def generate_fix17_long_live_candidates():`
+- `paper_trader.py:3012` `Existing FIX11 find_first_signal / choose_candidate.`
+- `paper_trader.py:3097` `find_first_signal = ns.get(`
+- `paper_trader.py:3098` `"find_first_signal"`
+- `paper_trader.py:3106` `if find_first_signal is None:`
+- `paper_trader.py:3108` `"FIX11 find_first_signal missing"`
+- `paper_trader.py:3130` `signal = find_first_signal(`
+- `paper_trader.py:3138` `signal = find_first_signal(`
+- `paper_trader.py:3868` `module.generate_fix17_long_candidates`
+
+## SHORT_ENTRY
+
+- `.github/workflows/fix11_paper_trader.py:41` `# SHORT:`
+- `.github/workflows/fix11_paper_trader.py:65` `#   SHORT 最大1`
+- `.github/workflows/fix11_paper_trader.py:73` `#   SHORT leverage 0.50`
+- `.github/workflows/fix11_paper_trader.py:95` `#   SHORT`
+- `.github/workflows/fix11_paper_trader.py:153` `SHORT_LEVERAGE = 0.50`
+- `.github/workflows/fix11_paper_trader.py:175` `SHORT_SL = 0.015`
+- `.github/workflows/fix11_paper_trader.py:177` `SHORT_TRAIL_TRIGGER = 0.020`
+- `.github/workflows/fix11_paper_trader.py:179` `SHORT_TRAIL_WIDTH = 0.020`
+- `.github/workflows/fix11_paper_trader.py:189` `RS_SHORT_MAX = 20.0`
+- `.github/workflows/fix11_paper_trader.py:505` `"SHORT": None,`
+- `.github/workflows/fix11_paper_trader.py:515` `"SHORT": None,`
+- `.github/workflows/fix11_paper_trader.py:1783` `# SHORT`
+- `.github/workflows/fix11_paper_trader.py:1787` `short_break = (`
+- `.github/workflows/fix11_paper_trader.py:1807` `rs20 <= RS_SHORT_MAX`
+- `.github/workflows/fix11_paper_trader.py:1815` `short_break`
+- `.github/workflows/fix11_paper_trader.py:1823` `"SHORT",`
+- `.github/workflows/fix11_paper_trader.py:2137` `"SHORT"`
+- `.github/workflows/fix11_paper_trader.py:2263` `SHORT_LEVERAGE`
+- `.github/workflows/fix11_paper_trader.py:2923` `"SHORT"`
+- `.github/workflows/fix11_paper_trader.py:3071` `"SHORT"`
+- `FIX11_ENTRY_SOURCE_EXACT.py:151` `SHORT_LEVERAGE = 0.50`
+- `FIX11_ENTRY_SOURCE_EXACT.py:251` `SHORT_LENDING_ANNUAL = 0.0110`
+- `FIX11_ENTRY_SOURCE_EXACT.py:663` `elif side == "SHORT":`
+- `FIX11_ENTRY_SOURCE_EXACT.py:679` `"SHORT denominator <= 0"`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1439` `short_notional = 0.0`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1443` `short_unrealized = 0.0`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1613` `short_notional += (`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1619` `short_unrealized += (`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1631` `"ShortNotional":`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1633` `short_notional,`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1643` `short_notional`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1651` `"ShortUnrealized":`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1653` `short_unrealized,`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1663` `short_unrealized`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2115` `cum_short_fee = 0.0`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2127` `short_n = 0.0`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2145` `short_n += float(`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2159` `short_n`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2275` `short_fee_today = 0.0`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2339` `SHORT_LENDING_ANNUAL`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2351` `short_fee_today += (`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2363` `short_fee_today`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2385` `cum_short_fee += (`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2387` `short_fee_today`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2573` `long_n, short_n = (`
+- `FIX11_ENTRY_SOURCE_EXACT.py:2585` `short_n`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3211` `SHORT_LEVERAGE`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3279` `# SHORT:`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3507` `# SHORTは元FIX11そのまま`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3997` `short_notional = 0.0`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4001` `short_unrealized = 0.0`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4129` `short_notional += (`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4135` `short_unrealized += (`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4147` `short_notional`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4157` `short_unrealized`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4309` `"ShortFeeToday":`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4311` `short_fee_today,`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4321` `"CumShortFee":`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4323` `cum_short_fee,`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4333` `cum_short_fee`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4341` `"ShortNotional":`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4343` `short_notional,`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4353` `"ShortUnrealized":`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4355` `short_unrealized,`
+- `FIX11_ENTRY_SOURCE_EXACT.py:5293` `"SHORT lending:",`
+- `FIX11_ENTRY_SOURCE_EXACT.py:5295` `f"{last['CumShortFee']:,.2f}"`
+- `FIX11_ENTRY_SOURCE_EXACT.py:6509` `"ShortLendingTotal":`
+- `FIX11_ENTRY_SOURCE_EXACT.py:6515` `"CumShortFee"`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:57` `FIX16_TARGET_SHORT  = 233`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:103` `FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\n# FIX15 OFFICIAL STANDALONE\n#\n# Parent:\n#   FIX14_OFFICIAL_FULL_SOURCE.py\n#   File ID:\n#       1mBLtCf39ar4I60GuKLS_HWA`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1005` `_fix16_short = int(`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1010` `"SHORT"`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1054` `"SHORT":`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1055` `_fix16_short,`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1105` `_fix16_short`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1107` `FIX16_TARGET_SHORT,`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1162` `f"SHORT  : {_fix16_short}"`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1218` `cum_short_fee = 0.0`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1222` `short_n = 0.0`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1227` `short_n += float(p['ActualNotional'])`
+
+## RANKING
+
+- `.github/workflows/fix11_paper_trader.py:1933` `def choose_candidate(`
+- `.github/workflows/fix11_paper_trader.py:2935` `c = choose_candidate(`
+- `fix17_long_candidate_bridge.py:57` `"choose_candidate",`
+- `fix17_long_candidate_bridge.py:367` `choose_candidate = ns[`
+- `fix17_long_candidate_bridge.py:368` `"choose_candidate"`
+- `fix17_long_candidate_bridge.py:412` `selected = choose_candidate(`
+- `paper_trader.py:3012` `Existing FIX11 find_first_signal / choose_candidate.`
+- `paper_trader.py:3101` `choose_candidate = ns.get(`
+- `paper_trader.py:3102` `"choose_candidate"`
+- `paper_trader.py:3111` `if choose_candidate is None:`
+- `paper_trader.py:3113` `"FIX11 choose_candidate missing"`
+- `paper_trader.py:3230` `selected = choose_candidate(`
+- `paper_trader.py:3246` `"FIX11 choose_candidate signature mismatch"`
+
+## SIZING
+
+- `FIX11_ENTRY_SOURCE_EXACT.py:1205` `target_notional,`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1227` `target_notional <= 0`
+- `FIX11_ENTRY_SOURCE_EXACT.py:1243` `target_notional`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3341` `# target_notional=0 にして、`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3357` `target_notional = 0.0`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3477` `long_remaining_capacity = max(`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3495` `target_notional = min(`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3499` `long_remaining_capacity`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3511` `target_notional = (`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3525` `target_notional=`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3527` `target_notional,`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3645` `target_notional`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3651` `if target_notional > 0`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3741` `target_notional,`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3811` `target_notional`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3965` `target_notional,`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1199` `FIX17_LONG_TOTAL_LEVERAGE = 1.0`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1452` `target_notional = 0.0`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1466` `long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1467` `target_notional = long_remaining_capacity`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1469` `target_notional = broker_strategy_equity * leverage`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1470` `target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1476` `utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1484` `entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional':`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1491` `broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': `
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:711` `target_notional = 0.0`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:725` `long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:726` `target_notional = long_remaining_capacity`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:728` `target_notional = broker_strategy_equity * leverage`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:729` `target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:735` `utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:743` `entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional':`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:750` `broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': `
+- `FIX17_RUNTIME_EXTRACT.py:14` `FIX17_LONG_TOTAL_LEVERAGE = 1.0`
+- `FIX17_RUNTIME_EXTRACT.py:27` `# target_notional = long_remaining_capacity`
+- `FIX17_RUNTIME_EXTRACT.py:691` `target_notional = 0.0`
+- `FIX17_RUNTIME_EXTRACT.py:705` `long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)`
+- `FIX17_RUNTIME_EXTRACT.py:706` `target_notional = long_remaining_capacity`
+- `FIX17_RUNTIME_EXTRACT.py:708` `target_notional = broker_strategy_equity * leverage`
+- `FIX17_RUNTIME_EXTRACT.py:709` `target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)`
+- `FIX17_RUNTIME_EXTRACT.py:715` `utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan`
+- `FIX17_RUNTIME_EXTRACT.py:723` `entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional':`
+- `FIX17_RUNTIME_EXTRACT.py:730` `broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': `
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:852` `target_notional = 0.0`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:866` `long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:867` `target_notional = long_remaining_capacity`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:869` `target_notional = broker_strategy_equity * leverage`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:870` `target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:876` `utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:884` `entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional':`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:891` `broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': `
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1094` `def calc_target_qty(target_notional, entry_price):`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1096` `if target_notional <= 0 or one_lot <= 0:`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1098` `lots = int(np.floor(float(target_notional) / one_lot))`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1368` `target_notional = 0.0`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1382` `long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1383` `target_notional = min(LONG_CAP_PER_STOCK, long_remaining_capacity)`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1385` `target_notional = broker_strategy_equity * leverage`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1386` `target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1392` `utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1400` `entry_rows.append({'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'BrokerStrategyEquity': broker_strategy_equity, 'Leverage': leverage, 'TargetNotional':`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1407` `broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': `
+- `fix17_contract.py:54` `"target_notional = long_remaining_capacity"`
+- `fix17_long_candidate_bridge.py:184` `target_notional = long_remaining_capacity`
+- `fix17_long_candidate_bridge.py:335` `# target_notional is intentionally absent.`
+- `paper_trader.py:455` `"FIX17_LONG_TOTAL_LEVERAGE",`
+- `paper_trader.py:599` `"target_notional = long_remaining_capacity"`
+- `paper_trader.py:603` `"target_notional = min(LONG_CAP_PER_STOCK, long_remaining_capacity)"`
+- `paper_trader.py:708` `"target_notional = long_remaining_capacity"`
+- `paper_trader.py:712` `"target_notional = min("`
+- `paper_trader.py:714` `"long_remaining_capacity)"`
+- `paper_trader.py:941` `#       "target_notional": 500000.0`
+- `paper_trader.py:1581` `target_notional = float(`
+- `paper_trader.py:1583` `"target_notional"`
+- `paper_trader.py:1613` `"target_notional":`
+- `paper_trader.py:1614` `target_notional,`
+- `paper_trader.py:1643` `if target_notional <= 0:`
+- `paper_trader.py:1646` `f"target_notional不正: "`
+- `paper_trader.py:1647` `f"{target_notional}"`
+- `paper_trader.py:1876` `"target_notional":`
+
+## EXIT
+
+- `.github/workflows/fix11_paper_trader.py:87` `#     trail trigger +2.5%`
+- `.github/workflows/fix11_paper_trader.py:89` `#     trail width 1.0%`
+- `.github/workflows/fix11_paper_trader.py:99` `#     trail trigger +2.0%`
+- `.github/workflows/fix11_paper_trader.py:101` `#     trail width 2.0%`
+- `.github/workflows/fix11_paper_trader.py:169` `LONG_TRAIL_TRIGGER = 0.025`
+- `.github/workflows/fix11_paper_trader.py:171` `LONG_TRAIL_WIDTH = 0.010`
+- `.github/workflows/fix11_paper_trader.py:177` `SHORT_TRAIL_TRIGGER = 0.020`
+- `.github/workflows/fix11_paper_trader.py:179` `SHORT_TRAIL_WIDTH = 0.020`
+- `.github/workflows/fix11_paper_trader.py:2407` `"TrailActive":`
+- `.github/workflows/fix11_paper_trader.py:2415` `"PendingTrailStop":`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:327` `# 4. EXACT PASS-VALIDATED TRAILING FUNCTION`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:330` `def simulate_profit_floor_trail(`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:465` `"TrailExit":`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:498` `trail_component = (`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:508` `trail_component,`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:594` `"TrailExit":`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:654` `"TRAIL"`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:665` `"TrailExit":`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:686` `trail_component = (`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:696` `trail_component,`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:722` `"TrailExit":`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:737` `FIX16_TRAILING_EXIT_MAP = {}`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:741` `_r = simulate_profit_floor_trail(`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:751` `FIX16_TRAILING_EXIT_MAP[_tid] = {`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:764` `if len(FIX16_TRAILING_EXIT_MAP) != 474:`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:767` `"FIX16 trailing exits != 474"`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:826` `_tid in FIX16_TRAILING_EXIT_MAP`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:830` `FIX16_TRAILING_EXIT_MAP[`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:836` `FIX16_TRAILING_EXIT_MAP[`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:46` `# NAME   : simulate_profit_floor_trail`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:51` `def simulate_profit_floor_trail(`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:186` `"TrailExit":`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:219` `trail_component = (`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:229` `trail_component,`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:315` `"TrailExit":`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:375` `"TRAIL"`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:386` `"TrailExit":`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:407` `trail_component = (`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:417` `trail_component,`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:443` `"TrailExit":`
+- `FIX17_RUNTIME_EXTRACT.py:31` `# simulate_profit_floor_trail`
+- `FIX17_RUNTIME_EXTRACT.py:34` `def simulate_profit_floor_trail(`
+- `FIX17_RUNTIME_EXTRACT.py:169` `"TrailExit":`
+- `FIX17_RUNTIME_EXTRACT.py:202` `trail_component = (`
+- `FIX17_RUNTIME_EXTRACT.py:212` `trail_component,`
+- `FIX17_RUNTIME_EXTRACT.py:298` `"TrailExit":`
+- `FIX17_RUNTIME_EXTRACT.py:358` `"TRAIL"`
+- `FIX17_RUNTIME_EXTRACT.py:369` `"TrailExit":`
+- `FIX17_RUNTIME_EXTRACT.py:390` `trail_component = (`
+- `FIX17_RUNTIME_EXTRACT.py:400` `trail_component,`
+- `FIX17_RUNTIME_EXTRACT.py:426` `"TrailExit":`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:187` `# NAME   : simulate_profit_floor_trail`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:192` `def simulate_profit_floor_trail(`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:327` `"TrailExit":`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:360` `trail_component = (`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:370` `trail_component,`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:456` `"TrailExit":`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:516` `"TRAIL"`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:527` `"TrailExit":`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:548` `trail_component = (`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:558` `trail_component,`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:584` `"TrailExit":`
+- `paper_trader.py:80` `"simulate_profit_floor_trail",`
+- `paper_trader_before_contract_gate.py:78` `"simulate_profit_floor_trail",`
+- `paper_trader_before_entry_contract.py:79` `"simulate_profit_floor_trail",`
+
+## STATE
+
+- `.github/workflows/fix11_paper_trader.py:221` `STATE_FILE = DATA_DIR / "portfolio.json"`
+- `.github/workflows/fix11_paper_trader.py:475` `# PORTFOLIO STATE`
+- `.github/workflows/fix11_paper_trader.py:499` `"positions":`
+- `.github/workflows/fix11_paper_trader.py:2125` `positions = state[`
+- `.github/workflows/fix11_paper_trader.py:2127` `"positions"`
+- `.github/workflows/fix11_paper_trader.py:2141` `p = positions.get(`
+- `.github/workflows/fix11_paper_trader.py:2239` `"positions"`
+- `.github/workflows/fix11_paper_trader.py:2427` `"positions"`
+- `.github/workflows/fix11_paper_trader.py:2929` `"positions"`
+- `.github/workflows/fix11_paper_trader.py:3077` `"positions"`
+- `FIX11_ENTRY_SOURCE_EXACT.py:163` `def calc_long_dynamic_max_positions(`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3273` `#   Dynamic max positions`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3293` `current_long_positions = [`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3315` `current_long_positions`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3325` `long_allowed_positions = (`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3327` `calc_long_dynamic_max_positions(`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3353` `long_allowed_positions`
+- `FIX11_ENTRY_SOURCE_EXACT.py:3375` `for _p in current_long_positions:`
+- `FIX11_ENTRY_SOURCE_EXACT.py:4445` `"BrokerOpenPositions":`
+- `FIX11_ENTRY_SOURCE_EXACT.py:5255` `"Max missing positions:",`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:103` `FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\n# FIX15 OFFICIAL STANDALONE\n#\n# Parent:\n#   FIX14_OFFICIAL_FULL_SOURCE.py\n#   File ID:\n#       1mBLtCf39ar4I60GuKLS_HWA`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1448` `current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1449` `current_long_count = len(current_long_positions)`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1450` `long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1451` `if current_long_count >= long_allowed_positions:`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1455` `for _p in current_long_positions:`
+- `FIX17_OFFICIAL_FULL_SOURCE.py:1528` `daily_rows.append({'Date': date, 'ETF_Shares': etf_shares, 'ETF_Value': etf_value, 'BoughtETFToday': bought_etf_today, 'SoldETFToday': sold_etf_today, 'Cash': cash, 'CashNegative': cash < 0, 'FormalStrategyEquity': formal_equity, 'BrokerStrategyEquit`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:707` `current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:708` `current_long_count = len(current_long_positions)`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:709` `long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:710` `if current_long_count >= long_allowed_positions:`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:714` `for _p in current_long_positions:`
+- `FIX17_RUNTIME_ALL_FUNCTIONS.py:787` `daily_rows.append({'Date': date, 'ETF_Shares': etf_shares, 'ETF_Value': etf_value, 'BoughtETFToday': bought_etf_today, 'SoldETFToday': sold_etf_today, 'Cash': cash, 'CashNegative': cash < 0, 'FormalStrategyEquity': formal_equity, 'BrokerStrategyEquit`
+- `FIX17_RUNTIME_EXTRACT.py:687` `current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']`
+- `FIX17_RUNTIME_EXTRACT.py:688` `current_long_count = len(current_long_positions)`
+- `FIX17_RUNTIME_EXTRACT.py:689` `long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)`
+- `FIX17_RUNTIME_EXTRACT.py:690` `if current_long_count >= long_allowed_positions:`
+- `FIX17_RUNTIME_EXTRACT.py:694` `for _p in current_long_positions:`
+- `FIX17_RUNTIME_EXTRACT.py:767` `daily_rows.append({'Date': date, 'ETF_Shares': etf_shares, 'ETF_Value': etf_value, 'BoughtETFToday': bought_etf_today, 'SoldETFToday': sold_etf_today, 'Cash': cash, 'CashNegative': cash < 0, 'FormalStrategyEquity': formal_equity, 'BrokerStrategyEquit`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:848` `current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:849` `current_long_count = len(current_long_positions)`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:850` `long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:851` `if current_long_count >= long_allowed_positions:`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:855` `for _p in current_long_positions:`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:928` `daily_rows.append({'Date': date, 'ETF_Shares': etf_shares, 'ETF_Value': etf_value, 'BoughtETFToday': bought_etf_today, 'SoldETFToday': sold_etf_today, 'Cash': cash, 'CashNegative': cash < 0, 'FormalStrategyEquity': formal_equity, 'BrokerStrategyEquit`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1002` `# NAME   : calc_long_dynamic_max_positions`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1007` `def calc_long_dynamic_max_positions(equity):`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1364` `current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1365` `current_long_count = len(current_long_positions)`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1366` `long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1367` `if current_long_count >= long_allowed_positions:`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1371` `for _p in current_long_positions:`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1444` `daily_rows.append({'Date': date, 'ETF_Shares': etf_shares, 'ETF_Value': etf_value, 'BoughtETFToday': bought_etf_today, 'SoldETFToday': sold_etf_today, 'Cash': cash, 'CashNegative': cash < 0, 'FormalStrategyEquity': formal_equity, 'BrokerStrategyEquit`
+- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:1494` `v = _fix13_first_value(e, ['Side', 'side', 'PositionSide', 'position_side'])`
+- `paper_state_store.py:15` `/ "paper_state.json"`
+- `paper_state_store.py:20` `"paper_state.json"`
+- `paper_state_store.py:77` `"paper_state.json が生成されていません"`
+- `paper_trader.py:63` `/ "paper_state.json"`
+- `paper_trader.py:82` `"calc_long_dynamic_max_positions",`
+- `paper_trader.py:632` `def ensure_paper_state():`
+- `paper_trader.py:651` `"positions": [],`
+- `paper_trader.py:677` `"paper_state version がFIX17ではありません。"`
+- `paper_trader.py:689` `"paper_state のFIX17 SHAが正式版と一致しません。"`
+- `paper_trader.py:781` `state = ensure_paper_state()`
+- `paper_trader.py:833` `"paper_state": {`
+- `paper_trader.py:837` `"positions": len(`
+- `paper_trader.py:839` `"positions",`
+- `paper_trader.py:888` `"paper_state"`
+- `paper_trader.py:1051` `"calc_long_dynamic_max_positions",`
+- `paper_trader.py:1181` `def active_positions(`
+- `paper_trader.py:1193` `"positions",`
+- `paper_trader.py:1227` `for p in active_positions(`
+- `paper_trader.py:1271` `for p in active_positions(`
+- `paper_trader.py:1383` `for p in active_positions(`
+- `paper_trader.py:1938` `"positions",`
+- `paper_trader.py:2388` `"positions",`
+- `paper_trader.py:2422` `broker_active = active_positions(`
+- `paper_trader.py:3345` `state = ensure_paper_state()`
+- `paper_trader.py:3578` `open_positions = active_positions(`
+- `paper_trader.py:3638` `f"保有建玉数: {len(open_positions)}"`

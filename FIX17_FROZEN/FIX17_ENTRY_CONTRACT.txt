@@ -1,0 +1,484 @@
+FIX17 OFFICIAL ENTRY CONTRACT
+==============================================================================================================
+Official SHA256: 9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4
+
+SOURCE ORIGIN
+--------------------------------------------------------------------------------------------------------------
+simulate_fix11 => FIX17_RUNTIME_RESOLVED_FUNCTIONS.py
+simulate_fix15 => FIX17_LIVE_FUNCTION_SOURCES.json
+
+SIGNAL COLUMNS
+--------------------------------------------------------------------------------------------------------------
+
+                entry_rows.append({
+ else SHORT_LEVERAGE
+                formal_notional = formal_equity * leverage
+                formal_active[trade_id] = {
+)
+                                if np.isfinite(_px) and np.isfinite(_qty):
+                                    _notional = float(_px) * float(_qty)
+                                else:
+                                    _notional = 0.0
+                            current_long_gross += float(_notional)
+                        long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)
+                        long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)
+                        target_notional = long_remaining_capacity
+                else:
+                    target_notional = broker_strategy_equity * leverage
+                target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)
+                lot_notional_before_margin = target_qty * entry_price
+                pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)
+                margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre[
+)
+                                if np.isfinite(_px) and np.isfinite(_qty):
+                                    _notional = float(_px) * float(_qty)
+                                else:
+                                    _notional = 0.0
+                            current_long_gross += float(_notional)
+                        long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)
+                        long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)
+                        target_notional = min(LONG_CAP_PER_STOCK, long_remaining_capacity)
+                else:
+                    target_notional = broker_strategy_equity * leverage
+                target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)
+                lot_notional_before_margin = target_qty * entry_price
+                pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)
+                margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre[
+)
+                bp = broker_active[trade_id]
+                entry_price = float(bp[
+)
+                entry_price = float(meta[
+)
+                if side == 
+:
+
+                    fix15_financing_tax = (
+                        fix15_notional
+                        * LONG_INTEREST_ANNUAL
+                        * fix15_financing_days
+                        / DAY_COUNT
+                    )
+
+                else:
+
+                    fix15_financing_tax = (
+                        fix15_notional
+                        * SHORT_LENDING_ANNUAL
+                        * fix15_financing_days
+                        / DAY_COUNT
+                    )
+
+                fix15_taxable_pnl = (
+                    float(broker_pnl)
+                    - float(fix15_financing_tax)
+                )
+
+                fix15_tax_change = fix15_apply_tax(
+                    fix15_exit_dt,
+                    fix15_taxable_pnl,
+                    f
+:
+                    broker_pnl = qty * (exit_price - entry_price)
+                else:
+                    broker_pnl = qty * (entry_price - exit_price)
+                broker_strategy_equity += broker_pnl
+                cash += broker_pnl
+
+                fix15_exit_dt = pd.Timestamp(
+                    e[
+:
+                    cost = n * LONG_INTEREST_ANNUAL * calendar_days / DAY_COUNT
+                    long_interest_today += cost
+                else:
+                    cost = n * SHORT_LENDING_ANNUAL * calendar_days / DAY_COUNT
+                    short_fee_today += cost
+        financing_today = long_interest_today + short_fee_today
+        cash -= financing_today
+        broker_strategy_equity -= financing_today
+        cum_long_interest += long_interest_today
+        cum_short_fee += short_fee_today
+        bought_etf_today = 0
+        sold_etf_today = 0
+        recovery_sell_today = False
+        if has_quote and np.isfinite(etf_open) and (etf_open > 0):
+            if cash < CASH_FLOOR:
+                deficit = CASH_FLOOR - cash
+                required_sell = int(np.ceil(deficit / etf_open))
+                sell_shares = min(required_sell, etf_shares)
+                if sell_shares > 0:
+                    proceeds = sell_shares * etf_open
+                    cash_before = float(cash)
+                    fix15_etf_realized = (
+                        float(sell_shares)
+                        * (
+                            float(etf_open)
+                            - float(FIX15_ETF_BOOK[
+:
+                    current_long_positions = [p for p in broker_active.values() if str(p.get(
+:
+                long_n += float(p[
+:
+                u = qty * (mark - entry_price)
+                long_notional += actual_notional
+                long_unrealized += u
+            else:
+                u = qty * (entry_price - mark)
+                short_notional += actual_notional
+                short_unrealized += u
+        gross_notional = long_notional + short_notional
+        total_unrealized = long_unrealized + short_unrealized
+        if np.isfinite(etf_close):
+            etf_value = etf_shares * etf_close
+        else:
+            etf_value = 0.0
+        substitute80 = etf_value * SUBSTITUTE_HAIRCUT
+        effective_collateral = cash + substitute80 + total_unrealized
+        if gross_notional > 0:
+            margin_ratio = effective_collateral / gross_notional
+        else:
+            margin_ratio = np.nan
+        realized_total_equity = cash + etf_value
+        total_equity_mtm = realized_total_equity + total_unrealized
+        daily_rows.append({
+: cum_long_interest + cum_short_fee, 
+: cum_long_interest, 
+: cum_short_fee, 
+: entry_price, 
+: etf_shares})
+                        initial_purchase_done = True
+        if has_quote and np.isfinite(etf_open) and (etf_open > 0):
+            entry_etf_mark = etf_open
+        else:
+            entry_etf_mark = last_etf_close if np.isfinite(last_etf_close) else np.nan
+        formal_realized_today = 0.0
+        broker_realized_today = 0.0
+        for e in events_by_date.get(date, []):
+            trade_id = str(e[
+: etf_shares})
+            should_buy = not initial_purchase_done or is_monthly_buy
+            if should_buy and (not recovery_sell_today):
+                long_n, short_n = current_broker_notional()
+                gross_n = long_n + short_n
+                buy_shares = calc_max_etf_buy_shares(cash_now=cash, shares_now=etf_shares, etf_open=etf_open, gross_notional=gross_n)
+                if buy_shares > 0:
+                    total_cost = buy_shares * etf_open + ETF_BUY_FEE
+                    if cash - total_cost < CASH_FLOOR:
+                        buy_shares = int(max(0, (cash - CASH_FLOOR - ETF_BUY_FEE) // etf_open))
+                        total_cost = buy_shares * etf_open + ETF_BUY_FEE
+                    if buy_shares > 0:
+                        cash_before = float(cash)
+
+                        fix15_old_etf_shares = int(
+                            etf_shares
+                        )
+
+                        fix15_old_cost = (
+                            float(fix15_old_etf_shares)
+                            * float(FIX15_ETF_BOOK[
+: long_interest_today, 
+: long_notional, 
+: long_unrealized, 
+: short_fee_today, 
+: short_notional, 
+: short_unrealized, 
+: side, 
+: target_notional - actual_notional, 
+: target_notional, 
+: total_equity_mtm})
+        previous_date = date
+    daily = pd.DataFrame(daily_rows)
+    entries = pd.DataFrame(entry_rows)
+    trades = pd.DataFrame(trade_rows)
+    tx = pd.DataFrame(tx_rows)
+    eq = daily[
+EntryDatetime
+EntryNotional
+EntryPrice
+LONG
+MarginLimitedAtEntry
+Side
+]
+                    current_long_count = len(current_long_positions)
+                    long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)
+                    if current_long_count >= long_allowed_positions:
+                        target_notional = 0.0
+                    else:
+                        current_long_gross = 0.0
+                        for _p in current_long_positions:
+                            _notional = _p.get(
+]
+                )
+
+                fix15_entry_dt = pd.Timestamp(
+                    bp[
+]
+                )
+
+                fix15_raw_days = max(
+                    (
+                        fix15_exit_dt
+                        - fix15_entry_dt
+                    ).total_seconds()
+                    / 86400.0,
+                    0.0,
+                )
+
+                fix15_financing_days = max(
+                    fix15_raw_days,
+                    1.0,
+                )
+
+                fix15_notional = float(
+                    bp[
+]
+                )
+
+                if side == 
+]
+            entry_price = float(p[
+] = (eq / peak - 1.0) * 100.0
+    return (daily, entries, trades, tx, formal_active, broker_active, broker_skipped)
+def simulate_fix15():
+    cash = float(INITIAL_CAPITAL)
+    etf_shares = 0
+    formal_equity = float(INITIAL_CAPITAL)
+    broker_strategy_equity = float(INITIAL_CAPITAL)
+    formal_active = {}
+    broker_active = {}
+    broker_skipped = set()
+    tx_rows = []
+    entry_rows = []
+    trade_rows = []
+    daily_rows = []
+    previous_date = None
+    last_etf_close = np.nan
+    initial_purchase_done = False
+    cum_long_interest = 0.0
+    cum_short_fee = 0.0
+
+    def current_broker_notional():
+        long_n = 0.0
+        short_n = 0.0
+        for p in broker_active.values():
+            if p[
+])
+                actual_notional = qty * entry_price
+                utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan
+                skipped = qty == 0
+                if target_qty == 0:
+                    skip_reason = 
+])
+                broker_r, exit_price = get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e[
+])
+                if side == 
+])
+                leverage = LONG_LEVERAGE if side == 
+])
+            else:
+                short_n += float(p[
+])
+            side = str(e[
+])
+        return (long_n, short_n)
+    for date in sorted(pd.to_datetime(sim_dates)):
+        date = pd.Timestamp(date).normalize()
+        has_quote = date in quote_dates
+        is_monthly_buy = date in monthly_buy_dates
+        if has_quote:
+            etf_open = float(open_map[date])
+            etf_close = float(close_map[date])
+            if np.isfinite(etf_close) and etf_close > 0:
+                last_etf_close = etf_close
+        else:
+            etf_open = np.nan
+            etf_close = float(last_etf_close) if np.isfinite(last_etf_close) else np.nan
+        long_interest_today = 0.0
+        short_fee_today = 0.0
+        if previous_date is not None:
+            calendar_days = int((date - previous_date).days)
+            for p in broker_active.values():
+                n = float(p[
+]}
+        long_notional = 0.0
+        short_notional = 0.0
+        long_unrealized = 0.0
+        short_unrealized = 0.0
+        missing_marks = []
+        for trade_id, p in broker_active.items():
+            code = p[
+]})
+                del broker_active[trade_id]
+            else:
+                meta = entry_meta.get(trade_id)
+                if meta is None:
+                    raise RuntimeError(f
+entry_metaなし: {trade_id}
+
+NUMERIC THRESHOLD COMPARISONS
+--------------------------------------------------------------------------------------------------------------
+simulate_fix11 L165 | target_notional > 0
+simulate_fix15 L275 | target_notional > 0
+
+ALL ENTRY-RELATED COMPARISONS
+--------------------------------------------------------------------------------------------------------------
+simulate_fix11 L23 | p['Side'] == 'LONG'
+simulate_fix11 L117 | side == 'LONG'
+simulate_fix11 L140 | current_long_count >= long_allowed_positions
+simulate_fix11 L165 | target_notional > 0
+simulate_fix11 L137 | str(p.get('Side', '')).upper() == 'LONG'
+simulate_fix15 L23 | p['Side'] == 'LONG'
+simulate_fix15 L164 | side == 'LONG'
+simulate_fix15 L197 | side == "LONG"
+simulate_fix15 L250 | current_long_count >= long_allowed_positions
+simulate_fix15 L275 | target_notional > 0
+simulate_fix15 L247 | str(p.get('Side', '')).upper() == 'LONG'
+
+ENTRY-RELATED IF CONDITIONS
+--------------------------------------------------------------------------------------------------------------
+simulate_fix11 L23 | p['Side'] == 'LONG'
+simulate_fix11 L117 | side == 'LONG'
+simulate_fix11 L140 | current_long_count >= long_allowed_positions
+simulate_fix15 L23 | p['Side'] == 'LONG'
+simulate_fix15 L164 | side == 'LONG'
+simulate_fix15 L197 | side == "LONG"
+simulate_fix15 L250 | current_long_count >= long_allowed_positions
+
+ENTRY-RELATED ASSIGNMENTS
+--------------------------------------------------------------------------------------------------------------
+simulate_fix11 L10 | entry_rows = []
+simulate_fix11 L16 | cum_long_interest = 0.0
+simulate_fix11 L17 | cum_short_fee = 0.0
+simulate_fix11 L220 | entries = pd.DataFrame(entry_rows)
+simulate_fix11 L20 | long_n = 0.0
+simulate_fix11 L21 | short_n = 0.0
+simulate_fix11 L40 | long_interest_today = 0.0
+simulate_fix11 L41 | short_fee_today = 0.0
+simulate_fix11 L52 | financing_today = long_interest_today + short_fee_today
+simulate_fix11 L181 | long_notional = 0.0
+simulate_fix11 L182 | short_notional = 0.0
+simulate_fix11 L183 | long_unrealized = 0.0
+simulate_fix11 L184 | short_unrealized = 0.0
+simulate_fix11 L203 | gross_notional = long_notional + short_notional
+simulate_fix11 L204 | total_unrealized = long_unrealized + short_unrealized
+simulate_fix11 L91 | entry_etf_mark = etf_open
+simulate_fix11 L93 | entry_etf_mark = last_etf_close if np.isfinite(last_etf_close) else np.nan
+simulate_fix11 L98 | side = str(e['Side']).upper()
+simulate_fix11 L188 | entry_price = float(p['EntryPrice'])
+simulate_fix11 L75 | long_n, short_n = current_broker_notional()
+simulate_fix11 L76 | gross_n = long_n + short_n
+simulate_fix11 L104 | formal_pnl = fp['EntryNotional'] * formal_r
+simulate_fix11 L114 | entry_price = float(bp['EntryPrice'])
+simulate_fix11 L115 | broker_r, exit_price = get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e['ReturnPct'])
+simulate_fix11 L127 | meta = entry_meta.get(trade_id)
+simulate_fix11 L130 | entry_price = float(meta['EntryPrice'])
+simulate_fix11 L131 | leverage = LONG_LEVERAGE if side == 'LONG' else SHORT_LEVERAGE
+simulate_fix11 L133 | formal_active[trade_id] = {'Side': side, 'EntryNotional': formal_notional}
+simulate_fix11 L159 | target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)
+simulate_fix11 L160 | lot_notional_before_margin = target_qty * entry_price
+simulate_fix11 L161 | pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)
+simulate_fix11 L162 | margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])
+simulate_fix11 L164 | actual_notional = qty * entry_price
+simulate_fix11 L165 | utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan
+simulate_fix11 L180 | broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'ActualNotional': actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimitedAtEntry': margin_check['MarginLimited']}
+simulate_fix11 L196 | u = qty * (mark - entry_price)
+simulate_fix11 L200 | u = qty * (entry_price - mark)
+simulate_fix11 L47 | cost = n * LONG_INTEREST_ANNUAL * calendar_days / DAY_COUNT
+simulate_fix11 L50 | cost = n * SHORT_LENDING_ANNUAL * calendar_days / DAY_COUNT
+simulate_fix11 L118 | broker_pnl = qty * (exit_price - entry_price)
+simulate_fix11 L120 | broker_pnl = qty * (entry_price - exit_price)
+simulate_fix11 L137 | current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']
+simulate_fix11 L138 | current_long_count = len(current_long_positions)
+simulate_fix11 L139 | long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)
+simulate_fix11 L158 | target_notional = broker_strategy_equity * leverage
+simulate_fix11 L141 | target_notional = 0.0
+simulate_fix11 L143 | current_long_gross = 0.0
+simulate_fix11 L154 | long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)
+simulate_fix11 L155 | long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)
+simulate_fix11 L156 | target_notional = min(LONG_CAP_PER_STOCK, long_remaining_capacity)
+simulate_fix11 L147 | _px = pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')
+simulate_fix15 L10 | entry_rows = []
+simulate_fix15 L16 | cum_long_interest = 0.0
+simulate_fix15 L17 | cum_short_fee = 0.0
+simulate_fix15 L330 | entries = pd.DataFrame(entry_rows)
+simulate_fix15 L20 | long_n = 0.0
+simulate_fix15 L21 | short_n = 0.0
+simulate_fix15 L40 | long_interest_today = 0.0
+simulate_fix15 L41 | short_fee_today = 0.0
+simulate_fix15 L52 | financing_today = long_interest_today + short_fee_today
+simulate_fix15 L291 | long_notional = 0.0
+simulate_fix15 L292 | short_notional = 0.0
+simulate_fix15 L293 | long_unrealized = 0.0
+simulate_fix15 L294 | short_unrealized = 0.0
+simulate_fix15 L313 | gross_notional = long_notional + short_notional
+simulate_fix15 L314 | total_unrealized = long_unrealized + short_unrealized
+simulate_fix15 L138 | entry_etf_mark = etf_open
+simulate_fix15 L140 | entry_etf_mark = last_etf_close if np.isfinite(last_etf_close) else np.nan
+simulate_fix15 L145 | side = str(e['Side']).upper()
+simulate_fix15 L298 | entry_price = float(p['EntryPrice'])
+simulate_fix15 L97 | long_n, short_n = current_broker_notional()
+simulate_fix15 L98 | gross_n = long_n + short_n
+simulate_fix15 L151 | formal_pnl = fp['EntryNotional'] * formal_r
+simulate_fix15 L161 | entry_price = float(bp['EntryPrice'])
+simulate_fix15 L162 | broker_r, exit_price = get_broker_return(side=side, entry_price=entry_price, formal_return_pct=e['ReturnPct'])
+simulate_fix15 L175 | fix15_entry_dt = pd.Timestamp(
+                    bp["EntryDatetime"]
+                )
+simulate_fix15 L179 | fix15_raw_days = max(
+                    (
+                        fix15_exit_dt
+                        - fix15_entry_dt
+                    ).total_seconds()
+                    / 86400.0,
+                    0.0,
+                )
+simulate_fix15 L220 | fix15_tax_change = fix15_apply_tax(
+                    fix15_exit_dt,
+                    fix15_taxable_pnl,
+                    f"CREDIT_{side}",
+                    bp["Code"],
+                )
+simulate_fix15 L237 | meta = entry_meta.get(trade_id)
+simulate_fix15 L240 | entry_price = float(meta['EntryPrice'])
+simulate_fix15 L241 | leverage = LONG_LEVERAGE if side == 'LONG' else SHORT_LEVERAGE
+simulate_fix15 L243 | formal_active[trade_id] = {'Side': side, 'EntryNotional': formal_notional}
+simulate_fix15 L269 | target_qty = calc_target_qty(target_notional=target_notional, entry_price=entry_price)
+simulate_fix15 L270 | lot_notional_before_margin = target_qty * entry_price
+simulate_fix15 L271 | pre = calc_entry_time_position_state(broker_active=broker_active, current_date=date)
+simulate_fix15 L272 | margin_check = calc_margin_capped_qty(target_qty=target_qty, entry_price=entry_price, cash_now=cash, etf_mark=entry_etf_mark, etf_shares=etf_shares, existing_gross_notional=pre['GrossNotional'], existing_unrealized=pre['TotalUnrealized'])
+simulate_fix15 L274 | actual_notional = qty * entry_price
+simulate_fix15 L275 | utilization = actual_notional / target_notional * 100.0 if target_notional > 0 else np.nan
+simulate_fix15 L290 | broker_active[trade_id] = {'TradeID': trade_id, 'Side': side, 'Code': str(meta['Code']).zfill(5), 'EntryDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'Quantity': qty, 'TargetNotional': target_notional, 'LotNotionalBeforeMargin': lot_notional_before_margin, 'ActualNotional': actual_notional, 'TargetUtilizationPct': utilization, 'MarginLimitedAtEntry': margin_check['MarginLimited']}
+simulate_fix15 L306 | u = qty * (mark - entry_price)
+simulate_fix15 L310 | u = qty * (entry_price - mark)
+simulate_fix15 L47 | cost = n * LONG_INTEREST_ANNUAL * calendar_days / DAY_COUNT
+simulate_fix15 L50 | cost = n * SHORT_LENDING_ANNUAL * calendar_days / DAY_COUNT
+simulate_fix15 L165 | broker_pnl = qty * (exit_price - entry_price)
+simulate_fix15 L167 | broker_pnl = qty * (entry_price - exit_price)
+simulate_fix15 L199 | fix15_financing_tax = (
+                        fix15_notional
+                        * LONG_INTEREST_ANNUAL
+                        * fix15_financing_days
+                        / DAY_COUNT
+                    )
+simulate_fix15 L208 | fix15_financing_tax = (
+                        fix15_notional
+                        * SHORT_LENDING_ANNUAL
+                        * fix15_financing_days
+                        / DAY_COUNT
+                    )
+simulate_fix15 L247 | current_long_positions = [p for p in broker_active.values() if str(p.get('Side', '')).upper() == 'LONG']
+simulate_fix15 L248 | current_long_count = len(current_long_positions)
+simulate_fix15 L249 | long_allowed_positions = calc_long_dynamic_max_positions(broker_strategy_equity)
+simulate_fix15 L268 | target_notional = broker_strategy_equity * leverage
+simulate_fix15 L251 | target_notional = 0.0
+simulate_fix15 L253 | current_long_gross = 0.0
+simulate_fix15 L264 | long_total_limit = max(0.0, float(broker_strategy_equity) * LONG_LEVERAGE)
+simulate_fix15 L265 | long_remaining_capacity = max(0.0, long_total_limit - current_long_gross)
+simulate_fix15 L266 | target_notional = long_remaining_capacity
+simulate_fix15 L257 | _px = pd.to_numeric(_p.get('EntryPrice', np.nan), errors='coerce')
+
+FIX17 SIZING
+--------------------------------------------------------------------------------------------------------------
+target_notional = long_remaining_capacity
+count=1

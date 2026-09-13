@@ -1,0 +1,27 @@
+FIX17 ENTRY DATA SCHEMA
+====================================================================================================
+HEAD: 4ca98f5
+
+TRADE MASTER COLUMNS
+----------------------------------------------------------------------------------------------------
+TradeID
+Side
+Code
+EntryDatetime
+EntryPrice
+ExitDatetime
+ReturnPct
+
+TARGET PRESENCE
+----------------------------------------------------------------------------------------------------
+RS20_corrected                   trade_master=False events=False
+RVOL20                           trade_master=False events=False
+turnover_median_20d_oku          trade_master=False events=False
+ORB15_LongSignal                 trade_master=False events=False
+ORB15_ShortSignal                trade_master=False events=False
+CrossPass_EXACT                  trade_master=False events=False
+EntryPriceFormal                 trade_master=False events=False
+FormalEntryPrice                 trade_master=False events=False
+EntryDatetime                    trade_master=True events=False
+Code                             trade_master=True events=False
+Side                             trade_master=True events=True

@@ -1,0 +1,391 @@
+{
+  "github_head": "fb03920",
+  "source": "FIX11_ENTRY_SOURCE_EXACT.py",
+  "source_lines": 6849,
+  "symbol_hits": {
+    "events_by_date": [
+      {
+        "line": 285,
+        "text": "\"events_by_date\","
+      },
+      {
+        "line": 413,
+        "text": "for date, events in events_by_date.items():"
+      },
+      {
+        "line": 2807,
+        "text": "for e in events_by_date.get("
+      }
+    ],
+    "entry_meta": [
+      {
+        "line": 579,
+        "text": "entry_meta = ("
+      },
+      {
+        "line": 3177,
+        "text": "meta = entry_meta.get("
+      }
+    ],
+    "event_df": [
+      {
+        "line": 427,
+        "text": "event_df = pd.DataFrame("
+      },
+      {
+        "line": 433,
+        "text": "event_df[\"TradeID\"] = ("
+      },
+      {
+        "line": 435,
+        "text": "event_df[\"TradeID\"]"
+      },
+      {
+        "line": 441,
+        "text": "event_df[\"Datetime\"] = pd.to_datetime("
+      },
+      {
+        "line": 443,
+        "text": "event_df[\"Datetime\"]"
+      },
+      {
+        "line": 449,
+        "text": "event_df["
+      },
+      {
+        "line": 451,
+        "text": "event_df[\"Event\"] == \"ENTRY\""
+      },
+      {
+        "line": 461,
+        "text": "event_df["
+      },
+      {
+        "line": 463,
+        "text": "event_df[\"Event\"] == \"EXIT\""
+      },
+      {
+        "line": 495,
+        "text": "len(event_df)"
+      }
+    ],
+    "entry_events": [
+      {
+        "line": 447,
+        "text": "entry_events = ("
+      },
+      {
+        "line": 471,
+        "text": "if len(entry_events) != EXPECTED_ENTRY_EVENTS:"
+      },
+      {
+        "line": 475,
+        "text": "f\"ENTRY件数異常: {len(entry_events)} \""
+      },
+      {
+        "line": 503,
+        "text": "len(entry_events)"
+      },
+      {
+        "line": 523,
+        "text": "entry_events["
+      }
+    ],
+    "trade_master": [],
+    "tm": [
+      {
+        "line": 331,
+        "text": "tm = trade_master_fix6.copy()"
+      },
+      {
+        "line": 333,
+        "text": "tm[\"TradeID\"] = ("
+      },
+      {
+        "line": 335,
+        "text": "tm[\"TradeID\"]"
+      },
+      {
+        "line": 341,
+        "text": "tm[\"Code\"] = ("
+      },
+      {
+        "line": 343,
+        "text": "tm[\"Code\"]"
+      },
+      {
+        "line": 353,
+        "text": "tm[\"EntryPrice\"] = pd.to_numeric("
+      },
+      {
+        "line": 355,
+        "text": "tm[\"EntryPrice\"],"
+      },
+      {
+        "line": 361,
+        "text": "if len(tm) != EXPECTED_TRADE_MASTER:"
+      },
+      {
+        "line": 365,
+        "text": "f\"Trade master件数異常: {len(tm)} \""
+      },
+      {
+        "line": 371,
+        "text": "if tm[\"TradeID\"].nunique() != EXPECTED_TRADE_MASTER:"
+      },
+      {
+        "line": 379,
+        "text": "if tm[\"EntryPrice\"].isna().any():"
+      },
+      {
+        "line": 387,
+        "text": "if (tm[\"EntryPrice\"] <= 0).any():"
+      },
+      {
+        "line": 399,
+        "text": "len(tm),"
+      },
+      {
+        "line": 539,
+        "text": "tm["
+      },
+      {
+        "line": 839,
+        "text": "tm[\"Code\"]"
+      }
+    ]
+  },
+  "assignments": [
+    {
+      "symbol": "tm",
+      "line": 331,
+      "text": "tm = trade_master_fix6.copy()",
+      "context": "00311: ]\n00312: \n00313: if missing:\n00314: \n00315:     raise RuntimeError(\n00316: \n00317:         \"必要な変数がありません:\\n\"\n00318: \n00319:         + \"\\n\".join(missing)\n00320: \n00321:         + \"\\n\\nFIX10までのセルを確認してください。\"\n00322: \n00323:     )\n00324: \n00325: # ============================================================\n00326: \n00327: # 2. Trade master\n00328: \n00329: # ============================================================\n00330: \n00331: tm = trade_master_fix6.copy()\n00332: \n00333: tm[\"TradeID\"] = (\n00334: \n00335:     tm[\"TradeID\"]\n00336: \n00337:     .astype(str)\n00338: \n00339: )\n00340: \n00341: tm[\"Code\"] = (\n00342: \n00343:     tm[\"Code\"]\n00344: \n00345:     .astype(str)\n00346: \n00347:     .str.replace(\".0\", \"\", regex=False)\n00348: \n00349:     .str.zfill(5)\n00350: \n00351: )\n00352: \n00353: tm[\"EntryPrice\"] = pd.to_numeric(\n00354: \n00355:     tm[\"EntryPrice\"],\n00356: \n00357:     errors=\"coerce\"\n00358: \n00359: )\n00360: \n00361: if len(tm) != EXPECTED_TRADE_MASTER:\n00362: \n00363:     raise RuntimeError(\n00364: \n00365:         f\"Trade master件数異常: {len(tm)} \"\n00366: "
+    },
+    {
+      "symbol": "tm",
+      "line": 333,
+      "text": "tm[\"TradeID\"] = (",
+      "context": "00318: \n00319:         + \"\\n\".join(missing)\n00320: \n00321:         + \"\\n\\nFIX10までのセルを確認してください。\"\n00322: \n00323:     )\n00324: \n00325: # ============================================================\n00326: \n00327: # 2. Trade master\n00328: \n00329: # ============================================================\n00330: \n00331: tm = trade_master_fix6.copy()\n00332: \n00333: tm[\"TradeID\"] = (\n00334: \n00335:     tm[\"TradeID\"]\n00336: \n00337:     .astype(str)\n00338: \n00339: )\n00340: \n00341: tm[\"Code\"] = (\n00342: \n00343:     tm[\"Code\"]\n00344: \n00345:     .astype(str)\n00346: \n00347:     .str.replace(\".0\", \"\", regex=False)\n00348: \n00349:     .str.zfill(5)\n00350: \n00351: )\n00352: \n00353: tm[\"EntryPrice\"] = pd.to_numeric("
+    },
+    {
+      "symbol": "tm",
+      "line": 335,
+      "text": "tm[\"TradeID\"]",
+      "context": "00320: \n00321:         + \"\\n\\nFIX10までのセルを確認してください。\"\n00322: \n00323:     )\n00324: \n00325: # ============================================================\n00326: \n00327: # 2. Trade master\n00328: \n00329: # ============================================================\n00330: \n00331: tm = trade_master_fix6.copy()\n00332: \n00333: tm[\"TradeID\"] = (\n00334: \n00335:     tm[\"TradeID\"]\n00336: \n00337:     .astype(str)\n00338: \n00339: )\n00340: \n00341: tm[\"Code\"] = (\n00342: \n00343:     tm[\"Code\"]\n00344: \n00345:     .astype(str)\n00346: \n00347:     .str.replace(\".0\", \"\", regex=False)\n00348: \n00349:     .str.zfill(5)\n00350: \n00351: )\n00352: \n00353: tm[\"EntryPrice\"] = pd.to_numeric(\n00354: \n00355:     tm[\"EntryPrice\"],"
+    },
+    {
+      "symbol": "tm",
+      "line": 341,
+      "text": "tm[\"Code\"] = (",
+      "context": "00326: \n00327: # 2. Trade master\n00328: \n00329: # ============================================================\n00330: \n00331: tm = trade_master_fix6.copy()\n00332: \n00333: tm[\"TradeID\"] = (\n00334: \n00335:     tm[\"TradeID\"]\n00336: \n00337:     .astype(str)\n00338: \n00339: )\n00340: \n00341: tm[\"Code\"] = (\n00342: \n00343:     tm[\"Code\"]\n00344: \n00345:     .astype(str)\n00346: \n00347:     .str.replace(\".0\", \"\", regex=False)\n00348: \n00349:     .str.zfill(5)\n00350: \n00351: )\n00352: \n00353: tm[\"EntryPrice\"] = pd.to_numeric(\n00354: \n00355:     tm[\"EntryPrice\"],\n00356: \n00357:     errors=\"coerce\"\n00358: \n00359: )\n00360: \n00361: if len(tm) != EXPECTED_TRADE_MASTER:"
+    },
+    {
+      "symbol": "tm",
+      "line": 343,
+      "text": "tm[\"Code\"]",
+      "context": "00328: \n00329: # ============================================================\n00330: \n00331: tm = trade_master_fix6.copy()\n00332: \n00333: tm[\"TradeID\"] = (\n00334: \n00335:     tm[\"TradeID\"]\n00336: \n00337:     .astype(str)\n00338: \n00339: )\n00340: \n00341: tm[\"Code\"] = (\n00342: \n00343:     tm[\"Code\"]\n00344: \n00345:     .astype(str)\n00346: \n00347:     .str.replace(\".0\", \"\", regex=False)\n00348: \n00349:     .str.zfill(5)\n00350: \n00351: )\n00352: \n00353: tm[\"EntryPrice\"] = pd.to_numeric(\n00354: \n00355:     tm[\"EntryPrice\"],\n00356: \n00357:     errors=\"coerce\"\n00358: \n00359: )\n00360: \n00361: if len(tm) != EXPECTED_TRADE_MASTER:\n00362: \n00363:     raise RuntimeError("
+    },
+    {
+      "symbol": "tm",
+      "line": 353,
+      "text": "tm[\"EntryPrice\"] = pd.to_numeric(",
+      "context": "00338: \n00339: )\n00340: \n00341: tm[\"Code\"] = (\n00342: \n00343:     tm[\"Code\"]\n00344: \n00345:     .astype(str)\n00346: \n00347:     .str.replace(\".0\", \"\", regex=False)\n00348: \n00349:     .str.zfill(5)\n00350: \n00351: )\n00352: \n00353: tm[\"EntryPrice\"] = pd.to_numeric(\n00354: \n00355:     tm[\"EntryPrice\"],\n00356: \n00357:     errors=\"coerce\"\n00358: \n00359: )\n00360: \n00361: if len(tm) != EXPECTED_TRADE_MASTER:\n00362: \n00363:     raise RuntimeError(\n00364: \n00365:         f\"Trade master件数異常: {len(tm)} \"\n00366: \n00367:         f\"(expected {EXPECTED_TRADE_MASTER})\"\n00368: \n00369:     )\n00370: \n00371: if tm[\"TradeID\"].nunique() != EXPECTED_TRADE_MASTER:\n00372: \n00373:     raise RuntimeError("
+    },
+    {
+      "symbol": "tm",
+      "line": 355,
+      "text": "tm[\"EntryPrice\"],",
+      "context": "00340: \n00341: tm[\"Code\"] = (\n00342: \n00343:     tm[\"Code\"]\n00344: \n00345:     .astype(str)\n00346: \n00347:     .str.replace(\".0\", \"\", regex=False)\n00348: \n00349:     .str.zfill(5)\n00350: \n00351: )\n00352: \n00353: tm[\"EntryPrice\"] = pd.to_numeric(\n00354: \n00355:     tm[\"EntryPrice\"],\n00356: \n00357:     errors=\"coerce\"\n00358: \n00359: )\n00360: \n00361: if len(tm) != EXPECTED_TRADE_MASTER:\n00362: \n00363:     raise RuntimeError(\n00364: \n00365:         f\"Trade master件数異常: {len(tm)} \"\n00366: \n00367:         f\"(expected {EXPECTED_TRADE_MASTER})\"\n00368: \n00369:     )\n00370: \n00371: if tm[\"TradeID\"].nunique() != EXPECTED_TRADE_MASTER:\n00372: \n00373:     raise RuntimeError(\n00374: \n00375:         f\"TradeID unique != {EXPECTED_TRADE_MASTER}\""
+    },
+    {
+      "symbol": "event_df",
+      "line": 427,
+      "text": "event_df = pd.DataFrame(",
+      "context": "00407: # 3. Strategy events\n00408: \n00409: # ============================================================\n00410: \n00411: event_rows = []\n00412: \n00413: for date, events in events_by_date.items():\n00414: \n00415:     for e in events:\n00416: \n00417:         r = dict(e)\n00418: \n00419:         r[\"Date\"] = pd.Timestamp(\n00420: \n00421:             date\n00422: \n00423:         ).normalize()\n00424: \n00425:         event_rows.append(r)\n00426: \n00427: event_df = pd.DataFrame(\n00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = (\n00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]\n00454: \n00455:     .copy()\n00456: \n00457: )\n00458: \n00459: exit_events = (\n00460: \n00461:     event_df[\n00462: "
+    },
+    {
+      "symbol": "event_df",
+      "line": 433,
+      "text": "event_df[\"TradeID\"] = (",
+      "context": "00418: \n00419:         r[\"Date\"] = pd.Timestamp(\n00420: \n00421:             date\n00422: \n00423:         ).normalize()\n00424: \n00425:         event_rows.append(r)\n00426: \n00427: event_df = pd.DataFrame(\n00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = (\n00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]"
+    },
+    {
+      "symbol": "event_df",
+      "line": 435,
+      "text": "event_df[\"TradeID\"]",
+      "context": "00420: \n00421:             date\n00422: \n00423:         ).normalize()\n00424: \n00425:         event_rows.append(r)\n00426: \n00427: event_df = pd.DataFrame(\n00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = (\n00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]\n00454: \n00455:     .copy()"
+    },
+    {
+      "symbol": "event_df",
+      "line": 441,
+      "text": "event_df[\"Datetime\"] = pd.to_datetime(",
+      "context": "00426: \n00427: event_df = pd.DataFrame(\n00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = (\n00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]\n00454: \n00455:     .copy()\n00456: \n00457: )\n00458: \n00459: exit_events = (\n00460: \n00461:     event_df["
+    },
+    {
+      "symbol": "event_df",
+      "line": 443,
+      "text": "event_df[\"Datetime\"]",
+      "context": "00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = (\n00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]\n00454: \n00455:     .copy()\n00456: \n00457: )\n00458: \n00459: exit_events = (\n00460: \n00461:     event_df[\n00462: \n00463:         event_df[\"Event\"] == \"EXIT\""
+    },
+    {
+      "symbol": "entry_events",
+      "line": 447,
+      "text": "entry_events = (",
+      "context": "00427: event_df = pd.DataFrame(\n00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = (\n00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]\n00454: \n00455:     .copy()\n00456: \n00457: )\n00458: \n00459: exit_events = (\n00460: \n00461:     event_df[\n00462: \n00463:         event_df[\"Event\"] == \"EXIT\"\n00464: \n00465:     ]\n00466: \n00467:     .copy()\n00468: \n00469: )\n00470: \n00471: if len(entry_events) != EXPECTED_ENTRY_EVENTS:\n00472: \n00473:     raise RuntimeError(\n00474: \n00475:         f\"ENTRY件数異常: {len(entry_events)} \"\n00476: \n00477:         f\"(expected {EXPECTED_ENTRY_EVENTS})\"\n00478: \n00479:     )\n00480: \n00481: if len(exit_events) != EXPECTED_EXIT_EVENTS:\n00482: "
+    },
+    {
+      "symbol": "event_df",
+      "line": 449,
+      "text": "event_df[",
+      "context": "00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]\n00454: \n00455:     .copy()\n00456: \n00457: )\n00458: \n00459: exit_events = (\n00460: \n00461:     event_df[\n00462: \n00463:         event_df[\"Event\"] == \"EXIT\"\n00464: \n00465:     ]\n00466: \n00467:     .copy()\n00468: \n00469: )"
+    },
+    {
+      "symbol": "event_df",
+      "line": 451,
+      "text": "event_df[\"Event\"] == \"ENTRY\"",
+      "context": "00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]\n00454: \n00455:     .copy()\n00456: \n00457: )\n00458: \n00459: exit_events = (\n00460: \n00461:     event_df[\n00462: \n00463:         event_df[\"Event\"] == \"EXIT\"\n00464: \n00465:     ]\n00466: \n00467:     .copy()\n00468: \n00469: )\n00470: \n00471: if len(entry_events) != EXPECTED_ENTRY_EVENTS:"
+    },
+    {
+      "symbol": "event_df",
+      "line": 461,
+      "text": "event_df[",
+      "context": "00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]\n00454: \n00455:     .copy()\n00456: \n00457: )\n00458: \n00459: exit_events = (\n00460: \n00461:     event_df[\n00462: \n00463:         event_df[\"Event\"] == \"EXIT\"\n00464: \n00465:     ]\n00466: \n00467:     .copy()\n00468: \n00469: )\n00470: \n00471: if len(entry_events) != EXPECTED_ENTRY_EVENTS:\n00472: \n00473:     raise RuntimeError(\n00474: \n00475:         f\"ENTRY件数異常: {len(entry_events)} \"\n00476: \n00477:         f\"(expected {EXPECTED_ENTRY_EVENTS})\"\n00478: \n00479:     )\n00480: \n00481: if len(exit_events) != EXPECTED_EXIT_EVENTS:"
+    },
+    {
+      "symbol": "event_df",
+      "line": 463,
+      "text": "event_df[\"Event\"] == \"EXIT\"",
+      "context": "00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]\n00454: \n00455:     .copy()\n00456: \n00457: )\n00458: \n00459: exit_events = (\n00460: \n00461:     event_df[\n00462: \n00463:         event_df[\"Event\"] == \"EXIT\"\n00464: \n00465:     ]\n00466: \n00467:     .copy()\n00468: \n00469: )\n00470: \n00471: if len(entry_events) != EXPECTED_ENTRY_EVENTS:\n00472: \n00473:     raise RuntimeError(\n00474: \n00475:         f\"ENTRY件数異常: {len(entry_events)} \"\n00476: \n00477:         f\"(expected {EXPECTED_ENTRY_EVENTS})\"\n00478: \n00479:     )\n00480: \n00481: if len(exit_events) != EXPECTED_EXIT_EVENTS:\n00482: \n00483:     raise RuntimeError("
+    },
+    {
+      "symbol": "entry_events",
+      "line": 523,
+      "text": "entry_events[",
+      "context": "00508: \n00509:     \"EXIT :\",\n00510: \n00511:     len(exit_events)\n00512: \n00513: )\n00514: \n00515: # ============================================================\n00516: \n00517: # 4. Entry metadata\n00518: \n00519: # ============================================================\n00520: \n00521: entry_meta_df = (\n00522: \n00523:     entry_events[\n00524: \n00525:         [\n00526: \n00527:             \"TradeID\",\n00528: \n00529:             \"Side\",\n00530: \n00531:             \"Datetime\",\n00532: \n00533:         ]\n00534: \n00535:     ]\n00536: \n00537:     .merge(\n00538: \n00539:         tm[\n00540: \n00541:             [\n00542: \n00543:                 \"TradeID\","
+    },
+    {
+      "symbol": "tm",
+      "line": 539,
+      "text": "tm[",
+      "context": "00524: \n00525:         [\n00526: \n00527:             \"TradeID\",\n00528: \n00529:             \"Side\",\n00530: \n00531:             \"Datetime\",\n00532: \n00533:         ]\n00534: \n00535:     ]\n00536: \n00537:     .merge(\n00538: \n00539:         tm[\n00540: \n00541:             [\n00542: \n00543:                 \"TradeID\",\n00544: \n00545:                 \"Code\",\n00546: \n00547:                 \"EntryPrice\",\n00548: \n00549:             ]\n00550: \n00551:         ],\n00552: \n00553:         on=\"TradeID\",\n00554: \n00555:         how=\"left\"\n00556: \n00557:     )\n00558: \n00559: )"
+    },
+    {
+      "symbol": "entry_meta",
+      "line": 579,
+      "text": "entry_meta = (",
+      "context": "00559: )\n00560: \n00561: if entry_meta_df[\n00562: \n00563:     [\n00564: \n00565:         \"Code\",\n00566: \n00567:         \"EntryPrice\",\n00568: \n00569:     ]\n00570: \n00571: ].isna().any().any():\n00572: \n00573:     raise RuntimeError(\n00574: \n00575:         \"Entry metadata欠損\"\n00576: \n00577:     )\n00578: \n00579: entry_meta = (\n00580: \n00581:     entry_meta_df\n00582: \n00583:     .set_index(\n00584: \n00585:         \"TradeID\"\n00586: \n00587:     )[\n00588: \n00589:         [\n00590: \n00591:             \"Code\",\n00592: \n00593:             \"EntryPrice\",\n00594: \n00595:         ]\n00596: \n00597:     ]\n00598: \n00599:     .to_dict(\n00600: \n00601:         orient=\"index\"\n00602: \n00603:     )\n00604: \n00605: )\n00606: \n00607: # ============================================================\n00608: \n00609: # 5. ExitPrice再構築\n00610: \n00611: # ============================================================\n00612: \n00613: def reconstruct_exit_price(\n00614: "
+    },
+    {
+      "symbol": "tm",
+      "line": 839,
+      "text": "tm[\"Code\"]",
+      "context": "00824: \n00825:         DAILY_CLOSE_COL = col\n00826: \n00827:         break\n00828: \n00829: if DAILY_CLOSE_COL is None:\n00830: \n00831:     raise RuntimeError(\n00832: \n00833:         \"daily_stockにMTM終値列なし\"\n00834: \n00835:     )\n00836: \n00837: codes = set(\n00838: \n00839:     tm[\"Code\"]\n00840: \n00841: )\n00842: \n00843: ds_mtm = (\n00844: \n00845:     ds[\n00846: \n00847:         ds[\"Code\"].isin(\n00848: \n00849:             codes\n00850: \n00851:         )\n00852: \n00853:     ][\n00854: \n00855:         [\n00856: \n00857:             \"Date\",\n00858: \n00859:             \"Code\","
+    }
+  ],
+  "entry_meta_creation": [
+    {
+      "line": 521,
+      "text": "entry_meta_df = (",
+      "context": "00501:     \"ENTRY:\",\n00502: \n00503:     len(entry_events)\n00504: \n00505: )\n00506: \n00507: print(\n00508: \n00509:     \"EXIT :\",\n00510: \n00511:     len(exit_events)\n00512: \n00513: )\n00514: \n00515: # ============================================================\n00516: \n00517: # 4. Entry metadata\n00518: \n00519: # ============================================================\n00520: \n00521: entry_meta_df = (\n00522: \n00523:     entry_events[\n00524: \n00525:         [\n00526: \n00527:             \"TradeID\",\n00528: \n00529:             \"Side\",\n00530: \n00531:             \"Datetime\",\n00532: \n00533:         ]\n00534: \n00535:     ]\n00536: \n00537:     .merge(\n00538: \n00539:         tm[\n00540: \n00541:             [\n00542: \n00543:                 \"TradeID\",\n00544: \n00545:                 \"Code\",\n00546: \n00547:                 \"EntryPrice\",\n00548: \n00549:             ]\n00550: \n00551:         ],"
+    },
+    {
+      "line": 579,
+      "text": "entry_meta = (",
+      "context": "00559: )\n00560: \n00561: if entry_meta_df[\n00562: \n00563:     [\n00564: \n00565:         \"Code\",\n00566: \n00567:         \"EntryPrice\",\n00568: \n00569:     ]\n00570: \n00571: ].isna().any().any():\n00572: \n00573:     raise RuntimeError(\n00574: \n00575:         \"Entry metadata欠損\"\n00576: \n00577:     )\n00578: \n00579: entry_meta = (\n00580: \n00581:     entry_meta_df\n00582: \n00583:     .set_index(\n00584: \n00585:         \"TradeID\"\n00586: \n00587:     )[\n00588: \n00589:         [\n00590: \n00591:             \"Code\",\n00592: \n00593:             \"EntryPrice\",\n00594: \n00595:         ]\n00596: \n00597:     ]\n00598: \n00599:     .to_dict(\n00600: \n00601:         orient=\"index\"\n00602: \n00603:     )\n00604: \n00605: )\n00606: \n00607: # ============================================================\n00608: \n00609: # 5. ExitPrice再構築"
+    },
+    {
+      "line": 3177,
+      "text": "meta = entry_meta.get(",
+      "context": "03157:                             \"MarginLimitedAtEntry\"\n03158: \n03159:                         ],\n03160: \n03161:                 })\n03162: \n03163:                 del broker_active[\n03164: \n03165:                     trade_id\n03166: \n03167:                 ]\n03168: \n03169:             # =================================================\n03170: \n03171:             # ENTRY\n03172: \n03173:             # =================================================\n03174: \n03175:             else:\n03176: \n03177:                 meta = entry_meta.get(\n03178: \n03179:                     trade_id\n03180: \n03181:                 )\n03182: \n03183:                 if meta is None:\n03184: \n03185:                     raise RuntimeError(\n03186: \n03187:                         f\"entry_metaなし: \"\n03188: \n03189:                         f\"{trade_id}\"\n03190: \n03191:                     )\n03192: \n03193:                 entry_price = float(\n03194: \n03195:                     meta[\n03196: \n03197:                         \"EntryPrice\"\n03198: \n03199:                     ]\n03200: \n03201:                 )\n03202: \n03203:                 leverage = (\n03204: \n03205:                     LONG_LEVERAGE\n03206: \n03207:                     if side == \"LONG\""
+    }
+  ],
+  "events_creation": [
+    {
+      "line": 413,
+      "text": "for date, events in events_by_date.items():",
+      "context": "00393:     )\n00394: \n00395: print(\n00396: \n00397:     \"Trade master:\",\n00398: \n00399:     len(tm),\n00400: \n00401:     \"PASS\"\n00402: \n00403: )\n00404: \n00405: # ============================================================\n00406: \n00407: # 3. Strategy events\n00408: \n00409: # ============================================================\n00410: \n00411: event_rows = []\n00412: \n00413: for date, events in events_by_date.items():\n00414: \n00415:     for e in events:\n00416: \n00417:         r = dict(e)\n00418: \n00419:         r[\"Date\"] = pd.Timestamp(\n00420: \n00421:             date\n00422: \n00423:         ).normalize()\n00424: \n00425:         event_rows.append(r)\n00426: \n00427: event_df = pd.DataFrame(\n00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = (\n00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]"
+    },
+    {
+      "line": 2807,
+      "text": "for e in events_by_date.get(",
+      "context": "02787:                 if np.isfinite(\n02788: \n02789:                     last_etf_close\n02790: \n02791:                 )\n02792: \n02793:                 else np.nan\n02794: \n02795:             )\n02796: \n02797:         # ====================================================\n02798: \n02799:         # D. Strategy Events\n02800: \n02801:         # ====================================================\n02802: \n02803:         formal_realized_today = 0.0\n02804: \n02805:         broker_realized_today = 0.0\n02806: \n02807:         for e in events_by_date.get(\n02808: \n02809:             date,\n02810: \n02811:             []\n02812: \n02813:         ):\n02814: \n02815:             trade_id = str(\n02816: \n02817:                 e[\n02818: \n02819:                     \"TradeID\"\n02820: \n02821:                 ]\n02822: \n02823:             )\n02824: \n02825:             side = str(\n02826: \n02827:                 e[\n02828: \n02829:                     \"Side\"\n02830: \n02831:                 ]\n02832: \n02833:             ).upper()\n02834: \n02835:             # =================================================\n02836: \n02837:             # EXIT"
+    }
+  ],
+  "tradeid_hits": [
+    {
+      "line": 333,
+      "text": "tm[\"TradeID\"] = ("
+    },
+    {
+      "line": 335,
+      "text": "tm[\"TradeID\"]"
+    },
+    {
+      "line": 371,
+      "text": "if tm[\"TradeID\"].nunique() != EXPECTED_TRADE_MASTER:"
+    },
+    {
+      "line": 375,
+      "text": "f\"TradeID unique != {EXPECTED_TRADE_MASTER}\""
+    },
+    {
+      "line": 433,
+      "text": "event_df[\"TradeID\"] = ("
+    },
+    {
+      "line": 435,
+      "text": "event_df[\"TradeID\"]"
+    },
+    {
+      "line": 553,
+      "text": "on=\"TradeID\","
+    }
+  ],
+  "important_contexts": [
+    {
+      "line": 333,
+      "context": "00308: \n00309:     if x not in globals()\n00310: \n00311: ]\n00312: \n00313: if missing:\n00314: \n00315:     raise RuntimeError(\n00316: \n00317:         \"必要な変数がありません:\\n\"\n00318: \n00319:         + \"\\n\".join(missing)\n00320: \n00321:         + \"\\n\\nFIX10までのセルを確認してください。\"\n00322: \n00323:     )\n00324: \n00325: # ============================================================\n00326: \n00327: # 2. Trade master\n00328: \n00329: # ============================================================\n00330: \n00331: tm = trade_master_fix6.copy()\n00332: \n00333: tm[\"TradeID\"] = (\n00334: \n00335:     tm[\"TradeID\"]\n00336: \n00337:     .astype(str)\n00338: \n00339: )\n00340: \n00341: tm[\"Code\"] = (\n00342: \n00343:     tm[\"Code\"]\n00344: \n00345:     .astype(str)\n00346: \n00347:     .str.replace(\".0\", \"\", regex=False)\n00348: \n00349:     .str.zfill(5)\n00350: \n00351: )\n00352: \n00353: tm[\"EntryPrice\"] = pd.to_numeric(\n00354: \n00355:     tm[\"EntryPrice\"],\n00356: \n00357:     errors=\"coerce\"\n00358: \n00359: )\n00360: \n00361: if len(tm) != EXPECTED_TRADE_MASTER:\n00362: \n00363:     raise RuntimeError(\n00364: \n00365:         f\"Trade master件数異常: {len(tm)} \"\n00366: \n00367:         f\"(expected {EXPECTED_TRADE_MASTER})\"\n00368: \n00369:     )\n00370: \n00371: if tm[\"TradeID\"].nunique() != EXPECTED_TRADE_MASTER:\n00372: \n00373:     raise RuntimeError("
+    },
+    {
+      "line": 411,
+      "context": "00386: \n00387: if (tm[\"EntryPrice\"] <= 0).any():\n00388: \n00389:     raise RuntimeError(\n00390: \n00391:         \"EntryPrice <= 0\"\n00392: \n00393:     )\n00394: \n00395: print(\n00396: \n00397:     \"Trade master:\",\n00398: \n00399:     len(tm),\n00400: \n00401:     \"PASS\"\n00402: \n00403: )\n00404: \n00405: # ============================================================\n00406: \n00407: # 3. Strategy events\n00408: \n00409: # ============================================================\n00410: \n00411: event_rows = []\n00412: \n00413: for date, events in events_by_date.items():\n00414: \n00415:     for e in events:\n00416: \n00417:         r = dict(e)\n00418: \n00419:         r[\"Date\"] = pd.Timestamp(\n00420: \n00421:             date\n00422: \n00423:         ).normalize()\n00424: \n00425:         event_rows.append(r)\n00426: \n00427: event_df = pd.DataFrame(\n00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = (\n00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\""
+    },
+    {
+      "line": 413,
+      "context": "00388: \n00389:     raise RuntimeError(\n00390: \n00391:         \"EntryPrice <= 0\"\n00392: \n00393:     )\n00394: \n00395: print(\n00396: \n00397:     \"Trade master:\",\n00398: \n00399:     len(tm),\n00400: \n00401:     \"PASS\"\n00402: \n00403: )\n00404: \n00405: # ============================================================\n00406: \n00407: # 3. Strategy events\n00408: \n00409: # ============================================================\n00410: \n00411: event_rows = []\n00412: \n00413: for date, events in events_by_date.items():\n00414: \n00415:     for e in events:\n00416: \n00417:         r = dict(e)\n00418: \n00419:         r[\"Date\"] = pd.Timestamp(\n00420: \n00421:             date\n00422: \n00423:         ).normalize()\n00424: \n00425:         event_rows.append(r)\n00426: \n00427: event_df = pd.DataFrame(\n00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = (\n00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]"
+    },
+    {
+      "line": 427,
+      "context": "00402: \n00403: )\n00404: \n00405: # ============================================================\n00406: \n00407: # 3. Strategy events\n00408: \n00409: # ============================================================\n00410: \n00411: event_rows = []\n00412: \n00413: for date, events in events_by_date.items():\n00414: \n00415:     for e in events:\n00416: \n00417:         r = dict(e)\n00418: \n00419:         r[\"Date\"] = pd.Timestamp(\n00420: \n00421:             date\n00422: \n00423:         ).normalize()\n00424: \n00425:         event_rows.append(r)\n00426: \n00427: event_df = pd.DataFrame(\n00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = (\n00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]\n00454: \n00455:     .copy()\n00456: \n00457: )\n00458: \n00459: exit_events = (\n00460: \n00461:     event_df[\n00462: \n00463:         event_df[\"Event\"] == \"EXIT\"\n00464: \n00465:     ]\n00466: \n00467:     .copy()"
+    },
+    {
+      "line": 447,
+      "context": "00422: \n00423:         ).normalize()\n00424: \n00425:         event_rows.append(r)\n00426: \n00427: event_df = pd.DataFrame(\n00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = (\n00434: \n00435:     event_df[\"TradeID\"]\n00436: \n00437:     .astype(str)\n00438: \n00439: )\n00440: \n00441: event_df[\"Datetime\"] = pd.to_datetime(\n00442: \n00443:     event_df[\"Datetime\"]\n00444: \n00445: )\n00446: \n00447: entry_events = (\n00448: \n00449:     event_df[\n00450: \n00451:         event_df[\"Event\"] == \"ENTRY\"\n00452: \n00453:     ]\n00454: \n00455:     .copy()\n00456: \n00457: )\n00458: \n00459: exit_events = (\n00460: \n00461:     event_df[\n00462: \n00463:         event_df[\"Event\"] == \"EXIT\"\n00464: \n00465:     ]\n00466: \n00467:     .copy()\n00468: \n00469: )\n00470: \n00471: if len(entry_events) != EXPECTED_ENTRY_EVENTS:\n00472: \n00473:     raise RuntimeError(\n00474: \n00475:         f\"ENTRY件数異常: {len(entry_events)} \"\n00476: \n00477:         f\"(expected {EXPECTED_ENTRY_EVENTS})\"\n00478: \n00479:     )\n00480: \n00481: if len(exit_events) != EXPECTED_EXIT_EVENTS:\n00482: \n00483:     raise RuntimeError(\n00484: \n00485:         f\"EXIT件数異常: {len(exit_events)} \"\n00486: \n00487:         f\"(expected {EXPECTED_EXIT_EVENTS})\""
+    },
+    {
+      "line": 523,
+      "context": "00498: \n00499: print(\n00500: \n00501:     \"ENTRY:\",\n00502: \n00503:     len(entry_events)\n00504: \n00505: )\n00506: \n00507: print(\n00508: \n00509:     \"EXIT :\",\n00510: \n00511:     len(exit_events)\n00512: \n00513: )\n00514: \n00515: # ============================================================\n00516: \n00517: # 4. Entry metadata\n00518: \n00519: # ============================================================\n00520: \n00521: entry_meta_df = (\n00522: \n00523:     entry_events[\n00524: \n00525:         [\n00526: \n00527:             \"TradeID\",\n00528: \n00529:             \"Side\",\n00530: \n00531:             \"Datetime\",\n00532: \n00533:         ]\n00534: \n00535:     ]\n00536: \n00537:     .merge(\n00538: \n00539:         tm[\n00540: \n00541:             [\n00542: \n00543:                 \"TradeID\",\n00544: \n00545:                 \"Code\",\n00546: \n00547:                 \"EntryPrice\",\n00548: \n00549:             ]\n00550: \n00551:         ],\n00552: \n00553:         on=\"TradeID\",\n00554: \n00555:         how=\"left\"\n00556: \n00557:     )\n00558: \n00559: )\n00560: \n00561: if entry_meta_df[\n00562: \n00563:     ["
+    },
+    {
+      "line": 553,
+      "context": "00528: \n00529:             \"Side\",\n00530: \n00531:             \"Datetime\",\n00532: \n00533:         ]\n00534: \n00535:     ]\n00536: \n00537:     .merge(\n00538: \n00539:         tm[\n00540: \n00541:             [\n00542: \n00543:                 \"TradeID\",\n00544: \n00545:                 \"Code\",\n00546: \n00547:                 \"EntryPrice\",\n00548: \n00549:             ]\n00550: \n00551:         ],\n00552: \n00553:         on=\"TradeID\",\n00554: \n00555:         how=\"left\"\n00556: \n00557:     )\n00558: \n00559: )\n00560: \n00561: if entry_meta_df[\n00562: \n00563:     [\n00564: \n00565:         \"Code\",\n00566: \n00567:         \"EntryPrice\",\n00568: \n00569:     ]\n00570: \n00571: ].isna().any().any():\n00572: \n00573:     raise RuntimeError(\n00574: \n00575:         \"Entry metadata欠損\"\n00576: \n00577:     )\n00578: \n00579: entry_meta = (\n00580: \n00581:     entry_meta_df\n00582: \n00583:     .set_index(\n00584: \n00585:         \"TradeID\"\n00586: \n00587:     )[\n00588: \n00589:         [\n00590: \n00591:             \"Code\",\n00592: \n00593:             \"EntryPrice\","
+    },
+    {
+      "line": 2807,
+      "context": "02782: \n02783:             entry_etf_mark = (\n02784: \n02785:                 last_etf_close\n02786: \n02787:                 if np.isfinite(\n02788: \n02789:                     last_etf_close\n02790: \n02791:                 )\n02792: \n02793:                 else np.nan\n02794: \n02795:             )\n02796: \n02797:         # ====================================================\n02798: \n02799:         # D. Strategy Events\n02800: \n02801:         # ====================================================\n02802: \n02803:         formal_realized_today = 0.0\n02804: \n02805:         broker_realized_today = 0.0\n02806: \n02807:         for e in events_by_date.get(\n02808: \n02809:             date,\n02810: \n02811:             []\n02812: \n02813:         ):\n02814: \n02815:             trade_id = str(\n02816: \n02817:                 e[\n02818: \n02819:                     \"TradeID\"\n02820: \n02821:                 ]\n02822: \n02823:             )\n02824: \n02825:             side = str(\n02826: \n02827:                 e[\n02828: \n02829:                     \"Side\"\n02830: \n02831:                 ]\n02832: \n02833:             ).upper()\n02834: \n02835:             # =================================================\n02836: \n02837:             # EXIT\n02838: \n02839:             # =================================================\n02840: \n02841:             if e[\"Event\"] == \"EXIT\":\n02842: \n02843:                 # ---------------------------------------------\n02844: \n02845:                 # Formal\n02846: \n02847:                 # ---------------------------------------------"
+    },
+    {
+      "line": 3177,
+      "context": "03152: \n03153:                     \"MarginLimitedAtEntry\":\n03154: \n03155:                         bp[\n03156: \n03157:                             \"MarginLimitedAtEntry\"\n03158: \n03159:                         ],\n03160: \n03161:                 })\n03162: \n03163:                 del broker_active[\n03164: \n03165:                     trade_id\n03166: \n03167:                 ]\n03168: \n03169:             # =================================================\n03170: \n03171:             # ENTRY\n03172: \n03173:             # =================================================\n03174: \n03175:             else:\n03176: \n03177:                 meta = entry_meta.get(\n03178: \n03179:                     trade_id\n03180: \n03181:                 )\n03182: \n03183:                 if meta is None:\n03184: \n03185:                     raise RuntimeError(\n03186: \n03187:                         f\"entry_metaなし: \"\n03188: \n03189:                         f\"{trade_id}\"\n03190: \n03191:                     )\n03192: \n03193:                 entry_price = float(\n03194: \n03195:                     meta[\n03196: \n03197:                         \"EntryPrice\"\n03198: \n03199:                     ]\n03200: \n03201:                 )\n03202: \n03203:                 leverage = (\n03204: \n03205:                     LONG_LEVERAGE\n03206: \n03207:                     if side == \"LONG\"\n03208: \n03209:                     else\n03210: \n03211:                     SHORT_LEVERAGE\n03212: \n03213:                 )\n03214: \n03215:                 # ---------------------------------------------\n03216: \n03217:                 # Formal Stage5"
+    },
+    {
+      "line": 3917,
+      "context": "03892: \n03893:                     <\n03894: \n03895:                     MIN_MARGIN_RATIO\n03896: \n03897:                     *\n03898: \n03899:                     100.0\n03900: \n03901:                     -\n03902: \n03903:                     1e-9\n03904: \n03905:                 ):\n03906: \n03907:                     raise RuntimeError(\n03908: \n03909:                         \"ENTRY margin check failure: \"\n03910: \n03911:                         f\"{trade_id} \"\n03912: \n03913:                         f\"{post_margin_pct:.6f}%\"\n03914: \n03915:                     )\n03916: \n03917:                 broker_active[\n03918: \n03919:                     trade_id\n03920: \n03921:                 ] = {\n03922: \n03923:                     \"TradeID\":\n03924: \n03925:                         trade_id,\n03926: \n03927:                     \"Side\":\n03928: \n03929:                         side,\n03930: \n03931:                     \"Code\":\n03932: \n03933:                         str(\n03934: \n03935:                             meta[\n03936: \n03937:                                 \"Code\"\n03938: \n03939:                             ]\n03940: \n03941:                         ).zfill(5),\n03942: \n03943:                     \"EntryDatetime\":\n03944: \n03945:                         pd.Timestamp(\n03946: \n03947:                             e[\n03948: \n03949:                                 \"Datetime\"\n03950: \n03951:                             ]\n03952: \n03953:                         ),\n03954: \n03955:                     \"EntryPrice\":\n03956: \n03957:                         entry_price,"
+    },
+    {
+      "line": 6667,
+      "context": "06642: \n06643: ])\n06644: \n06645: # ============================================================\n06646: \n06647: # 30. 保存\n06648: \n06649: # ============================================================\n06650: \n06651: SUMMARY_PATH = (\n06652: \n06653:     \"/content/\"\n06654: \n06655:     \"stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n06656: \n06657: )\n06658: \n06659: DAILY_PATH = (\n06660: \n06661:     \"/content/\"\n06662: \n06663:     \"stage5_1557_FIX11_ENTRY_MARGIN_daily.parquet\"\n06664: \n06665: )\n06666: \n06667: ENTRY_PATH = (\n06668: \n06669:     \"/content/\"\n06670: \n06671:     \"stage5_1557_FIX11_ENTRY_MARGIN_entry_audit.parquet\"\n06672: \n06673: )\n06674: \n06675: TRADE_PATH = (\n06676: \n06677:     \"/content/\"\n06678: \n06679:     \"stage5_1557_FIX11_ENTRY_MARGIN_trade_audit.parquet\"\n06680: \n06681: )\n06682: \n06683: TX_PATH = (\n06684: \n06685:     \"/content/\"\n06686: \n06687:     \"stage5_1557_FIX11_ENTRY_MARGIN_etf_transactions.csv\"\n06688: \n06689: )\n06690: \n06691: COMPARE_PATH = (\n06692: \n06693:     \"/content/\"\n06694: \n06695:     \"stage5_1557_FIX10_vs_FIX11_comparison.csv\"\n06696: \n06697: )\n06698: \n06699: MARGIN_LIMIT_PATH = (\n06700: \n06701:     \"/content/\"\n06702: \n06703:     \"stage5_1557_FIX11_margin_limited_entries.csv\"\n06704: \n06705: )\n06706: \n06707: SKIP_PATH = ("
+    }
+  ]
+}

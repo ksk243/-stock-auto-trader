@@ -1,0 +1,166 @@
+FIX17 DATA INFRA AUDIT
+==============================================================================================================
+HEAD: 0f8e494
+
+SUMMARY
+--------------------------------------------------------------------------------------------------------------
+save_1m_exists                : True
+save_1m_function_count        : 1
+has_storage_library           : False
+has_gcs_reference             : False
+has_parquet                   : False
+has_yfinance                  : False
+has_explicit_1m_interval      : False
+has_RS20                      : False
+has_RVOL20                    : False
+has_ORB15                     : False
+has_CrossPass                 : False
+has_turnover                  : False
+
+FILES
+--------------------------------------------------------------------------------------------------------------
+save_1m.py
+  exists=True
+  lines=52
+  bytes=879
+  ast=PASS
+  L00012 main()
+paper_trader.py
+  exists=True
+  lines=2656
+  bytes=41234
+  ast=PASS
+  L00105 sha256_file(path)
+  L00129 save_json(path, obj)
+  L00161 load_json(path, default)
+  L00183 send_mail(subject, body)
+  L00285 send_error_mail(title, error_text)
+  L00317 verify_official_source()
+  L00545 check_official_engine()
+  L00727 ensure_paper_state()
+  L00795 verify_fix17_sizing_rule()
+  L00848 main()
+  L01141 load_fix17_runtime_module()
+  L01237 normalize_code(code)
+  L01267 normalize_side(side)
+  L01295 position_key(code, side)
+  L01321 active_positions(state)
+  L01349 active_position_exists(state, code, side)
+  L01393 active_trade_id_exists(state, trade_id)
+  L01439 load_fix17_candidates()
+  L01513 calculate_existing_exposure(state)
+  L01623 calculate_equity(state)
+  L01666 validate_candidate(candidate)
+  L02043 calculate_fix17_order(runtime, candidate, state)
+  L02306 apply_paper_fill(state, order, market_date)
+  L02440 get_fix17_position_state(runtime, state, market_date)
+  L02470 execute_fix17_candidate_batch()
+.github/workflows/save_1m.yml
+  exists=True
+  lines=44
+  bytes=875
+.github/workflows/paper_trader.yml
+  exists=True
+  lines=44
+  bytes=889
+requirements.txt
+  exists=True
+  lines=7
+  bytes=86
+
+ENVIRONMENT VARIABLES
+--------------------------------------------------------------------------------------------------------------
+save_1m.py
+paper_trader.py
+  SMTP_HOST
+  SMTP_PORT
+  SMTP_USER
+  SMTP_PASSWORD
+  MAIL_FROM
+  MAIL_TO
+.github/workflows/save_1m.yml
+  SMTP_HOST
+  SMTP_PORT
+  SMTP_USER
+  SMTP_PASSWORD
+  MAIL_FROM
+  MAIL_TO
+.github/workflows/paper_trader.yml
+  SMTP_HOST
+  SMTP_PORT
+  SMTP_USER
+  SMTP_PASSWORD
+  MAIL_FROM
+  MAIL_TO
+requirements.txt
+
+PATH STRINGS
+--------------------------------------------------------------------------------------------------------------
+save_1m.py
+paper_trader.py
+  paper_state.json
+  fix17_engine_check.json
+  paper_trader_last_run.json
+  result.json
+  : error_text,
+                }
+            )
+
+        except Exception:
+
+            pass
+
+
+        send_error_mail(
+            type(
+                e
+            ).__name__,
+            error_text,
+        )
+
+
+        print(
+            error_text,
+            file=sys.stderr
+        )
+
+        sys.exit(
+            1
+        )
+
+# ============================================================
+
+# FIX17 OFFICIAL LIVE EXECUTION LAYER
+
+# ============================================================
+
+#
+
+# この層ではFIX17のENTRY条件自体を再構築しない。
+
+#
+
+# 入力:
+
+#   runtime/fix17_candidates.json
+
+#
+
+# candidate例:
+
+# {
+
+#   
+  fix17_candidates.json
+  fix17_execution_result.json
+  fix17_candidates.json形式不正
+.github/workflows/save_1m.yml
+.github/workflows/paper_trader.yml
+requirements.txt
+
+WORKFLOW CRON
+--------------------------------------------------------------------------------------------------------------
+.github/workflows/save_1m.yml
+  L7: - cron: "15 7 * * 1-5"
+.github/workflows/paper_trader.yml
+  L7: - cron: "45 6 * * 1-5"

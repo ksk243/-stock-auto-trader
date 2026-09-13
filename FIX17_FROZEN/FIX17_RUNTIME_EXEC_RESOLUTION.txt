@@ -1,0 +1,74 @@
+FIX17 EXEC / SOURCE RESOLUTION
+====================================================================================================
+Official SHA256: 9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4
+
+Resolved source layers: 5
+Functions: 26
+Unique function names: 26
+exec calls: 6
+exec resolved: 2
+
+SOURCE LAYERS
+----------------------------------------------------------------------------------------------------
+DEPTH=0 | 225199 chars | FIX17_ROOT | GitHub official FIX17
+DEPTH=1 | 19749 chars | FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE | FIX17_ROOT:L103
+DEPTH=1 | 13880 chars | DRIVE::FIX11_RECOVERY_ID::1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n | Drive ID 1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n name=FIX11_RESEARCH_MASTER_ONE_CELL_RECOVERY_LOADER.py
+DEPTH=1 | 42647 chars | DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk | Drive ID 1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk name=FIX14_OFFICIAL_FULL_SOURCE.py
+DEPTH=1 | 205614 chars | DRIVE::FIX17_PARENT_FILE_ID::1JR-Sr6R0YYgzQmcShbRFXAcbwPNawYiO | Drive ID 1JR-Sr6R0YYgzQmcShbRFXAcbwPNawYiO name=FIX16_OFFICIAL_FULL_SOURCE_SELF_CONTAINED.py
+
+EXEC CALLS
+----------------------------------------------------------------------------------------------------
+FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE L654 | resolved=False | chars=0 | compile(
+        FIX15_SIMULATOR_SOURCE,
+        "FIX15_DYNAMIC_TAX",
+        "exec",
+    )
+FIX17_ROOT L122 | resolved=True | chars=19749 | compile(
+        FIX16_EMBEDDED_PARENT_SOURCE,
+        'FIX15_OFFICIAL_FULL_SOURCE.py',
+        'exec',
+    )
+DRIVE::FIX17_PARENT_FILE_ID::1JR-Sr6R0YYgzQmcShbRFXAcbwPNawYiO L122 | resolved=True | chars=19749 | compile(
+        FIX16_EMBEDDED_PARENT_SOURCE,
+        'FIX15_OFFICIAL_FULL_SOURCE.py',
+        'exec',
+    )
+FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE L139 | resolved=False | chars=0 | compile(
+            recovery_source,
+            "FIX11_RECOVERY_LOADER",
+            "exec",
+        )
+FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE L175 | resolved=False | chars=0 | compile(
+            base_code,
+            "FIX11_OFFICIAL_BASE",
+            "exec",
+        )
+FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE L221 | resolved=False | chars=0 | compile(
+            fix14_source,
+            "FIX14_OFFICIAL",
+            "exec",
+        )
+
+REQUIRED FUNCTION CHECK
+----------------------------------------------------------------------------------------------------
+simulate_fix11                             FOUND
+simulate_fix15                             FOUND
+simulate_profit_floor_trail                FOUND
+calc_entry_time_position_state             FOUND
+calc_long_dynamic_max_positions            FOUND
+calc_margin_capped_qty                     FOUND
+calc_max_etf_buy_shares                    FOUND
+calc_target_qty                            FOUND
+get_broker_return                          FOUND
+get_last_close_before                      FOUND
+reconstruct_exit_price                     FOUND
+fix15_apply_tax                            FOUND
+fix15_ensure_tax_year                      FOUND
+_fix13_apply_event_filter                  FOUND
+_fix13_ban_reason                          FOUND
+_fix13_calc_max_etf_buy_shares             FOUND
+_fix13_datetime                            FOUND
+_fix13_event_type                          FOUND
+_fix13_first_value                         FOUND
+_fix13_side                                FOUND
+_fix13_trade_id                            FOUND

@@ -1,0 +1,213 @@
+{
+  "github_head": "d5bf2ab",
+  "master_folder": {
+    "id": "1bcU29Jcs5H78mAPaUyJnTXChTdsBfAJM",
+    "name": "FIX11_RESEARCH_MASTER_CHECKPOINT",
+    "mimeType": "application/vnd.google-apps.folder",
+    "createdTime": "2026-09-05T08:09:59.516Z",
+    "modifiedTime": "2026-09-05T08:09:59.516Z"
+  },
+  "file_count": 20,
+  "files": [
+    {
+      "id": "1tAwaEyWCXefTbsds5pCX7JFcAdDKNQOp",
+      "name": "BASELINE_stage5_1557_FIX10_vs_FIX11_comparison.csv",
+      "type": "CSV",
+      "mimeType": "text/csv",
+      "size": "222",
+      "createdTime": "2026-09-05T08:10:00.512Z",
+      "modifiedTime": "2026-09-05T08:10:00.512Z"
+    },
+    {
+      "id": "1-jz9w80-QqCJpYAYc7ageEPt8_-HCYgp",
+      "name": "BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_daily.parquet",
+      "type": "PARQUET",
+      "mimeType": "application/octet-stream",
+      "size": "102365",
+      "createdTime": "2026-09-05T08:10:01.687Z",
+      "modifiedTime": "2026-09-05T08:10:01.687Z"
+    },
+    {
+      "id": "1_8P34Byggj2w3PAfy1bRQLtNM0abfBw-",
+      "name": "BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_entry_audit.parquet",
+      "type": "PARQUET",
+      "mimeType": "application/octet-stream",
+      "size": "107786",
+      "createdTime": "2026-09-05T08:10:02.912Z",
+      "modifiedTime": "2026-09-05T08:10:02.912Z"
+    },
+    {
+      "id": "1czJs9SBtM2r89m2jV7NjK4bXPzM6O3Jz",
+      "name": "BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_etf_transactions.csv",
+      "type": "CSV",
+      "mimeType": "text/csv",
+      "size": "3169",
+      "createdTime": "2026-09-05T08:10:04.173Z",
+      "modifiedTime": "2026-09-05T08:10:04.173Z"
+    },
+    {
+      "id": "1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ",
+      "name": "BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv",
+      "type": "CSV",
+      "mimeType": "text/csv",
+      "size": "891",
+      "createdTime": "2026-09-05T08:10:05.495Z",
+      "modifiedTime": "2026-09-05T08:10:05.495Z"
+    },
+    {
+      "id": "1KFfpPKfhpnDBlTKCesjkQnT_vp7GnvSS",
+      "name": "BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_trade_audit.parquet",
+      "type": "PARQUET",
+      "mimeType": "application/octet-stream",
+      "size": "78546",
+      "createdTime": "2026-09-05T08:10:06.667Z",
+      "modifiedTime": "2026-09-05T08:10:06.667Z"
+    },
+    {
+      "id": "1ZAtbxOl2u0892EM8IC0MeE5odyVsMYhx",
+      "name": "BASELINE_stage5_1557_FIX11_margin_limited_entries.csv",
+      "type": "CSV",
+      "mimeType": "text/csv",
+      "size": "370",
+      "createdTime": "2026-09-05T08:10:07.765Z",
+      "modifiedTime": "2026-09-05T08:10:07.765Z"
+    },
+    {
+      "id": "1iVij19_N60A20EqlH8Y8FSE7Q78qvDF_",
+      "name": "BASELINE_stage5_1557_FIX11_skipped_entries.csv",
+      "type": "CSV",
+      "mimeType": "text/csv",
+      "size": "18121",
+      "createdTime": "2026-09-05T08:10:09.006Z",
+      "modifiedTime": "2026-09-05T08:10:09.006Z"
+    },
+    {
+      "id": "1wKmommitNwE8esQZbyxt9z2zvLuVHR2D",
+      "name": "CAP200_ORIGINAL_867_events_by_date.pkl",
+      "type": "PICKLE",
+      "mimeType": "application/octet-stream",
+      "size": "117576",
+      "createdTime": "2026-09-05T08:10:10.146Z",
+      "modifiedTime": "2026-09-05T08:10:10.146Z"
+    },
+    {
+      "id": "1WZAUjmhzqfhLfObLQy_t66VbthEIMj98",
+      "name": "CAP200_ORIGINAL_867_trade_master.parquet",
+      "type": "PARQUET",
+      "mimeType": "application/octet-stream",
+      "size": "39657",
+      "createdTime": "2026-09-05T08:10:11.185Z",
+      "modifiedTime": "2026-09-05T08:10:11.185Z"
+    },
+    {
+      "id": "1cCBeZJjfjB79OLxoiY08qT1G5zZB7GRn",
+      "name": "FIX11_1557_RUNTIME.parquet",
+      "type": "PARQUET",
+      "mimeType": "application/octet-stream",
+      "size": "13457",
+      "createdTime": "2026-09-05T08:10:12.248Z",
+      "modifiedTime": "2026-09-05T08:10:12.248Z"
+    },
+    {
+      "id": "1vR8UQo00HOS4w8bKxWpQBAzHxId92-XG",
+      "name": "FIX11_daily_stock_EXACT.parquet",
+      "type": "PARQUET",
+      "mimeType": "application/octet-stream",
+      "size": "78497210",
+      "createdTime": "2026-09-05T08:10:14.666Z",
+      "modifiedTime": "2026-09-05T08:10:14.666Z"
+    },
+    {
+      "id": "1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n",
+      "name": "FIX11_RESEARCH_MASTER_ONE_CELL_RECOVERY_LOADER.py",
+      "type": "PYTHON",
+      "mimeType": "text/x-python",
+      "size": "14014",
+      "createdTime": "2026-09-05T08:14:22.442Z",
+      "modifiedTime": "2026-09-05T08:17:48.476Z"
+    },
+    {
+      "id": "1OU8gSO1KhHxKfaPrZuSNRzQb-2vZeVdD",
+      "name": "FIX11_runtime_maps.pkl",
+      "type": "PICKLE",
+      "mimeType": "application/octet-stream",
+      "size": "47724",
+      "createdTime": "2026-09-05T08:10:15.930Z",
+      "modifiedTime": "2026-09-05T08:10:15.930Z"
+    },
+    {
+      "id": "137TAIITPYbow0x2qNhTdRdAUFhZuWiv_",
+      "name": "LONG_FORMAL_EXIT_7822_EXACT.parquet",
+      "type": "PARQUET",
+      "mimeType": "application/octet-stream",
+      "size": "1195839",
+      "createdTime": "2026-09-05T08:10:17.089Z",
+      "modifiedTime": "2026-09-05T08:10:17.089Z"
+    },
+    {
+      "id": "1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW",
+      "name": "MA200_REGIME_464_EXACT.parquet",
+      "type": "PARQUET",
+      "mimeType": "application/octet-stream",
+      "size": "25496",
+      "createdTime": "2026-09-05T08:10:18.288Z",
+      "modifiedTime": "2026-09-05T08:10:18.288Z"
+    },
+    {
+      "id": "1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_",
+      "name": "MANIFEST.json",
+      "type": "JSON",
+      "mimeType": "application/json",
+      "size": "1435",
+      "createdTime": "2026-09-05T08:10:19.457Z",
+      "modifiedTime": "2026-09-05T08:10:19.457Z"
+    },
+    {
+      "id": "1Or0BXWY08n8vL8gjLjnUFCQfB2QjrVBK",
+      "name": "README.txt",
+      "type": "OTHER",
+      "mimeType": "text/plain",
+      "size": "1076",
+      "createdTime": "2026-09-05T08:10:20.626Z",
+      "modifiedTime": "2026-09-05T08:10:20.626Z"
+    },
+    {
+      "id": "1hfYpTSJRN8hgUp-iZaNowrcmjCvTYj-a",
+      "name": "SHORT_FORMAL_STATE_5409_EXACT.parquet",
+      "type": "PARQUET",
+      "mimeType": "application/octet-stream",
+      "size": "804589",
+      "createdTime": "2026-09-05T08:10:21.770Z",
+      "modifiedTime": "2026-09-05T08:10:21.770Z"
+    },
+    {
+      "id": "1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw",
+      "name": "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py",
+      "type": "PYTHON",
+      "mimeType": "text/x-python",
+      "size": "88051",
+      "createdTime": "2026-09-05T08:10:23.056Z",
+      "modifiedTime": "2026-09-05T08:10:23.056Z"
+    }
+  ],
+  "producer_candidates": [
+    {
+      "id": "1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n",
+      "name": "FIX11_RESEARCH_MASTER_ONE_CELL_RECOVERY_LOADER.py",
+      "type": "PYTHON",
+      "mimeType": "text/x-python",
+      "size": "14014",
+      "createdTime": "2026-09-05T08:14:22.442Z",
+      "modifiedTime": "2026-09-05T08:17:48.476Z"
+    },
+    {
+      "id": "1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw",
+      "name": "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py",
+      "type": "PYTHON",
+      "mimeType": "text/x-python",
+      "size": "88051",
+      "createdTime": "2026-09-05T08:10:23.056Z",
+      "modifiedTime": "2026-09-05T08:10:23.056Z"
+    }
+  ]
+}

@@ -1,0 +1,446 @@
+FIX17 PAPER TRADER CURRENT STRUCTURE
+==============================================================================================================
+HEAD: dedf00f
+LINES: 2395
+BYTES: 33981
+AST: PASS
+
+FUNCTIONS
+--------------------------------------------------------------------------------------------------------------
+L00104 sha256_file(path)
+L00128 save_json(path, obj)
+L00160 load_json(path, default)
+L00182 send_mail(subject, body)
+L00284 send_error_mail(title, error_text)
+L00316 verify_official_source()
+L00544 check_official_engine()
+L00726 ensure_paper_state()
+L00794 verify_fix17_sizing_rule()
+L00847 main()
+L01123 load_fix17_runtime_module()
+L01219 normalize_code(code)
+L01249 normalize_side(side)
+L01277 position_key(code, side)
+L01303 active_positions(state)
+L01331 active_position_exists(state, code, side)
+L01375 active_trade_id_exists(state, trade_id)
+L01421 load_fix17_candidates()
+L01495 calculate_existing_exposure(state)
+L01605 calculate_equity(state)
+L01647 validate_candidate(candidate)
+L01813 calculate_fix17_order(runtime, candidate, state)
+L02045 apply_paper_fill(state, order, market_date)
+L02179 get_fix17_position_state(runtime, state, market_date)
+L02209 execute_fix17_candidate_batch()
+
+CLASSES
+--------------------------------------------------------------------------------------------------------------
+
+ENVIRONMENT VARIABLES
+--------------------------------------------------------------------------------------------------------------
+SMTP_HOST
+SMTP_PORT
+SMTP_USER
+SMTP_PASSWORD
+MAIL_FROM
+MAIL_TO
+
+TARGET HITS
+--------------------------------------------------------------------------------------------------------------
+FIX17: 73
+  L2: # FIX17 PAPER TRADER
+  L5: # DO NOT REBUILD FIX17 LOGIC HERE.
+  L7: # Official FIX17:
+  L8: #   FIX17_OFFICIAL_FULL_SOURCE.py
+  L14: #   ・FIX17 official source is the single source of truth.
+  L47: / "FIX17_OFFICIAL_FULL_SOURCE.py"
+  L66: / "fix17_engine_check.json"
+  L246: "FIX17 自動売買",
+  L294: "FIX17 ペーパートレーダーでエラーが発生しました。\n\n"
+  L303: "【緊急】FIX17 ペーパートレーダー エラー",
+  L321: "正式FIX17ソースがありません: "
+  L336: "正式FIX17 SHA256不一致\n"
+  L346: # ISOLATED FIX17 ENGINE CHECK
+  L348: # FIX17 namespaceを親プロセスへ持ち込まない。
+  L400: run_name="__fix17_paper_engine__",
+  L425: ) == "__fix17_paper_engine__":
+  L440: ) == "__fix17_paper_engine__":
+  L448: "FIX17_VERSION",
+  L449: "FIX17_PARENT",
+  L450: "FIX17_PARENT_FILE_ID",
+  L451: "FIX17_PARENT_SHA256",
+  L452: "FIX17_RULE",
+  L453: "FIX17_LONG_TOTAL_LEVERAGE",
+  L605: "FIX17 engine audit結果が作成されませんでした。\n"
+  L633: "FIX17 engine load失敗\n"
+  L660: "FIX17必須関数不足:\n"
+  L673: "FIX17 runtime function数が正式監査値と不一致\n"
+  L690: "FIX17 runtime class数が正式監査値と不一致\n"
+  L737: "version": "FIX17",
+  L767: != "FIX17"
+  L771: "paper_state version がFIX17ではありません。"
+  L783: "paper_state のFIX17 SHAが正式版と一致しません。"
+  L791: # FIX17 SIZING RULE STATIC CHECK
+  L794: def verify_fix17_sizing_rule():
+  L824: "FIX17 sizing rule件数異常\n"
+  L833: "FIX16旧sizing ruleがFIX17公式ソースに残っています。"
+  L854: sizing = verify_fix17_sizing_rule()
+  L864: # 現段階では「FIX17に存在しないENTRY判定」を
+  L870: #   FIX17 official entry pipeline
+  L886: "version": "FIX17",
+  L932: "FIX17公式エンジン検証PASS。"
+  L945: "★★★★★ FIX17 PAPER ENGINE READY ★★★★★"
+  L1033: # FIX17 OFFICIAL LIVE EXECUTION LAYER
+  L1039: # この層ではFIX17のENTRY条件自体を再構築しない。
+  L1045: #   runtime/fix17_candidates.json
+  L1079: # ここでは正式FIX17 sizing / margin / state logicのみ使用。
+  L1089: FIX17_CANDIDATE_FILE = (
+  L1093: / "fix17_candidates.json"
+  L1097: FIX17_EXECUTION_FILE = (
+  L1101: / "fix17_execution_result.json"
+  L1123: def load_fix17_runtime_module():
+  L1129: "_fix17_official_runtime_"
+  L1153: "FIX17正式runtime moduleを作成できません。"
+  L1201: "FIX17 runtime必須関数不足:\n"
+  L1421: def load_fix17_candidates():
+  L1423: if not FIX17_CANDIDATE_FILE.exists():
+  L1435: FIX17_CANDIDATE_FILE,
+  L1451: "fix17_candidates.json形式不正"
+  L1809: # OFFICIAL FIX17 POSITION SIZE
+  L1813: def calculate_fix17_order(
+  L1897: # 正式FIX17 calc_target_qty
+  L1977: # 正式FIX17 calc_margin_capped_qty
+  L2103: # FIX17 margin logicは正式関数側で制御済み。
+  L2147: "source": "FIX17_OFFICIAL_PIPELINE",
+  L2179: def get_fix17_position_state(
+  L2209: def execute_fix17_candidate_batch():
+  L2213: payload = load_fix17_candidates()
+  L2249: FIX17_EXECUTION_FILE,
+  L2257: runtime = load_fix17_runtime_module()
+  L2267: get_fix17_position_state(
+  L2285: order = calculate_fix17_order(
+  L2383: FIX17_EXECUTION_FILE,
+  L2393: # END FIX17 OFFICIAL LIVE EXECUTION LAYER
+fix17_contract: 0
+validate_fix17_contract: 0
+FIX17_OFFICIAL_FULL_SOURCE: 2
+  L8: #   FIX17_OFFICIAL_FULL_SOURCE.py
+  L47: / "FIX17_OFFICIAL_FULL_SOURCE.py"
+simulate_fix11: 1
+  L76: "simulate_fix11",
+simulate_fix15: 1
+  L77: "simulate_fix15",
+simulate_profit_floor_trail: 1
+  L78: "simulate_profit_floor_trail",
+candidate: 55
+  L872: #   order candidate
+  L1045: #   runtime/fix17_candidates.json
+  L1049: # candidate例:
+  L1055: #   "candidates": [
+  L1077: # candidate生成は別データ層から行う。
+  L1089: FIX17_CANDIDATE_FILE = (
+  L1093: / "fix17_candidates.json"
+  L1417: # CANDIDATE INPUT
+  L1421: def load_fix17_candidates():
+  L1423: if not FIX17_CANDIDATE_FILE.exists():
+  L1429: "candidates": [],
+  L1435: FIX17_CANDIDATE_FILE,
+  L1451: "fix17_candidates.json形式不正"
+  L1455: candidates = obj.get(
+  L1457: "candidates",
+  L1465: candidates,
+  L1473: "candidates はlistである必要があります。"
+  L1485: "candidates": candidates,
+  L1643: # CANDIDATE VALIDATION
+  L1647: def validate_candidate(
+  L1649: candidate
+  L1671: if x not in candidate
+  L1679: "candidate必須項目不足: "
+  L1691: candidate[
+  L1701: candidate[
+  L1711: candidate[
+  L1721: candidate[
+  L1765: trade_id = candidate.get(
+  L1789: **candidate,
+  L1817: candidate,
+  L1823: candidate = validate_candidate(
+  L1825: candidate
+  L1829: code = candidate[
+  L1835: side = candidate[
+  L1841: entry_price = candidate[
+  L1847: target_notional = candidate[
+  L1857: candidate[
+  L1871: "candidate": candidate,
+  L1891: "candidate": candidate,
+  L1923: "candidate": candidate,
+  L2013: "candidate": candidate,
+  L2023: "candidate": candidate,
+  L2065: "candidate"
+  L2205: # PROCESS CANDIDATES
+  L2209: def execute_fix17_candidate_batch():
+  L2213: payload = load_fix17_candidates()
+  L2221: candidates = payload.get(
+  L2223: "candidates",
+  L2229: if not candidates:
+  L2233: "status": "NO_CANDIDATES",
+  L2237: "candidate_count": 0,
+  L2283: for raw_candidate in candidates:
+  L2289: raw_candidate,
+  L2341: "candidate_count": len(
+  L2343: candidates
+RS20_corrected: 0
+RVOL20: 0
+turnover_median_20d_oku: 0
+ORB15_LongSignal: 0
+ORB15_ShortSignal: 0
+CrossPass_EXACT: 0
+BacktestReady: 0
+is_lending: 0
+broker_active: 2
+  L2189: broker_active = active_positions(
+  L2197: broker_active,
+position: 32
+  L79: "calc_entry_time_position_state",
+  L80: "calc_long_dynamic_max_positions",
+  L745: "positions": [],
+  L914: "positions": len(
+  L916: "positions",
+  L1171: "calc_entry_time_position_state",
+  L1173: "calc_long_dynamic_max_positions",
+  L1215: # POSITION HELPERS
+  L1277: def position_key(
+  L1303: def active_positions(
+  L1315: "positions",
+  L1331: def active_position_exists(
+  L1341: key = position_key(
+  L1349: for p in active_positions(
+  L1355: if position_key(
+  L1393: for p in active_positions(
+  L1505: for p in active_positions(
+  L1809: # OFFICIAL FIX17 POSITION SIZE
+  L1875: if active_position_exists(
+  L1889: "reason": "POSITION_ALREADY_OPEN",
+  L2107: position = {
+  L2155: "positions",
+  L2161: position
+  L2171: return position
+  L2179: def get_fix17_position_state(
+  L2189: broker_active = active_positions(
+  L2195: return runtime.calc_entry_time_position_state(
+  L2261: # 正式 position state
+  L2265: position_state = (
+  L2267: get_fix17_position_state(
+  L2367: "position_state_repr": repr(
+  L2369: position_state
+portfolio: 0
+cash: 12
+  L743: "cash": 1117792.0,
+  L911: "cash": state.get(
+  L912: "cash"
+  L963: "Cash:",
+  L967: "cash"
+  L1611: cash_now = float(
+  L1615: "cash",
+  L1635: cash_now
+  L1927: cash_now = float(
+  L1931: "cash",
+  L1987: cash_now,
+  L2101: # cashは建玉代金全額を差し引かない。
+equity: 3
+  L741: "initial_equity": 1117792.0,
+  L1601: # EQUITY
+  L1605: def calculate_equity(
+margin: 7
+  L81: "calc_margin_capped_qty",
+  L1079: # ここでは正式FIX17 sizing / margin / state logicのみ使用。
+  L1175: "calc_margin_capped_qty",
+  L1977: # 正式FIX17 calc_margin_capped_qty
+  L1981: capped_qty = runtime.calc_margin_capped_qty(
+  L2011: "reason": "MARGIN_CAPPED_QTY_ZERO",
+  L2103: # FIX17 margin logicは正式関数側で制御済み。
+entry: 34
+  L79: "calc_entry_time_position_state",
+  L864: # 現段階では「FIX17に存在しないENTRY判定」を
+  L870: #   FIX17 official entry pipeline
+  L976: # ENTRY POINT
+  L1039: # この層ではFIX17のENTRY条件自体を再構築しない。
+  L1065: #       "entry_price": 1000.0,
+  L1171: "calc_entry_time_position_state",
+  L1511: entry_price = float(
+  L1515: "entry_price",
+  L1541: entry_price
+  L1575: - entry_price
+  L1583: entry_price
+  L1659: "entry_price",
+  L1709: entry_price = float(
+  L1713: "entry_price"
+  L1733: entry_price
+  L1737: or entry_price <= 0
+  L1743: f"entry_price不正: {entry_price}"
+  L1801: "entry_price": entry_price,
+  L1841: entry_price = candidate[
+  L1843: "entry_price"
+  L1905: entry_price,
+  L1985: entry_price,
+  L2033: * entry_price
+  L2079: entry_price = float(
+  L2083: "entry_price"
+  L2123: "entry_price": entry_price,
+  L2125: "mark_price": entry_price,
+  L2129: "entry_notional": float(
+  L2131: entry_price
+  L2139: "entry_datetime": c.get(
+  L2141: "entry_datetime"
+  L2175: # OFFICIAL ENTRY-TIME STATE
+  L2195: return runtime.calc_entry_time_position_state(
+exit: 3
+  L86: "reconstruct_exit_price",
+  L538: sys.exit(
+  L1027: sys.exit(
+fill: 12
+  L874: #   virtual fill
+  L2041: # PAPER FILL
+  L2045: def apply_paper_fill(
+  L2241: "fills": [],
+  L2281: fills = []
+  L2309: fill = apply_paper_fill(
+  L2319: if fill is not None:
+  L2321: fills.append(
+  L2323: fill
+  L2361: "fill_count": len(
+  L2363: fills
+  L2375: "fills": fills,
+order: 20
+  L872: #   order candidate
+  L1813: def calculate_fix17_order(
+  L2021: "status": "ORDER",
+  L2049: order,
+  L2055: if order.get(
+  L2059: ) != "ORDER":
+  L2063: c = order[
+  L2071: order[
+  L2239: "orders": [],
+  L2279: orders = []
+  L2285: order = calculate_fix17_order(
+  L2295: orders.append(
+  L2297: order
+  L2301: if order.get(
+  L2305: ) != "ORDER":
+  L2313: order,
+  L2347: "order_count": sum(
+  L2351: for x in orders
+  L2357: ) == "ORDER"
+  L2373: "orders": orders,
+trade: 27
+  L2: # FIX17 PAPER TRADER
+  L71: / "paper_trader_last_run.json"
+  L96: "_fix13_trade_id",
+  L747: "closed_trades": [],
+  L865: # paper_trader.py側で勝手に再構築しない。
+  L920: "closed_trades": len(
+  L922: "closed_trades",
+  L1059: #       "trade_id": "...",
+  L1119: # paper_trader.pyプロセス終了時に消える。
+  L1375: def active_trade_id_exists(
+  L1379: trade_id
+  L1383: if trade_id is None:
+  L1387: trade_id = str(
+  L1389: trade_id
+  L1403: "trade_id",
+  L1409: ) == trade_id:
+  L1765: trade_id = candidate.get(
+  L1767: "trade_id"
+  L1771: if trade_id is None:
+  L1773: trade_id = (
+  L1791: "trade_id": str(
+  L1793: trade_id
+  L1853: if active_trade_id_exists(
+  L1859: "trade_id"
+  L1869: "reason": "DUPLICATE_TRADE_ID",
+  L2109: "trade_id": c[
+  L2111: "trade_id"
+GCS: 0
+storage: 0
+portfolio.json: 0
+paper_trades.csv: 0
+latest_result.txt: 0
+mail: 19
+  L34: from email.mime.text import MIMEText
+  L35: from email.header import Header
+  L36: from email.utils import formataddr
+  L179: # MAIL
+  L182: def send_mail(
+  L209: mail_from = os.getenv(
+  L210: "MAIL_FROM",
+  L214: mail_to = os.getenv(
+  L215: "MAIL_TO",
+  L224: and mail_from
+  L225: and mail_to
+  L250: mail_from,
+  L254: msg["To"] = mail_to
+  L274: smtp.sendmail(
+  L275: mail_from,
+  L276: [mail_to],
+  L284: def send_error_mail(
+  L302: send_mail(
+  L1014: send_error_mail(
+send_error_mail: 2
+  L284: def send_error_mail(
+  L1014: send_error_mail(
+send_mail: 2
+  L182: def send_mail(
+  L302: send_mail(
+
+MAIN
+--------------------------------------------------------------------------------------------------------------
+00969:     )
+00970: 
+00971: 
+00972:     return result
+00973: 
+00974: 
+00975: # ============================================================
+00976: # ENTRY POINT
+00977: # ============================================================
+00978: 
+00979: if __name__ == "__main__":
+00980: 
+00981:     try:
+00982: 
+00983:         main()
+00984: 
+00985:     except Exception as e:
+00986: 
+00987:         error_text = (
+00988:             traceback.format_exc()
+00989:         )
+00990: 
+00991: 
+00992:         try:
+00993: 
+00994:             save_json(
+00995:                 RUN_LOG_FILE,
+00996:                 {
+00997:                     "status": "ERROR",
+00998:                     "time": datetime.now().isoformat(),
+00999:                     "error_type": type(
+01000:                         e
+01001:                     ).__name__,
+01002:                     "error": str(
+01003:                         e
+01004:                     ),
+01005:                     "traceback": error_text,
+01006:                 }
+01007:             )
+01008: 
+01009:         except Exception:
+01010: 
+01011:             pass
+01012: 
+01013: 
+01014:         send_error_mail(
+01015:             type(
+01016:                 e
+01017:             ).__name__,
+01018:             error_text,
+01019:         )

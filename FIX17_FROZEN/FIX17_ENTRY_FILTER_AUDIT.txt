@@ -1,0 +1,34 @@
+FIX17 ENTRY FILTER AUDIT
+====================================================================================================
+HEAD: 9bcbf29
+
+LONG FILTER COUNTS
+----------------------------------------------------------------------------------------------------
+ALL                            7822
+RS>=80                         7822
+RVOL>=2                        7822
+TURN>=3                        7822
+ORB_LONG                       7822
+CROSSPASS                      7822
+BACKTEST_READY                 7822
+RS80_RVOL2_TURN3               7822
+FULL_LONG                      7822
+
+FormalEntryPrice present: 7822
+
+SHORT FILTER COUNTS
+----------------------------------------------------------------------------------------------------
+ALL                            5409
+RS<=20                         5409
+RS<=30                         5409
+RVOL>=2                        5409
+TURN>=3                        5409
+ORB_SHORT                      5409
+LENDING                        5409
+ENTERED                        5409
+RS20_RVOL2_TURN3_ORB           5409
+RS30_RVOL2_TURN3_ORB           5409
+RS20_FULL_LENDING              5409
+RS30_FULL_LENDING              5409
+
+_entered=True: 5409

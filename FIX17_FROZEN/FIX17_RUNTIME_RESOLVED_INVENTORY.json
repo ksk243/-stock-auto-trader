@@ -1,0 +1,354 @@
+{
+  "version": "FIX17",
+  "official_file": "FIX17_OFFICIAL_FULL_SOURCE.py",
+  "official_sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4",
+  "verified_sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4",
+  "summary": {
+    "resolved_source_layers": 5,
+    "functions_total_unique_source": 26,
+    "function_names_unique": 26,
+    "exec_calls_total": 6,
+    "exec_calls_resolved": 2,
+    "drive_source_ids_detected": 9
+  },
+  "required_functions": {
+    "simulate_fix11": true,
+    "simulate_fix15": true,
+    "simulate_profit_floor_trail": true,
+    "calc_entry_time_position_state": true,
+    "calc_long_dynamic_max_positions": true,
+    "calc_margin_capped_qty": true,
+    "calc_max_etf_buy_shares": true,
+    "calc_target_qty": true,
+    "get_broker_return": true,
+    "get_last_close_before": true,
+    "reconstruct_exit_price": true,
+    "fix15_apply_tax": true,
+    "fix15_ensure_tax_year": true,
+    "_fix13_apply_event_filter": true,
+    "_fix13_ban_reason": true,
+    "_fix13_calc_max_etf_buy_shares": true,
+    "_fix13_datetime": true,
+    "_fix13_event_type": true,
+    "_fix13_first_value": true,
+    "_fix13_side": true,
+    "_fix13_trade_id": true
+  },
+  "drive_source_ids": {
+    "1SpTJNDpsxwCoid16_yKdMtly4duEaxXN": {
+      "variable": "FIX16_PARENT_FILE_ID",
+      "source": "DRIVE::FIX17_PARENT_FILE_ID::1JR-Sr6R0YYgzQmcShbRFXAcbwPNawYiO",
+      "line": 49
+    },
+    "2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b": {
+      "variable": "FIX16_EMBEDDED_PARENT_SHA256",
+      "source": "DRIVE::FIX17_PARENT_FILE_ID::1JR-Sr6R0YYgzQmcShbRFXAcbwPNawYiO",
+      "line": 101
+    },
+    "1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n": {
+      "variable": "FIX11_RECOVERY_ID",
+      "source": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "line": 85
+    },
+    "cb4d239f907ec3d8377902f5a59205bb96151da8ebf5fcd0cf21573ea3568ea9": {
+      "variable": "FIX13_PARENT_SHA256",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "line": 505
+    },
+    "1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk": {
+      "variable": "FIX14_FILE_ID",
+      "source": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "line": 92
+    },
+    "53632969dec8eb36558bdf26866688f881f6598a90002cf89c868a3c9d136586": {
+      "variable": "FIX14_SHA",
+      "source": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "line": 94
+    },
+    "1JR-Sr6R0YYgzQmcShbRFXAcbwPNawYiO": {
+      "variable": "FIX17_PARENT_FILE_ID",
+      "source": "FIX17_ROOT",
+      "line": 1196
+    },
+    "fa9cad62f446feeed6478d283d6f06bca25ff4e3d073693c614081a752a9aca8": {
+      "variable": "FIX17_PARENT_SHA256",
+      "source": "FIX17_ROOT",
+      "line": 1197
+    },
+    "REMOVE_FIXED_LONG_PER_STOCK_CAP": {
+      "variable": "FIX17_RULE",
+      "source": "FIX17_ROOT",
+      "line": 1198
+    }
+  },
+  "sources": [
+    {
+      "label": "FIX17_ROOT",
+      "origin": "GitHub official FIX17",
+      "depth": 0,
+      "sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4",
+      "chars": 225199,
+      "lines": 1579
+    },
+    {
+      "label": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "origin": "FIX17_ROOT:L103",
+      "depth": 1,
+      "sha256": "2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b",
+      "chars": 19749,
+      "lines": 1105
+    },
+    {
+      "label": "DRIVE::FIX11_RECOVERY_ID::1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n",
+      "origin": "Drive ID 1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n name=FIX11_RESEARCH_MASTER_ONE_CELL_RECOVERY_LOADER.py",
+      "depth": 1,
+      "sha256": "d6034aa7aba3ee8dbd7c3a340e469a082b550f4a427aeb2c82868ec464f8babb",
+      "chars": 13880,
+      "lines": 1246
+    },
+    {
+      "label": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "origin": "Drive ID 1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk name=FIX14_OFFICIAL_FULL_SOURCE.py",
+      "depth": 1,
+      "sha256": "53632969dec8eb36558bdf26866688f881f6598a90002cf89c868a3c9d136586",
+      "chars": 42647,
+      "lines": 840
+    },
+    {
+      "label": "DRIVE::FIX17_PARENT_FILE_ID::1JR-Sr6R0YYgzQmcShbRFXAcbwPNawYiO",
+      "origin": "Drive ID 1JR-Sr6R0YYgzQmcShbRFXAcbwPNawYiO name=FIX16_OFFICIAL_FULL_SOURCE_SELF_CONTAINED.py",
+      "depth": 1,
+      "sha256": "fa9cad62f446feeed6478d283d6f06bca25ff4e3d073693c614081a752a9aca8",
+      "chars": 205614,
+      "lines": 1179
+    }
+  ],
+  "functions": [
+    {
+      "name": "_fix16_download_bytes",
+      "source": "FIX17_ROOT",
+      "depth": 0,
+      "line_start": 71,
+      "line_end": 89
+    },
+    {
+      "name": "_download_text",
+      "source": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "depth": 1,
+      "line_start": 108,
+      "line_end": 119
+    },
+    {
+      "name": "_sha256_text",
+      "source": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "depth": 1,
+      "line_start": 122,
+      "line_end": 126
+    },
+    {
+      "name": "fix15_ensure_tax_year",
+      "source": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "depth": 1,
+      "line_start": 250,
+      "line_end": 263
+    },
+    {
+      "name": "fix15_apply_tax",
+      "source": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "depth": 1,
+      "line_start": 266,
+      "line_end": 347
+    },
+    {
+      "name": "simulate_profit_floor_trail",
+      "source": "FIX17_ROOT",
+      "depth": 0,
+      "line_start": 330,
+      "line_end": 730
+    },
+    {
+      "name": "simulate_fix15",
+      "source": "FIX17_ROOT",
+      "depth": 0,
+      "line_start": 1202,
+      "line_end": 1537
+    },
+    {
+      "name": "download_drive_file",
+      "source": "DRIVE::FIX11_RECOVERY_ID::1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n",
+      "depth": 1,
+      "line_start": 167,
+      "line_end": 199
+    },
+    {
+      "name": "pick_runtime_value",
+      "source": "DRIVE::FIX11_RECOVERY_ID::1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n",
+      "depth": 1,
+      "line_start": 317,
+      "line_end": 325
+    },
+    {
+      "name": "calc_long_dynamic_max_positions",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 46,
+      "line_end": 67
+    },
+    {
+      "name": "reconstruct_exit_price",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 122,
+      "line_end": 133
+    },
+    {
+      "name": "get_broker_return",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 135,
+      "line_end": 141
+    },
+    {
+      "name": "get_last_close_before",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 166,
+      "line_end": 175
+    },
+    {
+      "name": "calc_target_qty",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 183,
+      "line_end": 188
+    },
+    {
+      "name": "_fix13_calc_max_etf_buy_shares",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 190,
+      "line_end": 205
+    },
+    {
+      "name": "calc_max_etf_buy_shares",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 207,
+      "line_end": 213
+    },
+    {
+      "name": "calc_entry_time_position_state",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 215,
+      "line_end": 243
+    },
+    {
+      "name": "calc_margin_capped_qty",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 245,
+      "line_end": 275
+    },
+    {
+      "name": "simulate_fix11",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 277,
+      "line_end": 502
+    },
+    {
+      "name": "_fix13_first_value",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 508,
+      "line_end": 514
+    },
+    {
+      "name": "_fix13_event_type",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 516,
+      "line_end": 520
+    },
+    {
+      "name": "_fix13_side",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 522,
+      "line_end": 526
+    },
+    {
+      "name": "_fix13_trade_id",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 528,
+      "line_end": 532
+    },
+    {
+      "name": "_fix13_datetime",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 534,
+      "line_end": 546
+    },
+    {
+      "name": "_fix13_ban_reason",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 548,
+      "line_end": 562
+    },
+    {
+      "name": "_fix13_apply_event_filter",
+      "source": "DRIVE::FIX14_FILE_ID::1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk",
+      "depth": 1,
+      "line_start": 564,
+      "line_end": 616
+    }
+  ],
+  "exec_calls": [
+    {
+      "source": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "line": 654,
+      "expression": "compile(\n        FIX15_SIMULATOR_SOURCE,\n        \"FIX15_DYNAMIC_TAX\",\n        \"exec\",\n    )",
+      "resolved": false,
+      "resolved_chars": 0
+    },
+    {
+      "source": "FIX17_ROOT",
+      "line": 122,
+      "expression": "compile(\n        FIX16_EMBEDDED_PARENT_SOURCE,\n        'FIX15_OFFICIAL_FULL_SOURCE.py',\n        'exec',\n    )",
+      "resolved": true,
+      "resolved_chars": 19749
+    },
+    {
+      "source": "DRIVE::FIX17_PARENT_FILE_ID::1JR-Sr6R0YYgzQmcShbRFXAcbwPNawYiO",
+      "line": 122,
+      "expression": "compile(\n        FIX16_EMBEDDED_PARENT_SOURCE,\n        'FIX15_OFFICIAL_FULL_SOURCE.py',\n        'exec',\n    )",
+      "resolved": true,
+      "resolved_chars": 19749
+    },
+    {
+      "source": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "line": 139,
+      "expression": "compile(\n            recovery_source,\n            \"FIX11_RECOVERY_LOADER\",\n            \"exec\",\n        )",
+      "resolved": false,
+      "resolved_chars": 0
+    },
+    {
+      "source": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "line": 175,
+      "expression": "compile(\n            base_code,\n            \"FIX11_OFFICIAL_BASE\",\n            \"exec\",\n        )",
+      "resolved": false,
+      "resolved_chars": 0
+    },
+    {
+      "source": "FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE",
+      "line": 221,
+      "expression": "compile(\n            fix14_source,\n            \"FIX14_OFFICIAL\",\n            \"exec\",\n        )",
+      "resolved": false,
+      "resolved_chars": 0
+    }
+  ]
+}

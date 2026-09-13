@@ -1,0 +1,705 @@
+{
+  "version": "FIX17",
+  "created_at_utc": "2026-09-13T08:56:02.906868+00:00",
+  "known_good_commit": "dfba056f1e8a86d7f6ee7b9507f16830d9dfaeda",
+  "runtime_tag": "FIX17_RUNTIME",
+  "official_source": {
+    "file": "FIX17_OFFICIAL_FULL_SOURCE.py",
+    "sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4",
+    "verified": true
+  },
+  "frozen": {
+    "tracked_files": 111,
+    "python_files": 23
+  },
+  "compile": {
+    "pass_files": [
+      ".github/workflows/fix11_paper_trader.py",
+      "FIX11_ENTRY_SOURCE_EXACT.py",
+      "FIX17_ENTRY_RULES_SOURCE.py",
+      "FIX17_OFFICIAL_FULL_SOURCE.py",
+      "FIX17_RUNTIME_ALL_FUNCTIONS.py",
+      "FIX17_RUNTIME_EXTRACT.py",
+      "FIX17_RUNTIME_RESOLVED_FUNCTIONS.py",
+      "fix17_contract.py",
+      "fix17_long_candidate_bridge.py",
+      "mailer.py",
+      "paper_state_store.py",
+      "paper_trader.py",
+      "paper_trader_before_contract_gate.py",
+      "paper_trader_before_entry_contract.py",
+      "paper_trader_v29_4.py",
+      "save_1m.py",
+      "save_1m_before_batch_hardening.py",
+      "save_1m_before_jpx_calendar_gate.py",
+      "save_1m_before_live_data.py"
+    ],
+    "non_executable_artifacts": [
+      "FIX17_ENTRY_BOOLEAN_SOURCE.py",
+      "FIX17_ENTRY_DATA_PROVENANCE_SOURCE.py",
+      "FIX17_ENTRY_RELEVANT_SOURCE.py",
+      "FIX17_ENTRY_SOURCE_CONTEXT.py"
+    ],
+    "other_noncritical_failures": [],
+    "critical_failures": []
+  },
+  "critical_runtime": {
+    "found": [
+      ".github/workflows/fix11_paper_trader.py",
+      "FIX17_OFFICIAL_FULL_SOURCE.py",
+      "fix17_contract.py",
+      "fix17_long_candidate_bridge.py",
+      "mailer.py",
+      "paper_state_store.py",
+      "paper_trader.py",
+      "save_1m.py"
+    ],
+    "missing": []
+  },
+  "external_code_audit": {
+    "hits": [
+      {
+        "file": "FIX17_OFFICIAL_FULL_SOURCE.py",
+        "line": 42,
+        "text": "from googleapiclient.discovery import build"
+      },
+      {
+        "file": "FIX17_OFFICIAL_FULL_SOURCE.py",
+        "line": 43,
+        "text": "from googleapiclient.http import MediaIoBaseDownload"
+      },
+      {
+        "file": "FIX17_OFFICIAL_FULL_SOURCE.py",
+        "line": 79,
+        "text": "dl = MediaIoBaseDownload("
+      },
+      {
+        "file": "FIX17_OFFICIAL_FULL_SOURCE.py",
+        "line": 103,
+        "text": "FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\\n# FIX15 OFFICIAL STANDALONE\\n#\\n# Parent:\\n#   FIX14_OFFICIAL_FULL_SOURCE.py\\n#   File ID:\\n#       1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk\\n#\\n# FIX15 addition:\\n#   Dynamic Japan"
+      },
+      {
+        "file": "FIX17_RUNTIME_ALL_FUNCTIONS.py",
+        "line": 31,
+        "text": "dl = MediaIoBaseDownload("
+      },
+      {
+        "file": "FIX17_RUNTIME_RESOLVED_FUNCTIONS.py",
+        "line": 23,
+        "text": "dl = MediaIoBaseDownload("
+      },
+      {
+        "file": "FIX17_RUNTIME_RESOLVED_FUNCTIONS.py",
+        "line": 965,
+        "text": "downloader = MediaIoBaseDownload("
+      },
+      {
+        "file": "fix17_long_candidate_bridge.py",
+        "line": 48,
+        "text": "ns = runpy.run_path("
+      },
+      {
+        "file": "paper_trader.py",
+        "line": 398,
+        "text": "ns = runpy.run_path("
+      },
+      {
+        "file": "paper_trader.py",
+        "line": 1013,
+        "text": "spec = importlib.util.spec_from_file_location("
+      },
+      {
+        "file": "paper_trader.py",
+        "line": 2542,
+        "text": "ns = runpy.run_path("
+      },
+      {
+        "file": "paper_trader.py",
+        "line": 3091,
+        "text": "ns = runpy.run_path("
+      },
+      {
+        "file": "paper_trader.py",
+        "line": 3845,
+        "text": "spec = importlib.util.spec_from_file_location("
+      },
+      {
+        "file": "paper_trader_before_contract_gate.py",
+        "line": 396,
+        "text": "ns = runpy.run_path("
+      },
+      {
+        "file": "paper_trader_before_contract_gate.py",
+        "line": 1135,
+        "text": "spec = importlib.util.spec_from_file_location("
+      },
+      {
+        "file": "paper_trader_before_entry_contract.py",
+        "line": 397,
+        "text": "ns = runpy.run_path("
+      },
+      {
+        "file": "paper_trader_before_entry_contract.py",
+        "line": 1153,
+        "text": "spec = importlib.util.spec_from_file_location("
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": ".github/workflows/fix11_paper_trader.py",
+      "size": 38970,
+      "sha256": "5b9e9c7c5249825ab75e7671bd0fb358818faa1f46afdf8d9a0424325615d654"
+    },
+    {
+      "path": ".github/workflows/fix17_paper_trader_auto.yml",
+      "size": 1461,
+      "sha256": "a4015685ee0565a9f36f4d9cbf380c345db2a83b9ee7a1b623eb71d60f265ddd"
+    },
+    {
+      "path": ".github/workflows/main.yml",
+      "size": 10719,
+      "sha256": "2587a460a4623689c8a045fbe8d8ded4fe08577ea08511c269bd5f9eff8ab60f"
+    },
+    {
+      "path": ".github/workflows/paper_trader.yml",
+      "size": 849,
+      "sha256": "596059fe4d1c536c47d15ab9fe00e21e577b99cc0fdd617b78ed0bc8e7f16e91"
+    },
+    {
+      "path": ".github/workflows/save_1m.yml",
+      "size": 1236,
+      "sha256": "fddc5fd22eefe8bfe41c354f88d6451f61f9d1119dfa9952a3036fc7d4601a82"
+    },
+    {
+      "path": ".github/workflows/test_save1m_error_mail.yml",
+      "size": 1185,
+      "sha256": "605a71e7bcbf62de2ddb62db8438564f5ef6218a4d693550ddacf494ff6192de"
+    },
+    {
+      "path": ".gitignore",
+      "size": 108,
+      "sha256": "7505506a2324f43c27edc15f9d7e3a27190c7db0dd60c1d99f54ab88de49855a"
+    },
+    {
+      "path": "Dockerfile",
+      "size": 245,
+      "sha256": "ac7c0f419931a81aed146dd209caa9f69bbefacc8b2a43c6660598ac4dd08801"
+    },
+    {
+      "path": "FIX11_ENTRY_SOURCE_EXACT.py",
+      "size": 88051,
+      "sha256": "cb4d239f907ec3d8377902f5a59205bb96151da8ebf5fcd0cf21573ea3568ea9"
+    },
+    {
+      "path": "FIX17_CANDIDATE_INTERFACE_EXACT.json",
+      "size": 24283,
+      "sha256": "7102be15ff0cb9a231f221bb486bfae2f22f46b84712a68659815caa4ac1f111"
+    },
+    {
+      "path": "FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+      "size": 21990,
+      "sha256": "676b54d9030f7afaf52425073bb5cb6b4432f4cf1c792c3c17c89a7df2a381c1"
+    },
+    {
+      "path": "FIX17_DATA_INFRA_AUDIT.json",
+      "size": 28888,
+      "sha256": "ad5903345946ac6439b10a90ad743c43d2b9e36e44fd112e586e3b6da729a885"
+    },
+    {
+      "path": "FIX17_DATA_INFRA_AUDIT.txt",
+      "size": 3897,
+      "sha256": "6979b992362ad4784c350c27dcdda871327eddd08ee6939dc27b1c689bbeff76"
+    },
+    {
+      "path": "FIX17_ENTRY_BOOLEAN_EXACT.json",
+      "size": 3805375,
+      "sha256": "a2c13ff4fcd809f5377e5c63fde925aa7579c929fd8cf46037523f445b6429a3"
+    },
+    {
+      "path": "FIX17_ENTRY_BOOLEAN_EXACT.txt",
+      "size": 2097,
+      "sha256": "f0f73493bf79ab65d81f29a7e5b4ac45bfa1a0c3495effc73a10f93845113079"
+    },
+    {
+      "path": "FIX17_ENTRY_BOOLEAN_SOURCE.py",
+      "size": 1873187,
+      "sha256": "7e887ab92a545df562664b12e86c974cab43700d8e6118aa4bf9a3340e970919"
+    },
+    {
+      "path": "FIX17_ENTRY_CONTRACT.json",
+      "size": 94207,
+      "sha256": "15b0a3a970c6bcbeda48e37a1ee48cb3c1f884859d2c3abfd7bd048f9c32e010"
+    },
+    {
+      "path": "FIX17_ENTRY_CONTRACT.txt",
+      "size": 23095,
+      "sha256": "e889d174ce72b05e9df1969c87a96bd933573b535686af418c9a634ba84fe891"
+    },
+    {
+      "path": "FIX17_ENTRY_CONTRACT_PROVEN.json",
+      "size": 4551,
+      "sha256": "6410f9ea16b1c229caeb56c885cfc9ab4b5019ca03733e91127cb4cad7e5d3f7"
+    },
+    {
+      "path": "FIX17_ENTRY_CONTRACT_PROVEN.txt",
+      "size": 2987,
+      "sha256": "9c125ba211c90c7baf2d481b7418e1e0d5f62a9d3d387b4fa47915442f99d09f"
+    },
+    {
+      "path": "FIX17_ENTRY_CONTRACT_REGRESSION_TEST.json",
+      "size": 2388,
+      "sha256": "7dc1faf036b5a380c892bab041aef8bd7053e12ed47f74da8a6b33f56226ecb9"
+    },
+    {
+      "path": "FIX17_ENTRY_CONTRACT_REGRESSION_TEST.txt",
+      "size": 1696,
+      "sha256": "d8945567ba328f9123b5385792935aa6841b0579c365aeea79eb2998cf87de4f"
+    },
+    {
+      "path": "FIX17_ENTRY_DATA_PROVENANCE.json",
+      "size": 4745424,
+      "sha256": "b1aa9f5ba266448bee3107b841e4ce0f9a4600853d69f30be54c0e2e66c8e73f"
+    },
+    {
+      "path": "FIX17_ENTRY_DATA_PROVENANCE.txt",
+      "size": 382252,
+      "sha256": "d77f6be3facd6679ee8f1bc226555f98dc4e1131ccef3e75129c71fa86765ead"
+    },
+    {
+      "path": "FIX17_ENTRY_DATA_PROVENANCE_SOURCE.py",
+      "size": 941519,
+      "sha256": "3a8c5ab0479fb38b1ebd8cccbc8995cea20c9e8f13b0267033beafa367bf9943"
+    },
+    {
+      "path": "FIX17_ENTRY_DATA_SCHEMA.json",
+      "size": 2726,
+      "sha256": "d651e24b4231f5a4ce0886b72a8da97f808e20cbf47f6c49009c282430d273d9"
+    },
+    {
+      "path": "FIX17_ENTRY_DATA_SCHEMA.txt",
+      "size": 1157,
+      "sha256": "d14d20bdc32a1b7560b09d081fb8e22be51763f900d5d3c7cd242eca50f475af"
+    },
+    {
+      "path": "FIX17_ENTRY_EVENT_LINEAGE_EXACT.json",
+      "size": 23418,
+      "sha256": "28f3990afeabcbb88562a68d82814fc08094e883ba465eb10d3fcb914456a13d"
+    },
+    {
+      "path": "FIX17_ENTRY_EVENT_LINEAGE_EXACT.txt",
+      "size": 16621,
+      "sha256": "2ee2944f651c50ae269e790c8c4ad831943a7ded29ba3862c0bab7d92bfa4f41"
+    },
+    {
+      "path": "FIX17_ENTRY_EVENT_SOURCE_TRACE.json",
+      "size": 43839,
+      "sha256": "78cc5eb3595e3556e2a76f3d82f6e52cd4b57f83cc8e80248846f10949653a6a"
+    },
+    {
+      "path": "FIX17_ENTRY_EVENT_SOURCE_TRACE.txt",
+      "size": 36253,
+      "sha256": "f2ff4a2a6408a0fae1865260bd7663cb3660cf5e6be53e482d641f33b795657b"
+    },
+    {
+      "path": "FIX17_ENTRY_FILTER_AUDIT.json",
+      "size": 5811,
+      "sha256": "4a7680a87c3f0310e1f8ac0be0ca0a9005f05910c150e1571192fb226853fce0"
+    },
+    {
+      "path": "FIX17_ENTRY_FILTER_AUDIT.txt",
+      "size": 1192,
+      "sha256": "4743e334cf3efeb056b7bf1af528c3ad5827656d1842cb342e578e982694001a"
+    },
+    {
+      "path": "FIX17_ENTRY_INPUT_LINEAGE_EXACT.json",
+      "size": 12849,
+      "sha256": "7cfd4e4b0c4ee612698a0a661893328c6d611f4f66fa9d8efda4afbdb368c19d"
+    },
+    {
+      "path": "FIX17_ENTRY_INPUT_LINEAGE_EXACT.txt",
+      "size": 7852,
+      "sha256": "4e5f230c26765512a4068147f2ec6af8af16ccfee673a097a2215c14b996d526"
+    },
+    {
+      "path": "FIX17_ENTRY_RELEVANT_SOURCE.py",
+      "size": 33120,
+      "sha256": "48b643add6a416d993c39af32791852e075f3ce9dad8e1915ce5b8ab333a36e0"
+    },
+    {
+      "path": "FIX17_ENTRY_RULES_EXACT.json",
+      "size": 129468,
+      "sha256": "8850d1720ebf06c3f4de141c3fa9591907925c8678b41828da1a33396dbd3492"
+    },
+    {
+      "path": "FIX17_ENTRY_RULES_EXACT.txt",
+      "size": 1382,
+      "sha256": "1894e7eb6556cfc429de1b01e3c1103381cbad5e9c936a79a2676995e15cc8eb"
+    },
+    {
+      "path": "FIX17_ENTRY_RULES_SOURCE.py",
+      "size": 361,
+      "sha256": "dc9926bbe3014a952ead57c3f739afda0ba4becb43f0968e0bb3b04d122079eb"
+    },
+    {
+      "path": "FIX17_ENTRY_SOURCE_CONTEXT.py",
+      "size": 895139,
+      "sha256": "da9de5576de0c66114dea0b488504b92583d7ec07cfeac536f40771125bdf616"
+    },
+    {
+      "path": "FIX17_ENTRY_SOURCE_LOCATOR.json",
+      "size": 2387857,
+      "sha256": "8a58a325d1a9bebeda2d25185a95f9869ce74fd4bf193b682ea20cc2845a5f0b"
+    },
+    {
+      "path": "FIX17_ENTRY_SOURCE_LOCATOR.txt",
+      "size": 1709667,
+      "sha256": "ab3388fdd96e505dabb479d22dc9b5d4eb5ca3ada94d1142117d7f4de4f7a744"
+    },
+    {
+      "path": "FIX17_FINAL_UPSTREAM_PROVENANCE_CHECK.json",
+      "size": 5229,
+      "sha256": "bc89b1521f9b5883ec2a737b20d093560ed72cf9b60d7e50a6ff960c9843ff4c"
+    },
+    {
+      "path": "FIX17_FINAL_UPSTREAM_PROVENANCE_CHECK.txt",
+      "size": 3503,
+      "sha256": "72549ff04beac85e4619816f5b3cd68c8a0443fc4d01cf77ad9a6ab8ffd06547"
+    },
+    {
+      "path": "FIX17_FIX11_ENTRY_LOGIC_EXACT.json",
+      "size": 29039,
+      "sha256": "0f78195281bc0f6f0230edbbfbeb71f420cd52e8a99c03450e0f6d69f0302acc"
+    },
+    {
+      "path": "FIX17_FIX11_ENTRY_LOGIC_EXACT.txt",
+      "size": 957,
+      "sha256": "3f3a49adb64a231fad406cdbb058e5f009d804bf3a91094c292986b59ff7827f"
+    },
+    {
+      "path": "FIX17_FORMAL_DATA_USAGE_EXACT.json",
+      "size": 157,
+      "sha256": "c6e229ac4ac510e7fcb60614f85bfb3d89825d96c1de61a9028b771c0839940a"
+    },
+    {
+      "path": "FIX17_FORMAL_DATA_USAGE_EXACT.txt",
+      "size": 588,
+      "sha256": "da24c20e55d8f5ef00d075a2879cb3454a5f3c6eda68fc56aee5d3424c42555f"
+    },
+    {
+      "path": "FIX17_FORMAL_ENTRY_DATA_SCHEMA.json",
+      "size": 13243,
+      "sha256": "939c644ff2beb1b6d40bbc7d9b309a6a083127a566abde45d0ea131ea9c54b60"
+    },
+    {
+      "path": "FIX17_FORMAL_ENTRY_DATA_SCHEMA.txt",
+      "size": 4996,
+      "sha256": "1a14696ea21553d701fdccab6e60d2e6b48bff963bfa738dd7e1ab7262d48b75"
+    },
+    {
+      "path": "FIX17_LATEST_ACTIVE_UNIVERSE_AUDIT.json",
+      "size": 7271,
+      "sha256": "a2e56f1642bd4ef69c87ec158ca869ffcda70c6fdd96c80a1195ae1ad070a96b"
+    },
+    {
+      "path": "FIX17_LATEST_ACTIVE_UNIVERSE_AUDIT.txt",
+      "size": 907,
+      "sha256": "3622fd7600eb9d749fd06133e0469fabd9fb787b501529ae42cbdd3daaecb649"
+    },
+    {
+      "path": "FIX17_LIVE_FUNCTION_SOURCES.json",
+      "size": 31347,
+      "sha256": "eacdcdb493826b7ffc225f2452c8d19be2d7380112d6d9c2a11da6c7c504a0f3"
+    },
+    {
+      "path": "FIX17_LIVE_INTERFACE.json",
+      "size": 428260,
+      "sha256": "84bf43f8ab6dcb3bea88d8fb28febd9c290dbe1b29466e080ff62b8ac032502a"
+    },
+    {
+      "path": "FIX17_LIVE_INTERFACE.txt",
+      "size": 15670,
+      "sha256": "b92bf933c275c0c439ced3b7dd555e059b0df471b05c3971204db517eaaa9555"
+    },
+    {
+      "path": "FIX17_MANIFEST.json",
+      "size": 937,
+      "sha256": "d06d206f27bd4728fb4bb49404ab087f5afd82f181a23deab61eebdc66d7f078"
+    },
+    {
+      "path": "FIX17_MASTER_FOLDER_INVENTORY.json",
+      "size": 7096,
+      "sha256": "52afdedb2b410a27af89800ef18df240bd6a036e062e1a34f660ab6abc043364"
+    },
+    {
+      "path": "FIX17_MASTER_FOLDER_INVENTORY.txt",
+      "size": 3690,
+      "sha256": "a0c463538ce3346a8f81e892251945ab8fd40e24566d46d4d3e35e2918fcc5d6"
+    },
+    {
+      "path": "FIX17_OFFICIAL_FULL_SOURCE.py",
+      "size": 225528,
+      "sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4"
+    },
+    {
+      "path": "FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+      "size": 45399,
+      "sha256": "100f53c8bdb170816d54c4e418565093dd86b554866ff24d5175ee5cc241ea26"
+    },
+    {
+      "path": "FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+      "size": 13980,
+      "sha256": "ec9cae0f21894026439171d7a747851993b065362c621035245268315f76b3e5"
+    },
+    {
+      "path": "FIX17_RUNTIME_ALL_FUNCTIONS.py",
+      "size": 30468,
+      "sha256": "b5903544ae22f4afe9a960de4166baf779dd99c3d4b9b1c135d6ce9ae45bcd92"
+    },
+    {
+      "path": "FIX17_RUNTIME_EXEC_RESOLUTION.txt",
+      "size": 3423,
+      "sha256": "74e009e81067c6b5b0850c81a41b75469972dbcd27c9bb57d10b0b19e0a5aa28"
+    },
+    {
+      "path": "FIX17_RUNTIME_EXTRACT.py",
+      "size": 27670,
+      "sha256": "217398a3748674843f9b055a23d01ef9aaa280856fb1a3ac9514014fc6a5f06a"
+    },
+    {
+      "path": "FIX17_RUNTIME_FINAL_AUDIT.json",
+      "size": 3025,
+      "sha256": "b83857d11c8e84567dcf44c5eaf9b57067d2f52447950b5d376ff79e2590bca9"
+    },
+    {
+      "path": "FIX17_RUNTIME_FINAL_AUDIT.txt",
+      "size": 1424,
+      "sha256": "1cab8f84a983bc6541b9001cf02211efca6e1d940b9ffd7804e508cac26c97d0"
+    },
+    {
+      "path": "FIX17_RUNTIME_FULL_INVENTORY.json",
+      "size": 12497,
+      "sha256": "6b63f75fb04c7885943d7d86796dc393c163c50ce14743cbf4a7e3bd961ce10b"
+    },
+    {
+      "path": "FIX17_RUNTIME_INPUT_CONTRACT.json",
+      "size": 4448,
+      "sha256": "38ac2ae817e55a90fefb686a599378de88d5af632284cf16393080b484d4506b"
+    },
+    {
+      "path": "FIX17_RUNTIME_INPUT_CONTRACT.txt",
+      "size": 3411,
+      "sha256": "d217606ee5fdf9535c7629150792223e431bf99bab69658a143b460dddfc18a3"
+    },
+    {
+      "path": "FIX17_RUNTIME_MAPS_SCHEMA.json",
+      "size": 2027,
+      "sha256": "e59903f5d187af02166e561ad7a45605f7ea13caed5a9092aa57d0a5e8bb40fa"
+    },
+    {
+      "path": "FIX17_RUNTIME_MAPS_SCHEMA.txt",
+      "size": 1548,
+      "sha256": "94dea1cb64a88739457275bdef82604527023974524bfe5d513ab5ebc6f7c3fc"
+    },
+    {
+      "path": "FIX17_RUNTIME_RESOLVED_FUNCTIONS.py",
+      "size": 61165,
+      "sha256": "e50a3c743dc2fb6766dbb06a1dd1e9f3cb1ca5223b98f8ab8ed18589e802b7f7"
+    },
+    {
+      "path": "FIX17_RUNTIME_RESOLVED_INVENTORY.json",
+      "size": 10816,
+      "sha256": "40a0ef995431eaddea77e1a635201046b33745ac0455ffe18852481876097640"
+    },
+    {
+      "path": "FIX17_RUNTIME_RESOLVED_SOURCES.json",
+      "size": 520233,
+      "sha256": "f876675e36c7e52329e0b90d25ef23d71024bd1769d935fe9b00f965f10c9aa2"
+    },
+    {
+      "path": "FIX17_RUNTIME_RULES.json",
+      "size": 55347,
+      "sha256": "95459c516eb97239f75cfda596e9a69dff70c2c0a6c96ee0e05f4ef3a47c5245"
+    },
+    {
+      "path": "FIX17_RUNTIME_RULE_CONTEXTS.txt",
+      "size": 131552,
+      "sha256": "38ba1511259e8e1c7ed3872e6fb2048b546f046b1a64d1c63c139154bc43062c"
+    },
+    {
+      "path": "FIX17_RUNTIME_SOURCE_LAYERS.json",
+      "size": 250882,
+      "sha256": "0afbe07fe6f687ff948dba2efd0bc7b2c8b2e41dc8451c647b3aed2c640de0de"
+    },
+    {
+      "path": "FIX17_UNIVERSE_AUDIT.json",
+      "size": 8207,
+      "sha256": "8c6292acc0ddadf1605565fe39eef4d7eacde28d7d7dce1568b00f79aa1c333c"
+    },
+    {
+      "path": "FIX17_UNIVERSE_AUDIT.txt",
+      "size": 440,
+      "sha256": "c92f73feb5451569a1568eed4a236aba0df539bd529c29aab777a7be911d0389"
+    },
+    {
+      "path": "FIX17_UNIVERSE_CODE_NORMALIZATION_AUDIT.json",
+      "size": 709,
+      "sha256": "8ef47ab2566c1da1a2249fb451cacd323b54e565b5427d3aa8bb6907e29a242d"
+    },
+    {
+      "path": "FIX17_UNIVERSE_CODE_NORMALIZATION_AUDIT.txt",
+      "size": 367,
+      "sha256": "d81ce609b799e0b784b6bc5441c115e5a9b65d7d204badaa03600597e31bc042"
+    },
+    {
+      "path": "FIX17_UPSTREAM_TRADE_EVENT_PROVENANCE.json",
+      "size": 64822,
+      "sha256": "30b1efe6e901004f74915c6b27a2924b84b1ec10ecf8e142772e5d2c491acb07"
+    },
+    {
+      "path": "FIX17_UPSTREAM_TRADE_EVENT_PROVENANCE.txt",
+      "size": 31169,
+      "sha256": "ea3e28472c677f8e9d3505a9de7421961b40f9d6506210cb02416c73f100ccb1"
+    },
+    {
+      "path": "README.md",
+      "size": 918,
+      "sha256": "951250145516c4f0ab676d856347912388665da681e5b33bab669c1f7672f32c"
+    },
+    {
+      "path": "config/fix17_universe.txt",
+      "size": 21380,
+      "sha256": "45d78aa4626c5a28aaaaa7ccf5193065c6370aa200007511d818ba7e670433fb"
+    },
+    {
+      "path": "data/.gitkeep",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "data/latest_result.txt",
+      "size": 1206,
+      "sha256": "b62b6c15bd46b8be510189c52032b923a9c6ca4491b1a9832e3d88253e91ab62"
+    },
+    {
+      "path": "data/paper_trades.csv",
+      "size": 74,
+      "sha256": "50f2b14d793faa87c393c41c10fc035f4bf7108be315d388960a8937fdfe96c4"
+    },
+    {
+      "path": "data/portfolio.json",
+      "size": 84,
+      "sha256": "bd13e2452286d67c5474e3f49e923dabae4876e612c435dd8d828e415d2bdcbd"
+    },
+    {
+      "path": "data/research/intraday_history.csv",
+      "size": 5418727,
+      "sha256": "26d353a1de12ad830d769c5c0980fc59891d58de6e6108e6d68c5c1c7aba83b5"
+    },
+    {
+      "path": "data/research/screening_history.csv",
+      "size": 176445,
+      "sha256": "015176effc2bf07090c92e01adee17d82d8f4a66ee0e50ed3b98a9096c904117"
+    },
+    {
+      "path": "data/universe.csv",
+      "size": 47851,
+      "sha256": "efc26e184d3299d7d7411624a868982e3c0671902b0cee7daab2094db44c27f3"
+    },
+    {
+      "path": "data/v29_4_portfolio.json",
+      "size": 140,
+      "sha256": "ec949e80d072805097f1be0184bda80694a78f564adefa07306d439fe8e3ca83"
+    },
+    {
+      "path": "data/v29_4_trades.csv",
+      "size": 195,
+      "sha256": "57390b414dc0b5c23a6010944ff2a9e24ad7a4ea9abcc947ebc254464cf19364"
+    },
+    {
+      "path": "entrypoint.sh",
+      "size": 323,
+      "sha256": "4d072c67925faac98b24e358bd7f430045c8727bcfe871c7b35e6bfff90a1bfe"
+    },
+    {
+      "path": "fix17_contract.py",
+      "size": 5309,
+      "sha256": "3f1d889d1a317b0d2f78aebdfd5626c47b82bdbdf856809511484cdddb844de6"
+    },
+    {
+      "path": "fix17_long_candidate_bridge.py",
+      "size": 7849,
+      "sha256": "c90c970ece1ae175d9221ce1baf057373fce2fd5f6456b74e2d02386ca6d063f"
+    },
+    {
+      "path": "latest_result.txt",
+      "size": 439,
+      "sha256": "5db125653a8208a442c88a7550706f2e147b5938b56178770a4882eca5de1b1b"
+    },
+    {
+      "path": "mailer.py",
+      "size": 1649,
+      "sha256": "a7e76cbd014a6e3bfd6e607b191e3837784a04e71b5ebef57a9ca47d14373d0f"
+    },
+    {
+      "path": "paper_state_store.py",
+      "size": 1759,
+      "sha256": "94e2e7d4fcd6c85c84321dbb945af5350f4809a8a75a8fe40abfedc365f1c2fa"
+    },
+    {
+      "path": "paper_trader.py",
+      "size": 67683,
+      "sha256": "cb75c6757fbe7ec95e7a97dcf565c017eb74b899c179cec5706cb09d430fd899"
+    },
+    {
+      "path": "paper_trader_before_contract_gate.py",
+      "size": 33981,
+      "sha256": "576ab9d7b1f5e29f5661ed4369c8e7b6bb509f5342918ed52c4cde23e39b03d1"
+    },
+    {
+      "path": "paper_trader_before_entry_contract.py",
+      "size": 34440,
+      "sha256": "f21398ba06a814626188e7b7bd65614fda16e9915f5e8c8155a71b15cc170df0"
+    },
+    {
+      "path": "paper_trader_v29_4.py",
+      "size": 33368,
+      "sha256": "17178af691d93f7b9e892aaf17a0dafaf1fc8659eb9e4640586eacda8ddb43fc"
+    },
+    {
+      "path": "requirements.txt",
+      "size": 142,
+      "sha256": "c9a378979876b4ab9d412e2c36b9340488555d2c7d1cd4ac33ed6f4ba724b37f"
+    },
+    {
+      "path": "runtime/.gitkeep",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/fix17_candidates.example.json",
+      "size": 46,
+      "sha256": "fb21796cde7121bfebdcbfc263fd72b2af1385f86fc9760f2e3700b1fc59d1b0"
+    },
+    {
+      "path": "save_1m.py",
+      "size": 24942,
+      "sha256": "8ed88366fc9dce13e0e19d0cc29f34c58ca9ffd4477dc235df595087f70cb4ac"
+    },
+    {
+      "path": "save_1m_before_batch_hardening.py",
+      "size": 18700,
+      "sha256": "28f8b353d6035a9ab43d09d56a0ba2768edfff0919ef8c5908060792daf68771"
+    },
+    {
+      "path": "save_1m_before_jpx_calendar_gate.py",
+      "size": 22345,
+      "sha256": "b3d173657d5876970dab5e2a666e906fe0e1f55f0d38ea9848d4f2496b7ca2e3"
+    },
+    {
+      "path": "save_1m_before_live_data.py",
+      "size": 879,
+      "sha256": "e2f5625a58184b3f90fd4d9d3fcb9164c40888b0a757aae325995c1d9a651ee7"
+    }
+  ]
+}

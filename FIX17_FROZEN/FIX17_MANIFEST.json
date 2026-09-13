@@ -1,0 +1,25 @@
+{
+  "version": "FIX17",
+  "official_file": "FIX17_OFFICIAL_FULL_SOURCE.py",
+  "official_drive_id": "1vEUHcDrW7Bi-JUiKzu9C5n_AexKKPMji",
+  "sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4",
+  "parent": "FIX16_OFFICIAL_FULL_SOURCE.py",
+  "parent_drive_id": "1JR-Sr6R0YYgzQmcShbRFXAcbwPNawYiO",
+  "parent_sha256": "fa9cad62f446feeed6478d283d6f06bca25ff4e3d073693c614081a752a9aca8",
+  "rule": "REMOVE_FIXED_LONG_PER_STOCK_CAP",
+  "fix16_rule": "target_notional = min(LONG_CAP_PER_STOCK, long_remaining_capacity)",
+  "fix17_rule": "target_notional = long_remaining_capacity",
+  "initial_capital": 1117792.0,
+  "long_total_leverage": 1.0,
+  "jobs": {
+    "paper_trader": "independent",
+    "save_1m": "independent"
+  },
+  "mail": {
+    "paper_trader_normal": "夕方のみ",
+    "paper_trader_error": "即時",
+    "save_1m_success": "送信しない",
+    "save_1m_error": "即時",
+    "language": "Japanese"
+  }
+}

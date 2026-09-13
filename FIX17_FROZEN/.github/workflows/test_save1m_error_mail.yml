@@ -1,0 +1,53 @@
+name: FIX17 Error Mail Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  error-mail-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      MAIL_FROM: ${{ secrets.MAIL_FROM }}
+      MAIL_TO: ${{ secrets.MAIL_TO }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Send FIX17 error test mail
+        shell: bash
+        run: |
+          python - <<'PY'
+          from mailer import send_error_mail
+
+          send_error_mail(
+              "FIX17 SAVE_1M",
+              "ERROR MAIL TEST",
+              """これはFIX17のエラーメール実送信テストです。
+
+GitHub Actions
+→ mailer.py
+→ SMTP
+→ メール受信
+
+まで正常につながっているか確認しています。
+
+実際の1分足保存エラーではありません。"""
+          )
+
+          print("ERROR MAIL TEST SEND: PASS")
+          PY

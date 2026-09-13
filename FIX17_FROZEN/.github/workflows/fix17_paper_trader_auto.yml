@@ -1,0 +1,76 @@
+name: FIX17 Paper Trader Auto
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: "45 6 * * 1-5"
+
+permissions:
+  contents: read
+
+jobs:
+
+  fix17-paper-trader:
+
+    runs-on: ubuntu-latest
+
+
+
+    env:
+
+      GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+
+    permissions:
+
+      contents: read
+
+      id-token: write
+
+    timeout-minutes: 30
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Authenticate to Google Cloud
+
+        uses: google-github-actions/auth@v3
+
+        with:
+
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+
+      - name: Restore FIX17 Paper State
+
+        run: python paper_state_store.py restore
+
+
+      - name: Run FIX17 Paper Trader
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: |
+          python paper_trader.py
+
+      - name: Save FIX17 Paper State
+        run: python paper_state_store.py save
+

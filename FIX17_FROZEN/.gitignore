@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+.env.*
+*.parquet
+*.csv
+*.gz
+*.zip
+data/*
+!data/.gitkeep
+runtime/*
+!runtime/.gitkeep

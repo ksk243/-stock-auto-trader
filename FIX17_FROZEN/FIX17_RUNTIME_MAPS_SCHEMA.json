@@ -1,0 +1,76 @@
+{
+  "github_head": "9b218a1",
+  "drive": {
+    "id": "1OU8gSO1KhHxKfaPrZuSNRzQb-2vZeVdD",
+    "name": "FIX11_runtime_maps.pkl",
+    "size": "47724",
+    "modifiedTime": "2026-09-05T08:10:15.930Z"
+  },
+  "top_type": "dict",
+  "top_items": [
+    {
+      "key": "open_map",
+      "info": {
+        "type": "dict",
+        "len": 466,
+        "keys_sample": [
+          "2024-09-02 00:00:00",
+          "2024-09-03 00:00:00",
+          "2024-09-04 00:00:00",
+          "2024-09-05 00:00:00",
+          "2024-09-06 00:00:00"
+        ]
+      }
+    },
+    {
+      "key": "close_map",
+      "info": {
+        "type": "dict",
+        "len": 466,
+        "keys_sample": [
+          "2024-09-02 00:00:00",
+          "2024-09-03 00:00:00",
+          "2024-09-04 00:00:00",
+          "2024-09-05 00:00:00",
+          "2024-09-06 00:00:00"
+        ]
+      }
+    },
+    {
+      "key": "quote_dates",
+      "info": {
+        "type": "set",
+        "repr": "{Timestamp('2026-06-19 00:00:00'), Timestamp('2025-01-24 00:00:00'), Timestamp('2025-05-12 00:00:00'), Timestamp('2025-05-28 00:00:00'), Timestamp('2026-06-02 00:00:00'), Timestamp('2025-02-05 00:00:00'), Timestamp('2026-06-23 00:00:00'), Timestamp('2026-03-09 00:00:00'), Timestamp('2025-03-26 00:00:00'), Timestamp('2024-10-04 00:00:00'), Timestamp('2024-12-12 00:00:00'), Timestamp('2025-12-25 00:00:00'), Timestamp('2025-10-16 00:00:00'), Timestamp('2025-07-01 00:00:00'), Timestamp('2024-10-28 0"
+      }
+    },
+    {
+      "key": "sim_dates",
+      "info": {
+        "type": "list",
+        "len": 466,
+        "sample_types": [
+          "Timestamp",
+          "Timestamp",
+          "Timestamp",
+          "Timestamp",
+          "Timestamp"
+        ]
+      }
+    },
+    {
+      "key": "START_DATE",
+      "info": {
+        "type": "Timestamp",
+        "repr": "Timestamp('2024-09-02 00:00:00')"
+      }
+    },
+    {
+      "key": "END_DATE",
+      "info": {
+        "type": "Timestamp",
+        "repr": "Timestamp('2026-07-31 00:00:00')"
+      }
+    }
+  ],
+  "target_hits": []
+}

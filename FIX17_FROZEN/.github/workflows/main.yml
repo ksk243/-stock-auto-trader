@@ -1,0 +1,513 @@
+name: FIX11 Stage6 Forward Paper Trader
+
+on:
+
+  workflow_dispatch:
+
+    inputs:
+
+      run_mode:
+
+        description: "実行モード"
+
+        required: true
+
+        type: choice
+
+        options:
+
+          - test
+
+          - snapshot
+
+          - decision
+
+          - result
+
+        default: test
+
+  schedule:
+
+    # ======================================================
+
+    # JST 12:45 / Mon-Fri
+
+    #
+
+    # decision
+
+    # 前場のFormal ENTRY / EXITを処理
+
+    # ↓
+
+    # 前場報告メール
+
+    # ======================================================
+
+    - cron: "45 3 * * 1-5"
+
+    # ======================================================
+
+    # JST 15:45 / Mon-Fri
+
+    #
+
+    # result
+
+    # 後場のFormal ENTRY / EXITを継続
+
+    # ↓
+
+    # 後場 + 1日報告メール
+
+    # ======================================================
+
+    - cron: "45 6 * * 1-5"
+
+    # ======================================================
+
+    # JST 16:10 / Mon-Fri
+
+    #
+
+    # snapshot
+
+    # RVOL20用の当日1分足保存
+
+    # ======================================================
+
+    - cron: "10 7 * * 1-5"
+
+permissions:
+
+  contents: read
+
+  id-token: write
+
+env:
+
+  PROJECT_ID: stock-auto-trader-506100
+
+  PROJECT_NUMBER: "913714190884"
+
+  REGION: asia-northeast1
+
+  SERVICE_NAME: fix11-forward-paper-trader
+
+  ARTIFACT_REPOSITORY: paper-trader
+
+  SERVICE_ACCOUNT: 913714190884-compute@developer.gserviceaccount.com
+
+  WIF_PROVIDER: projects/913714190884/locations/global/workloadIdentityPools/github-pool/providers/github
+
+  GCS_BUCKET: stock-auto-trader-506100-paper
+
+jobs:
+
+  deploy-and-run:
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 90
+
+    steps:
+
+      # ======================================================
+
+      # Checkout
+
+      # ======================================================
+
+      - name: Checkout
+
+        uses: actions/checkout@v4
+
+      # ======================================================
+
+      # Google Auth for Deploy
+
+      # ======================================================
+
+      - name: Google Auth
+
+        id: google_auth
+
+        uses: google-github-actions/auth@v3
+
+        with:
+
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+
+          create_credentials_file: true
+
+          export_environment_variables: true
+
+      # ======================================================
+
+      # gcloud
+
+      # ======================================================
+
+      - name: Setup gcloud
+
+        uses: google-github-actions/setup-gcloud@v3
+
+        with:
+
+          project_id: ${{ env.PROJECT_ID }}
+
+      # ======================================================
+
+      # Set Project
+
+      # ======================================================
+
+      - name: Set Google Cloud Project
+
+        run: gcloud config set project ${{ env.PROJECT_ID }}
+
+      # ======================================================
+
+      # Verify Project
+
+      # ======================================================
+
+      - name: Verify Google Cloud Project
+
+        shell: bash
+
+        run: |
+
+          echo "Expected project: ${{ env.PROJECT_ID }}"
+
+          echo "Current project:"
+
+          gcloud config get-value project
+
+      # ======================================================
+
+      # Docker Auth
+
+      # ======================================================
+
+      - name: Docker Auth
+
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      # ======================================================
+
+      # Build
+
+      # ======================================================
+
+      - name: Build image
+
+        run: docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }} .
+
+      # ======================================================
+
+      # Push
+
+      # ======================================================
+
+      - name: Push image
+
+        run: docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }}
+
+      # ======================================================
+
+      # Deploy Cloud Run
+
+      # ======================================================
+
+      - name: Deploy Cloud Run
+
+        run: gcloud run deploy ${{ env.SERVICE_NAME }} --project=${{ env.PROJECT_ID }} --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/fix11-forward:${{ github.sha }} --region=${{ env.REGION }} --platform=managed --service-account=${{ env.SERVICE_ACCOUNT }} --memory=4Gi --cpu=2 --timeout=3600 --concurrency=1 --max-instances=1 --no-allow-unauthenticated --set-env-vars=GCS_BUCKET=${{ env.GCS_BUCKET }},FIX11_DATA_DIR=fix11_forward --quiet
+
+      # ======================================================
+
+      # Service URL
+
+      # ======================================================
+
+      - name: Get service URL
+
+        id: service
+
+        shell: bash
+
+        run: |
+
+          URL=$(gcloud run services describe "${{ env.SERVICE_NAME }}" --project="${{ env.PROJECT_ID }}" --region="${{ env.REGION }}" --format="value(status.url)")
+
+          if [ -z "$URL" ]; then
+
+            echo "ERROR: Cloud Run URL could not be obtained."
+
+            exit 1
+
+          fi
+
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+          echo "Cloud Run URL: $URL"
+
+      # ======================================================
+
+      # Generate Cloud Run ID Token
+
+      #
+
+      # Cloud Run URLをaudienceにしたID tokenを
+
+      # auth@v3から直接取得
+
+      # ======================================================
+
+      - name: Generate Cloud Run ID Token
+
+        id: cloud_run_auth
+
+        uses: google-github-actions/auth@v3
+
+        with:
+
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+
+          token_format: id_token
+
+          id_token_audience: ${{ steps.service.outputs.url }}
+
+          id_token_include_email: true
+
+          create_credentials_file: false
+
+      # ======================================================
+
+      # Health Check
+
+      #
+
+      # curlは1行で実行
+
+      # ======================================================
+
+      - name: Health check
+
+        shell: bash
+
+        env:
+
+          CLOUD_RUN_TOKEN: ${{ steps.cloud_run_auth.outputs.id_token }}
+
+        run: |
+
+          URL="${{ steps.service.outputs.url }}"
+
+          if [ -z "$CLOUD_RUN_TOKEN" ]; then
+
+            echo "ERROR: Cloud Run ID token is empty."
+
+            exit 1
+
+          fi
+
+          curl --fail --show-error --silent --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" "${URL}/"
+
+      # ======================================================
+
+      # Determine Run Mode
+
+      #
+
+      # 実際に処理を開始した時刻ではなく
+
+      # GitHub Actionsを起動したcron文字列で判定する
+
+      #
+
+      # 03:45 UTC → decision
+
+      # 06:45 UTC → result
+
+      # 07:10 UTC → snapshot
+
+      #
+
+      # 不明なscheduleはtestにせずエラーで停止
+
+      # ======================================================
+
+      - name: Determine run mode
+
+        id: mode
+
+        shell: bash
+
+        run: |
+
+          echo "EVENT_NAME=${{ github.event_name }}"
+
+          echo "EVENT_SCHEDULE=${{ github.event.schedule }}"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+
+            MODE="${{ github.event.inputs.run_mode }}"
+
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+
+            case "${{ github.event.schedule }}" in
+
+              "45 3 * * 1-5")
+
+                MODE="decision"
+
+                ;;
+
+              "45 6 * * 1-5")
+
+                MODE="result"
+
+                ;;
+
+              "10 7 * * 1-5")
+
+                MODE="snapshot"
+
+                ;;
+
+              *)
+
+                echo "ERROR: Unknown schedule: ${{ github.event.schedule }}"
+
+                exit 1
+
+                ;;
+
+            esac
+
+          else
+
+            echo "ERROR: Unknown event: ${{ github.event_name }}"
+
+            exit 1
+
+          fi
+
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+
+          echo "RUN_MODE=$MODE"
+
+      # ======================================================
+
+      # Run FIX11 Forward
+
+      #
+
+      # curlは1行で実行
+
+      # gcloud auth print-identity-token は使用しない
+
+      # ======================================================
+
+      - name: Run FIX11 Forward
+
+        id: run_fix11
+
+        shell: bash
+
+        env:
+
+          CLOUD_RUN_TOKEN: ${{ steps.cloud_run_auth.outputs.id_token }}
+
+        run: |
+
+          URL="${{ steps.service.outputs.url }}"
+
+          MODE="${{ steps.mode.outputs.mode }}"
+
+          echo "Calling: ${URL}/run?mode=${MODE}"
+
+          HTTP_CODE=$(curl --show-error --silent --location --output response.txt --write-out "%{http_code}" --header "Authorization: Bearer ${CLOUD_RUN_TOKEN}" "${URL}/run?mode=${MODE}")
+
+          echo "HTTP_CODE=$HTTP_CODE"
+
+          echo ""
+
+          echo "================ RESPONSE ================"
+
+          if [ -f response.txt ]; then
+
+            cat response.txt
+
+          else
+
+            echo "response.txt was not created."
+
+          fi
+
+          echo "=========================================="
+
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+
+            exit 1
+
+          fi
+
+      # ======================================================
+
+      # Ensure Email Body Exists
+
+      # ======================================================
+
+      - name: Ensure email body exists
+
+        if: always()
+
+        shell: bash
+
+        run: |
+
+          if [ ! -f response.txt ]; then
+
+            echo "FIX11 workflow failed before the application response was created." > response.txt
+
+            echo "" >> response.txt
+
+            echo "Check the GitHub Actions log for the failed step." >> response.txt
+
+          fi
+
+      # ======================================================
+
+      # Email
+
+      # ======================================================
+
+      - name: Send result email
+
+        if: always()
+
+        uses: dawidd6/action-send-mail@v3
+
+        with:
+
+          server_address: ${{ secrets.SMTP_HOST }}
+
+          server_port: ${{ secrets.SMTP_PORT }}
+
+          username: ${{ secrets.SMTP_USER }}
+
+          password: ${{ secrets.SMTP_PASSWORD }}
+
+          subject: FIX11 Forward ${{ steps.mode.outputs.mode }} - ${{ job.status }}
+
+          to: ${{ secrets.MAIL_TO }}
+
+          from: ${{ secrets.MAIL_USER }}
+
+          body: file://response.txt

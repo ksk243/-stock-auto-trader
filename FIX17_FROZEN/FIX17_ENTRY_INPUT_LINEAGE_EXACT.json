@@ -1,0 +1,267 @@
+{
+  "github_head": "260905a",
+  "source": "FIX11_ENTRY_SOURCE_EXACT.py",
+  "source_lines": 6849,
+  "entrydatetime_hits": [
+    {
+      "line": 1495,
+      "text": "\"EntryDatetime\"",
+      "context": "01480: \n01481:         actual_notional = float(\n01482: \n01483:             p[\n01484: \n01485:                 \"ActualNotional\"\n01486: \n01487:             ]\n01488: \n01489:         )\n01490: \n01491:         entry_date = pd.Timestamp(\n01492: \n01493:             p[\n01494: \n01495:                 \"EntryDatetime\"\n01496: \n01497:             ]\n01498: \n01499:         ).normalize()\n01500: \n01501:         # ----------------------------------------------------\n01502: \n01503:         # 当日ENTRY済み\n01504: \n01505:         #\n01506: \n01507:         # 当日Closeは未来なので使わない。\n01508: \n01509:         # EntryPriceで評価 = unrealized 0。\n01510: \n01511:         # ----------------------------------------------------\n01512: \n01513:         if entry_date == current_date:\n01514: \n01515:             mark = entry_price\n01516: \n01517:         # ----------------------------------------------------\n01518: \n01519:         # 持越し\n01520: "
+    },
+    {
+      "line": 3065,
+      "text": "\"EntryDatetime\":",
+      "context": "03050: \n03051:                         trade_id,\n03052: \n03053:                     \"Side\":\n03054: \n03055:                         side,\n03056: \n03057:                     \"Code\":\n03058: \n03059:                         bp[\n03060: \n03061:                             \"Code\"\n03062: \n03063:                         ],\n03064: \n03065:                     \"EntryDatetime\":\n03066: \n03067:                         bp[\n03068: \n03069:                             \"EntryDatetime\"\n03070: \n03071:                         ],\n03072: \n03073:                     \"ExitDatetime\":\n03074: \n03075:                         pd.Timestamp(\n03076: \n03077:                             e[\n03078: \n03079:                                 \"Datetime\"\n03080: \n03081:                             ]\n03082: \n03083:                         ),\n03084: \n03085:                     \"EntryPrice\":\n03086: \n03087:                         entry_price,\n03088: \n03089:                     \"ExitPrice\":\n03090: "
+    },
+    {
+      "line": 3069,
+      "text": "\"EntryDatetime\"",
+      "context": "03054: \n03055:                         side,\n03056: \n03057:                     \"Code\":\n03058: \n03059:                         bp[\n03060: \n03061:                             \"Code\"\n03062: \n03063:                         ],\n03064: \n03065:                     \"EntryDatetime\":\n03066: \n03067:                         bp[\n03068: \n03069:                             \"EntryDatetime\"\n03070: \n03071:                         ],\n03072: \n03073:                     \"ExitDatetime\":\n03074: \n03075:                         pd.Timestamp(\n03076: \n03077:                             e[\n03078: \n03079:                                 \"Datetime\"\n03080: \n03081:                             ]\n03082: \n03083:                         ),\n03084: \n03085:                     \"EntryPrice\":\n03086: \n03087:                         entry_price,\n03088: \n03089:                     \"ExitPrice\":\n03090: \n03091:                         exit_price,\n03092: \n03093:                     \"Quantity\":\n03094: "
+    },
+    {
+      "line": 3715,
+      "text": "\"EntryDatetime\":",
+      "context": "03700: \n03701:                         side,\n03702: \n03703:                     \"Code\":\n03704: \n03705:                         str(\n03706: \n03707:                             meta[\n03708: \n03709:                                 \"Code\"\n03710: \n03711:                             ]\n03712: \n03713:                         ).zfill(5),\n03714: \n03715:                     \"EntryDatetime\":\n03716: \n03717:                         pd.Timestamp(\n03718: \n03719:                             e[\n03720: \n03721:                                 \"Datetime\"\n03722: \n03723:                             ]\n03724: \n03725:                         ),\n03726: \n03727:                     \"EntryPrice\":\n03728: \n03729:                         entry_price,\n03730: \n03731:                     \"BrokerStrategyEquity\":\n03732: \n03733:                         broker_strategy_equity,\n03734: \n03735:                     \"Leverage\":\n03736: \n03737:                         leverage,\n03738: \n03739:                     \"TargetNotional\":\n03740: "
+    },
+    {
+      "line": 3943,
+      "text": "\"EntryDatetime\":",
+      "context": "03928: \n03929:                         side,\n03930: \n03931:                     \"Code\":\n03932: \n03933:                         str(\n03934: \n03935:                             meta[\n03936: \n03937:                                 \"Code\"\n03938: \n03939:                             ]\n03940: \n03941:                         ).zfill(5),\n03942: \n03943:                     \"EntryDatetime\":\n03944: \n03945:                         pd.Timestamp(\n03946: \n03947:                             e[\n03948: \n03949:                                 \"Datetime\"\n03950: \n03951:                             ]\n03952: \n03953:                         ),\n03954: \n03955:                     \"EntryPrice\":\n03956: \n03957:                         entry_price,\n03958: \n03959:                     \"Quantity\":\n03960: \n03961:                         qty,\n03962: \n03963:                     \"TargetNotional\":\n03964: \n03965:                         target_notional,\n03966: \n03967:                     \"LotNotionalBeforeMargin\":\n03968: "
+    },
+    {
+      "line": 5167,
+      "text": "\"EntryDatetime:\",",
+      "context": "05152: \n05153:     print(\n05154: \n05155:         \"Code:\",\n05156: \n05157:         min_post_row[\n05158: \n05159:             \"Code\"\n05160: \n05161:         ]\n05162: \n05163:     )\n05164: \n05165:     print(\n05166: \n05167:         \"EntryDatetime:\",\n05168: \n05169:         min_post_row[\n05170: \n05171:             \"EntryDatetime\"\n05172: \n05173:         ]\n05174: \n05175:     )\n05176: \n05177:     print(\n05178: \n05179:         \"TargetQty:\",\n05180: \n05181:         int(\n05182: \n05183:             min_post_row[\n05184: \n05185:                 \"TargetQty100\"\n05186: \n05187:             ]\n05188: \n05189:         )\n05190: \n05191:     )\n05192: "
+    },
+    {
+      "line": 5171,
+      "text": "\"EntryDatetime\"",
+      "context": "05156: \n05157:         min_post_row[\n05158: \n05159:             \"Code\"\n05160: \n05161:         ]\n05162: \n05163:     )\n05164: \n05165:     print(\n05166: \n05167:         \"EntryDatetime:\",\n05168: \n05169:         min_post_row[\n05170: \n05171:             \"EntryDatetime\"\n05172: \n05173:         ]\n05174: \n05175:     )\n05176: \n05177:     print(\n05178: \n05179:         \"TargetQty:\",\n05180: \n05181:         int(\n05182: \n05183:             min_post_row[\n05184: \n05185:                 \"TargetQty100\"\n05186: \n05187:             ]\n05188: \n05189:         )\n05190: \n05191:     )\n05192: \n05193:     print(\n05194: \n05195:         \"ActualQty:\",\n05196: "
+    },
+    {
+      "line": 6171,
+      "text": "\"EntryDatetime\",",
+      "context": "06156: \n06157: else:\n06158: \n06159:     print(\n06160: \n06161:         margin_limited[\n06162: \n06163:             [\n06164: \n06165:                 \"TradeID\",\n06166: \n06167:                 \"Side\",\n06168: \n06169:                 \"Code\",\n06170: \n06171:                 \"EntryDatetime\",\n06172: \n06173:                 \"EntryPrice\",\n06174: \n06175:                 \"BrokerStrategyEquity\",\n06176: \n06177:                 \"TargetNotional\",\n06178: \n06179:                 \"TargetQty100\",\n06180: \n06181:                 \"PreExistingGrossNotional\",\n06182: \n06183:                 \"PreExistingUnrealized\",\n06184: \n06185:                 \"EntryEffectiveCollateral\",\n06186: \n06187:                 \"PreMarginPct\",\n06188: \n06189:                 \"PostMarginPct\",\n06190: \n06191:                 \"Quantity\",\n06192: \n06193:                 \"ActualNotional\",\n06194: \n06195:                 \"TargetUtilizationPct\",\n06196: "
+    }
+  ],
+  "data_load_hits": [],
+  "candidate_variables": [],
+  "candidate_variable_usage": {},
+  "entry_related_assignments": [
+    {
+      "line": 229,
+      "variable": "EXPECTED_TRADE_MASTER",
+      "text": "EXPECTED_TRADE_MASTER = 867"
+    },
+    {
+      "line": 231,
+      "variable": "EXPECTED_ENTRY_EVENTS",
+      "text": "EXPECTED_ENTRY_EVENTS = 867"
+    },
+    {
+      "line": 331,
+      "variable": "tm",
+      "text": "tm = trade_master_fix6.copy()"
+    },
+    {
+      "line": 447,
+      "variable": "entry_events",
+      "text": "entry_events = ("
+    },
+    {
+      "line": 521,
+      "variable": "entry_meta_df",
+      "text": "entry_meta_df = ("
+    },
+    {
+      "line": 553,
+      "variable": "on",
+      "text": "on=\"TradeID\","
+    },
+    {
+      "line": 579,
+      "variable": "entry_meta",
+      "text": "entry_meta = ("
+    },
+    {
+      "line": 637,
+      "variable": "entry_price",
+      "text": "entry_price = float("
+    },
+    {
+      "line": 723,
+      "variable": "entry_price",
+      "text": "entry_price=entry_price,"
+    },
+    {
+      "line": 725,
+      "variable": "formal_return_pct",
+      "text": "formal_return_pct=formal_return_pct"
+    },
+    {
+      "line": 805,
+      "variable": "close_candidates",
+      "text": "close_candidates = ["
+    },
+    {
+      "line": 1471,
+      "variable": "entry_price",
+      "text": "entry_price = float("
+    },
+    {
+      "line": 1491,
+      "variable": "entry_date",
+      "text": "entry_date = pd.Timestamp("
+    },
+    {
+      "line": 1515,
+      "variable": "mark",
+      "text": "mark = entry_price"
+    },
+    {
+      "line": 1547,
+      "variable": "mark",
+      "text": "mark = entry_price"
+    },
+    {
+      "line": 1707,
+      "variable": "entry_price",
+      "text": "entry_price = float("
+    },
+    {
+      "line": 2075,
+      "variable": "formal_equity",
+      "text": "formal_equity = float("
+    },
+    {
+      "line": 2093,
+      "variable": "formal_active",
+      "text": "formal_active = {}"
+    },
+    {
+      "line": 2101,
+      "variable": "entry_rows",
+      "text": "entry_rows = []"
+    },
+    {
+      "line": 2103,
+      "variable": "trade_rows",
+      "text": "trade_rows = []"
+    },
+    {
+      "line": 2775,
+      "variable": "entry_etf_mark",
+      "text": "entry_etf_mark = ("
+    },
+    {
+      "line": 2783,
+      "variable": "entry_etf_mark",
+      "text": "entry_etf_mark = ("
+    },
+    {
+      "line": 2803,
+      "variable": "formal_realized_today",
+      "text": "formal_realized_today = 0.0"
+    },
+    {
+      "line": 2815,
+      "variable": "trade_id",
+      "text": "trade_id = str("
+    },
+    {
+      "line": 2861,
+      "variable": "fp",
+      "text": "fp = formal_active["
+    },
+    {
+      "line": 2867,
+      "variable": "formal_r",
+      "text": "formal_r = ("
+    },
+    {
+      "line": 2885,
+      "variable": "formal_pnl",
+      "text": "formal_pnl = ("
+    },
+    {
+      "line": 2951,
+      "variable": "entry_price",
+      "text": "entry_price = float("
+    },
+    {
+      "line": 2967,
+      "variable": "entry_price",
+      "text": "entry_price=entry_price,"
+    },
+    {
+      "line": 2969,
+      "variable": "formal_return_pct",
+      "text": "formal_return_pct=e["
+    },
+    {
+      "line": 3177,
+      "variable": "meta",
+      "text": "meta = entry_meta.get("
+    },
+    {
+      "line": 3193,
+      "variable": "entry_price",
+      "text": "entry_price = float("
+    },
+    {
+      "line": 3221,
+      "variable": "formal_notional",
+      "text": "formal_notional = ("
+    },
+    {
+      "line": 3529,
+      "variable": "entry_price",
+      "text": "entry_price="
+    },
+    {
+      "line": 3583,
+      "variable": "entry_price",
+      "text": "entry_price="
+    },
+    {
+      "line": 4013,
+      "variable": "entry_price",
+      "text": "entry_price = float("
+    },
+    {
+      "line": 4495,
+      "variable": "trades",
+      "text": "trades = pd.DataFrame("
+    },
+    {
+      "line": 4609,
+      "variable": "formal_final",
+      "text": "formal_final = float("
+    },
+    {
+      "line": 4639,
+      "variable": "formal_diff",
+      "text": "formal_diff = np.nan"
+    },
+    {
+      "line": 4681,
+      "variable": "formal_diff",
+      "text": "formal_diff = ("
+    },
+    {
+      "line": 6347,
+      "variable": "label",
+      "text": "label=\"FIX11 Entry Margin\""
+    },
+    {
+      "line": 6667,
+      "variable": "ENTRY_PATH",
+      "text": "ENTRY_PATH = ("
+    },
+    {
+      "line": 6675,
+      "variable": "TRADE_PATH",
+      "text": "TRADE_PATH = ("
+    }
+  ]
+}

@@ -1,0 +1,537 @@
+{
+  "github_head": "7b32efe",
+  "source": "FIX11_ENTRY_SOURCE_EXACT.py",
+  "source_lines": 6849,
+  "variable_bindings": {
+    "p": [
+      {
+        "line": 1447,
+        "text": "for trade_id, p in broker_active.items():",
+        "function": {
+          "line": 1429,
+          "text": "def calc_entry_time_position_state("
+        },
+        "context": "01437:     long_notional = 0.0\n01438: \n01439:     short_notional = 0.0\n01440: \n01441:     long_unrealized = 0.0\n01442: \n01443:     short_unrealized = 0.0\n01444: \n01445:     missing = []\n01446: \n01447:     for trade_id, p in broker_active.items():\n01448: \n01449:         side = p[\n01450: \n01451:             \"Side\"\n01452: \n01453:         ]\n01454: \n01455:         code = p[\n01456: \n01457:             \"Code\"\n01458: \n01459:         ]\n01460: \n01461:         qty = int(\n01462: \n01463:             p[\n01464: \n01465:                 \"Quantity\""
+      },
+      {
+        "line": 2129,
+        "text": "for p in broker_active.values():",
+        "function": {
+          "line": 2123,
+          "text": "def current_broker_notional():"
+        },
+        "context": "02119:     # Current Broker gross notional\n02120: \n02121:     # ========================================================\n02122: \n02123:     def current_broker_notional():\n02124: \n02125:         long_n = 0.0\n02126: \n02127:         short_n = 0.0\n02128: \n02129:         for p in broker_active.values():\n02130: \n02131:             if p[\"Side\"] == \"LONG\":\n02132: \n02133:                 long_n += float(\n02134: \n02135:                     p[\n02136: \n02137:                         \"ActualNotional\"\n02138: \n02139:                     ]\n02140: \n02141:                 )\n02142: \n02143:             else:\n02144: \n02145:                 short_n += float(\n02146: \n02147:                     p["
+      },
+      {
+        "line": 2293,
+        "text": "for p in broker_active.values():",
+        "function": {
+          "line": 2123,
+          "text": "def current_broker_notional():"
+        },
+        "context": "02283:                     date\n02284: \n02285:                     -\n02286: \n02287:                     previous_date\n02288: \n02289:                 ).days\n02290: \n02291:             )\n02292: \n02293:             for p in broker_active.values():\n02294: \n02295:                 n = float(\n02296: \n02297:                     p[\n02298: \n02299:                         \"ActualNotional\"\n02300: \n02301:                     ]\n02302: \n02303:                 )\n02304: \n02305:                 if p[\"Side\"] == \"LONG\":\n02306: \n02307:                     cost = (\n02308: \n02309:                         n\n02310: \n02311:                         *"
+      },
+      {
+        "line": 3297,
+        "text": "for p in broker_active.values()",
+        "function": {
+          "line": 2123,
+          "text": "def current_broker_notional():"
+        },
+        "context": "03287:                     # ---------------------------------------------\n03288: \n03289:                     # 現在のLONG建玉だけを取得\n03290: \n03291:                     # ---------------------------------------------\n03292: \n03293:                     current_long_positions = [\n03294: \n03295:                         p\n03296: \n03297:                         for p in broker_active.values()\n03298: \n03299:                         if str(\n03300: \n03301:                             p.get(\n03302: \n03303:                                 \"Side\",\n03304: \n03305:                                 \"\"\n03306: \n03307:                             )\n03308: \n03309:                         ).upper() == \"LONG\"\n03310: \n03311:                     ]\n03312: \n03313:                     current_long_count = len(\n03314: \n03315:                         current_long_positions"
+      },
+      {
+        "line": 4005,
+        "text": "for trade_id, p in broker_active.items():",
+        "function": {
+          "line": 2123,
+          "text": "def current_broker_notional():"
+        },
+        "context": "03995:         long_notional = 0.0\n03996: \n03997:         short_notional = 0.0\n03998: \n03999:         long_unrealized = 0.0\n04000: \n04001:         short_unrealized = 0.0\n04002: \n04003:         missing_marks = []\n04004: \n04005:         for trade_id, p in broker_active.items():\n04006: \n04007:             code = p[\n04008: \n04009:                 \"Code\"\n04010: \n04011:             ]\n04012: \n04013:             entry_price = float(\n04014: \n04015:                 p[\n04016: \n04017:                     \"EntryPrice\"\n04018: \n04019:                 ]\n04020: \n04021:             )\n04022: \n04023:             qty = int("
+      }
+    ],
+    "bp": [
+      {
+        "line": 2945,
+        "text": "bp = broker_active[",
+        "function": {
+          "line": 2123,
+          "text": "def current_broker_notional():"
+        },
+        "context": "02935:                     raise RuntimeError(\n02936: \n02937:                         f\"{e['Datetime']} \"\n02938: \n02939:                         f\"Broker EXIT positionなし: \"\n02940: \n02941:                         f\"{trade_id}\"\n02942: \n02943:                     )\n02944: \n02945:                 bp = broker_active[\n02946: \n02947:                     trade_id\n02948: \n02949:                 ]\n02950: \n02951:                 entry_price = float(\n02952: \n02953:                     bp[\n02954: \n02955:                         \"EntryPrice\"\n02956: \n02957:                     ]\n02958: \n02959:                 )\n02960: \n02961:                 broker_r, exit_price = (\n02962: \n02963:                     get_broker_return("
+      }
+    ],
+    "e": [
+      {
+        "line": 415,
+        "text": "for e in events:",
+        "function": {
+          "line": 163,
+          "text": "def calc_long_dynamic_max_positions("
+        },
+        "context": "00405: # ============================================================\n00406: \n00407: # 3. Strategy events\n00408: \n00409: # ============================================================\n00410: \n00411: event_rows = []\n00412: \n00413: for date, events in events_by_date.items():\n00414: \n00415:     for e in events:\n00416: \n00417:         r = dict(e)\n00418: \n00419:         r[\"Date\"] = pd.Timestamp(\n00420: \n00421:             date\n00422: \n00423:         ).normalize()\n00424: \n00425:         event_rows.append(r)\n00426: \n00427: event_df = pd.DataFrame(\n00428: \n00429:     event_rows\n00430: \n00431: )\n00432: \n00433: event_df[\"TradeID\"] = ("
+      },
+      {
+        "line": 2807,
+        "text": "for e in events_by_date.get(",
+        "function": {
+          "line": 2123,
+          "text": "def current_broker_notional():"
+        },
+        "context": "02797:         # ====================================================\n02798: \n02799:         # D. Strategy Events\n02800: \n02801:         # ====================================================\n02802: \n02803:         formal_realized_today = 0.0\n02804: \n02805:         broker_realized_today = 0.0\n02806: \n02807:         for e in events_by_date.get(\n02808: \n02809:             date,\n02810: \n02811:             []\n02812: \n02813:         ):\n02814: \n02815:             trade_id = str(\n02816: \n02817:                 e[\n02818: \n02819:                     \"TradeID\"\n02820: \n02821:                 ]\n02822: \n02823:             )\n02824: \n02825:             side = str("
+      }
+    ],
+    "meta": [
+      {
+        "line": 3177,
+        "text": "meta = entry_meta.get(",
+        "function": {
+          "line": 2123,
+          "text": "def current_broker_notional():"
+        },
+        "context": "03167:                 ]\n03168: \n03169:             # =================================================\n03170: \n03171:             # ENTRY\n03172: \n03173:             # =================================================\n03174: \n03175:             else:\n03176: \n03177:                 meta = entry_meta.get(\n03178: \n03179:                     trade_id\n03180: \n03181:                 )\n03182: \n03183:                 if meta is None:\n03184: \n03185:                     raise RuntimeError(\n03186: \n03187:                         f\"entry_metaなし: \"\n03188: \n03189:                         f\"{trade_id}\"\n03190: \n03191:                     )\n03192: \n03193:                 entry_price = float(\n03194: \n03195:                     meta["
+      }
+    ]
+  },
+  "key_entry_locations": [
+    {
+      "line": 1495,
+      "function": {
+        "line": 1429,
+        "text": "def calc_entry_time_position_state("
+      },
+      "nearest_loops": [
+        {
+          "line": 1447,
+          "text": "for trade_id, p in broker_active.items():"
+        }
+      ],
+      "context": "01455:         code = p[\n01456: \n01457:             \"Code\"\n01458: \n01459:         ]\n01460: \n01461:         qty = int(\n01462: \n01463:             p[\n01464: \n01465:                 \"Quantity\"\n01466: \n01467:             ]\n01468: \n01469:         )\n01470: \n01471:         entry_price = float(\n01472: \n01473:             p[\n01474: \n01475:                 \"EntryPrice\"\n01476: \n01477:             ]\n01478: \n01479:         )\n01480: \n01481:         actual_notional = float(\n01482: \n01483:             p[\n01484: \n01485:                 \"ActualNotional\"\n01486: \n01487:             ]\n01488: \n01489:         )\n01490: \n01491:         entry_date = pd.Timestamp(\n01492: \n01493:             p[\n01494: \n01495:                 \"EntryDatetime\"\n01496: \n01497:             ]\n01498: \n01499:         ).normalize()\n01500: \n01501:         # ----------------------------------------------------\n01502: \n01503:         # 当日ENTRY済み\n01504: \n01505:         #\n01506: \n01507:         # 当日Closeは未来なので使わない。\n01508: \n01509:         # EntryPriceで評価 = unrealized 0。\n01510: \n01511:         # ----------------------------------------------------\n01512: \n01513:         if entry_date == current_date:\n01514: \n01515:             mark = entry_price\n01516: \n01517:         # ----------------------------------------------------\n01518: \n01519:         # 持越し\n01520: \n01521:         #\n01522: \n01523:         # current_dateより前の最後のClose。\n01524: \n01525:         # ----------------------------------------------------"
+    },
+    {
+      "line": 3069,
+      "function": {
+        "line": 2123,
+        "text": "def current_broker_notional():"
+      },
+      "nearest_loops": [],
+      "context": "03029:                 broker_strategy_equity += (\n03030: \n03031:                     broker_pnl\n03032: \n03033:                 )\n03034: \n03035:                 cash += (\n03036: \n03037:                     broker_pnl\n03038: \n03039:                 )\n03040: \n03041:                 broker_realized_today += (\n03042: \n03043:                     broker_pnl\n03044: \n03045:                 )\n03046: \n03047:                 trade_rows.append({\n03048: \n03049:                     \"TradeID\":\n03050: \n03051:                         trade_id,\n03052: \n03053:                     \"Side\":\n03054: \n03055:                         side,\n03056: \n03057:                     \"Code\":\n03058: \n03059:                         bp[\n03060: \n03061:                             \"Code\"\n03062: \n03063:                         ],\n03064: \n03065:                     \"EntryDatetime\":\n03066: \n03067:                         bp[\n03068: \n03069:                             \"EntryDatetime\"\n03070: \n03071:                         ],\n03072: \n03073:                     \"ExitDatetime\":\n03074: \n03075:                         pd.Timestamp(\n03076: \n03077:                             e[\n03078: \n03079:                                 \"Datetime\"\n03080: \n03081:                             ]\n03082: \n03083:                         ),\n03084: \n03085:                     \"EntryPrice\":\n03086: \n03087:                         entry_price,\n03088: \n03089:                     \"ExitPrice\":\n03090: \n03091:                         exit_price,\n03092: \n03093:                     \"Quantity\":\n03094: \n03095:                         qty,\n03096: \n03097:                     \"TargetNotional\":\n03098: \n03099:                         bp["
+    },
+    {
+      "line": 3719,
+      "function": {
+        "line": 2123,
+        "text": "def current_broker_notional():"
+      },
+      "nearest_loops": [],
+      "context": "03679:                     skip_reason = (\n03680: \n03681:                         \"MARGIN_CAPACITY\"\n03682: \n03683:                     )\n03684: \n03685:                 else:\n03686: \n03687:                     skip_reason = (\n03688: \n03689:                         \"\"\n03690: \n03691:                     )\n03692: \n03693:                 entry_rows.append({\n03694: \n03695:                     \"TradeID\":\n03696: \n03697:                         trade_id,\n03698: \n03699:                     \"Side\":\n03700: \n03701:                         side,\n03702: \n03703:                     \"Code\":\n03704: \n03705:                         str(\n03706: \n03707:                             meta[\n03708: \n03709:                                 \"Code\"\n03710: \n03711:                             ]\n03712: \n03713:                         ).zfill(5),\n03714: \n03715:                     \"EntryDatetime\":\n03716: \n03717:                         pd.Timestamp(\n03718: \n03719:                             e[\n03720: \n03721:                                 \"Datetime\"\n03722: \n03723:                             ]\n03724: \n03725:                         ),\n03726: \n03727:                     \"EntryPrice\":\n03728: \n03729:                         entry_price,\n03730: \n03731:                     \"BrokerStrategyEquity\":\n03732: \n03733:                         broker_strategy_equity,\n03734: \n03735:                     \"Leverage\":\n03736: \n03737:                         leverage,\n03738: \n03739:                     \"TargetNotional\":\n03740: \n03741:                         target_notional,\n03742: \n03743:                     \"TargetQty100\":\n03744: \n03745:                         target_qty,\n03746: \n03747:                     \"LotNotionalBeforeMargin\":\n03748: \n03749:                         lot_notional_before_margin,"
+    },
+    {
+      "line": 3947,
+      "function": {
+        "line": 2123,
+        "text": "def current_broker_notional():"
+      },
+      "nearest_loops": [],
+      "context": "03907:                     raise RuntimeError(\n03908: \n03909:                         \"ENTRY margin check failure: \"\n03910: \n03911:                         f\"{trade_id} \"\n03912: \n03913:                         f\"{post_margin_pct:.6f}%\"\n03914: \n03915:                     )\n03916: \n03917:                 broker_active[\n03918: \n03919:                     trade_id\n03920: \n03921:                 ] = {\n03922: \n03923:                     \"TradeID\":\n03924: \n03925:                         trade_id,\n03926: \n03927:                     \"Side\":\n03928: \n03929:                         side,\n03930: \n03931:                     \"Code\":\n03932: \n03933:                         str(\n03934: \n03935:                             meta[\n03936: \n03937:                                 \"Code\"\n03938: \n03939:                             ]\n03940: \n03941:                         ).zfill(5),\n03942: \n03943:                     \"EntryDatetime\":\n03944: \n03945:                         pd.Timestamp(\n03946: \n03947:                             e[\n03948: \n03949:                                 \"Datetime\"\n03950: \n03951:                             ]\n03952: \n03953:                         ),\n03954: \n03955:                     \"EntryPrice\":\n03956: \n03957:                         entry_price,\n03958: \n03959:                     \"Quantity\":\n03960: \n03961:                         qty,\n03962: \n03963:                     \"TargetNotional\":\n03964: \n03965:                         target_notional,\n03966: \n03967:                     \"LotNotionalBeforeMargin\":\n03968: \n03969:                         lot_notional_before_margin,\n03970: \n03971:                     \"ActualNotional\":\n03972: \n03973:                         actual_notional,\n03974: \n03975:                     \"TargetUtilizationPct\":\n03976: \n03977:                         utilization,"
+    }
+  ],
+  "event_structure_hits": [
+    {
+      "line": 231,
+      "matched": [
+        "ENTRY"
+      ],
+      "text": "EXPECTED_ENTRY_EVENTS = 867"
+    },
+    {
+      "line": 233,
+      "matched": [
+        "EXIT"
+      ],
+      "text": "EXPECTED_EXIT_EVENTS = 865"
+    },
+    {
+      "line": 333,
+      "matched": [
+        "TradeID"
+      ],
+      "text": "tm[\"TradeID\"] = ("
+    },
+    {
+      "line": 335,
+      "matched": [
+        "TradeID"
+      ],
+      "text": "tm[\"TradeID\"]"
+    },
+    {
+      "line": 371,
+      "matched": [
+        "TradeID"
+      ],
+      "text": "if tm[\"TradeID\"].nunique() != EXPECTED_TRADE_MASTER:"
+    },
+    {
+      "line": 375,
+      "matched": [
+        "TradeID"
+      ],
+      "text": "f\"TradeID unique != {EXPECTED_TRADE_MASTER}\""
+    },
+    {
+      "line": 411,
+      "matched": [
+        "event"
+      ],
+      "text": "event_rows = []"
+    },
+    {
+      "line": 413,
+      "matched": [
+        "events_by_date",
+        "event"
+      ],
+      "text": "for date, events in events_by_date.items():"
+    },
+    {
+      "line": 415,
+      "matched": [
+        "event"
+      ],
+      "text": "for e in events:"
+    },
+    {
+      "line": 425,
+      "matched": [
+        "event"
+      ],
+      "text": "event_rows.append(r)"
+    },
+    {
+      "line": 427,
+      "matched": [
+        "event"
+      ],
+      "text": "event_df = pd.DataFrame("
+    },
+    {
+      "line": 433,
+      "matched": [
+        "event",
+        "TradeID"
+      ],
+      "text": "event_df[\"TradeID\"] = ("
+    },
+    {
+      "line": 435,
+      "matched": [
+        "event",
+        "TradeID"
+      ],
+      "text": "event_df[\"TradeID\"]"
+    },
+    {
+      "line": 441,
+      "matched": [
+        "event"
+      ],
+      "text": "event_df[\"Datetime\"] = pd.to_datetime("
+    },
+    {
+      "line": 443,
+      "matched": [
+        "event"
+      ],
+      "text": "event_df[\"Datetime\"]"
+    },
+    {
+      "line": 447,
+      "matched": [
+        "event"
+      ],
+      "text": "entry_events = ("
+    },
+    {
+      "line": 449,
+      "matched": [
+        "event"
+      ],
+      "text": "event_df["
+    },
+    {
+      "line": 451,
+      "matched": [
+        "event",
+        "ENTRY"
+      ],
+      "text": "event_df[\"Event\"] == \"ENTRY\""
+    },
+    {
+      "line": 459,
+      "matched": [
+        "event"
+      ],
+      "text": "exit_events = ("
+    },
+    {
+      "line": 461,
+      "matched": [
+        "event"
+      ],
+      "text": "event_df["
+    },
+    {
+      "line": 463,
+      "matched": [
+        "event",
+        "EXIT"
+      ],
+      "text": "event_df[\"Event\"] == \"EXIT\""
+    },
+    {
+      "line": 471,
+      "matched": [
+        "event",
+        "ENTRY"
+      ],
+      "text": "if len(entry_events) != EXPECTED_ENTRY_EVENTS:"
+    },
+    {
+      "line": 481,
+      "matched": [
+        "event",
+        "EXIT"
+      ],
+      "text": "if len(exit_events) != EXPECTED_EXIT_EVENTS:"
+    },
+    {
+      "line": 523,
+      "matched": [
+        "event"
+      ],
+      "text": "entry_events["
+    },
+    {
+      "line": 553,
+      "matched": [
+        "TradeID"
+      ],
+      "text": "on=\"TradeID\","
+    },
+    {
+      "line": 733,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_return = ("
+    },
+    {
+      "line": 749,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_return = ("
+    },
+    {
+      "line": 1447,
+      "matched": [
+        "broker"
+      ],
+      "text": "for trade_id, p in broker_active.items():"
+    },
+    {
+      "line": 2087,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_strategy_equity = float("
+    },
+    {
+      "line": 2095,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_active = {}"
+    },
+    {
+      "line": 2097,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_skipped = set()"
+    },
+    {
+      "line": 2129,
+      "matched": [
+        "broker"
+      ],
+      "text": "for p in broker_active.values():"
+    },
+    {
+      "line": 2293,
+      "matched": [
+        "broker"
+      ],
+      "text": "for p in broker_active.values():"
+    },
+    {
+      "line": 2373,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_strategy_equity -= ("
+    },
+    {
+      "line": 2805,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_realized_today = 0.0"
+    },
+    {
+      "line": 2807,
+      "matched": [
+        "events_by_date",
+        "event"
+      ],
+      "text": "for e in events_by_date.get("
+    },
+    {
+      "line": 2841,
+      "matched": [
+        "EXIT"
+      ],
+      "text": "if e[\"Event\"] == \"EXIT\":"
+    },
+    {
+      "line": 2945,
+      "matched": [
+        "broker"
+      ],
+      "text": "bp = broker_active["
+    },
+    {
+      "line": 2961,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_r, exit_price = ("
+    },
+    {
+      "line": 2991,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_pnl = ("
+    },
+    {
+      "line": 3011,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_pnl = ("
+    },
+    {
+      "line": 3029,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_strategy_equity += ("
+    },
+    {
+      "line": 3041,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_realized_today += ("
+    },
+    {
+      "line": 3163,
+      "matched": [
+        "broker"
+      ],
+      "text": "del broker_active["
+    },
+    {
+      "line": 3253,
+      "matched": [
+        "broker"
+      ],
+      "text": "if broker_strategy_equity <= 0:"
+    },
+    {
+      "line": 3275,
+      "matched": [
+        "broker"
+      ],
+      "text": "#   LONG総建玉 <= broker strategy equity × 1.0"
+    },
+    {
+      "line": 3293,
+      "matched": [
+        "position",
+        "positions"
+      ],
+      "text": "current_long_positions = ["
+    },
+    {
+      "line": 3297,
+      "matched": [
+        "broker"
+      ],
+      "text": "for p in broker_active.values()"
+    },
+    {
+      "line": 3325,
+      "matched": [
+        "position",
+        "positions"
+      ],
+      "text": "long_allowed_positions = ("
+    },
+    {
+      "line": 3375,
+      "matched": [
+        "position",
+        "positions"
+      ],
+      "text": "for _p in current_long_positions:"
+    },
+    {
+      "line": 3557,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_active="
+    },
+    {
+      "line": 3917,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_active["
+    },
+    {
+      "line": 4005,
+      "matched": [
+        "broker"
+      ],
+      "text": "for trade_id, p in broker_active.items():"
+    },
+    {
+      "line": 5637,
+      "matched": [
+        "broker"
+      ],
+      "text": "broker_strategy_final = float("
+    },
+    {
+      "line": 6667,
+      "matched": [
+        "ENTRY"
+      ],
+      "text": "ENTRY_PATH = ("
+    }
+  ]
+}

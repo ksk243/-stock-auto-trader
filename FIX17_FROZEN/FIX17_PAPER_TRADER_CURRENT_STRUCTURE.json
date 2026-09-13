@@ -1,0 +1,1757 @@
+{
+  "github_head": "dedf00f",
+  "paper_trader": {
+    "file": "paper_trader.py",
+    "lines": 2395,
+    "bytes": 33981,
+    "ast_parse": "PASS"
+  },
+  "functions": [
+    {
+      "name": "sha256_file",
+      "line": 104,
+      "args": [
+        "path"
+      ]
+    },
+    {
+      "name": "save_json",
+      "line": 128,
+      "args": [
+        "path",
+        "obj"
+      ]
+    },
+    {
+      "name": "load_json",
+      "line": 160,
+      "args": [
+        "path",
+        "default"
+      ]
+    },
+    {
+      "name": "send_mail",
+      "line": 182,
+      "args": [
+        "subject",
+        "body"
+      ]
+    },
+    {
+      "name": "send_error_mail",
+      "line": 284,
+      "args": [
+        "title",
+        "error_text"
+      ]
+    },
+    {
+      "name": "verify_official_source",
+      "line": 316,
+      "args": []
+    },
+    {
+      "name": "check_official_engine",
+      "line": 544,
+      "args": []
+    },
+    {
+      "name": "ensure_paper_state",
+      "line": 726,
+      "args": []
+    },
+    {
+      "name": "verify_fix17_sizing_rule",
+      "line": 794,
+      "args": []
+    },
+    {
+      "name": "main",
+      "line": 847,
+      "args": []
+    },
+    {
+      "name": "load_fix17_runtime_module",
+      "line": 1123,
+      "args": []
+    },
+    {
+      "name": "normalize_code",
+      "line": 1219,
+      "args": [
+        "code"
+      ]
+    },
+    {
+      "name": "normalize_side",
+      "line": 1249,
+      "args": [
+        "side"
+      ]
+    },
+    {
+      "name": "position_key",
+      "line": 1277,
+      "args": [
+        "code",
+        "side"
+      ]
+    },
+    {
+      "name": "active_positions",
+      "line": 1303,
+      "args": [
+        "state"
+      ]
+    },
+    {
+      "name": "active_position_exists",
+      "line": 1331,
+      "args": [
+        "state",
+        "code",
+        "side"
+      ]
+    },
+    {
+      "name": "active_trade_id_exists",
+      "line": 1375,
+      "args": [
+        "state",
+        "trade_id"
+      ]
+    },
+    {
+      "name": "load_fix17_candidates",
+      "line": 1421,
+      "args": []
+    },
+    {
+      "name": "calculate_existing_exposure",
+      "line": 1495,
+      "args": [
+        "state"
+      ]
+    },
+    {
+      "name": "calculate_equity",
+      "line": 1605,
+      "args": [
+        "state"
+      ]
+    },
+    {
+      "name": "validate_candidate",
+      "line": 1647,
+      "args": [
+        "candidate"
+      ]
+    },
+    {
+      "name": "calculate_fix17_order",
+      "line": 1813,
+      "args": [
+        "runtime",
+        "candidate",
+        "state"
+      ]
+    },
+    {
+      "name": "apply_paper_fill",
+      "line": 2045,
+      "args": [
+        "state",
+        "order",
+        "market_date"
+      ]
+    },
+    {
+      "name": "get_fix17_position_state",
+      "line": 2179,
+      "args": [
+        "runtime",
+        "state",
+        "market_date"
+      ]
+    },
+    {
+      "name": "execute_fix17_candidate_batch",
+      "line": 2209,
+      "args": []
+    }
+  ],
+  "classes": [],
+  "imports": [
+    {
+      "line": 21,
+      "text": "from __future__ import annotations"
+    },
+    {
+      "line": 23,
+      "text": "import os"
+    },
+    {
+      "line": 24,
+      "text": "import sys"
+    },
+    {
+      "line": 25,
+      "text": "import json"
+    },
+    {
+      "line": 26,
+      "text": "import hashlib"
+    },
+    {
+      "line": 27,
+      "text": "import smtplib"
+    },
+    {
+      "line": 28,
+      "text": "import subprocess"
+    },
+    {
+      "line": 29,
+      "text": "import tempfile"
+    },
+    {
+      "line": 30,
+      "text": "import traceback"
+    },
+    {
+      "line": 32,
+      "text": "from pathlib import Path"
+    },
+    {
+      "line": 33,
+      "text": "from datetime import datetime"
+    },
+    {
+      "line": 34,
+      "text": "from email.mime.text import MIMEText"
+    },
+    {
+      "line": 35,
+      "text": "from email.header import Header"
+    },
+    {
+      "line": 36,
+      "text": "from email.utils import formataddr"
+    },
+    {
+      "line": 1083,
+      "text": "import importlib.util"
+    },
+    {
+      "line": 1085,
+      "text": "import math"
+    },
+    {
+      "line": 1087,
+      "text": "import uuid"
+    }
+  ],
+  "environment_variables": [
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASSWORD",
+    "MAIL_FROM",
+    "MAIL_TO"
+  ],
+  "target_hits": {
+    "FIX17": [
+      {
+        "line": 2,
+        "text": "# FIX17 PAPER TRADER"
+      },
+      {
+        "line": 5,
+        "text": "# DO NOT REBUILD FIX17 LOGIC HERE."
+      },
+      {
+        "line": 7,
+        "text": "# Official FIX17:"
+      },
+      {
+        "line": 8,
+        "text": "#   FIX17_OFFICIAL_FULL_SOURCE.py"
+      },
+      {
+        "line": 14,
+        "text": "#   ・FIX17 official source is the single source of truth."
+      },
+      {
+        "line": 47,
+        "text": "/ \"FIX17_OFFICIAL_FULL_SOURCE.py\""
+      },
+      {
+        "line": 66,
+        "text": "/ \"fix17_engine_check.json\""
+      },
+      {
+        "line": 246,
+        "text": "\"FIX17 自動売買\","
+      },
+      {
+        "line": 294,
+        "text": "\"FIX17 ペーパートレーダーでエラーが発生しました。\\n\\n\""
+      },
+      {
+        "line": 303,
+        "text": "\"【緊急】FIX17 ペーパートレーダー エラー\","
+      },
+      {
+        "line": 321,
+        "text": "\"正式FIX17ソースがありません: \""
+      },
+      {
+        "line": 336,
+        "text": "\"正式FIX17 SHA256不一致\\n\""
+      },
+      {
+        "line": 346,
+        "text": "# ISOLATED FIX17 ENGINE CHECK"
+      },
+      {
+        "line": 348,
+        "text": "# FIX17 namespaceを親プロセスへ持ち込まない。"
+      },
+      {
+        "line": 400,
+        "text": "run_name=\"__fix17_paper_engine__\","
+      },
+      {
+        "line": 425,
+        "text": ") == \"__fix17_paper_engine__\":"
+      },
+      {
+        "line": 440,
+        "text": ") == \"__fix17_paper_engine__\":"
+      },
+      {
+        "line": 448,
+        "text": "\"FIX17_VERSION\","
+      },
+      {
+        "line": 449,
+        "text": "\"FIX17_PARENT\","
+      },
+      {
+        "line": 450,
+        "text": "\"FIX17_PARENT_FILE_ID\","
+      },
+      {
+        "line": 451,
+        "text": "\"FIX17_PARENT_SHA256\","
+      },
+      {
+        "line": 452,
+        "text": "\"FIX17_RULE\","
+      },
+      {
+        "line": 453,
+        "text": "\"FIX17_LONG_TOTAL_LEVERAGE\","
+      },
+      {
+        "line": 605,
+        "text": "\"FIX17 engine audit結果が作成されませんでした。\\n\""
+      },
+      {
+        "line": 633,
+        "text": "\"FIX17 engine load失敗\\n\""
+      },
+      {
+        "line": 660,
+        "text": "\"FIX17必須関数不足:\\n\""
+      },
+      {
+        "line": 673,
+        "text": "\"FIX17 runtime function数が正式監査値と不一致\\n\""
+      },
+      {
+        "line": 690,
+        "text": "\"FIX17 runtime class数が正式監査値と不一致\\n\""
+      },
+      {
+        "line": 737,
+        "text": "\"version\": \"FIX17\","
+      },
+      {
+        "line": 767,
+        "text": "!= \"FIX17\""
+      },
+      {
+        "line": 771,
+        "text": "\"paper_state version がFIX17ではありません。\""
+      },
+      {
+        "line": 783,
+        "text": "\"paper_state のFIX17 SHAが正式版と一致しません。\""
+      },
+      {
+        "line": 791,
+        "text": "# FIX17 SIZING RULE STATIC CHECK"
+      },
+      {
+        "line": 794,
+        "text": "def verify_fix17_sizing_rule():"
+      },
+      {
+        "line": 824,
+        "text": "\"FIX17 sizing rule件数異常\\n\""
+      },
+      {
+        "line": 833,
+        "text": "\"FIX16旧sizing ruleがFIX17公式ソースに残っています。\""
+      },
+      {
+        "line": 854,
+        "text": "sizing = verify_fix17_sizing_rule()"
+      },
+      {
+        "line": 864,
+        "text": "# 現段階では「FIX17に存在しないENTRY判定」を"
+      },
+      {
+        "line": 870,
+        "text": "#   FIX17 official entry pipeline"
+      },
+      {
+        "line": 886,
+        "text": "\"version\": \"FIX17\","
+      },
+      {
+        "line": 932,
+        "text": "\"FIX17公式エンジン検証PASS。\""
+      },
+      {
+        "line": 945,
+        "text": "\"★★★★★ FIX17 PAPER ENGINE READY ★★★★★\""
+      },
+      {
+        "line": 1033,
+        "text": "# FIX17 OFFICIAL LIVE EXECUTION LAYER"
+      },
+      {
+        "line": 1039,
+        "text": "# この層ではFIX17のENTRY条件自体を再構築しない。"
+      },
+      {
+        "line": 1045,
+        "text": "#   runtime/fix17_candidates.json"
+      },
+      {
+        "line": 1079,
+        "text": "# ここでは正式FIX17 sizing / margin / state logicのみ使用。"
+      },
+      {
+        "line": 1089,
+        "text": "FIX17_CANDIDATE_FILE = ("
+      },
+      {
+        "line": 1093,
+        "text": "/ \"fix17_candidates.json\""
+      },
+      {
+        "line": 1097,
+        "text": "FIX17_EXECUTION_FILE = ("
+      },
+      {
+        "line": 1101,
+        "text": "/ \"fix17_execution_result.json\""
+      },
+      {
+        "line": 1123,
+        "text": "def load_fix17_runtime_module():"
+      },
+      {
+        "line": 1129,
+        "text": "\"_fix17_official_runtime_\""
+      },
+      {
+        "line": 1153,
+        "text": "\"FIX17正式runtime moduleを作成できません。\""
+      },
+      {
+        "line": 1201,
+        "text": "\"FIX17 runtime必須関数不足:\\n\""
+      },
+      {
+        "line": 1421,
+        "text": "def load_fix17_candidates():"
+      },
+      {
+        "line": 1423,
+        "text": "if not FIX17_CANDIDATE_FILE.exists():"
+      },
+      {
+        "line": 1435,
+        "text": "FIX17_CANDIDATE_FILE,"
+      },
+      {
+        "line": 1451,
+        "text": "\"fix17_candidates.json形式不正\""
+      },
+      {
+        "line": 1809,
+        "text": "# OFFICIAL FIX17 POSITION SIZE"
+      },
+      {
+        "line": 1813,
+        "text": "def calculate_fix17_order("
+      },
+      {
+        "line": 1897,
+        "text": "# 正式FIX17 calc_target_qty"
+      },
+      {
+        "line": 1977,
+        "text": "# 正式FIX17 calc_margin_capped_qty"
+      },
+      {
+        "line": 2103,
+        "text": "# FIX17 margin logicは正式関数側で制御済み。"
+      },
+      {
+        "line": 2147,
+        "text": "\"source\": \"FIX17_OFFICIAL_PIPELINE\","
+      },
+      {
+        "line": 2179,
+        "text": "def get_fix17_position_state("
+      },
+      {
+        "line": 2209,
+        "text": "def execute_fix17_candidate_batch():"
+      },
+      {
+        "line": 2213,
+        "text": "payload = load_fix17_candidates()"
+      },
+      {
+        "line": 2249,
+        "text": "FIX17_EXECUTION_FILE,"
+      },
+      {
+        "line": 2257,
+        "text": "runtime = load_fix17_runtime_module()"
+      },
+      {
+        "line": 2267,
+        "text": "get_fix17_position_state("
+      },
+      {
+        "line": 2285,
+        "text": "order = calculate_fix17_order("
+      },
+      {
+        "line": 2383,
+        "text": "FIX17_EXECUTION_FILE,"
+      },
+      {
+        "line": 2393,
+        "text": "# END FIX17 OFFICIAL LIVE EXECUTION LAYER"
+      }
+    ],
+    "fix17_contract": [],
+    "validate_fix17_contract": [],
+    "FIX17_OFFICIAL_FULL_SOURCE": [
+      {
+        "line": 8,
+        "text": "#   FIX17_OFFICIAL_FULL_SOURCE.py"
+      },
+      {
+        "line": 47,
+        "text": "/ \"FIX17_OFFICIAL_FULL_SOURCE.py\""
+      }
+    ],
+    "simulate_fix11": [
+      {
+        "line": 76,
+        "text": "\"simulate_fix11\","
+      }
+    ],
+    "simulate_fix15": [
+      {
+        "line": 77,
+        "text": "\"simulate_fix15\","
+      }
+    ],
+    "simulate_profit_floor_trail": [
+      {
+        "line": 78,
+        "text": "\"simulate_profit_floor_trail\","
+      }
+    ],
+    "candidate": [
+      {
+        "line": 872,
+        "text": "#   order candidate"
+      },
+      {
+        "line": 1045,
+        "text": "#   runtime/fix17_candidates.json"
+      },
+      {
+        "line": 1049,
+        "text": "# candidate例:"
+      },
+      {
+        "line": 1055,
+        "text": "#   \"candidates\": ["
+      },
+      {
+        "line": 1077,
+        "text": "# candidate生成は別データ層から行う。"
+      },
+      {
+        "line": 1089,
+        "text": "FIX17_CANDIDATE_FILE = ("
+      },
+      {
+        "line": 1093,
+        "text": "/ \"fix17_candidates.json\""
+      },
+      {
+        "line": 1417,
+        "text": "# CANDIDATE INPUT"
+      },
+      {
+        "line": 1421,
+        "text": "def load_fix17_candidates():"
+      },
+      {
+        "line": 1423,
+        "text": "if not FIX17_CANDIDATE_FILE.exists():"
+      },
+      {
+        "line": 1429,
+        "text": "\"candidates\": [],"
+      },
+      {
+        "line": 1435,
+        "text": "FIX17_CANDIDATE_FILE,"
+      },
+      {
+        "line": 1451,
+        "text": "\"fix17_candidates.json形式不正\""
+      },
+      {
+        "line": 1455,
+        "text": "candidates = obj.get("
+      },
+      {
+        "line": 1457,
+        "text": "\"candidates\","
+      },
+      {
+        "line": 1465,
+        "text": "candidates,"
+      },
+      {
+        "line": 1473,
+        "text": "\"candidates はlistである必要があります。\""
+      },
+      {
+        "line": 1485,
+        "text": "\"candidates\": candidates,"
+      },
+      {
+        "line": 1643,
+        "text": "# CANDIDATE VALIDATION"
+      },
+      {
+        "line": 1647,
+        "text": "def validate_candidate("
+      },
+      {
+        "line": 1649,
+        "text": "candidate"
+      },
+      {
+        "line": 1671,
+        "text": "if x not in candidate"
+      },
+      {
+        "line": 1679,
+        "text": "\"candidate必須項目不足: \""
+      },
+      {
+        "line": 1691,
+        "text": "candidate["
+      },
+      {
+        "line": 1701,
+        "text": "candidate["
+      },
+      {
+        "line": 1711,
+        "text": "candidate["
+      },
+      {
+        "line": 1721,
+        "text": "candidate["
+      },
+      {
+        "line": 1765,
+        "text": "trade_id = candidate.get("
+      },
+      {
+        "line": 1789,
+        "text": "**candidate,"
+      },
+      {
+        "line": 1817,
+        "text": "candidate,"
+      },
+      {
+        "line": 1823,
+        "text": "candidate = validate_candidate("
+      },
+      {
+        "line": 1825,
+        "text": "candidate"
+      },
+      {
+        "line": 1829,
+        "text": "code = candidate["
+      },
+      {
+        "line": 1835,
+        "text": "side = candidate["
+      },
+      {
+        "line": 1841,
+        "text": "entry_price = candidate["
+      },
+      {
+        "line": 1847,
+        "text": "target_notional = candidate["
+      },
+      {
+        "line": 1857,
+        "text": "candidate["
+      },
+      {
+        "line": 1871,
+        "text": "\"candidate\": candidate,"
+      },
+      {
+        "line": 1891,
+        "text": "\"candidate\": candidate,"
+      },
+      {
+        "line": 1923,
+        "text": "\"candidate\": candidate,"
+      },
+      {
+        "line": 2013,
+        "text": "\"candidate\": candidate,"
+      },
+      {
+        "line": 2023,
+        "text": "\"candidate\": candidate,"
+      },
+      {
+        "line": 2065,
+        "text": "\"candidate\""
+      },
+      {
+        "line": 2205,
+        "text": "# PROCESS CANDIDATES"
+      },
+      {
+        "line": 2209,
+        "text": "def execute_fix17_candidate_batch():"
+      },
+      {
+        "line": 2213,
+        "text": "payload = load_fix17_candidates()"
+      },
+      {
+        "line": 2221,
+        "text": "candidates = payload.get("
+      },
+      {
+        "line": 2223,
+        "text": "\"candidates\","
+      },
+      {
+        "line": 2229,
+        "text": "if not candidates:"
+      },
+      {
+        "line": 2233,
+        "text": "\"status\": \"NO_CANDIDATES\","
+      },
+      {
+        "line": 2237,
+        "text": "\"candidate_count\": 0,"
+      },
+      {
+        "line": 2283,
+        "text": "for raw_candidate in candidates:"
+      },
+      {
+        "line": 2289,
+        "text": "raw_candidate,"
+      },
+      {
+        "line": 2341,
+        "text": "\"candidate_count\": len("
+      },
+      {
+        "line": 2343,
+        "text": "candidates"
+      }
+    ],
+    "RS20_corrected": [],
+    "RVOL20": [],
+    "turnover_median_20d_oku": [],
+    "ORB15_LongSignal": [],
+    "ORB15_ShortSignal": [],
+    "CrossPass_EXACT": [],
+    "BacktestReady": [],
+    "is_lending": [],
+    "broker_active": [
+      {
+        "line": 2189,
+        "text": "broker_active = active_positions("
+      },
+      {
+        "line": 2197,
+        "text": "broker_active,"
+      }
+    ],
+    "position": [
+      {
+        "line": 79,
+        "text": "\"calc_entry_time_position_state\","
+      },
+      {
+        "line": 80,
+        "text": "\"calc_long_dynamic_max_positions\","
+      },
+      {
+        "line": 745,
+        "text": "\"positions\": [],"
+      },
+      {
+        "line": 914,
+        "text": "\"positions\": len("
+      },
+      {
+        "line": 916,
+        "text": "\"positions\","
+      },
+      {
+        "line": 1171,
+        "text": "\"calc_entry_time_position_state\","
+      },
+      {
+        "line": 1173,
+        "text": "\"calc_long_dynamic_max_positions\","
+      },
+      {
+        "line": 1215,
+        "text": "# POSITION HELPERS"
+      },
+      {
+        "line": 1277,
+        "text": "def position_key("
+      },
+      {
+        "line": 1303,
+        "text": "def active_positions("
+      },
+      {
+        "line": 1315,
+        "text": "\"positions\","
+      },
+      {
+        "line": 1331,
+        "text": "def active_position_exists("
+      },
+      {
+        "line": 1341,
+        "text": "key = position_key("
+      },
+      {
+        "line": 1349,
+        "text": "for p in active_positions("
+      },
+      {
+        "line": 1355,
+        "text": "if position_key("
+      },
+      {
+        "line": 1393,
+        "text": "for p in active_positions("
+      },
+      {
+        "line": 1505,
+        "text": "for p in active_positions("
+      },
+      {
+        "line": 1809,
+        "text": "# OFFICIAL FIX17 POSITION SIZE"
+      },
+      {
+        "line": 1875,
+        "text": "if active_position_exists("
+      },
+      {
+        "line": 1889,
+        "text": "\"reason\": \"POSITION_ALREADY_OPEN\","
+      },
+      {
+        "line": 2107,
+        "text": "position = {"
+      },
+      {
+        "line": 2155,
+        "text": "\"positions\","
+      },
+      {
+        "line": 2161,
+        "text": "position"
+      },
+      {
+        "line": 2171,
+        "text": "return position"
+      },
+      {
+        "line": 2179,
+        "text": "def get_fix17_position_state("
+      },
+      {
+        "line": 2189,
+        "text": "broker_active = active_positions("
+      },
+      {
+        "line": 2195,
+        "text": "return runtime.calc_entry_time_position_state("
+      },
+      {
+        "line": 2261,
+        "text": "# 正式 position state"
+      },
+      {
+        "line": 2265,
+        "text": "position_state = ("
+      },
+      {
+        "line": 2267,
+        "text": "get_fix17_position_state("
+      },
+      {
+        "line": 2367,
+        "text": "\"position_state_repr\": repr("
+      },
+      {
+        "line": 2369,
+        "text": "position_state"
+      }
+    ],
+    "portfolio": [],
+    "cash": [
+      {
+        "line": 743,
+        "text": "\"cash\": 1117792.0,"
+      },
+      {
+        "line": 911,
+        "text": "\"cash\": state.get("
+      },
+      {
+        "line": 912,
+        "text": "\"cash\""
+      },
+      {
+        "line": 963,
+        "text": "\"Cash:\","
+      },
+      {
+        "line": 967,
+        "text": "\"cash\""
+      },
+      {
+        "line": 1611,
+        "text": "cash_now = float("
+      },
+      {
+        "line": 1615,
+        "text": "\"cash\","
+      },
+      {
+        "line": 1635,
+        "text": "cash_now"
+      },
+      {
+        "line": 1927,
+        "text": "cash_now = float("
+      },
+      {
+        "line": 1931,
+        "text": "\"cash\","
+      },
+      {
+        "line": 1987,
+        "text": "cash_now,"
+      },
+      {
+        "line": 2101,
+        "text": "# cashは建玉代金全額を差し引かない。"
+      }
+    ],
+    "equity": [
+      {
+        "line": 741,
+        "text": "\"initial_equity\": 1117792.0,"
+      },
+      {
+        "line": 1601,
+        "text": "# EQUITY"
+      },
+      {
+        "line": 1605,
+        "text": "def calculate_equity("
+      }
+    ],
+    "margin": [
+      {
+        "line": 81,
+        "text": "\"calc_margin_capped_qty\","
+      },
+      {
+        "line": 1079,
+        "text": "# ここでは正式FIX17 sizing / margin / state logicのみ使用。"
+      },
+      {
+        "line": 1175,
+        "text": "\"calc_margin_capped_qty\","
+      },
+      {
+        "line": 1977,
+        "text": "# 正式FIX17 calc_margin_capped_qty"
+      },
+      {
+        "line": 1981,
+        "text": "capped_qty = runtime.calc_margin_capped_qty("
+      },
+      {
+        "line": 2011,
+        "text": "\"reason\": \"MARGIN_CAPPED_QTY_ZERO\","
+      },
+      {
+        "line": 2103,
+        "text": "# FIX17 margin logicは正式関数側で制御済み。"
+      }
+    ],
+    "entry": [
+      {
+        "line": 79,
+        "text": "\"calc_entry_time_position_state\","
+      },
+      {
+        "line": 864,
+        "text": "# 現段階では「FIX17に存在しないENTRY判定」を"
+      },
+      {
+        "line": 870,
+        "text": "#   FIX17 official entry pipeline"
+      },
+      {
+        "line": 976,
+        "text": "# ENTRY POINT"
+      },
+      {
+        "line": 1039,
+        "text": "# この層ではFIX17のENTRY条件自体を再構築しない。"
+      },
+      {
+        "line": 1065,
+        "text": "#       \"entry_price\": 1000.0,"
+      },
+      {
+        "line": 1171,
+        "text": "\"calc_entry_time_position_state\","
+      },
+      {
+        "line": 1511,
+        "text": "entry_price = float("
+      },
+      {
+        "line": 1515,
+        "text": "\"entry_price\","
+      },
+      {
+        "line": 1541,
+        "text": "entry_price"
+      },
+      {
+        "line": 1575,
+        "text": "- entry_price"
+      },
+      {
+        "line": 1583,
+        "text": "entry_price"
+      },
+      {
+        "line": 1659,
+        "text": "\"entry_price\","
+      },
+      {
+        "line": 1709,
+        "text": "entry_price = float("
+      },
+      {
+        "line": 1713,
+        "text": "\"entry_price\""
+      },
+      {
+        "line": 1733,
+        "text": "entry_price"
+      },
+      {
+        "line": 1737,
+        "text": "or entry_price <= 0"
+      },
+      {
+        "line": 1743,
+        "text": "f\"entry_price不正: {entry_price}\""
+      },
+      {
+        "line": 1801,
+        "text": "\"entry_price\": entry_price,"
+      },
+      {
+        "line": 1841,
+        "text": "entry_price = candidate["
+      },
+      {
+        "line": 1843,
+        "text": "\"entry_price\""
+      },
+      {
+        "line": 1905,
+        "text": "entry_price,"
+      },
+      {
+        "line": 1985,
+        "text": "entry_price,"
+      },
+      {
+        "line": 2033,
+        "text": "* entry_price"
+      },
+      {
+        "line": 2079,
+        "text": "entry_price = float("
+      },
+      {
+        "line": 2083,
+        "text": "\"entry_price\""
+      },
+      {
+        "line": 2123,
+        "text": "\"entry_price\": entry_price,"
+      },
+      {
+        "line": 2125,
+        "text": "\"mark_price\": entry_price,"
+      },
+      {
+        "line": 2129,
+        "text": "\"entry_notional\": float("
+      },
+      {
+        "line": 2131,
+        "text": "entry_price"
+      },
+      {
+        "line": 2139,
+        "text": "\"entry_datetime\": c.get("
+      },
+      {
+        "line": 2141,
+        "text": "\"entry_datetime\""
+      },
+      {
+        "line": 2175,
+        "text": "# OFFICIAL ENTRY-TIME STATE"
+      },
+      {
+        "line": 2195,
+        "text": "return runtime.calc_entry_time_position_state("
+      }
+    ],
+    "exit": [
+      {
+        "line": 86,
+        "text": "\"reconstruct_exit_price\","
+      },
+      {
+        "line": 538,
+        "text": "sys.exit("
+      },
+      {
+        "line": 1027,
+        "text": "sys.exit("
+      }
+    ],
+    "fill": [
+      {
+        "line": 874,
+        "text": "#   virtual fill"
+      },
+      {
+        "line": 2041,
+        "text": "# PAPER FILL"
+      },
+      {
+        "line": 2045,
+        "text": "def apply_paper_fill("
+      },
+      {
+        "line": 2241,
+        "text": "\"fills\": [],"
+      },
+      {
+        "line": 2281,
+        "text": "fills = []"
+      },
+      {
+        "line": 2309,
+        "text": "fill = apply_paper_fill("
+      },
+      {
+        "line": 2319,
+        "text": "if fill is not None:"
+      },
+      {
+        "line": 2321,
+        "text": "fills.append("
+      },
+      {
+        "line": 2323,
+        "text": "fill"
+      },
+      {
+        "line": 2361,
+        "text": "\"fill_count\": len("
+      },
+      {
+        "line": 2363,
+        "text": "fills"
+      },
+      {
+        "line": 2375,
+        "text": "\"fills\": fills,"
+      }
+    ],
+    "order": [
+      {
+        "line": 872,
+        "text": "#   order candidate"
+      },
+      {
+        "line": 1813,
+        "text": "def calculate_fix17_order("
+      },
+      {
+        "line": 2021,
+        "text": "\"status\": \"ORDER\","
+      },
+      {
+        "line": 2049,
+        "text": "order,"
+      },
+      {
+        "line": 2055,
+        "text": "if order.get("
+      },
+      {
+        "line": 2059,
+        "text": ") != \"ORDER\":"
+      },
+      {
+        "line": 2063,
+        "text": "c = order["
+      },
+      {
+        "line": 2071,
+        "text": "order["
+      },
+      {
+        "line": 2239,
+        "text": "\"orders\": [],"
+      },
+      {
+        "line": 2279,
+        "text": "orders = []"
+      },
+      {
+        "line": 2285,
+        "text": "order = calculate_fix17_order("
+      },
+      {
+        "line": 2295,
+        "text": "orders.append("
+      },
+      {
+        "line": 2297,
+        "text": "order"
+      },
+      {
+        "line": 2301,
+        "text": "if order.get("
+      },
+      {
+        "line": 2305,
+        "text": ") != \"ORDER\":"
+      },
+      {
+        "line": 2313,
+        "text": "order,"
+      },
+      {
+        "line": 2347,
+        "text": "\"order_count\": sum("
+      },
+      {
+        "line": 2351,
+        "text": "for x in orders"
+      },
+      {
+        "line": 2357,
+        "text": ") == \"ORDER\""
+      },
+      {
+        "line": 2373,
+        "text": "\"orders\": orders,"
+      }
+    ],
+    "trade": [
+      {
+        "line": 2,
+        "text": "# FIX17 PAPER TRADER"
+      },
+      {
+        "line": 71,
+        "text": "/ \"paper_trader_last_run.json\""
+      },
+      {
+        "line": 96,
+        "text": "\"_fix13_trade_id\","
+      },
+      {
+        "line": 747,
+        "text": "\"closed_trades\": [],"
+      },
+      {
+        "line": 865,
+        "text": "# paper_trader.py側で勝手に再構築しない。"
+      },
+      {
+        "line": 920,
+        "text": "\"closed_trades\": len("
+      },
+      {
+        "line": 922,
+        "text": "\"closed_trades\","
+      },
+      {
+        "line": 1059,
+        "text": "#       \"trade_id\": \"...\","
+      },
+      {
+        "line": 1119,
+        "text": "# paper_trader.pyプロセス終了時に消える。"
+      },
+      {
+        "line": 1375,
+        "text": "def active_trade_id_exists("
+      },
+      {
+        "line": 1379,
+        "text": "trade_id"
+      },
+      {
+        "line": 1383,
+        "text": "if trade_id is None:"
+      },
+      {
+        "line": 1387,
+        "text": "trade_id = str("
+      },
+      {
+        "line": 1389,
+        "text": "trade_id"
+      },
+      {
+        "line": 1403,
+        "text": "\"trade_id\","
+      },
+      {
+        "line": 1409,
+        "text": ") == trade_id:"
+      },
+      {
+        "line": 1765,
+        "text": "trade_id = candidate.get("
+      },
+      {
+        "line": 1767,
+        "text": "\"trade_id\""
+      },
+      {
+        "line": 1771,
+        "text": "if trade_id is None:"
+      },
+      {
+        "line": 1773,
+        "text": "trade_id = ("
+      },
+      {
+        "line": 1791,
+        "text": "\"trade_id\": str("
+      },
+      {
+        "line": 1793,
+        "text": "trade_id"
+      },
+      {
+        "line": 1853,
+        "text": "if active_trade_id_exists("
+      },
+      {
+        "line": 1859,
+        "text": "\"trade_id\""
+      },
+      {
+        "line": 1869,
+        "text": "\"reason\": \"DUPLICATE_TRADE_ID\","
+      },
+      {
+        "line": 2109,
+        "text": "\"trade_id\": c["
+      },
+      {
+        "line": 2111,
+        "text": "\"trade_id\""
+      }
+    ],
+    "GCS": [],
+    "storage": [],
+    "portfolio.json": [],
+    "paper_trades.csv": [],
+    "latest_result.txt": [],
+    "mail": [
+      {
+        "line": 34,
+        "text": "from email.mime.text import MIMEText"
+      },
+      {
+        "line": 35,
+        "text": "from email.header import Header"
+      },
+      {
+        "line": 36,
+        "text": "from email.utils import formataddr"
+      },
+      {
+        "line": 179,
+        "text": "# MAIL"
+      },
+      {
+        "line": 182,
+        "text": "def send_mail("
+      },
+      {
+        "line": 209,
+        "text": "mail_from = os.getenv("
+      },
+      {
+        "line": 210,
+        "text": "\"MAIL_FROM\","
+      },
+      {
+        "line": 214,
+        "text": "mail_to = os.getenv("
+      },
+      {
+        "line": 215,
+        "text": "\"MAIL_TO\","
+      },
+      {
+        "line": 224,
+        "text": "and mail_from"
+      },
+      {
+        "line": 225,
+        "text": "and mail_to"
+      },
+      {
+        "line": 250,
+        "text": "mail_from,"
+      },
+      {
+        "line": 254,
+        "text": "msg[\"To\"] = mail_to"
+      },
+      {
+        "line": 274,
+        "text": "smtp.sendmail("
+      },
+      {
+        "line": 275,
+        "text": "mail_from,"
+      },
+      {
+        "line": 276,
+        "text": "[mail_to],"
+      },
+      {
+        "line": 284,
+        "text": "def send_error_mail("
+      },
+      {
+        "line": 302,
+        "text": "send_mail("
+      },
+      {
+        "line": 1014,
+        "text": "send_error_mail("
+      }
+    ],
+    "send_error_mail": [
+      {
+        "line": 284,
+        "text": "def send_error_mail("
+      },
+      {
+        "line": 1014,
+        "text": "send_error_mail("
+      }
+    ],
+    "send_mail": [
+      {
+        "line": 182,
+        "text": "def send_mail("
+      },
+      {
+        "line": 302,
+        "text": "send_mail("
+      }
+    ]
+  },
+  "main_hits": [
+    {
+      "line": 979,
+      "context": "00969:     )\n00970: \n00971: \n00972:     return result\n00973: \n00974: \n00975: # ============================================================\n00976: # ENTRY POINT\n00977: # ============================================================\n00978: \n00979: if __name__ == \"__main__\":\n00980: \n00981:     try:\n00982: \n00983:         main()\n00984: \n00985:     except Exception as e:\n00986: \n00987:         error_text = (\n00988:             traceback.format_exc()\n00989:         )\n00990: \n00991: \n00992:         try:\n00993: \n00994:             save_json(\n00995:                 RUN_LOG_FILE,\n00996:                 {\n00997:                     \"status\": \"ERROR\",\n00998:                     \"time\": datetime.now().isoformat(),\n00999:                     \"error_type\": type(\n01000:                         e\n01001:                     ).__name__,\n01002:                     \"error\": str(\n01003:                         e\n01004:                     ),\n01005:                     \"traceback\": error_text,\n01006:                 }\n01007:             )\n01008: \n01009:         except Exception:\n01010: \n01011:             pass\n01012: \n01013: \n01014:         send_error_mail(\n01015:             type(\n01016:                 e\n01017:             ).__name__,\n01018:             error_text,\n01019:         )"
+    }
+  ],
+  "function_contexts": [
+    {
+      "name": "sha256_file",
+      "line": 104,
+      "args": [
+        "path"
+      ],
+      "context": "00103: \n00104: def sha256_file(path: Path) -> str:\n00105: \n00106:     h = hashlib.sha256()\n00107: \n00108:     with path.open(\n00109:         \"rb\"\n00110:     ) as f:\n00111: \n00112:         while True:\n00113: \n00114:             block = f.read(\n00115:                 8 * 1024 * 1024\n00116:             )\n00117: \n00118:             if not block:\n00119:                 break\n00120: \n00121:             h.update(\n00122:                 block"
+    },
+    {
+      "name": "save_json",
+      "line": 128,
+      "args": [
+        "path",
+        "obj"
+      ],
+      "context": "00127: \n00128: def save_json(\n00129:     path: Path,\n00130:     obj\n00131: ):\n00132: \n00133:     path.parent.mkdir(\n00134:         parents=True,\n00135:         exist_ok=True\n00136:     )\n00137: \n00138:     tmp = path.with_suffix(\n00139:         path.suffix + \".tmp\"\n00140:     )\n00141: \n00142:     with tmp.open(\n00143:         \"w\",\n00144:         encoding=\"utf-8\"\n00145:     ) as f:\n00146: "
+    },
+    {
+      "name": "load_json",
+      "line": 160,
+      "args": [
+        "path",
+        "default"
+      ],
+      "context": "00159: \n00160: def load_json(\n00161:     path: Path,\n00162:     default=None\n00163: ):\n00164: \n00165:     if not path.exists():\n00166:         return default\n00167: \n00168:     with path.open(\n00169:         \"r\",\n00170:         encoding=\"utf-8\"\n00171:     ) as f:\n00172: \n00173:         return json.load(\n00174:             f\n00175:         )\n00176: \n00177: \n00178: # ============================================================"
+    },
+    {
+      "name": "send_mail",
+      "line": 182,
+      "args": [
+        "subject",
+        "body"
+      ],
+      "context": "00181: \n00182: def send_mail(\n00183:     subject: str,\n00184:     body: str,\n00185: ):\n00186: \n00187:     host = os.getenv(\n00188:         \"SMTP_HOST\",\n00189:         \"\"\n00190:     ).strip()\n00191: \n00192:     port = int(\n00193:         os.getenv(\n00194:             \"SMTP_PORT\",\n00195:             \"587\"\n00196:         )\n00197:     )\n00198: \n00199:     user = os.getenv(\n00200:         \"SMTP_USER\","
+    },
+    {
+      "name": "send_error_mail",
+      "line": 284,
+      "args": [
+        "title",
+        "error_text"
+      ],
+      "context": "00283: \n00284: def send_error_mail(\n00285:     title: str,\n00286:     error_text: str,\n00287: ):\n00288: \n00289:     now = datetime.now().strftime(\n00290:         \"%Y-%m-%d %H:%M:%S\"\n00291:     )\n00292: \n00293:     body = (\n00294:         \"FIX17 ペーパートレーダーでエラーが発生しました。\\n\\n\"\n00295:         f\"時刻: {now}\\n\"\n00296:         f\"内容: {title}\\n\\n\"\n00297:         f\"{error_text}\\n\"\n00298:     )\n00299: \n00300:     try:\n00301: \n00302:         send_mail("
+    },
+    {
+      "name": "verify_official_source",
+      "line": 316,
+      "args": [],
+      "context": "00315: \n00316: def verify_official_source():\n00317: \n00318:     if not OFFICIAL_FILE.exists():\n00319: \n00320:         raise RuntimeError(\n00321:             \"正式FIX17ソースがありません: \"\n00322:             + str(\n00323:                 OFFICIAL_FILE\n00324:             )\n00325:         )\n00326: \n00327: \n00328:     actual = sha256_file(\n00329:         OFFICIAL_FILE\n00330:     )\n00331: \n00332: \n00333:     if actual != OFFICIAL_SHA256:\n00334: "
+    },
+    {
+      "name": "check_official_engine",
+      "line": 544,
+      "args": [],
+      "context": "00543: \n00544: def check_official_engine():\n00545: \n00546:     RUNTIME_DIR.mkdir(\n00547:         parents=True,\n00548:         exist_ok=True\n00549:     )\n00550: \n00551: \n00552:     with tempfile.TemporaryDirectory() as td:\n00553: \n00554:         td = Path(\n00555:             td\n00556:         )\n00557: \n00558:         runner = (\n00559:             td\n00560:             / \"runner.py\"\n00561:         )\n00562: "
+    },
+    {
+      "name": "ensure_paper_state",
+      "line": 726,
+      "args": [],
+      "context": "00725: \n00726: def ensure_paper_state():\n00727: \n00728:     state = load_json(\n00729:         STATE_FILE,\n00730:         default=None\n00731:     )\n00732: \n00733: \n00734:     if state is None:\n00735: \n00736:         state = {\n00737:             \"version\": \"FIX17\",\n00738:             \"official_sha256\": OFFICIAL_SHA256,\n00739: \n00740:             # 正式検証初期資産\n00741:             \"initial_equity\": 1117792.0,\n00742: \n00743:             \"cash\": 1117792.0,\n00744: "
+    },
+    {
+      "name": "verify_fix17_sizing_rule",
+      "line": 794,
+      "args": [],
+      "context": "00793: \n00794: def verify_fix17_sizing_rule():\n00795: \n00796:     source = OFFICIAL_FILE.read_text(\n00797:         encoding=\"utf-8\"\n00798:     )\n00799: \n00800: \n00801:     new_rule = (\n00802:         \"target_notional = long_remaining_capacity\"\n00803:     )\n00804: \n00805:     old_rule = (\n00806:         \"target_notional = min(\"\n00807:         \"LONG_CAP_PER_STOCK, \"\n00808:         \"long_remaining_capacity)\"\n00809:     )\n00810: \n00811: \n00812:     new_count = source.count("
+    },
+    {
+      "name": "main",
+      "line": 847,
+      "args": [],
+      "context": "00846: \n00847: def main():\n00848: \n00849:     started = datetime.now()\n00850: \n00851: \n00852:     official_sha = verify_official_source()\n00853: \n00854:     sizing = verify_fix17_sizing_rule()\n00855: \n00856:     engine = check_official_engine()\n00857: \n00858:     state = ensure_paper_state()\n00859: \n00860: \n00861:     # --------------------------------------------------------\n00862:     # ここから先が次工程の接続点\n00863:     #\n00864:     # 現段階では「FIX17に存在しないENTRY判定」を\n00865:     # paper_trader.py側で勝手に再構築しない。"
+    },
+    {
+      "name": "load_fix17_runtime_module",
+      "line": 1123,
+      "args": [],
+      "context": "01122: \n01123: def load_fix17_runtime_module():\n01124: \n01125:     verify_official_source()\n01126: \n01127:     module_name = (\n01128: \n01129:         \"_fix17_official_runtime_\"\n01130: \n01131:         + uuid.uuid4().hex\n01132: \n01133:     )\n01134: \n01135:     spec = importlib.util.spec_from_file_location(\n01136: \n01137:         module_name,\n01138: \n01139:         OFFICIAL_FILE,\n01140: \n01141:     )"
+    },
+    {
+      "name": "normalize_code",
+      "line": 1219,
+      "args": [
+        "code"
+      ],
+      "context": "01218: \n01219: def normalize_code(\n01220: \n01221:     code\n01222: \n01223: ):\n01224: \n01225:     code = str(\n01226: \n01227:         code\n01228: \n01229:     ).strip()\n01230: \n01231:     if code.endswith(\n01232: \n01233:         \".0\"\n01234: \n01235:     ):\n01236: \n01237:         code = code[:-2]"
+    },
+    {
+      "name": "normalize_side",
+      "line": 1249,
+      "args": [
+        "side"
+      ],
+      "context": "01248: \n01249: def normalize_side(\n01250: \n01251:     side\n01252: \n01253: ):\n01254: \n01255:     side = str(\n01256: \n01257:         side\n01258: \n01259:     ).upper().strip()\n01260: \n01261:     if side not in {\n01262: \n01263:         \"LONG\",\n01264: \n01265:         \"SHORT\",\n01266: \n01267:     }:"
+    },
+    {
+      "name": "position_key",
+      "line": 1277,
+      "args": [
+        "code",
+        "side"
+      ],
+      "context": "01276: \n01277: def position_key(\n01278: \n01279:     code,\n01280: \n01281:     side\n01282: \n01283: ):\n01284: \n01285:     return (\n01286: \n01287:         normalize_code(\n01288: \n01289:             code\n01290: \n01291:         )\n01292: \n01293:         + \":\"\n01294: \n01295:         + normalize_side("
+    },
+    {
+      "name": "active_positions",
+      "line": 1303,
+      "args": [
+        "state"
+      ],
+      "context": "01302: \n01303: def active_positions(\n01304: \n01305:     state\n01306: \n01307: ):\n01308: \n01309:     return [\n01310: \n01311:         p\n01312: \n01313:         for p in state.get(\n01314: \n01315:             \"positions\",\n01316: \n01317:             []\n01318: \n01319:         )\n01320: \n01321:         if p.get("
+    },
+    {
+      "name": "active_position_exists",
+      "line": 1331,
+      "args": [
+        "state",
+        "code",
+        "side"
+      ],
+      "context": "01330: \n01331: def active_position_exists(\n01332: \n01333:     state,\n01334: \n01335:     code,\n01336: \n01337:     side\n01338: \n01339: ):\n01340: \n01341:     key = position_key(\n01342: \n01343:         code,\n01344: \n01345:         side\n01346: \n01347:     )\n01348: \n01349:     for p in active_positions("
+    },
+    {
+      "name": "active_trade_id_exists",
+      "line": 1375,
+      "args": [
+        "state",
+        "trade_id"
+      ],
+      "context": "01374: \n01375: def active_trade_id_exists(\n01376: \n01377:     state,\n01378: \n01379:     trade_id\n01380: \n01381: ):\n01382: \n01383:     if trade_id is None:\n01384: \n01385:         return False\n01386: \n01387:     trade_id = str(\n01388: \n01389:         trade_id\n01390: \n01391:     )\n01392: \n01393:     for p in active_positions("
+    },
+    {
+      "name": "load_fix17_candidates",
+      "line": 1421,
+      "args": [],
+      "context": "01420: \n01421: def load_fix17_candidates():\n01422: \n01423:     if not FIX17_CANDIDATE_FILE.exists():\n01424: \n01425:         return {\n01426: \n01427:             \"market_date\": None,\n01428: \n01429:             \"candidates\": [],\n01430: \n01431:         }\n01432: \n01433:     obj = load_json(\n01434: \n01435:         FIX17_CANDIDATE_FILE,\n01436: \n01437:         default={}\n01438: \n01439:     )"
+    },
+    {
+      "name": "calculate_existing_exposure",
+      "line": 1495,
+      "args": [
+        "state"
+      ],
+      "context": "01494: \n01495: def calculate_existing_exposure(\n01496: \n01497:     state\n01498: \n01499: ):\n01500: \n01501:     gross_notional = 0.0\n01502: \n01503:     unrealized = 0.0\n01504: \n01505:     for p in active_positions(\n01506: \n01507:         state\n01508: \n01509:     ):\n01510: \n01511:         entry_price = float(\n01512: \n01513:             p.get("
+    },
+    {
+      "name": "calculate_equity",
+      "line": 1605,
+      "args": [
+        "state"
+      ],
+      "context": "01604: \n01605: def calculate_equity(\n01606: \n01607:     state\n01608: \n01609: ):\n01610: \n01611:     cash_now = float(\n01612: \n01613:         state.get(\n01614: \n01615:             \"cash\",\n01616: \n01617:             0.0\n01618: \n01619:         )\n01620: \n01621:     )\n01622: \n01623:     _, unrealized = ("
+    },
+    {
+      "name": "validate_candidate",
+      "line": 1647,
+      "args": [
+        "candidate"
+      ],
+      "context": "01646: \n01647: def validate_candidate(\n01648: \n01649:     candidate\n01650: \n01651: ):\n01652: \n01653:     required = [\n01654: \n01655:         \"code\",\n01656: \n01657:         \"side\",\n01658: \n01659:         \"entry_price\",\n01660: \n01661:         \"target_notional\",\n01662: \n01663:     ]\n01664: \n01665:     missing = ["
+    },
+    {
+      "name": "calculate_fix17_order",
+      "line": 1813,
+      "args": [
+        "runtime",
+        "candidate",
+        "state"
+      ],
+      "context": "01812: \n01813: def calculate_fix17_order(\n01814: \n01815:     runtime,\n01816: \n01817:     candidate,\n01818: \n01819:     state,\n01820: \n01821: ):\n01822: \n01823:     candidate = validate_candidate(\n01824: \n01825:         candidate\n01826: \n01827:     )\n01828: \n01829:     code = candidate[\n01830: \n01831:         \"code\""
+    },
+    {
+      "name": "apply_paper_fill",
+      "line": 2045,
+      "args": [
+        "state",
+        "order",
+        "market_date"
+      ],
+      "context": "02044: \n02045: def apply_paper_fill(\n02046: \n02047:     state,\n02048: \n02049:     order,\n02050: \n02051:     market_date,\n02052: \n02053: ):\n02054: \n02055:     if order.get(\n02056: \n02057:         \"status\"\n02058: \n02059:     ) != \"ORDER\":\n02060: \n02061:         return None\n02062: \n02063:     c = order["
+    },
+    {
+      "name": "get_fix17_position_state",
+      "line": 2179,
+      "args": [
+        "runtime",
+        "state",
+        "market_date"
+      ],
+      "context": "02178: \n02179: def get_fix17_position_state(\n02180: \n02181:     runtime,\n02182: \n02183:     state,\n02184: \n02185:     market_date,\n02186: \n02187: ):\n02188: \n02189:     broker_active = active_positions(\n02190: \n02191:         state\n02192: \n02193:     )\n02194: \n02195:     return runtime.calc_entry_time_position_state(\n02196: \n02197:         broker_active,"
+    },
+    {
+      "name": "execute_fix17_candidate_batch",
+      "line": 2209,
+      "args": [],
+      "context": "02208: \n02209: def execute_fix17_candidate_batch():\n02210: \n02211:     state = ensure_paper_state()\n02212: \n02213:     payload = load_fix17_candidates()\n02214: \n02215:     market_date = payload.get(\n02216: \n02217:         \"market_date\"\n02218: \n02219:     )\n02220: \n02221:     candidates = payload.get(\n02222: \n02223:         \"candidates\",\n02224: \n02225:         []\n02226: \n02227:     )"
+    }
+  ]
+}
