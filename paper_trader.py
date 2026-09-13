@@ -1056,6 +1056,10 @@ import math
 
 import uuid
 
+# Repository root
+REPO_DIR = __import__("pathlib").Path(__file__).resolve().parent
+
+
 FIX17_CANDIDATE_FILE = (
 
     RUNTIME_DIR
