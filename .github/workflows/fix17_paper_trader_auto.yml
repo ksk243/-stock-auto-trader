@@ -15,6 +15,18 @@ jobs:
 
     runs-on: ubuntu-latest
 
+
+
+    env:
+
+      GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+
+    permissions:
+
+      contents: read
+
+      id-token: write
+
     timeout-minutes: 30
 
     steps:
@@ -32,6 +44,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Authenticate to Google Cloud
+
+        uses: google-github-actions/auth@v3
+
+        with:
+
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+
+      - name: Restore FIX17 Paper State
+
+        run: python paper_state_store.py restore
+
+
       - name: Run FIX17 Paper Trader
         env:
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
@@ -42,3 +70,7 @@ jobs:
           MAIL_TO: ${{ secrets.MAIL_TO }}
         run: |
           python paper_trader.py
+
+      - name: Save FIX17 Paper State
+        run: python paper_state_store.py save
+
