@@ -3,9 +3,6 @@ name: FIX17 Paper Trader
 on:
   workflow_dispatch:
 
-  schedule:
-    - cron: "45 6 * * 1-5"
-
 jobs:
 
   paper-trader:
