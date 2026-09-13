@@ -31,13 +31,23 @@ jobs:
       - name: Send FIX17 error test mail
         shell: bash
         run: |
-          python -c "
+          python - <<'PY'
           from mailer import send_error_mail
+
           send_error_mail(
-              'FIX17 SAVE_1M ERROR MAIL TEST',
-              'これはFIX17のエラーメール実送信テストです。\\n\\n'
-              'GitHub Actions → mailer.py → SMTP → メール受信の確認です。\\n\\n'
-              '実際の1分足保存エラーではありません。'
+              "FIX17 SAVE_1M",
+              "ERROR MAIL TEST",
+              """これはFIX17のエラーメール実送信テストです。
+
+GitHub Actions
+→ mailer.py
+→ SMTP
+→ メール受信
+
+まで正常につながっているか確認しています。
+
+実際の1分足保存エラーではありません。"""
           )
-          print('ERROR MAIL TEST SEND: PASS')
-          "
+
+          print("ERROR MAIL TEST SEND: PASS")
+          PY
