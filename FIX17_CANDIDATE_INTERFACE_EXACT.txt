@@ -1,0 +1,1363 @@
+FIX17 CANDIDATE INTERFACE EXACT
+==============================================================================================================
+HEAD: 66e57ac
+
+CANDIDATE KEYS
+--------------------------------------------------------------------------------------------------------------
+load_fix17_candidates
+
+validate_candidate
+  code
+  side
+  entry_price
+  target_notional
+  trade_id
+
+calculate_fix17_order
+  code
+  side
+  entry_price
+  target_notional
+  trade_id
+
+apply_paper_fill
+  entry_price
+  side
+  trade_id
+  code
+  entry_datetime
+
+FUNCTION SOURCES
+--------------------------------------------------------------------------------------------------------------
+load_fix17_candidates L1439-L1505
+def load_fix17_candidates():
+
+    if not FIX17_CANDIDATE_FILE.exists():
+
+        return {
+
+            "market_date": None,
+
+            "candidates": [],
+
+        }
+
+    obj = load_json(
+
+        FIX17_CANDIDATE_FILE,
+
+        default={}
+
+    )
+
+    if not isinstance(
+
+        obj,
+
+        dict
+
+    ):
+
+        raise RuntimeError(
+
+            "fix17_candidates.json形式不正"
+
+        )
+
+    candidates = obj.get(
+
+        "candidates",
+
+        []
+
+    )
+
+    if not isinstance(
+
+        candidates,
+
+        list
+
+    ):
+
+        raise RuntimeError(
+
+            "candidates はlistである必要があります。"
+
+        )
+
+    return {
+
+        "market_date": obj.get(
+
+            "market_date"
+
+        ),
+
+        "candidates": candidates,
+
+    }
+
+validate_candidate L1665-L1823
+def validate_candidate(
+
+    candidate
+
+):
+
+    required = [
+
+        "code",
+
+        "side",
+
+        "entry_price",
+
+        "target_notional",
+
+    ]
+
+    missing = [
+
+        x
+
+        for x in required
+
+        if x not in candidate
+
+    ]
+
+    if missing:
+
+        raise RuntimeError(
+
+            "candidate必須項目不足: "
+
+            + ",".join(
+
+                missing
+
+            )
+
+        )
+
+    code = normalize_code(
+
+        candidate[
+
+            "code"
+
+        ]
+
+    )
+
+    side = normalize_side(
+
+        candidate[
+
+            "side"
+
+        ]
+
+    )
+
+    entry_price = float(
+
+        candidate[
+
+            "entry_price"
+
+        ]
+
+    )
+
+    target_notional = float(
+
+        candidate[
+
+            "target_notional"
+
+        ]
+
+    )
+
+    if (
+
+        not math.isfinite(
+
+            entry_price
+
+        )
+
+        or entry_price <= 0
+
+    ):
+
+        raise RuntimeError(
+
+            f"entry_price不正: {entry_price}"
+
+        )
+
+    if (
+
+        not math.isfinite(
+
+            target_notional
+
+        )
+
+        or target_notional <= 0
+
+    ):
+
+        raise RuntimeError(
+
+            f"target_notional不正: {target_notional}"
+
+        )
+
+    trade_id = candidate.get(
+
+        "trade_id"
+
+    )
+
+    if trade_id is None:
+
+        trade_id = (
+
+            code
+
+            + "-"
+
+            + side
+
+            + "-"
+
+            + uuid.uuid4().hex[:12]
+
+        )
+
+    return {
+
+        **candidate,
+
+        "trade_id": str(
+
+            trade_id
+
+        ),
+
+        "code": code,
+
+        "side": side,
+
+        "entry_price": entry_price,
+
+        "target_notional": target_notional,
+
+    }
+
+calculate_fix17_order L1831-L2055
+def calculate_fix17_order(
+
+    runtime,
+
+    candidate,
+
+    state,
+
+):
+
+    candidate = validate_candidate(
+
+        candidate
+
+    )
+
+    code = candidate[
+
+        "code"
+
+    ]
+
+    side = candidate[
+
+        "side"
+
+    ]
+
+    entry_price = candidate[
+
+        "entry_price"
+
+    ]
+
+    target_notional = candidate[
+
+        "target_notional"
+
+    ]
+
+    if active_trade_id_exists(
+
+        state,
+
+        candidate[
+
+            "trade_id"
+
+        ],
+
+    ):
+
+        return {
+
+            "status": "SKIP",
+
+            "reason": "DUPLICATE_TRADE_ID",
+
+            "candidate": candidate,
+
+        }
+
+    if active_position_exists(
+
+        state,
+
+        code,
+
+        side,
+
+    ):
+
+        return {
+
+            "status": "SKIP",
+
+            "reason": "POSITION_ALREADY_OPEN",
+
+            "candidate": candidate,
+
+        }
+
+    # --------------------------------------------------------
+
+    # 正式FIX17 calc_target_qty
+
+    # --------------------------------------------------------
+
+    target_qty = runtime.calc_target_qty(
+
+        target_notional,
+
+        entry_price,
+
+    )
+
+    target_qty = int(
+
+        target_qty
+
+    )
+
+    if target_qty <= 0:
+
+        return {
+
+            "status": "SKIP",
+
+            "reason": "TARGET_QTY_ZERO",
+
+            "candidate": candidate,
+
+        }
+
+    cash_now = float(
+
+        state.get(
+
+            "cash",
+
+            0.0
+
+        )
+
+    )
+
+    etf_mark = float(
+
+        state.get(
+
+            "etf_mark",
+
+            0.0
+
+        )
+
+    )
+
+    etf_shares = int(
+
+        state.get(
+
+            "etf_shares",
+
+            0
+
+        )
+
+    )
+
+    (
+
+        existing_gross_notional,
+
+        existing_unrealized,
+
+    ) = calculate_existing_exposure(
+
+        state
+
+    )
+
+    # --------------------------------------------------------
+
+    # 正式FIX17 calc_margin_capped_qty
+
+    # --------------------------------------------------------
+
+    capped_qty = runtime.calc_margin_capped_qty(
+
+        target_qty,
+
+        entry_price,
+
+        cash_now,
+
+        etf_mark,
+
+        etf_shares,
+
+        existing_gross_notional,
+
+        existing_unrealized,
+
+    )
+
+    capped_qty = int(
+
+        capped_qty
+
+    )
+
+    if capped_qty <= 0:
+
+        return {
+
+            "status": "SKIP",
+
+            "reason": "MARGIN_CAPPED_QTY_ZERO",
+
+            "candidate": candidate,
+
+            "target_qty": target_qty,
+
+        }
+
+    return {
+
+        "status": "ORDER",
+
+        "candidate": candidate,
+
+        "target_qty": target_qty,
+
+        "qty": capped_qty,
+
+        "notional": float(
+
+            capped_qty
+
+            * entry_price
+
+        ),
+
+    }
+
+apply_paper_fill L2063-L2189
+def apply_paper_fill(
+
+    state,
+
+    order,
+
+    market_date,
+
+):
+
+    if order.get(
+
+        "status"
+
+    ) != "ORDER":
+
+        return None
+
+    c = order[
+
+        "candidate"
+
+    ]
+
+    qty = int(
+
+        order[
+
+            "qty"
+
+        ]
+
+    )
+
+    entry_price = float(
+
+        c[
+
+            "entry_price"
+
+        ]
+
+    )
+
+    side = c[
+
+        "side"
+
+    ]
+
+    # --------------------------------------------------------
+
+    # 信用売買想定
+
+    #
+
+    # cashは建玉代金全額を差し引かない。
+
+    # FIX17 margin logicは正式関数側で制御済み。
+
+    # --------------------------------------------------------
+
+    position = {
+
+        "trade_id": c[
+
+            "trade_id"
+
+        ],
+
+        "code": c[
+
+            "code"
+
+        ],
+
+        "side": side,
+
+        "entry_price": entry_price,
+
+        "mark_price": entry_price,
+
+        "qty": qty,
+
+        "entry_notional": float(
+
+            entry_price
+
+            * qty
+
+        ),
+
+        "market_date": market_date,
+
+        "entry_datetime": c.get(
+
+            "entry_datetime"
+
+        ),
+
+        "status": "OPEN",
+
+        "source": "FIX17_OFFICIAL_PIPELINE",
+
+        "created_at": datetime.now().isoformat(),
+
+    }
+
+    state.setdefault(
+
+        "positions",
+
+        []
+
+    ).append(
+
+        position
+
+    )
+
+    state[
+
+        "updated_at"
+
+    ] = datetime.now().isoformat()
+
+    return position
+
+CANDIDATE CONTEXT
+--------------------------------------------------------------------------------------------------------------
+01048: 
+01049: # ============================================================
+01050: 
+01051: # FIX17 OFFICIAL LIVE EXECUTION LAYER
+01052: 
+01053: # ============================================================
+01054: 
+01055: #
+01056: 
+01057: # この層ではFIX17のENTRY条件自体を再構築しない。
+01058: 
+01059: #
+01060: 
+01061: # 入力:
+01062: 
+01063: #   runtime/fix17_candidates.json
+01064: 
+01065: #
+01066: 
+01067: # candidate例:
+01068: 
+01069: # {
+01070: 
+01071: #   "market_date": "2026-09-14",
+01072: 
+01073: #   "candidates": [
+01074: 
+01075: #     {
+01076: 
+01077: #       "trade_id": "...",
+01078: 
+01079: #       "code": "1234",
+01080: 
+01081: #       "side": "LONG",
+01082: 
+01083: #       "entry_price": 1000.0,
+01084: 
+01085: #       "target_notional": 500000.0
+01086: 
+01087: #     }
+01088: 
+01089: #   ]
+01090: 
+01091: # }
+01092: 
+01093: #
+01094: 
+01095: # candidate生成は別データ層から行う。
+01096: 
+01097: # ここでは正式FIX17 sizing / margin / state logicのみ使用。
+01098: 
+01099: # ============================================================
+01100: 
+01101: import importlib.util
+01102: 
+01103: import math
+01104: 
+01105: import uuid
+01106: 
+01107: FIX17_CANDIDATE_FILE = (
+01108: 
+
+01052: 
+01053: # ============================================================
+01054: 
+01055: #
+01056: 
+01057: # この層ではFIX17のENTRY条件自体を再構築しない。
+01058: 
+01059: #
+01060: 
+01061: # 入力:
+01062: 
+01063: #   runtime/fix17_candidates.json
+01064: 
+01065: #
+01066: 
+01067: # candidate例:
+01068: 
+01069: # {
+01070: 
+01071: #   "market_date": "2026-09-14",
+01072: 
+01073: #   "candidates": [
+01074: 
+01075: #     {
+01076: 
+01077: #       "trade_id": "...",
+01078: 
+01079: #       "code": "1234",
+01080: 
+01081: #       "side": "LONG",
+01082: 
+01083: #       "entry_price": 1000.0,
+01084: 
+01085: #       "target_notional": 500000.0
+01086: 
+01087: #     }
+01088: 
+01089: #   ]
+01090: 
+01091: # }
+01092: 
+01093: #
+01094: 
+01095: # candidate生成は別データ層から行う。
+01096: 
+01097: # ここでは正式FIX17 sizing / margin / state logicのみ使用。
+01098: 
+01099: # ============================================================
+01100: 
+01101: import importlib.util
+01102: 
+01103: import math
+01104: 
+01105: import uuid
+01106: 
+01107: FIX17_CANDIDATE_FILE = (
+01108: 
+01109:     RUNTIME_DIR
+01110: 
+01111:     / "fix17_candidates.json"
+01112: 
+
+01058: 
+01059: #
+01060: 
+01061: # 入力:
+01062: 
+01063: #   runtime/fix17_candidates.json
+01064: 
+01065: #
+01066: 
+01067: # candidate例:
+01068: 
+01069: # {
+01070: 
+01071: #   "market_date": "2026-09-14",
+01072: 
+01073: #   "candidates": [
+01074: 
+01075: #     {
+01076: 
+01077: #       "trade_id": "...",
+01078: 
+01079: #       "code": "1234",
+01080: 
+01081: #       "side": "LONG",
+01082: 
+01083: #       "entry_price": 1000.0,
+01084: 
+01085: #       "target_notional": 500000.0
+01086: 
+01087: #     }
+01088: 
+01089: #   ]
+01090: 
+01091: # }
+01092: 
+01093: #
+01094: 
+01095: # candidate生成は別データ層から行う。
+01096: 
+01097: # ここでは正式FIX17 sizing / margin / state logicのみ使用。
+01098: 
+01099: # ============================================================
+01100: 
+01101: import importlib.util
+01102: 
+01103: import math
+01104: 
+01105: import uuid
+01106: 
+01107: FIX17_CANDIDATE_FILE = (
+01108: 
+01109:     RUNTIME_DIR
+01110: 
+01111:     / "fix17_candidates.json"
+01112: 
+01113: )
+01114: 
+01115: FIX17_EXECUTION_FILE = (
+01116: 
+01117:     RUNTIME_DIR
+01118: 
+
+01092: 
+01093: #
+01094: 
+01095: # candidate生成は別データ層から行う。
+01096: 
+01097: # ここでは正式FIX17 sizing / margin / state logicのみ使用。
+01098: 
+01099: # ============================================================
+01100: 
+01101: import importlib.util
+01102: 
+01103: import math
+01104: 
+01105: import uuid
+01106: 
+01107: FIX17_CANDIDATE_FILE = (
+01108: 
+01109:     RUNTIME_DIR
+01110: 
+01111:     / "fix17_candidates.json"
+01112: 
+01113: )
+01114: 
+01115: FIX17_EXECUTION_FILE = (
+01116: 
+01117:     RUNTIME_DIR
+01118: 
+01119:     / "fix17_execution_result.json"
+01120: 
+01121: )
+01122: 
+01123: # ============================================================
+01124: 
+01125: # OFFICIAL RUNTIME LOADER
+01126: 
+01127: #
+01128: 
+01129: # subprocess隔離では関数を直接呼べないため、
+01130: 
+01131: # live execution時のみ専用module namespaceへロードする。
+01132: 
+01133: #
+01134: 
+01135: # Notebook globalsへは保持しない。
+01136: 
+01137: # paper_trader.pyプロセス終了時に消える。
+01138: 
+01139: # ============================================================
+01140: 
+01141: def load_fix17_runtime_module():
+01142: 
+01143:     verify_official_source()
+01144: 
+01145:     module_name = (
+01146: 
+01147:         "_fix17_official_runtime_"
+01148: 
+01149:         + uuid.uuid4().hex
+01150: 
+01151:     )
+01152: 
+
+01096: 
+01097: # ここでは正式FIX17 sizing / margin / state logicのみ使用。
+01098: 
+01099: # ============================================================
+01100: 
+01101: import importlib.util
+01102: 
+01103: import math
+01104: 
+01105: import uuid
+01106: 
+01107: FIX17_CANDIDATE_FILE = (
+01108: 
+01109:     RUNTIME_DIR
+01110: 
+01111:     / "fix17_candidates.json"
+01112: 
+01113: )
+01114: 
+01115: FIX17_EXECUTION_FILE = (
+01116: 
+01117:     RUNTIME_DIR
+01118: 
+01119:     / "fix17_execution_result.json"
+01120: 
+01121: )
+01122: 
+01123: # ============================================================
+01124: 
+01125: # OFFICIAL RUNTIME LOADER
+01126: 
+01127: #
+01128: 
+01129: # subprocess隔離では関数を直接呼べないため、
+01130: 
+01131: # live execution時のみ専用module namespaceへロードする。
+01132: 
+01133: #
+01134: 
+01135: # Notebook globalsへは保持しない。
+01136: 
+01137: # paper_trader.pyプロセス終了時に消える。
+01138: 
+01139: # ============================================================
+01140: 
+01141: def load_fix17_runtime_module():
+01142: 
+01143:     verify_official_source()
+01144: 
+01145:     module_name = (
+01146: 
+01147:         "_fix17_official_runtime_"
+01148: 
+01149:         + uuid.uuid4().hex
+01150: 
+01151:     )
+01152: 
+01153:     spec = importlib.util.spec_from_file_location(
+01154: 
+01155:         module_name,
+01156: 
+
+01426: 
+01427:         ) == trade_id:
+01428: 
+01429:             return True
+01430: 
+01431:     return False
+01432: 
+01433: # ============================================================
+01434: 
+01435: # CANDIDATE INPUT
+01436: 
+01437: # ============================================================
+01438: 
+01439: def load_fix17_candidates():
+01440: 
+01441:     if not FIX17_CANDIDATE_FILE.exists():
+01442: 
+01443:         return {
+01444: 
+01445:             "market_date": None,
+01446: 
+01447:             "candidates": [],
+01448: 
+01449:         }
+01450: 
+01451:     obj = load_json(
+01452: 
+01453:         FIX17_CANDIDATE_FILE,
+01454: 
+01455:         default={}
+01456: 
+01457:     )
+01458: 
+01459:     if not isinstance(
+01460: 
+01461:         obj,
+01462: 
+01463:         dict
+01464: 
+01465:     ):
+01466: 
+01467:         raise RuntimeError(
+01468: 
+01469:             "fix17_candidates.json形式不正"
+01470: 
+01471:         )
+01472: 
+01473:     candidates = obj.get(
+01474: 
+01475:         "candidates",
+01476: 
+01477:         []
+01478: 
+01479:     )
+01480: 
+01481:     if not isinstance(
+01482: 
+01483:         candidates,
+01484: 
+01485:         list
+01486: 
+
+01432: 
+01433: # ============================================================
+01434: 
+01435: # CANDIDATE INPUT
+01436: 
+01437: # ============================================================
+01438: 
+01439: def load_fix17_candidates():
+01440: 
+01441:     if not FIX17_CANDIDATE_FILE.exists():
+01442: 
+01443:         return {
+01444: 
+01445:             "market_date": None,
+01446: 
+01447:             "candidates": [],
+01448: 
+01449:         }
+01450: 
+01451:     obj = load_json(
+01452: 
+01453:         FIX17_CANDIDATE_FILE,
+01454: 
+01455:         default={}
+01456: 
+01457:     )
+01458: 
+01459:     if not isinstance(
+01460: 
+01461:         obj,
+01462: 
+01463:         dict
+01464: 
+01465:     ):
+01466: 
+01467:         raise RuntimeError(
+01468: 
+01469:             "fix17_candidates.json形式不正"
+01470: 
+01471:         )
+01472: 
+01473:     candidates = obj.get(
+01474: 
+01475:         "candidates",
+01476: 
+01477:         []
+01478: 
+01479:     )
+01480: 
+01481:     if not isinstance(
+01482: 
+01483:         candidates,
+01484: 
+01485:         list
+01486: 
+01487:     ):
+01488: 
+01489:         raise RuntimeError(
+01490: 
+01491:             "candidates はlistである必要があります。"
+01492: 
+
+01438: 
+01439: def load_fix17_candidates():
+01440: 
+01441:     if not FIX17_CANDIDATE_FILE.exists():
+01442: 
+01443:         return {
+01444: 
+01445:             "market_date": None,
+01446: 
+01447:             "candidates": [],
+01448: 
+01449:         }
+01450: 
+01451:     obj = load_json(
+01452: 
+01453:         FIX17_CANDIDATE_FILE,
+01454: 
+01455:         default={}
+01456: 
+01457:     )
+01458: 
+01459:     if not isinstance(
+01460: 
+01461:         obj,
+01462: 
+01463:         dict
+01464: 
+01465:     ):
+01466: 
+01467:         raise RuntimeError(
+01468: 
+01469:             "fix17_candidates.json形式不正"
+01470: 
+01471:         )
+01472: 
+01473:     candidates = obj.get(
+01474: 
+01475:         "candidates",
+01476: 
+01477:         []
+01478: 
+01479:     )
+01480: 
+01481:     if not isinstance(
+01482: 
+01483:         candidates,
+01484: 
+01485:         list
+01486: 
+01487:     ):
+01488: 
+01489:         raise RuntimeError(
+01490: 
+01491:             "candidates はlistである必要があります。"
+01492: 
+01493:         )
+01494: 
+01495:     return {
+01496: 
+01497:         "market_date": obj.get(
+01498: 
+
+01454: 
+01455:         default={}
+01456: 
+01457:     )
+01458: 
+01459:     if not isinstance(
+01460: 
+01461:         obj,
+01462: 
+01463:         dict
+01464: 
+01465:     ):
+01466: 
+01467:         raise RuntimeError(
+01468: 
+01469:             "fix17_candidates.json形式不正"
+01470: 
+01471:         )
+01472: 
+01473:     candidates = obj.get(
+01474: 
+01475:         "candidates",
+01476: 
+01477:         []
+01478: 
+01479:     )
+01480: 
+01481:     if not isinstance(
+01482: 
+01483:         candidates,
+01484: 
+01485:         list
+01486: 
+01487:     ):
+01488: 
+01489:         raise RuntimeError(
+01490: 
+01491:             "candidates はlistである必要があります。"
+01492: 
+01493:         )
+01494: 
+01495:     return {
+01496: 
+01497:         "market_date": obj.get(
+01498: 
+01499:             "market_date"
+01500: 
+01501:         ),
+01502: 
+01503:         "candidates": candidates,
+01504: 
+01505:     }
+01506: 
+01507: # ============================================================
+01508: 
+01509: # CURRENT EXPOSURE
+01510: 
+01511: # ============================================================
+01512: 
+01513: def calculate_existing_exposure(
+01514: 
+
+01460: 
+01461:         obj,
+01462: 
+01463:         dict
+01464: 
+01465:     ):
+01466: 
+01467:         raise RuntimeError(
+01468: 
+01469:             "fix17_candidates.json形式不正"
+01470: 
+01471:         )
+01472: 
+01473:     candidates = obj.get(
+01474: 
+01475:         "candidates",
+01476: 
+01477:         []
+01478: 
+01479:     )
+01480: 
+01481:     if not isinstance(
+01482: 
+01483:         candidates,
+01484: 
+01485:         list
+01486: 
+01487:     ):
+01488: 
+01489:         raise RuntimeError(
+01490: 
+01491:             "candidates はlistである必要があります。"
+01492: 
+01493:         )
+01494: 
+01495:     return {
+01496: 
+01497:         "market_date": obj.get(
+01498: 
+01499:             "market_date"
+01500: 
+01501:         ),
+01502: 
+01503:         "candidates": candidates,
+01504: 
+01505:     }
+01506: 
+01507: # ============================================================
+01508: 
+01509: # CURRENT EXPOSURE
+01510: 
+01511: # ============================================================
+01512: 
+01513: def calculate_existing_exposure(
+01514: 
+01515:     state
+01516: 
+01517: ):
+01518: 
+01519:     gross_notional = 0.0
+01520: 
+
+01488: 
+01489:         raise RuntimeError(
+01490: 
+01491:             "candidates はlistである必要があります。"
+01492: 
+01493:         )
+01494: 
+01495:     return {
+01496: 
+01497:         "market_date": obj.get(
+01498: 
+01499:             "market_date"
+01500: 
+01501:         ),
+01502: 
+01503:         "candidates": candidates,
+01504: 
+01505:     }
+01506: 
+01507: # ============================================================
+01508: 
+01509: # CURRENT EXPOSURE
+01510: 
+01511: # ============================================================
+01512: 
+01513: def calculate_existing_exposure(
+01514: 
+01515:     state
+01516: 
+01517: ):
+01518: 
+01519:     gross_notional = 0.0
+01520: 
+01521:     unrealized = 0.0
+01522: 
+01523:     for p in active_positions(
+01524: 
+01525:         state
+01526: 
+01527:     ):
+01528: 
+01529:         entry_price = float(
+01530: 
+01531:             p.get(
+01532: 
+01533:                 "entry_price",
+01534: 
+01535:                 0.0
+01536: 
+01537:             )
+01538: 
+01539:         )
+01540: 
+01541:         qty = int(
+01542: 
+01543:             p.get(
+01544: 
+01545:                 "qty",
+01546: 
+01547:                 0
+01548: 
+
+02226: 
+02227: def execute_fix17_candidate_batch():
+02228: 
+02229:     state = ensure_paper_state()
+02230: 
+02231:     payload = load_fix17_candidates()
+02232: 
+02233:     market_date = payload.get(
+02234: 
+02235:         "market_date"
+02236: 
+02237:     )
+02238: 
+02239:     candidates = payload.get(
+02240: 
+02241:         "candidates",
+02242: 
+02243:         []
+02244: 
+02245:     )
+02246: 
+02247:     if not candidates:
+02248: 
+02249:         result = {
+02250: 
+02251:             "status": "NO_CANDIDATES",
+02252: 
+02253:             "market_date": market_date,
+02254: 
+02255:             "candidate_count": 0,
+02256: 
+02257:             "orders": [],
+02258: 
+02259:             "fills": [],
+02260: 
+02261:             "time": datetime.now().isoformat(),
+02262: 
+02263:         }
+02264: 
+02265:         save_json(
+02266: 
+02267:             FIX17_EXECUTION_FILE,
+02268: 
+02269:             result
+02270: 
+02271:         )
+02272: 
+02273:         return result
+02274: 
+02275:     runtime = load_fix17_runtime_module()
+02276: 
+02277:     # --------------------------------------------------------
+02278: 
+02279:     # 正式 position state
+02280: 
+02281:     # --------------------------------------------------------
+02282: 
+02283:     position_state = (
+02284: 
+02285:         get_fix17_position_state(
+02286: 
+
