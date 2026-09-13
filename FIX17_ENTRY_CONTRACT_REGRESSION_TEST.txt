@@ -1,0 +1,39 @@
+FIX17 ENTRY CONTRACT REGRESSION TEST
+=========================================================================================================
+HEAD BEFORE: 60ddad0
+PASS: 10/10
+
+VALID_LONG_ORDER                 PASS
+  expected: ORDER
+  actual  : ORDER
+LONG_RS_BELOW_80                 PASS
+  expected: ERROR containing RS20_corrected
+  actual  : FIX17 LONG ENTRY CONTRACT違反: RS20_corrected=79.999 < 80
+LONG_RVOL_BELOW_2                PASS
+  expected: ERROR containing RVOL20
+  actual  : FIX17 ENTRY CONTRACT違反: RVOL20=1.999 < 2
+LONG_TURNOVER_BELOW_3            PASS
+  expected: ERROR containing turnover_median_20d_oku
+  actual  : FIX17 ENTRY CONTRACT違反: turnover_median_20d_oku=2.999 < 3
+LONG_ORB_FALSE                   PASS
+  expected: ERROR containing ORB15_LongSignal
+  actual  : FIX17 LONG ENTRY CONTRACT違反: ORB15_LongSignal != True
+LONG_CROSSPASS_FALSE             PASS
+  expected: ERROR containing CrossPass_EXACT
+  actual  : FIX17 LONG ENTRY CONTRACT違反: CrossPass_EXACT != True
+LONG_BACKTEST_READY_FALSE        PASS
+  expected: ERROR containing BacktestReady
+  actual  : FIX17 LONG ENTRY CONTRACT違反: BacktestReady != True
+VALID_SHORT_BLOCK                PASS
+  expected: SKIP / SHORT_ENTRY_CONTRACT_NOT_FULLY_PROVEN
+  actual  : SKIP / SHORT_ENTRY_CONTRACT_NOT_FULLY_PROVEN
+SHORT_RS_ABOVE_20                PASS
+  expected: ERROR containing RS20_corrected
+  actual  : FIX17 SHORT ENTRY CONTRACT違反: RS20_corrected=20.001 > 20
+SHORT_LENDING_FALSE              PASS
+  expected: ERROR containing is_lending
+  actual  : FIX17 SHORT ENTRY CONTRACT違反: is_lending != True
+
+VALID LONG -> ORDER
+VALID SHORT -> BLOCKED
+SHORT reason -> CrossPass semantics NOT PROVEN

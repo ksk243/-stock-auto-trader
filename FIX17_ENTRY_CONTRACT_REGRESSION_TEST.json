@@ -1,0 +1,83 @@
+{
+  "github_head_before": "60ddad0",
+  "contract_gate": "PASS",
+  "test_count": 10,
+  "pass_count": 10,
+  "all_pass": true,
+  "valid_long_status": "ORDER",
+  "valid_long_qty": 500,
+  "valid_short_status": "SKIP",
+  "valid_short_reason": "SHORT_ENTRY_CONTRACT_NOT_FULLY_PROVEN",
+  "results": [
+    {
+      "name": "VALID_LONG_ORDER",
+      "expected": "ORDER",
+      "actual": "ORDER",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "LONG_RS_BELOW_80",
+      "expected": "ERROR containing RS20_corrected",
+      "actual": "FIX17 LONG ENTRY CONTRACT違反: RS20_corrected=79.999 < 80",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "LONG_RVOL_BELOW_2",
+      "expected": "ERROR containing RVOL20",
+      "actual": "FIX17 ENTRY CONTRACT違反: RVOL20=1.999 < 2",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "LONG_TURNOVER_BELOW_3",
+      "expected": "ERROR containing turnover_median_20d_oku",
+      "actual": "FIX17 ENTRY CONTRACT違反: turnover_median_20d_oku=2.999 < 3",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "LONG_ORB_FALSE",
+      "expected": "ERROR containing ORB15_LongSignal",
+      "actual": "FIX17 LONG ENTRY CONTRACT違反: ORB15_LongSignal != True",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "LONG_CROSSPASS_FALSE",
+      "expected": "ERROR containing CrossPass_EXACT",
+      "actual": "FIX17 LONG ENTRY CONTRACT違反: CrossPass_EXACT != True",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "LONG_BACKTEST_READY_FALSE",
+      "expected": "ERROR containing BacktestReady",
+      "actual": "FIX17 LONG ENTRY CONTRACT違反: BacktestReady != True",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "VALID_SHORT_BLOCK",
+      "expected": "SKIP / SHORT_ENTRY_CONTRACT_NOT_FULLY_PROVEN",
+      "actual": "SKIP / SHORT_ENTRY_CONTRACT_NOT_FULLY_PROVEN",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "SHORT_RS_ABOVE_20",
+      "expected": "ERROR containing RS20_corrected",
+      "actual": "FIX17 SHORT ENTRY CONTRACT違反: RS20_corrected=20.001 > 20",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "SHORT_LENDING_FALSE",
+      "expected": "ERROR containing is_lending",
+      "actual": "FIX17 SHORT ENTRY CONTRACT違反: is_lending != True",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}
