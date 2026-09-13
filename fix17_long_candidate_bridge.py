@@ -22,20 +22,36 @@ FIX11_RUNTIME_SOURCE = (
 
 
 def _load_fix11_entry_namespace():
+    """
+    Load the FIX11 entry implementation stored permanently
+    inside this GitHub repository.
+    """
 
-    if not FIX11_RUNTIME_SOURCE.exists():
+    import runpy
+    from pathlib import Path
 
+    repo_dir = Path(__file__).resolve().parent
+
+    fix11_path = (
+        repo_dir
+        / ".github"
+        / "workflows"
+        / "fix11_paper_trader.py"
+    )
+
+    if not fix11_path.exists():
         raise RuntimeError(
-            "FIX11 audited entry source missing: "
-            + str(FIX11_RUNTIME_SOURCE)
+            "FIX11 GitHub entry source missing: "
+            + str(fix11_path)
         )
 
     ns = runpy.run_path(
-        str(FIX11_RUNTIME_SOURCE),
-        run_name="__fix17_long_entry_runtime__",
+        str(fix11_path),
+        run_name="__fix17_fix11_entry_namespace__",
     )
 
     required = [
+        "fetch_today_1m",
         "calc_rvol20",
         "find_first_signal",
         "choose_candidate",
@@ -44,19 +60,17 @@ def _load_fix11_entry_namespace():
     missing = [
         name
         for name in required
-        if not callable(
-            ns.get(name)
-        )
+        if name not in ns
     ]
 
     if missing:
-
         raise RuntimeError(
-            "Missing audited FIX11 functions: "
+            "FIX11 required entry functions missing: "
             + ", ".join(missing)
         )
 
     return ns
+
 
 
 def _finite(v):
