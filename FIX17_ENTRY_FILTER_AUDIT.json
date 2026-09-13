@@ -1,0 +1,235 @@
+{
+  "github_head": "9bcbf29",
+  "long_rows": 7822,
+  "short_rows": 5409,
+  "long_filter_counts": {
+    "ALL": 7822,
+    "RS>=80": 7822,
+    "RVOL>=2": 7822,
+    "TURN>=3": 7822,
+    "ORB_LONG": 7822,
+    "CROSSPASS": 7822,
+    "BACKTEST_READY": 7822,
+    "RS80_RVOL2_TURN3": 7822,
+    "FULL_LONG": 7822
+  },
+  "short_filter_counts": {
+    "ALL": 5409,
+    "RS<=20": 5409,
+    "RS<=30": 5409,
+    "RVOL>=2": 5409,
+    "TURN>=3": 5409,
+    "ORB_SHORT": 5409,
+    "LENDING": 5409,
+    "ENTERED": 5409,
+    "RS20_RVOL2_TURN3_ORB": 5409,
+    "RS30_RVOL2_TURN3_ORB": 5409,
+    "RS20_FULL_LENDING": 5409,
+    "RS30_FULL_LENDING": 5409
+  },
+  "long_rule_match": {
+    "ALL": {
+      "rule_true": 7822,
+      "formal_entry_present": 7822,
+      "both_true": 7822,
+      "rule_true_formal_missing": 0,
+      "rule_false_formal_present": 0
+    },
+    "RS>=80": {
+      "rule_true": 7822,
+      "formal_entry_present": 7822,
+      "both_true": 7822,
+      "rule_true_formal_missing": 0,
+      "rule_false_formal_present": 0
+    },
+    "RVOL>=2": {
+      "rule_true": 7822,
+      "formal_entry_present": 7822,
+      "both_true": 7822,
+      "rule_true_formal_missing": 0,
+      "rule_false_formal_present": 0
+    },
+    "TURN>=3": {
+      "rule_true": 7822,
+      "formal_entry_present": 7822,
+      "both_true": 7822,
+      "rule_true_formal_missing": 0,
+      "rule_false_formal_present": 0
+    },
+    "ORB_LONG": {
+      "rule_true": 7822,
+      "formal_entry_present": 7822,
+      "both_true": 7822,
+      "rule_true_formal_missing": 0,
+      "rule_false_formal_present": 0
+    },
+    "CROSSPASS": {
+      "rule_true": 7822,
+      "formal_entry_present": 7822,
+      "both_true": 7822,
+      "rule_true_formal_missing": 0,
+      "rule_false_formal_present": 0
+    },
+    "BACKTEST_READY": {
+      "rule_true": 7822,
+      "formal_entry_present": 7822,
+      "both_true": 7822,
+      "rule_true_formal_missing": 0,
+      "rule_false_formal_present": 0
+    },
+    "RS80_RVOL2_TURN3": {
+      "rule_true": 7822,
+      "formal_entry_present": 7822,
+      "both_true": 7822,
+      "rule_true_formal_missing": 0,
+      "rule_false_formal_present": 0
+    },
+    "FULL_LONG": {
+      "rule_true": 7822,
+      "formal_entry_present": 7822,
+      "both_true": 7822,
+      "rule_true_formal_missing": 0,
+      "rule_false_formal_present": 0
+    }
+  },
+  "short_rule_match": {
+    "ALL": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    },
+    "RS<=20": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    },
+    "RS<=30": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    },
+    "RVOL>=2": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    },
+    "TURN>=3": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    },
+    "ORB_SHORT": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    },
+    "LENDING": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    },
+    "ENTERED": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    },
+    "RS20_RVOL2_TURN3_ORB": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    },
+    "RS30_RVOL2_TURN3_ORB": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    },
+    "RS20_FULL_LENDING": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    },
+    "RS30_FULL_LENDING": {
+      "rule_true": 5409,
+      "entered_true": 5409,
+      "both_true": 5409,
+      "rule_true_entered_false": 0,
+      "rule_false_entered_true": 0
+    }
+  },
+  "numeric_stats": {
+    "long": {
+      "RS20_corrected": {
+        "count": 7822,
+        "min": 80.0,
+        "p01": 80.32348348201808,
+        "median": 94.22122234249294,
+        "p99": 99.96715269712406,
+        "max": 100.0
+      },
+      "RVOL20": {
+        "count": 7822,
+        "min": 2.0,
+        "p01": 2.005226096814511,
+        "median": 2.606357926459931,
+        "p99": 17.19810697619469,
+        "max": 631.9420289855072
+      },
+      "turnover_median_20d_oku": {
+        "count": 7822,
+        "min": 3.00067,
+        "p01": 3.061894955,
+        "median": 10.562068499999999,
+        "p99": 772.4691844,
+        "max": 3770.4095725
+      }
+    },
+    "short": {
+      "RS20_corrected": {
+        "count": 5409,
+        "min": 0.02641310089804543,
+        "p01": 0.21372099304611358,
+        "median": 8.77659574468085,
+        "p99": 19.78190303637538,
+        "max": 20.0
+      },
+      "RVOL20": {
+        "count": 5409,
+        "min": 2.0,
+        "p01": 2.005649469332908,
+        "median": 2.5797493331384516,
+        "p99": 13.686132535640185,
+        "max": 118.59217877094972
+      },
+      "turnover_median_20d_oku": {
+        "count": 5409,
+        "min": 3.00066,
+        "p01": 3.06384818,
+        "median": 11.122593,
+        "p99": 491.41547862000044,
+        "max": 3016.637079
+      }
+    }
+  }
+}
