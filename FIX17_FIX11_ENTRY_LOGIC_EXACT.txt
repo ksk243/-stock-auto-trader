@@ -1,0 +1,25 @@
+FIX11 EXACT ENTRY SOURCE INSPECTION
+==============================================================================================================
+Drive ID: 1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw
+Name: STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py
+Source lines: 6849
+Target hits: 48
+Condition hits: 0
+
+TARGET COUNTS
+--------------------------------------------------------------------------------------------------------------
+RS20_corrected                   0
+RVOL20                           0
+turnover_median_20d_oku          0
+ORB15_LongSignal                 0
+ORB15_ShortSignal                0
+CrossPass_EXACT                  0
+EntryPriceFormal                 0
+FormalEntryPrice                 0
+EntryDatetime                    8
+LONG                             31
+SHORT                            9
+
+ENTRY-LIKE CONDITIONS
+--------------------------------------------------------------------------------------------------------------
+NONE

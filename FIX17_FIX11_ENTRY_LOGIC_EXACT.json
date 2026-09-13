@@ -1,0 +1,441 @@
+{
+  "github_head": "bc7d795",
+  "drive_file": {
+    "id": "1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw",
+    "name": "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py",
+    "size": "88051",
+    "modifiedTime": "2026-09-05T08:10:23.056Z"
+  },
+  "source_lines": 6849,
+  "target_hit_count": 48,
+  "condition_hit_count": 0,
+  "target_hits": [
+    {
+      "line": 149,
+      "matched": [
+        "LONG"
+      ],
+      "text": "LONG_LEVERAGE = 1.00",
+      "context": "00141: # ============================================================\n00142: \n00143: # 0. 固定設定\n00144: \n00145: # ============================================================\n00146: \n00147: INITIAL_CAPITAL = 1_117_792.0\n00148: \n00149: LONG_LEVERAGE = 1.00\n00150: \n00151: SHORT_LEVERAGE = 0.50\n00152: \n00153: LOT_SIZE = 100\n00154: \n00155: # ============================================================\n00156: \n00157: # TRUE CAP200 LONG-ONLY"
+    },
+    {
+      "line": 151,
+      "matched": [
+        "SHORT"
+      ],
+      "text": "SHORT_LEVERAGE = 0.50",
+      "context": "00143: # 0. 固定設定\n00144: \n00145: # ============================================================\n00146: \n00147: INITIAL_CAPITAL = 1_117_792.0\n00148: \n00149: LONG_LEVERAGE = 1.00\n00150: \n00151: SHORT_LEVERAGE = 0.50\n00152: \n00153: LOT_SIZE = 100\n00154: \n00155: # ============================================================\n00156: \n00157: # TRUE CAP200 LONG-ONLY\n00158: \n00159: # ============================================================"
+    },
+    {
+      "line": 157,
+      "matched": [
+        "LONG"
+      ],
+      "text": "# TRUE CAP200 LONG-ONLY",
+      "context": "00149: LONG_LEVERAGE = 1.00\n00150: \n00151: SHORT_LEVERAGE = 0.50\n00152: \n00153: LOT_SIZE = 100\n00154: \n00155: # ============================================================\n00156: \n00157: # TRUE CAP200 LONG-ONLY\n00158: \n00159: # ============================================================\n00160: \n00161: LONG_CAP_PER_STOCK = 2_000_000.0\n00162: \n00163: def calc_long_dynamic_max_positions(\n00164: \n00165:     equity"
+    },
+    {
+      "line": 161,
+      "matched": [
+        "LONG"
+      ],
+      "text": "LONG_CAP_PER_STOCK = 2_000_000.0",
+      "context": "00153: LOT_SIZE = 100\n00154: \n00155: # ============================================================\n00156: \n00157: # TRUE CAP200 LONG-ONLY\n00158: \n00159: # ============================================================\n00160: \n00161: LONG_CAP_PER_STOCK = 2_000_000.0\n00162: \n00163: def calc_long_dynamic_max_positions(\n00164: \n00165:     equity\n00166: \n00167: ):\n00168: \n00169:     \"\"\""
+    },
+    {
+      "line": 213,
+      "matched": [
+        "LONG"
+      ],
+      "text": "LONG_CAP_PER_STOCK",
+      "context": "00205:         int(\n00206: \n00207:             np.ceil(\n00208: \n00209:                 equity\n00210: \n00211:                 /\n00212: \n00213:                 LONG_CAP_PER_STOCK\n00214: \n00215:             )\n00216: \n00217:         )\n00218: \n00219:     )\n00220: \n00221: "
+    },
+    {
+      "line": 225,
+      "matched": [
+        "LONG"
+      ],
+      "text": "# CAP200_LONG_ONLY INPUT",
+      "context": "00217:         )\n00218: \n00219:     )\n00220: \n00221: \n00222: \n00223: # ------------------------------------------------------------\n00224: \n00225: # CAP200_LONG_ONLY INPUT\n00226: \n00227: # ------------------------------------------------------------\n00228: \n00229: EXPECTED_TRADE_MASTER = 867\n00230: \n00231: EXPECTED_ENTRY_EVENTS = 867\n00232: \n00233: EXPECTED_EXIT_EVENTS = 865"
+    },
+    {
+      "line": 235,
+      "matched": [
+        "LONG"
+      ],
+      "text": "# CAP200_LONG_ONLYではFormal Stage5 583件とは",
+      "context": "00227: # ------------------------------------------------------------\n00228: \n00229: EXPECTED_TRADE_MASTER = 867\n00230: \n00231: EXPECTED_ENTRY_EVENTS = 867\n00232: \n00233: EXPECTED_EXIT_EVENTS = 865\n00234: \n00235: # CAP200_LONG_ONLYではFormal Stage5 583件とは\n00236: \n00237: # 売買ストリーム自体が異なるため、\n00238: \n00239: # 旧5,755,654円をhard checkには使用しない。\n00240: \n00241: EXPECTED_STAGE5_FINAL = None\n00242: \n00243: # ------------------------------------------------------------"
+    },
+    {
+      "line": 249,
+      "matched": [
+        "LONG"
+      ],
+      "text": "LONG_INTEREST_ANNUAL = 0.0285",
+      "context": "00241: EXPECTED_STAGE5_FINAL = None\n00242: \n00243: # ------------------------------------------------------------\n00244: \n00245: # Financing\n00246: \n00247: # ------------------------------------------------------------\n00248: \n00249: LONG_INTEREST_ANNUAL = 0.0285\n00250: \n00251: SHORT_LENDING_ANNUAL = 0.0110\n00252: \n00253: DAY_COUNT = 365.0\n00254: \n00255: # ------------------------------------------------------------\n00256: \n00257: # Margin / 1557"
+    },
+    {
+      "line": 251,
+      "matched": [
+        "SHORT"
+      ],
+      "text": "SHORT_LENDING_ANNUAL = 0.0110",
+      "context": "00243: # ------------------------------------------------------------\n00244: \n00245: # Financing\n00246: \n00247: # ------------------------------------------------------------\n00248: \n00249: LONG_INTEREST_ANNUAL = 0.0285\n00250: \n00251: SHORT_LENDING_ANNUAL = 0.0110\n00252: \n00253: DAY_COUNT = 365.0\n00254: \n00255: # ------------------------------------------------------------\n00256: \n00257: # Margin / 1557\n00258: \n00259: # ------------------------------------------------------------"
+    },
+    {
+      "line": 643,
+      "matched": [
+        "LONG"
+      ],
+      "text": "if side == \"LONG\":",
+      "context": "00635:     )\n00636: \n00637:     entry_price = float(\n00638: \n00639:         entry_price\n00640: \n00641:     )\n00642: \n00643:     if side == \"LONG\":\n00644: \n00645:         return (\n00646: \n00647:             entry_price\n00648: \n00649:             *\n00650: \n00651:             ("
+    },
+    {
+      "line": 663,
+      "matched": [
+        "SHORT"
+      ],
+      "text": "elif side == \"SHORT\":",
+      "context": "00655:                 +\n00656: \n00657:                 r\n00658: \n00659:             )\n00660: \n00661:         )\n00662: \n00663:     elif side == \"SHORT\":\n00664: \n00665:         denominator = (\n00666: \n00667:             1.0\n00668: \n00669:             +\n00670: \n00671:             r"
+    },
+    {
+      "line": 679,
+      "matched": [
+        "SHORT"
+      ],
+      "text": "\"SHORT denominator <= 0\"",
+      "context": "00671:             r\n00672: \n00673:         )\n00674: \n00675:         if denominator <= 0:\n00676: \n00677:             raise RuntimeError(\n00678: \n00679:                 \"SHORT denominator <= 0\"\n00680: \n00681:             )\n00682: \n00683:         return (\n00684: \n00685:             entry_price\n00686: \n00687:             /"
+    },
+    {
+      "line": 731,
+      "matched": [
+        "LONG"
+      ],
+      "text": "if side == \"LONG\":",
+      "context": "00723:             entry_price=entry_price,\n00724: \n00725:             formal_return_pct=formal_return_pct\n00726: \n00727:         )\n00728: \n00729:     )\n00730: \n00731:     if side == \"LONG\":\n00732: \n00733:         broker_return = (\n00734: \n00735:             exit_price\n00736: \n00737:             /\n00738: \n00739:             entry_price"
+    },
+    {
+      "line": 1495,
+      "matched": [
+        "EntryDatetime"
+      ],
+      "text": "\"EntryDatetime\"",
+      "context": "01487:             ]\n01488: \n01489:         )\n01490: \n01491:         entry_date = pd.Timestamp(\n01492: \n01493:             p[\n01494: \n01495:                 \"EntryDatetime\"\n01496: \n01497:             ]\n01498: \n01499:         ).normalize()\n01500: \n01501:         # ----------------------------------------------------\n01502: \n01503:         # 当日ENTRY済み"
+    },
+    {
+      "line": 1561,
+      "matched": [
+        "LONG"
+      ],
+      "text": "if side == \"LONG\":",
+      "context": "01553:                         trade_id,\n01554: \n01555:                         code\n01556: \n01557:                     )\n01558: \n01559:                 )\n01560: \n01561:         if side == \"LONG\":\n01562: \n01563:             u = (\n01564: \n01565:                 qty\n01566: \n01567:                 *\n01568: \n01569:                 ("
+    },
+    {
+      "line": 2131,
+      "matched": [
+        "LONG"
+      ],
+      "text": "if p[\"Side\"] == \"LONG\":",
+      "context": "02123:     def current_broker_notional():\n02124: \n02125:         long_n = 0.0\n02126: \n02127:         short_n = 0.0\n02128: \n02129:         for p in broker_active.values():\n02130: \n02131:             if p[\"Side\"] == \"LONG\":\n02132: \n02133:                 long_n += float(\n02134: \n02135:                     p[\n02136: \n02137:                         \"ActualNotional\"\n02138: \n02139:                     ]"
+    },
+    {
+      "line": 2305,
+      "matched": [
+        "LONG"
+      ],
+      "text": "if p[\"Side\"] == \"LONG\":",
+      "context": "02297:                     p[\n02298: \n02299:                         \"ActualNotional\"\n02300: \n02301:                     ]\n02302: \n02303:                 )\n02304: \n02305:                 if p[\"Side\"] == \"LONG\":\n02306: \n02307:                     cost = (\n02308: \n02309:                         n\n02310: \n02311:                         *\n02312: \n02313:                         LONG_INTEREST_ANNUAL"
+    },
+    {
+      "line": 2313,
+      "matched": [
+        "LONG"
+      ],
+      "text": "LONG_INTEREST_ANNUAL",
+      "context": "02305:                 if p[\"Side\"] == \"LONG\":\n02306: \n02307:                     cost = (\n02308: \n02309:                         n\n02310: \n02311:                         *\n02312: \n02313:                         LONG_INTEREST_ANNUAL\n02314: \n02315:                         *\n02316: \n02317:                         calendar_days\n02318: \n02319:                         /\n02320: \n02321:                         DAY_COUNT"
+    },
+    {
+      "line": 2339,
+      "matched": [
+        "SHORT"
+      ],
+      "text": "SHORT_LENDING_ANNUAL",
+      "context": "02331:                 else:\n02332: \n02333:                     cost = (\n02334: \n02335:                         n\n02336: \n02337:                         *\n02338: \n02339:                         SHORT_LENDING_ANNUAL\n02340: \n02341:                         *\n02342: \n02343:                         calendar_days\n02344: \n02345:                         /\n02346: \n02347:                         DAY_COUNT"
+    },
+    {
+      "line": 2989,
+      "matched": [
+        "LONG"
+      ],
+      "text": "if side == \"LONG\":",
+      "context": "02981:                     bp[\n02982: \n02983:                         \"Quantity\"\n02984: \n02985:                     ]\n02986: \n02987:                 )\n02988: \n02989:                 if side == \"LONG\":\n02990: \n02991:                     broker_pnl = (\n02992: \n02993:                         qty\n02994: \n02995:                         *\n02996: \n02997:                         ("
+    },
+    {
+      "line": 3065,
+      "matched": [
+        "EntryDatetime"
+      ],
+      "text": "\"EntryDatetime\":",
+      "context": "03057:                     \"Code\":\n03058: \n03059:                         bp[\n03060: \n03061:                             \"Code\"\n03062: \n03063:                         ],\n03064: \n03065:                     \"EntryDatetime\":\n03066: \n03067:                         bp[\n03068: \n03069:                             \"EntryDatetime\"\n03070: \n03071:                         ],\n03072: \n03073:                     \"ExitDatetime\":"
+    },
+    {
+      "line": 3069,
+      "matched": [
+        "EntryDatetime"
+      ],
+      "text": "\"EntryDatetime\"",
+      "context": "03061:                             \"Code\"\n03062: \n03063:                         ],\n03064: \n03065:                     \"EntryDatetime\":\n03066: \n03067:                         bp[\n03068: \n03069:                             \"EntryDatetime\"\n03070: \n03071:                         ],\n03072: \n03073:                     \"ExitDatetime\":\n03074: \n03075:                         pd.Timestamp(\n03076: \n03077:                             e["
+    },
+    {
+      "line": 3205,
+      "matched": [
+        "LONG"
+      ],
+      "text": "LONG_LEVERAGE",
+      "context": "03197:                         \"EntryPrice\"\n03198: \n03199:                     ]\n03200: \n03201:                 )\n03202: \n03203:                 leverage = (\n03204: \n03205:                     LONG_LEVERAGE\n03206: \n03207:                     if side == \"LONG\"\n03208: \n03209:                     else\n03210: \n03211:                     SHORT_LEVERAGE\n03212: \n03213:                 )"
+    },
+    {
+      "line": 3207,
+      "matched": [
+        "LONG"
+      ],
+      "text": "if side == \"LONG\"",
+      "context": "03199:                     ]\n03200: \n03201:                 )\n03202: \n03203:                 leverage = (\n03204: \n03205:                     LONG_LEVERAGE\n03206: \n03207:                     if side == \"LONG\"\n03208: \n03209:                     else\n03210: \n03211:                     SHORT_LEVERAGE\n03212: \n03213:                 )\n03214: \n03215:                 # ---------------------------------------------"
+    },
+    {
+      "line": 3211,
+      "matched": [
+        "SHORT"
+      ],
+      "text": "SHORT_LEVERAGE",
+      "context": "03203:                 leverage = (\n03204: \n03205:                     LONG_LEVERAGE\n03206: \n03207:                     if side == \"LONG\"\n03208: \n03209:                     else\n03210: \n03211:                     SHORT_LEVERAGE\n03212: \n03213:                 )\n03214: \n03215:                 # ---------------------------------------------\n03216: \n03217:                 # Formal Stage5\n03218: \n03219:                 # ---------------------------------------------"
+    },
+    {
+      "line": 3265,
+      "matched": [
+        "LONG"
+      ],
+      "text": "# TRUE CAP200 LONG-ONLY BROKER TARGET",
+      "context": "03257:                         f\"Broker strategy equity <= 0: \"\n03258: \n03259:                         f\"{date.date()}\"\n03260: \n03261:                     )\n03262: \n03263:                 # =================================================\n03264: \n03265:                 # TRUE CAP200 LONG-ONLY BROKER TARGET\n03266: \n03267:                 #\n03268: \n03269:                 # LONG:\n03270: \n03271:                 #   1銘柄最大 2,000,000円\n03272: \n03273:                 #   Dynamic max positions"
+    },
+    {
+      "line": 3269,
+      "matched": [
+        "LONG"
+      ],
+      "text": "# LONG:",
+      "context": "03261:                     )\n03262: \n03263:                 # =================================================\n03264: \n03265:                 # TRUE CAP200 LONG-ONLY BROKER TARGET\n03266: \n03267:                 #\n03268: \n03269:                 # LONG:\n03270: \n03271:                 #   1銘柄最大 2,000,000円\n03272: \n03273:                 #   Dynamic max positions\n03274: \n03275:                 #   LONG総建玉 <= broker strategy equity × 1.0\n03276: \n03277:                 #"
+    },
+    {
+      "line": 3275,
+      "matched": [
+        "LONG"
+      ],
+      "text": "#   LONG総建玉 <= broker strategy equity × 1.0",
+      "context": "03267:                 #\n03268: \n03269:                 # LONG:\n03270: \n03271:                 #   1銘柄最大 2,000,000円\n03272: \n03273:                 #   Dynamic max positions\n03274: \n03275:                 #   LONG総建玉 <= broker strategy equity × 1.0\n03276: \n03277:                 #\n03278: \n03279:                 # SHORT:\n03280: \n03281:                 #   元FIX11 sizingをそのまま使用\n03282: \n03283:                 # ================================================="
+    },
+    {
+      "line": 3279,
+      "matched": [
+        "SHORT"
+      ],
+      "text": "# SHORT:",
+      "context": "03271:                 #   1銘柄最大 2,000,000円\n03272: \n03273:                 #   Dynamic max positions\n03274: \n03275:                 #   LONG総建玉 <= broker strategy equity × 1.0\n03276: \n03277:                 #\n03278: \n03279:                 # SHORT:\n03280: \n03281:                 #   元FIX11 sizingをそのまま使用\n03282: \n03283:                 # =================================================\n03284: \n03285:                 if side == \"LONG\":\n03286: \n03287:                     # ---------------------------------------------"
+    },
+    {
+      "line": 3285,
+      "matched": [
+        "LONG"
+      ],
+      "text": "if side == \"LONG\":",
+      "context": "03277:                 #\n03278: \n03279:                 # SHORT:\n03280: \n03281:                 #   元FIX11 sizingをそのまま使用\n03282: \n03283:                 # =================================================\n03284: \n03285:                 if side == \"LONG\":\n03286: \n03287:                     # ---------------------------------------------\n03288: \n03289:                     # 現在のLONG建玉だけを取得\n03290: \n03291:                     # ---------------------------------------------\n03292: \n03293:                     current_long_positions = ["
+    },
+    {
+      "line": 3289,
+      "matched": [
+        "LONG"
+      ],
+      "text": "# 現在のLONG建玉だけを取得",
+      "context": "03281:                 #   元FIX11 sizingをそのまま使用\n03282: \n03283:                 # =================================================\n03284: \n03285:                 if side == \"LONG\":\n03286: \n03287:                     # ---------------------------------------------\n03288: \n03289:                     # 現在のLONG建玉だけを取得\n03290: \n03291:                     # ---------------------------------------------\n03292: \n03293:                     current_long_positions = [\n03294: \n03295:                         p\n03296: \n03297:                         for p in broker_active.values()"
+    },
+    {
+      "line": 3309,
+      "matched": [
+        "LONG"
+      ],
+      "text": ").upper() == \"LONG\"",
+      "context": "03301:                             p.get(\n03302: \n03303:                                 \"Side\",\n03304: \n03305:                                 \"\"\n03306: \n03307:                             )\n03308: \n03309:                         ).upper() == \"LONG\"\n03310: \n03311:                     ]\n03312: \n03313:                     current_long_count = len(\n03314: \n03315:                         current_long_positions\n03316: \n03317:                     )"
+    },
+    {
+      "line": 3363,
+      "matched": [
+        "LONG"
+      ],
+      "text": "# 現在LONG gross notional",
+      "context": "03355:                     ):\n03356: \n03357:                         target_notional = 0.0\n03358: \n03359:                     else:\n03360: \n03361:                         # -----------------------------------------\n03362: \n03363:                         # 現在LONG gross notional\n03364: \n03365:                         #\n03366: \n03367:                         # EntryNotionalが存在すればそれを使用。\n03368: \n03369:                         # なければ EntryPrice × Shares。\n03370: \n03371:                         # -----------------------------------------"
+    },
+    {
+      "line": 3457,
+      "matched": [
+        "LONG"
+      ],
+      "text": "# LONG総建玉上限 = strategy equity × 1.0",
+      "context": "03449:                             current_long_gross += float(\n03450: \n03451:                                 _notional\n03452: \n03453:                             )\n03454: \n03455:                         # -----------------------------------------\n03456: \n03457:                         # LONG総建玉上限 = strategy equity × 1.0\n03458: \n03459:                         # -----------------------------------------\n03460: \n03461:                         long_total_limit = max(\n03462: \n03463:                             0.0,\n03464: \n03465:                             float("
+    },
+    {
+      "line": 3473,
+      "matched": [
+        "LONG"
+      ],
+      "text": "LONG_LEVERAGE",
+      "context": "03465:                             float(\n03466: \n03467:                                 broker_strategy_equity\n03468: \n03469:                             )\n03470: \n03471:                             *\n03472: \n03473:                             LONG_LEVERAGE\n03474: \n03475:                         )\n03476: \n03477:                         long_remaining_capacity = max(\n03478: \n03479:                             0.0,\n03480: \n03481:                             long_total_limit"
+    },
+    {
+      "line": 3497,
+      "matched": [
+        "LONG"
+      ],
+      "text": "LONG_CAP_PER_STOCK,",
+      "context": "03489:                         # -----------------------------------------\n03490: \n03491:                         # 1銘柄最大200万円\n03492: \n03493:                         # -----------------------------------------\n03494: \n03495:                         target_notional = min(\n03496: \n03497:                             LONG_CAP_PER_STOCK,\n03498: \n03499:                             long_remaining_capacity\n03500: \n03501:                         )\n03502: \n03503:                 else:\n03504: \n03505:                     # ---------------------------------------------"
+    },
+    {
+      "line": 3507,
+      "matched": [
+        "SHORT"
+      ],
+      "text": "# SHORTは元FIX11そのまま",
+      "context": "03499:                             long_remaining_capacity\n03500: \n03501:                         )\n03502: \n03503:                 else:\n03504: \n03505:                     # ---------------------------------------------\n03506: \n03507:                     # SHORTは元FIX11そのまま\n03508: \n03509:                     # ---------------------------------------------\n03510: \n03511:                     target_notional = (\n03512: \n03513:                         broker_strategy_equity\n03514: \n03515:                         *"
+    },
+    {
+      "line": 3715,
+      "matched": [
+        "EntryDatetime"
+      ],
+      "text": "\"EntryDatetime\":",
+      "context": "03707:                             meta[\n03708: \n03709:                                 \"Code\"\n03710: \n03711:                             ]\n03712: \n03713:                         ).zfill(5),\n03714: \n03715:                     \"EntryDatetime\":\n03716: \n03717:                         pd.Timestamp(\n03718: \n03719:                             e[\n03720: \n03721:                                 \"Datetime\"\n03722: \n03723:                             ]"
+    },
+    {
+      "line": 3943,
+      "matched": [
+        "EntryDatetime"
+      ],
+      "text": "\"EntryDatetime\":",
+      "context": "03935:                             meta[\n03936: \n03937:                                 \"Code\"\n03938: \n03939:                             ]\n03940: \n03941:                         ).zfill(5),\n03942: \n03943:                     \"EntryDatetime\":\n03944: \n03945:                         pd.Timestamp(\n03946: \n03947:                             e[\n03948: \n03949:                                 \"Datetime\"\n03950: \n03951:                             ]"
+    },
+    {
+      "line": 4077,
+      "matched": [
+        "LONG"
+      ],
+      "text": "if p[\"Side\"] == \"LONG\":",
+      "context": "04069:                         code\n04070: \n04071:                     )\n04072: \n04073:                 )\n04074: \n04075:                 continue\n04076: \n04077:             if p[\"Side\"] == \"LONG\":\n04078: \n04079:                 u = (\n04080: \n04081:                     qty\n04082: \n04083:                     *\n04084: \n04085:                     ("
+    },
+    {
+      "line": 4621,
+      "matched": [
+        "LONG"
+      ],
+      "text": "# CAP200_LONG_ONLY Formal result check",
+      "context": "04613:         \"FormalStrategyEquity\"\n04614: \n04615:     ]\n04616: \n04617: )\n04618: \n04619: # ============================================================\n04620: \n04621: # CAP200_LONG_ONLY Formal result check\n04622: \n04623: #\n04624: \n04625: # 元FORMAL 583件の期待値 5,755,654円は使用しない。\n04626: \n04627: # CAP200_LONG_ONLYは867件の別売買ストリームなので、\n04628: \n04629: # 初回FIX11では結果を取得する。"
+    },
+    {
+      "line": 4627,
+      "matched": [
+        "LONG"
+      ],
+      "text": "# CAP200_LONG_ONLYは867件の別売買ストリームなので、",
+      "context": "04619: # ============================================================\n04620: \n04621: # CAP200_LONG_ONLY Formal result check\n04622: \n04623: #\n04624: \n04625: # 元FORMAL 583件の期待値 5,755,654円は使用しない。\n04626: \n04627: # CAP200_LONG_ONLYは867件の別売買ストリームなので、\n04628: \n04629: # 初回FIX11では結果を取得する。\n04630: \n04631: #\n04632: \n04633: # FIX11のsimulation logic自体は変更しない。\n04634: \n04635: # ============================================================"
+    },
+    {
+      "line": 4645,
+      "matched": [
+        "LONG"
+      ],
+      "text": "print(\"CAP200_LONG_ONLY FORMAL RESULT\")",
+      "context": "04637: if EXPECTED_STAGE5_FINAL is None:\n04638: \n04639:     formal_diff = np.nan\n04640: \n04641:     print()\n04642: \n04643:     print(\"=\" * 240)\n04644: \n04645:     print(\"CAP200_LONG_ONLY FORMAL RESULT\")\n04646: \n04647:     print(\"=\" * 240)\n04648: \n04649:     print(\n04650: \n04651:         \"Current :\",\n04652: \n04653:         f\"{formal_final:,.2f}\""
+    },
+    {
+      "line": 5167,
+      "matched": [
+        "EntryDatetime"
+      ],
+      "text": "\"EntryDatetime:\",",
+      "context": "05159:             \"Code\"\n05160: \n05161:         ]\n05162: \n05163:     )\n05164: \n05165:     print(\n05166: \n05167:         \"EntryDatetime:\",\n05168: \n05169:         min_post_row[\n05170: \n05171:             \"EntryDatetime\"\n05172: \n05173:         ]\n05174: \n05175:     )"
+    },
+    {
+      "line": 5171,
+      "matched": [
+        "EntryDatetime"
+      ],
+      "text": "\"EntryDatetime\"",
+      "context": "05163:     )\n05164: \n05165:     print(\n05166: \n05167:         \"EntryDatetime:\",\n05168: \n05169:         min_post_row[\n05170: \n05171:             \"EntryDatetime\"\n05172: \n05173:         ]\n05174: \n05175:     )\n05176: \n05177:     print(\n05178: \n05179:         \"TargetQty:\","
+    },
+    {
+      "line": 5285,
+      "matched": [
+        "LONG"
+      ],
+      "text": "\"LONG interest:\",",
+      "context": "05277: print(\"=\" * 240)\n05278: \n05279: print(\"FINANCING COST\")\n05280: \n05281: print(\"=\" * 240)\n05282: \n05283: print(\n05284: \n05285:     \"LONG interest:\",\n05286: \n05287:     f\"{last['CumLongInterest']:,.2f}\"\n05288: \n05289: )\n05290: \n05291: print(\n05292: \n05293:     \"SHORT lending:\","
+    },
+    {
+      "line": 5293,
+      "matched": [
+        "SHORT"
+      ],
+      "text": "\"SHORT lending:\",",
+      "context": "05285:     \"LONG interest:\",\n05286: \n05287:     f\"{last['CumLongInterest']:,.2f}\"\n05288: \n05289: )\n05290: \n05291: print(\n05292: \n05293:     \"SHORT lending:\",\n05294: \n05295:     f\"{last['CumShortFee']:,.2f}\"\n05296: \n05297: )\n05298: \n05299: print(\n05300: \n05301:     \"Total:\","
+    },
+    {
+      "line": 6171,
+      "matched": [
+        "EntryDatetime"
+      ],
+      "text": "\"EntryDatetime\",",
+      "context": "06163:             [\n06164: \n06165:                 \"TradeID\",\n06166: \n06167:                 \"Side\",\n06168: \n06169:                 \"Code\",\n06170: \n06171:                 \"EntryDatetime\",\n06172: \n06173:                 \"EntryPrice\",\n06174: \n06175:                 \"BrokerStrategyEquity\",\n06176: \n06177:                 \"TargetNotional\",\n06178: \n06179:                 \"TargetQty100\","
+    }
+  ],
+  "condition_hits": [],
+  "functions": [
+    {
+      "line": 163,
+      "definition": "def calc_long_dynamic_max_positions("
+    },
+    {
+      "line": 613,
+      "definition": "def reconstruct_exit_price("
+    },
+    {
+      "line": 707,
+      "definition": "def get_broker_return("
+    },
+    {
+      "line": 1063,
+      "definition": "def get_last_close_before("
+    },
+    {
+      "line": 1203,
+      "definition": "def calc_target_qty("
+    },
+    {
+      "line": 1281,
+      "definition": "def calc_max_etf_buy_shares("
+    },
+    {
+      "line": 1429,
+      "definition": "def calc_entry_time_position_state("
+    },
+    {
+      "line": 1683,
+      "definition": "def calc_margin_capped_qty("
+    },
+    {
+      "line": 2053,
+      "definition": "def simulate_fix11():"
+    },
+    {
+      "line": 2123,
+      "definition": "def current_broker_notional():"
+    }
+  ]
+}
