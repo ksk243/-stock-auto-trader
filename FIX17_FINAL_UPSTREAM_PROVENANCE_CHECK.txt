@@ -1,0 +1,148 @@
+FIX17 FINAL UPSTREAM PROVENANCE CHECK
+==============================================================================================================
+HEAD: 014d7dc
+
+README.txt
+--------------------------------------------------------------------------------------------------------------
+
+
+FIX11 RESEARCH MASTER CHECKPOINT
+
+目的
+
+----
+
+新しいColabでもDriveからこのフォルダを読み込むだけで、
+
+条件変更テストを開始できるようにする。
+
+正本
+
+----
+
+CAP200_ORIGINAL_867_trade_master.parquet
+
+CAP200_ORIGINAL_867_events_by_date.pkl
+
+LONG_FORMAL_EXIT_7822_EXACT.parquet
+
+SHORT_FORMAL_STATE_5409_EXACT.parquet
+
+MA200_REGIME_464_EXACT.parquet
+
+FIX11_daily_stock_EXACT.parquet
+
+FIX11_1557_RUNTIME.parquet
+
+FIX11_runtime_maps.pkl
+
+STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py
+
+Baseline
+
+--------
+
+Trade master 867
+
+LONG 625
+
+SHORT 242
+
+EXIT 865
+
+Formal 3,742,359.83
+
+Executed 759
+
+Skipped 108
+
+Financing 111,131.94
+
+Final MTM recovered 4,545,212.28
+
+Original reference 4,545,212.34
+
+Difference -0.06
+
+重要
+
+----
+
+FIX11本体は正しい・凍結。
+
+条件変更はコピーした研究版へ明示的に適用する。
+
+LONG exact exit master は
+
+LONG_FORMAL_EXIT_7822_EXACT.parquet を使用。
+
+古い wrong Stage4 や、
+
+long_10322_WITH_FORMAL_ENTRY_PRICE.parquet の
+
+古い rebuilt exit は使用しない。
+
+
+
+MANIFEST.json
+--------------------------------------------------------------------------------------------------------------
+{
+  "checkpoint": "FIX11_RESEARCH_MASTER_CHECKPOINT",
+  "purpose": "条件変更時に上流データを復元せず即テストするための研究用マスター",
+  "period": "2024-09-02 to 2026-07-31",
+  "baseline": {
+    "trade_master": 867,
+    "entry_events": 867,
+    "exit_events": 865,
+    "long": 625,
+    "short": 242,
+    "formal_final": 3742359.83,
+    "executed": 759,
+    "skipped": 108,
+    "lot_too_large": 108,
+    "margin_limited": 0,
+    "financing": 111131.94,
+    "final_mtm_reference": 4545212.34,
+    "final_mtm_recovered": 4545212.28,
+    "difference": -0.06,
+    "final_1557_shares": 30
+  },
+  "important_rules": {
+    "FIX11_is_frozen": true,
+    "long_formal_exit_rows": 7822,
+    "short_formal_state_rows": 5409,
+    "ma200_regime_rows": 464,
+    "daily_stock_rows": 2421801,
+    "same_timestamp_FIX11_event_order": "EXIT before ENTRY",
+    "cap200_original": "LONG per-stock 2,000,000 + dynamic max positions",
+    "short_original": "upstream max1",
+    "lot_size": 100
+  },
+  "warnings": [
+    "Do not use old wrong Stage4 checkpoint.",
+    "Do not use exit fields from long_10322_WITH_FORMAL_ENTRY_PRICE.parquet.",
+    "LONG_FORMAL_EXIT_7822_EXACT is the validated formal exit master.",
+    "FIX11 itself is frozen; research changes must be explicit patches.",
+    "1557 Open is missing for 2025-10-24 and 2026-03-06.",
+    "Recovered baseline differs from original Final MTM by only -0.06 yen."
+  ]
+}
+
+PROVENANCE KEYWORD CHECK
+--------------------------------------------------------------------------------------------------------------
+source              : False
+parent              : False
+origin              : True
+producer            : False
+generated           : False
+generator           : False
+step                : True
+cap200              : True
+trade_master        : True
+events_by_date      : True
+folder              : False
+file_id             : False
+drive               : True
+sha                 : True
+fix6                : False
+fix10               : False
