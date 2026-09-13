@@ -1,0 +1,401 @@
+{
+  "github_head": "d0a50d5",
+  "manifest_id": "1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_",
+  "manifest_name": "MANIFEST.json",
+  "recovery_id": "1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n",
+  "recovery_name": "FIX11_RESEARCH_MASTER_ONE_CELL_RECOVERY_LOADER.py",
+  "manifest_json": {
+    "checkpoint": "FIX11_RESEARCH_MASTER_CHECKPOINT",
+    "purpose": "条件変更時に上流データを復元せず即テストするための研究用マスター",
+    "period": "2024-09-02 to 2026-07-31",
+    "baseline": {
+      "trade_master": 867,
+      "entry_events": 867,
+      "exit_events": 865,
+      "long": 625,
+      "short": 242,
+      "formal_final": 3742359.83,
+      "executed": 759,
+      "skipped": 108,
+      "lot_too_large": 108,
+      "margin_limited": 0,
+      "financing": 111131.94,
+      "final_mtm_reference": 4545212.34,
+      "final_mtm_recovered": 4545212.28,
+      "difference": -0.06,
+      "final_1557_shares": 30
+    },
+    "important_rules": {
+      "FIX11_is_frozen": true,
+      "long_formal_exit_rows": 7822,
+      "short_formal_state_rows": 5409,
+      "ma200_regime_rows": 464,
+      "daily_stock_rows": 2421801,
+      "same_timestamp_FIX11_event_order": "EXIT before ENTRY",
+      "cap200_original": "LONG per-stock 2,000,000 + dynamic max positions",
+      "short_original": "upstream max1",
+      "lot_size": 100
+    },
+    "warnings": [
+      "Do not use old wrong Stage4 checkpoint.",
+      "Do not use exit fields from long_10322_WITH_FORMAL_ENTRY_PRICE.parquet.",
+      "LONG_FORMAL_EXIT_7822_EXACT is the validated formal exit master.",
+      "FIX11 itself is frozen; research changes must be explicit patches.",
+      "1557 Open is missing for 2025-10-24 and 2026-03-06.",
+      "Recovered baseline differs from original Final MTM by only -0.06 yen."
+    ]
+  },
+  "manifest_target_check": {
+    "trade_master_fix6": false,
+    "events_by_date": false,
+    "CAP200_ORIGINAL_867_trade_master.parquet": false,
+    "CAP200_ORIGINAL_867_events_by_date.pkl": false,
+    "1WZAUjmhzqfhLfObLQy_t66VbthEIMj98": false,
+    "1wKmommitNwE8esQZbyxt9z2zvLuVHR2D": false,
+    "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py": false,
+    "1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw": false,
+    "FIX10": false,
+    "CAP200": false,
+    "867": true
+  },
+  "recovery_target_hits": {
+    "trade_master_fix6": [
+      {
+        "line": 119,
+        "text": "\"trade_master_fix6\": (",
+        "context": "00107:         \"SHORT_FORMAL_STATE_5409_EXACT.parquet\"\n00108: \n00109:     ),\n00110: \n00111:     \"regime\": (\n00112: \n00113:         \"1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW\",\n00114: \n00115:         \"MA200_REGIME_464_EXACT.parquet\"\n00116: \n00117:     ),\n00118: \n00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\","
+      },
+      {
+        "line": 557,
+        "text": "trade_master_fix6 = pd.read_parquet(",
+        "context": "00545:     paths[\"regime\"]\n00546: \n00547: )\n00548: \n00549: regime[\"Date\"] = pd.to_datetime(\n00550: \n00551:     regime[\"Date\"],\n00552: \n00553:     errors=\"coerce\"\n00554: \n00555: ).dt.normalize()\n00556: \n00557: trade_master_fix6 = pd.read_parquet(\n00558: \n00559:     paths[\"trade_master_fix6\"]\n00560: \n00561: )\n00562: \n00563: trade_master_fix6[\"Code\"] = (\n00564: \n00565:     trade_master_fix6[\"Code\"]\n00566: \n00567:     .astype(str)\n00568: \n00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\","
+      },
+      {
+        "line": 559,
+        "text": "paths[\"trade_master_fix6\"]",
+        "context": "00547: )\n00548: \n00549: regime[\"Date\"] = pd.to_datetime(\n00550: \n00551:     regime[\"Date\"],\n00552: \n00553:     errors=\"coerce\"\n00554: \n00555: ).dt.normalize()\n00556: \n00557: trade_master_fix6 = pd.read_parquet(\n00558: \n00559:     paths[\"trade_master_fix6\"]\n00560: \n00561: )\n00562: \n00563: trade_master_fix6[\"Code\"] = (\n00564: \n00565:     trade_master_fix6[\"Code\"]\n00566: \n00567:     .astype(str)\n00568: \n00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\""
+      },
+      {
+        "line": 563,
+        "text": "trade_master_fix6[\"Code\"] = (",
+        "context": "00551:     regime[\"Date\"],\n00552: \n00553:     errors=\"coerce\"\n00554: \n00555: ).dt.normalize()\n00556: \n00557: trade_master_fix6 = pd.read_parquet(\n00558: \n00559:     paths[\"trade_master_fix6\"]\n00560: \n00561: )\n00562: \n00563: trade_master_fix6[\"Code\"] = (\n00564: \n00565:     trade_master_fix6[\"Code\"]\n00566: \n00567:     .astype(str)\n00568: \n00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:"
+      },
+      {
+        "line": 565,
+        "text": "trade_master_fix6[\"Code\"]",
+        "context": "00553:     errors=\"coerce\"\n00554: \n00555: ).dt.normalize()\n00556: \n00557: trade_master_fix6 = pd.read_parquet(\n00558: \n00559:     paths[\"trade_master_fix6\"]\n00560: \n00561: )\n00562: \n00563: trade_master_fix6[\"Code\"] = (\n00564: \n00565:     trade_master_fix6[\"Code\"]\n00566: \n00567:     .astype(str)\n00568: \n00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime("
+      },
+      {
+        "line": 581,
+        "text": "if c in trade_master_fix6.columns:",
+        "context": "00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],\n00594: \n00595:     \"rb\"\n00596: \n00597: ) as f:\n00598: \n00599:     events_by_date = pickle.load(f)"
+      },
+      {
+        "line": 583,
+        "text": "trade_master_fix6[c] = pd.to_datetime(",
+        "context": "00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],\n00594: \n00595:     \"rb\"\n00596: \n00597: ) as f:\n00598: \n00599:     events_by_date = pickle.load(f)\n00600: \n00601: with open("
+      },
+      {
+        "line": 585,
+        "text": "trade_master_fix6[c],",
+        "context": "00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],\n00594: \n00595:     \"rb\"\n00596: \n00597: ) as f:\n00598: \n00599:     events_by_date = pickle.load(f)\n00600: \n00601: with open(\n00602: \n00603:     paths[\"fix11_source\"],"
+      },
+      {
+        "line": 721,
+        "text": "trade_master_fix6",
+        "context": "00709: )\n00710: \n00711: print(\n00712: \n00713:     \"MA200 regime:\",\n00714: \n00715:     f\"{len(regime):,}\"\n00716: \n00717: )\n00718: \n00719: entry_n = len(\n00720: \n00721:     trade_master_fix6\n00722: \n00723: )\n00724: \n00725: exit_n = int(\n00726: \n00727:     trade_master_fix6[\n00728: \n00729:         \"ExitDatetime\"\n00730: \n00731:     ].notna().sum()\n00732: \n00733: )\n00734: \n00735: side_counts = (\n00736: \n00737:     trade_master_fix6[\n00738: \n00739:         \"Side\""
+      },
+      {
+        "line": 727,
+        "text": "trade_master_fix6[",
+        "context": "00715:     f\"{len(regime):,}\"\n00716: \n00717: )\n00718: \n00719: entry_n = len(\n00720: \n00721:     trade_master_fix6\n00722: \n00723: )\n00724: \n00725: exit_n = int(\n00726: \n00727:     trade_master_fix6[\n00728: \n00729:         \"ExitDatetime\"\n00730: \n00731:     ].notna().sum()\n00732: \n00733: )\n00734: \n00735: side_counts = (\n00736: \n00737:     trade_master_fix6[\n00738: \n00739:         \"Side\"\n00740: \n00741:     ]\n00742: \n00743:     .astype(str)\n00744: \n00745:     .str.upper()"
+      },
+      {
+        "line": 737,
+        "text": "trade_master_fix6[",
+        "context": "00725: exit_n = int(\n00726: \n00727:     trade_master_fix6[\n00728: \n00729:         \"ExitDatetime\"\n00730: \n00731:     ].notna().sum()\n00732: \n00733: )\n00734: \n00735: side_counts = (\n00736: \n00737:     trade_master_fix6[\n00738: \n00739:         \"Side\"\n00740: \n00741:     ]\n00742: \n00743:     .astype(str)\n00744: \n00745:     .str.upper()\n00746: \n00747:     .value_counts()\n00748: \n00749: )\n00750: \n00751: print()\n00752: \n00753: print(\n00754: \n00755:     \"trade_master:\","
+      },
+      {
+        "line": 1015,
+        "text": "assert len(trade_master_fix6) == 867",
+        "context": "01003: # ============================================================\n01004: \n01005: assert len(daily_stock) == 2_421_801\n01006: \n01007: assert daily_stock[\"Code\"].nunique() == 4_772\n01008: \n01009: assert len(long_formal_exit) == 7_822\n01010: \n01011: assert len(short_state) == 5_409\n01012: \n01013: assert len(regime) == 464\n01014: \n01015: assert len(trade_master_fix6) == 867\n01016: \n01017: assert exit_n == 865\n01018: \n01019: assert int(\n01020: \n01021:     side_counts.get(\n01022: \n01023:         \"LONG\",\n01024: \n01025:         0\n01026: \n01027:     )\n01028: \n01029: ) == 625\n01030: \n01031: assert int(\n01032: \n01033:     side_counts.get("
+      },
+      {
+        "line": 1153,
+        "text": "\"trade_master_fix6\":",
+        "context": "01141:     \"long_formal_exit\":\n01142: \n01143:         long_formal_exit,\n01144: \n01145:     \"short_state\":\n01146: \n01147:         short_state,\n01148: \n01149:     \"regime\":\n01150: \n01151:         regime,\n01152: \n01153:     \"trade_master_fix6\":\n01154: \n01155:         trade_master_fix6,\n01156: \n01157:     \"events_by_date\":\n01158: \n01159:         events_by_date,\n01160: \n01161:     \"base_code\":\n01162: \n01163:         base_code,\n01164: \n01165:     \"baseline_summary\":\n01166: \n01167:         baseline_summary,\n01168: \n01169:     \"baseline_targets\":\n01170: \n01171:         FIX11_BASELINE_TARGETS,"
+      },
+      {
+        "line": 1155,
+        "text": "trade_master_fix6,",
+        "context": "01143:         long_formal_exit,\n01144: \n01145:     \"short_state\":\n01146: \n01147:         short_state,\n01148: \n01149:     \"regime\":\n01150: \n01151:         regime,\n01152: \n01153:     \"trade_master_fix6\":\n01154: \n01155:         trade_master_fix6,\n01156: \n01157:     \"events_by_date\":\n01158: \n01159:         events_by_date,\n01160: \n01161:     \"base_code\":\n01162: \n01163:         base_code,\n01164: \n01165:     \"baseline_summary\":\n01166: \n01167:         baseline_summary,\n01168: \n01169:     \"baseline_targets\":\n01170: \n01171:         FIX11_BASELINE_TARGETS,\n01172: \n01173:     \"manifest\":"
+      },
+      {
+        "line": 1211,
+        "text": "print(\"  trade_master_fix6\")",
+        "context": "01199: print(\"  open_map / close_map\")\n01200: \n01201: print(\"  quote_dates / sim_dates\")\n01202: \n01203: print(\"  START_DATE / END_DATE\")\n01204: \n01205: print(\"  long_formal_exit\")\n01206: \n01207: print(\"  short_state\")\n01208: \n01209: print(\"  regime\")\n01210: \n01211: print(\"  trade_master_fix6\")\n01212: \n01213: print(\"  events_by_date\")\n01214: \n01215: print(\"  base_code\")\n01216: \n01217: print(\"  baseline_summary\")\n01218: \n01219: print(\"  FIX11_BASELINE_TARGETS\")\n01220: \n01221: print(\"  FIX11_RESEARCH_MASTER\")\n01222: \n01223: print()\n01224: \n01225: print(\n01226: \n01227:     \"★★★★★ FIX11 RESEARCH MASTER \"\n01228: \n01229:     \"ONE-CELL RECOVERY PASS ★★★★★\""
+      }
+    ],
+    "events_by_date": [
+      {
+        "line": 127,
+        "text": "\"events_by_date\": (",
+        "context": "00115:         \"MA200_REGIME_464_EXACT.parquet\"\n00116: \n00117:     ),\n00118: \n00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\","
+      },
+      {
+        "line": 131,
+        "text": "\"CAP200_ORIGINAL_867_events_by_date.pkl\"",
+        "context": "00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n00148: \n00149:     ),"
+      },
+      {
+        "line": 593,
+        "text": "paths[\"events_by_date\"],",
+        "context": "00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],\n00594: \n00595:     \"rb\"\n00596: \n00597: ) as f:\n00598: \n00599:     events_by_date = pickle.load(f)\n00600: \n00601: with open(\n00602: \n00603:     paths[\"fix11_source\"],\n00604: \n00605:     \"r\",\n00606: \n00607:     encoding=\"utf-8\"\n00608: \n00609: ) as f:\n00610: \n00611:     base_code = f.read()"
+      },
+      {
+        "line": 599,
+        "text": "events_by_date = pickle.load(f)",
+        "context": "00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],\n00594: \n00595:     \"rb\"\n00596: \n00597: ) as f:\n00598: \n00599:     events_by_date = pickle.load(f)\n00600: \n00601: with open(\n00602: \n00603:     paths[\"fix11_source\"],\n00604: \n00605:     \"r\",\n00606: \n00607:     encoding=\"utf-8\"\n00608: \n00609: ) as f:\n00610: \n00611:     base_code = f.read()\n00612: \n00613: baseline_summary = pd.read_csv(\n00614: \n00615:     paths[\"baseline_summary\"]\n00616: \n00617: )"
+      },
+      {
+        "line": 633,
+        "text": "# 6. Normalize events_by_date keys",
+        "context": "00621:     paths[\"manifest\"],\n00622: \n00623:     \"r\",\n00624: \n00625:     encoding=\"utf-8\"\n00626: \n00627: ) as f:\n00628: \n00629:     manifest = json.load(f)\n00630: \n00631: # ============================================================\n00632: \n00633: # 6. Normalize events_by_date keys\n00634: \n00635: # ============================================================\n00636: \n00637: normalized_events = {}\n00638: \n00639: for k, v in events_by_date.items():\n00640: \n00641:     nk = pd.Timestamp(\n00642: \n00643:         k\n00644: \n00645:     ).normalize()\n00646: \n00647:     normalized_events[nk] = v\n00648: \n00649: events_by_date = normalized_events\n00650: \n00651: # ============================================================"
+      },
+      {
+        "line": 639,
+        "text": "for k, v in events_by_date.items():",
+        "context": "00627: ) as f:\n00628: \n00629:     manifest = json.load(f)\n00630: \n00631: # ============================================================\n00632: \n00633: # 6. Normalize events_by_date keys\n00634: \n00635: # ============================================================\n00636: \n00637: normalized_events = {}\n00638: \n00639: for k, v in events_by_date.items():\n00640: \n00641:     nk = pd.Timestamp(\n00642: \n00643:         k\n00644: \n00645:     ).normalize()\n00646: \n00647:     normalized_events[nk] = v\n00648: \n00649: events_by_date = normalized_events\n00650: \n00651: # ============================================================\n00652: \n00653: # 7. Audit\n00654: \n00655: # ============================================================\n00656: \n00657: print()"
+      },
+      {
+        "line": 649,
+        "text": "events_by_date = normalized_events",
+        "context": "00637: normalized_events = {}\n00638: \n00639: for k, v in events_by_date.items():\n00640: \n00641:     nk = pd.Timestamp(\n00642: \n00643:         k\n00644: \n00645:     ).normalize()\n00646: \n00647:     normalized_events[nk] = v\n00648: \n00649: events_by_date = normalized_events\n00650: \n00651: # ============================================================\n00652: \n00653: # 7. Audit\n00654: \n00655: # ============================================================\n00656: \n00657: print()\n00658: \n00659: print(\"=\" * 120)\n00660: \n00661: print(\"EXACT RECOVERY AUDIT\")\n00662: \n00663: print(\"=\" * 120)\n00664: \n00665: print(\n00666: \n00667:     \"daily_stock :\","
+      },
+      {
+        "line": 809,
+        "text": "for events in events_by_date.values()",
+        "context": "00797:             0\n00798: \n00799:         )\n00800: \n00801:     )\n00802: \n00803: )\n00804: \n00805: all_events = [\n00806: \n00807:     e\n00808: \n00809:     for events in events_by_date.values()\n00810: \n00811:     for e in events\n00812: \n00813: ]\n00814: \n00815: event_df = pd.DataFrame(\n00816: \n00817:     all_events\n00818: \n00819: )\n00820: \n00821: entry_events = int(\n00822: \n00823:     (\n00824: \n00825:         event_df[\"Event\"]\n00826: \n00827:         .astype(str)"
+      },
+      {
+        "line": 1157,
+        "text": "\"events_by_date\":",
+        "context": "01145:     \"short_state\":\n01146: \n01147:         short_state,\n01148: \n01149:     \"regime\":\n01150: \n01151:         regime,\n01152: \n01153:     \"trade_master_fix6\":\n01154: \n01155:         trade_master_fix6,\n01156: \n01157:     \"events_by_date\":\n01158: \n01159:         events_by_date,\n01160: \n01161:     \"base_code\":\n01162: \n01163:         base_code,\n01164: \n01165:     \"baseline_summary\":\n01166: \n01167:         baseline_summary,\n01168: \n01169:     \"baseline_targets\":\n01170: \n01171:         FIX11_BASELINE_TARGETS,\n01172: \n01173:     \"manifest\":\n01174: \n01175:         manifest,"
+      },
+      {
+        "line": 1159,
+        "text": "events_by_date,",
+        "context": "01147:         short_state,\n01148: \n01149:     \"regime\":\n01150: \n01151:         regime,\n01152: \n01153:     \"trade_master_fix6\":\n01154: \n01155:         trade_master_fix6,\n01156: \n01157:     \"events_by_date\":\n01158: \n01159:         events_by_date,\n01160: \n01161:     \"base_code\":\n01162: \n01163:         base_code,\n01164: \n01165:     \"baseline_summary\":\n01166: \n01167:         baseline_summary,\n01168: \n01169:     \"baseline_targets\":\n01170: \n01171:         FIX11_BASELINE_TARGETS,\n01172: \n01173:     \"manifest\":\n01174: \n01175:         manifest,\n01176: \n01177: }"
+      },
+      {
+        "line": 1213,
+        "text": "print(\"  events_by_date\")",
+        "context": "01201: print(\"  quote_dates / sim_dates\")\n01202: \n01203: print(\"  START_DATE / END_DATE\")\n01204: \n01205: print(\"  long_formal_exit\")\n01206: \n01207: print(\"  short_state\")\n01208: \n01209: print(\"  regime\")\n01210: \n01211: print(\"  trade_master_fix6\")\n01212: \n01213: print(\"  events_by_date\")\n01214: \n01215: print(\"  base_code\")\n01216: \n01217: print(\"  baseline_summary\")\n01218: \n01219: print(\"  FIX11_BASELINE_TARGETS\")\n01220: \n01221: print(\"  FIX11_RESEARCH_MASTER\")\n01222: \n01223: print()\n01224: \n01225: print(\n01226: \n01227:     \"★★★★★ FIX11 RESEARCH MASTER \"\n01228: \n01229:     \"ONE-CELL RECOVERY PASS ★★★★★\"\n01230: \n01231: )"
+      }
+    ],
+    "CAP200_ORIGINAL_867_trade_master.parquet": [
+      {
+        "line": 123,
+        "text": "\"CAP200_ORIGINAL_867_trade_master.parquet\"",
+        "context": "00111:     \"regime\": (\n00112: \n00113:         \"1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW\",\n00114: \n00115:         \"MA200_REGIME_464_EXACT.parquet\"\n00116: \n00117:     ),\n00118: \n00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),"
+      }
+    ],
+    "CAP200_ORIGINAL_867_events_by_date.pkl": [
+      {
+        "line": 131,
+        "text": "\"CAP200_ORIGINAL_867_events_by_date.pkl\"",
+        "context": "00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n00148: \n00149:     ),"
+      }
+    ],
+    "1WZAUjmhzqfhLfObLQy_t66VbthEIMj98": [
+      {
+        "line": 121,
+        "text": "\"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",",
+        "context": "00109:     ),\n00110: \n00111:     \"regime\": (\n00112: \n00113:         \"1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW\",\n00114: \n00115:         \"MA200_REGIME_464_EXACT.parquet\"\n00116: \n00117:     ),\n00118: \n00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\""
+      }
+    ],
+    "1wKmommitNwE8esQZbyxt9z2zvLuVHR2D": [
+      {
+        "line": 129,
+        "text": "\"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",",
+        "context": "00117:     ),\n00118: \n00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\""
+      }
+    ],
+    "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py": [
+      {
+        "line": 139,
+        "text": "\"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"",
+        "context": "00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n00148: \n00149:     ),\n00150: \n00151:     \"manifest\": (\n00152: \n00153:         \"1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_\",\n00154: \n00155:         \"MANIFEST.json\"\n00156: \n00157:     ),"
+      }
+    ],
+    "1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw": [
+      {
+        "line": 137,
+        "text": "\"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",",
+        "context": "00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n00148: \n00149:     ),\n00150: \n00151:     \"manifest\": (\n00152: \n00153:         \"1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_\",\n00154: \n00155:         \"MANIFEST.json\""
+      }
+    ],
+    "FIX10": [],
+    "CAP200": [
+      {
+        "line": 123,
+        "text": "\"CAP200_ORIGINAL_867_trade_master.parquet\"",
+        "context": "00111:     \"regime\": (\n00112: \n00113:         \"1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW\",\n00114: \n00115:         \"MA200_REGIME_464_EXACT.parquet\"\n00116: \n00117:     ),\n00118: \n00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),"
+      },
+      {
+        "line": 131,
+        "text": "\"CAP200_ORIGINAL_867_events_by_date.pkl\"",
+        "context": "00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n00148: \n00149:     ),"
+      },
+      {
+        "line": 139,
+        "text": "\"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"",
+        "context": "00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n00148: \n00149:     ),\n00150: \n00151:     \"manifest\": (\n00152: \n00153:         \"1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_\",\n00154: \n00155:         \"MANIFEST.json\"\n00156: \n00157:     ),"
+      }
+    ],
+    "867": [
+      {
+        "line": 123,
+        "text": "\"CAP200_ORIGINAL_867_trade_master.parquet\"",
+        "context": "00111:     \"regime\": (\n00112: \n00113:         \"1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW\",\n00114: \n00115:         \"MA200_REGIME_464_EXACT.parquet\"\n00116: \n00117:     ),\n00118: \n00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),"
+      },
+      {
+        "line": 131,
+        "text": "\"CAP200_ORIGINAL_867_events_by_date.pkl\"",
+        "context": "00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n00148: \n00149:     ),"
+      },
+      {
+        "line": 1015,
+        "text": "assert len(trade_master_fix6) == 867",
+        "context": "01003: # ============================================================\n01004: \n01005: assert len(daily_stock) == 2_421_801\n01006: \n01007: assert daily_stock[\"Code\"].nunique() == 4_772\n01008: \n01009: assert len(long_formal_exit) == 7_822\n01010: \n01011: assert len(short_state) == 5_409\n01012: \n01013: assert len(regime) == 464\n01014: \n01015: assert len(trade_master_fix6) == 867\n01016: \n01017: assert exit_n == 865\n01018: \n01019: assert int(\n01020: \n01021:     side_counts.get(\n01022: \n01023:         \"LONG\",\n01024: \n01025:         0\n01026: \n01027:     )\n01028: \n01029: ) == 625\n01030: \n01031: assert int(\n01032: \n01033:     side_counts.get("
+      },
+      {
+        "line": 1043,
+        "text": "assert entry_events == 867",
+        "context": "01031: assert int(\n01032: \n01033:     side_counts.get(\n01034: \n01035:         \"SHORT\",\n01036: \n01037:         0\n01038: \n01039:     )\n01040: \n01041: ) == 242\n01042: \n01043: assert entry_events == 867\n01044: \n01045: assert exit_events == 865\n01046: \n01047: assert len(sim_dates) == 466\n01048: \n01049: assert len(quote_dates) == 466\n01050: \n01051: assert len(missing_close) == 0\n01052: \n01053: assert len(base_code) > 80_000\n01054: \n01055: # ============================================================\n01056: \n01057: # 9. Baseline targets\n01058: \n01059: # ============================================================\n01060: \n01061: FIX11_BASELINE_TARGETS = {"
+      }
+    ]
+  },
+  "important_recovery_blocks": [
+    {
+      "line": 119,
+      "context": "00099:         \"LONG_FORMAL_EXIT_7822_EXACT.parquet\"\n00100: \n00101:     ),\n00102: \n00103:     \"short_state\": (\n00104: \n00105:         \"1hfYpTSJRN8hgUp-iZaNowrcmjCvTYj-a\",\n00106: \n00107:         \"SHORT_FORMAL_STATE_5409_EXACT.parquet\"\n00108: \n00109:     ),\n00110: \n00111:     \"regime\": (\n00112: \n00113:         \"1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW\",\n00114: \n00115:         \"MA200_REGIME_464_EXACT.parquet\"\n00116: \n00117:     ),\n00118: \n00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n00148: \n00149:     ),"
+    },
+    {
+      "line": 123,
+      "context": "00103:     \"short_state\": (\n00104: \n00105:         \"1hfYpTSJRN8hgUp-iZaNowrcmjCvTYj-a\",\n00106: \n00107:         \"SHORT_FORMAL_STATE_5409_EXACT.parquet\"\n00108: \n00109:     ),\n00110: \n00111:     \"regime\": (\n00112: \n00113:         \"1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW\",\n00114: \n00115:         \"MA200_REGIME_464_EXACT.parquet\"\n00116: \n00117:     ),\n00118: \n00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n00148: \n00149:     ),\n00150: \n00151:     \"manifest\": (\n00152: \n00153:         \"1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_\","
+    },
+    {
+      "line": 127,
+      "context": "00107:         \"SHORT_FORMAL_STATE_5409_EXACT.parquet\"\n00108: \n00109:     ),\n00110: \n00111:     \"regime\": (\n00112: \n00113:         \"1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW\",\n00114: \n00115:         \"MA200_REGIME_464_EXACT.parquet\"\n00116: \n00117:     ),\n00118: \n00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n00148: \n00149:     ),\n00150: \n00151:     \"manifest\": (\n00152: \n00153:         \"1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_\",\n00154: \n00155:         \"MANIFEST.json\"\n00156: \n00157:     ),"
+    },
+    {
+      "line": 131,
+      "context": "00111:     \"regime\": (\n00112: \n00113:         \"1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW\",\n00114: \n00115:         \"MA200_REGIME_464_EXACT.parquet\"\n00116: \n00117:     ),\n00118: \n00119:     \"trade_master_fix6\": (\n00120: \n00121:         \"1WZAUjmhzqfhLfObLQy_t66VbthEIMj98\",\n00122: \n00123:         \"CAP200_ORIGINAL_867_trade_master.parquet\"\n00124: \n00125:     ),\n00126: \n00127:     \"events_by_date\": (\n00128: \n00129:         \"1wKmommitNwE8esQZbyxt9z2zvLuVHR2D\",\n00130: \n00131:         \"CAP200_ORIGINAL_867_events_by_date.pkl\"\n00132: \n00133:     ),\n00134: \n00135:     \"fix11_source\": (\n00136: \n00137:         \"1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw\",\n00138: \n00139:         \"STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py\"\n00140: \n00141:     ),\n00142: \n00143:     \"baseline_summary\": (\n00144: \n00145:         \"1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ\",\n00146: \n00147:         \"BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv\"\n00148: \n00149:     ),\n00150: \n00151:     \"manifest\": (\n00152: \n00153:         \"1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_\",\n00154: \n00155:         \"MANIFEST.json\"\n00156: \n00157:     ),\n00158: \n00159: }\n00160: \n00161: # ============================================================"
+    },
+    {
+      "line": 557,
+      "context": "00537:             short_state[c],\n00538: \n00539:             errors=\"coerce\"\n00540: \n00541:         )\n00542: \n00543: regime = pd.read_parquet(\n00544: \n00545:     paths[\"regime\"]\n00546: \n00547: )\n00548: \n00549: regime[\"Date\"] = pd.to_datetime(\n00550: \n00551:     regime[\"Date\"],\n00552: \n00553:     errors=\"coerce\"\n00554: \n00555: ).dt.normalize()\n00556: \n00557: trade_master_fix6 = pd.read_parquet(\n00558: \n00559:     paths[\"trade_master_fix6\"]\n00560: \n00561: )\n00562: \n00563: trade_master_fix6[\"Code\"] = (\n00564: \n00565:     trade_master_fix6[\"Code\"]\n00566: \n00567:     .astype(str)\n00568: \n00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\""
+    },
+    {
+      "line": 559,
+      "context": "00539:             errors=\"coerce\"\n00540: \n00541:         )\n00542: \n00543: regime = pd.read_parquet(\n00544: \n00545:     paths[\"regime\"]\n00546: \n00547: )\n00548: \n00549: regime[\"Date\"] = pd.to_datetime(\n00550: \n00551:     regime[\"Date\"],\n00552: \n00553:     errors=\"coerce\"\n00554: \n00555: ).dt.normalize()\n00556: \n00557: trade_master_fix6 = pd.read_parquet(\n00558: \n00559:     paths[\"trade_master_fix6\"]\n00560: \n00561: )\n00562: \n00563: trade_master_fix6[\"Code\"] = (\n00564: \n00565:     trade_master_fix6[\"Code\"]\n00566: \n00567:     .astype(str)\n00568: \n00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )"
+    },
+    {
+      "line": 563,
+      "context": "00543: regime = pd.read_parquet(\n00544: \n00545:     paths[\"regime\"]\n00546: \n00547: )\n00548: \n00549: regime[\"Date\"] = pd.to_datetime(\n00550: \n00551:     regime[\"Date\"],\n00552: \n00553:     errors=\"coerce\"\n00554: \n00555: ).dt.normalize()\n00556: \n00557: trade_master_fix6 = pd.read_parquet(\n00558: \n00559:     paths[\"trade_master_fix6\"]\n00560: \n00561: )\n00562: \n00563: trade_master_fix6[\"Code\"] = (\n00564: \n00565:     trade_master_fix6[\"Code\"]\n00566: \n00567:     .astype(str)\n00568: \n00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],"
+    },
+    {
+      "line": 565,
+      "context": "00545:     paths[\"regime\"]\n00546: \n00547: )\n00548: \n00549: regime[\"Date\"] = pd.to_datetime(\n00550: \n00551:     regime[\"Date\"],\n00552: \n00553:     errors=\"coerce\"\n00554: \n00555: ).dt.normalize()\n00556: \n00557: trade_master_fix6 = pd.read_parquet(\n00558: \n00559:     paths[\"trade_master_fix6\"]\n00560: \n00561: )\n00562: \n00563: trade_master_fix6[\"Code\"] = (\n00564: \n00565:     trade_master_fix6[\"Code\"]\n00566: \n00567:     .astype(str)\n00568: \n00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],\n00594: \n00595:     \"rb\""
+    },
+    {
+      "line": 581,
+      "context": "00561: )\n00562: \n00563: trade_master_fix6[\"Code\"] = (\n00564: \n00565:     trade_master_fix6[\"Code\"]\n00566: \n00567:     .astype(str)\n00568: \n00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],\n00594: \n00595:     \"rb\"\n00596: \n00597: ) as f:\n00598: \n00599:     events_by_date = pickle.load(f)\n00600: \n00601: with open(\n00602: \n00603:     paths[\"fix11_source\"],\n00604: \n00605:     \"r\",\n00606: \n00607:     encoding=\"utf-8\"\n00608: \n00609: ) as f:\n00610: \n00611:     base_code = f.read()"
+    },
+    {
+      "line": 583,
+      "context": "00563: trade_master_fix6[\"Code\"] = (\n00564: \n00565:     trade_master_fix6[\"Code\"]\n00566: \n00567:     .astype(str)\n00568: \n00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],\n00594: \n00595:     \"rb\"\n00596: \n00597: ) as f:\n00598: \n00599:     events_by_date = pickle.load(f)\n00600: \n00601: with open(\n00602: \n00603:     paths[\"fix11_source\"],\n00604: \n00605:     \"r\",\n00606: \n00607:     encoding=\"utf-8\"\n00608: \n00609: ) as f:\n00610: \n00611:     base_code = f.read()\n00612: \n00613: baseline_summary = pd.read_csv("
+    },
+    {
+      "line": 585,
+      "context": "00565:     trade_master_fix6[\"Code\"]\n00566: \n00567:     .astype(str)\n00568: \n00569:     .str.replace(\".0\", \"\", regex=False)\n00570: \n00571: )\n00572: \n00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],\n00594: \n00595:     \"rb\"\n00596: \n00597: ) as f:\n00598: \n00599:     events_by_date = pickle.load(f)\n00600: \n00601: with open(\n00602: \n00603:     paths[\"fix11_source\"],\n00604: \n00605:     \"r\",\n00606: \n00607:     encoding=\"utf-8\"\n00608: \n00609: ) as f:\n00610: \n00611:     base_code = f.read()\n00612: \n00613: baseline_summary = pd.read_csv(\n00614: \n00615:     paths[\"baseline_summary\"]"
+    },
+    {
+      "line": 593,
+      "context": "00573: for c in [\n00574: \n00575:     \"EntryDatetime\",\n00576: \n00577:     \"ExitDatetime\"\n00578: \n00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],\n00594: \n00595:     \"rb\"\n00596: \n00597: ) as f:\n00598: \n00599:     events_by_date = pickle.load(f)\n00600: \n00601: with open(\n00602: \n00603:     paths[\"fix11_source\"],\n00604: \n00605:     \"r\",\n00606: \n00607:     encoding=\"utf-8\"\n00608: \n00609: ) as f:\n00610: \n00611:     base_code = f.read()\n00612: \n00613: baseline_summary = pd.read_csv(\n00614: \n00615:     paths[\"baseline_summary\"]\n00616: \n00617: )\n00618: \n00619: with open(\n00620: \n00621:     paths[\"manifest\"],\n00622: \n00623:     \"r\","
+    },
+    {
+      "line": 599,
+      "context": "00579: ]:\n00580: \n00581:     if c in trade_master_fix6.columns:\n00582: \n00583:         trade_master_fix6[c] = pd.to_datetime(\n00584: \n00585:             trade_master_fix6[c],\n00586: \n00587:             errors=\"coerce\"\n00588: \n00589:         )\n00590: \n00591: with open(\n00592: \n00593:     paths[\"events_by_date\"],\n00594: \n00595:     \"rb\"\n00596: \n00597: ) as f:\n00598: \n00599:     events_by_date = pickle.load(f)\n00600: \n00601: with open(\n00602: \n00603:     paths[\"fix11_source\"],\n00604: \n00605:     \"r\",\n00606: \n00607:     encoding=\"utf-8\"\n00608: \n00609: ) as f:\n00610: \n00611:     base_code = f.read()\n00612: \n00613: baseline_summary = pd.read_csv(\n00614: \n00615:     paths[\"baseline_summary\"]\n00616: \n00617: )\n00618: \n00619: with open(\n00620: \n00621:     paths[\"manifest\"],\n00622: \n00623:     \"r\",\n00624: \n00625:     encoding=\"utf-8\"\n00626: \n00627: ) as f:\n00628: \n00629:     manifest = json.load(f)"
+    },
+    {
+      "line": 633,
+      "context": "00613: baseline_summary = pd.read_csv(\n00614: \n00615:     paths[\"baseline_summary\"]\n00616: \n00617: )\n00618: \n00619: with open(\n00620: \n00621:     paths[\"manifest\"],\n00622: \n00623:     \"r\",\n00624: \n00625:     encoding=\"utf-8\"\n00626: \n00627: ) as f:\n00628: \n00629:     manifest = json.load(f)\n00630: \n00631: # ============================================================\n00632: \n00633: # 6. Normalize events_by_date keys\n00634: \n00635: # ============================================================\n00636: \n00637: normalized_events = {}\n00638: \n00639: for k, v in events_by_date.items():\n00640: \n00641:     nk = pd.Timestamp(\n00642: \n00643:         k\n00644: \n00645:     ).normalize()\n00646: \n00647:     normalized_events[nk] = v\n00648: \n00649: events_by_date = normalized_events\n00650: \n00651: # ============================================================\n00652: \n00653: # 7. Audit\n00654: \n00655: # ============================================================\n00656: \n00657: print()\n00658: \n00659: print(\"=\" * 120)\n00660: \n00661: print(\"EXACT RECOVERY AUDIT\")\n00662: \n00663: print(\"=\" * 120)"
+    },
+    {
+      "line": 639,
+      "context": "00619: with open(\n00620: \n00621:     paths[\"manifest\"],\n00622: \n00623:     \"r\",\n00624: \n00625:     encoding=\"utf-8\"\n00626: \n00627: ) as f:\n00628: \n00629:     manifest = json.load(f)\n00630: \n00631: # ============================================================\n00632: \n00633: # 6. Normalize events_by_date keys\n00634: \n00635: # ============================================================\n00636: \n00637: normalized_events = {}\n00638: \n00639: for k, v in events_by_date.items():\n00640: \n00641:     nk = pd.Timestamp(\n00642: \n00643:         k\n00644: \n00645:     ).normalize()\n00646: \n00647:     normalized_events[nk] = v\n00648: \n00649: events_by_date = normalized_events\n00650: \n00651: # ============================================================\n00652: \n00653: # 7. Audit\n00654: \n00655: # ============================================================\n00656: \n00657: print()\n00658: \n00659: print(\"=\" * 120)\n00660: \n00661: print(\"EXACT RECOVERY AUDIT\")\n00662: \n00663: print(\"=\" * 120)\n00664: \n00665: print(\n00666: \n00667:     \"daily_stock :\",\n00668: \n00669:     f\"{len(daily_stock):,}\""
+    },
+    {
+      "line": 649,
+      "context": "00629:     manifest = json.load(f)\n00630: \n00631: # ============================================================\n00632: \n00633: # 6. Normalize events_by_date keys\n00634: \n00635: # ============================================================\n00636: \n00637: normalized_events = {}\n00638: \n00639: for k, v in events_by_date.items():\n00640: \n00641:     nk = pd.Timestamp(\n00642: \n00643:         k\n00644: \n00645:     ).normalize()\n00646: \n00647:     normalized_events[nk] = v\n00648: \n00649: events_by_date = normalized_events\n00650: \n00651: # ============================================================\n00652: \n00653: # 7. Audit\n00654: \n00655: # ============================================================\n00656: \n00657: print()\n00658: \n00659: print(\"=\" * 120)\n00660: \n00661: print(\"EXACT RECOVERY AUDIT\")\n00662: \n00663: print(\"=\" * 120)\n00664: \n00665: print(\n00666: \n00667:     \"daily_stock :\",\n00668: \n00669:     f\"{len(daily_stock):,}\"\n00670: \n00671: )\n00672: \n00673: print(\n00674: \n00675:     \"daily codes :\",\n00676: \n00677:     f\"{daily_stock['Code'].nunique():,}\"\n00678: \n00679: )"
+    },
+    {
+      "line": 721,
+      "context": "00701: )\n00702: \n00703: print(\n00704: \n00705:     \"SHORT state :\",\n00706: \n00707:     f\"{len(short_state):,}\"\n00708: \n00709: )\n00710: \n00711: print(\n00712: \n00713:     \"MA200 regime:\",\n00714: \n00715:     f\"{len(regime):,}\"\n00716: \n00717: )\n00718: \n00719: entry_n = len(\n00720: \n00721:     trade_master_fix6\n00722: \n00723: )\n00724: \n00725: exit_n = int(\n00726: \n00727:     trade_master_fix6[\n00728: \n00729:         \"ExitDatetime\"\n00730: \n00731:     ].notna().sum()\n00732: \n00733: )\n00734: \n00735: side_counts = (\n00736: \n00737:     trade_master_fix6[\n00738: \n00739:         \"Side\"\n00740: \n00741:     ]\n00742: \n00743:     .astype(str)\n00744: \n00745:     .str.upper()\n00746: \n00747:     .value_counts()\n00748: \n00749: )\n00750: \n00751: print()"
+    },
+    {
+      "line": 727,
+      "context": "00707:     f\"{len(short_state):,}\"\n00708: \n00709: )\n00710: \n00711: print(\n00712: \n00713:     \"MA200 regime:\",\n00714: \n00715:     f\"{len(regime):,}\"\n00716: \n00717: )\n00718: \n00719: entry_n = len(\n00720: \n00721:     trade_master_fix6\n00722: \n00723: )\n00724: \n00725: exit_n = int(\n00726: \n00727:     trade_master_fix6[\n00728: \n00729:         \"ExitDatetime\"\n00730: \n00731:     ].notna().sum()\n00732: \n00733: )\n00734: \n00735: side_counts = (\n00736: \n00737:     trade_master_fix6[\n00738: \n00739:         \"Side\"\n00740: \n00741:     ]\n00742: \n00743:     .astype(str)\n00744: \n00745:     .str.upper()\n00746: \n00747:     .value_counts()\n00748: \n00749: )\n00750: \n00751: print()\n00752: \n00753: print(\n00754: \n00755:     \"trade_master:\",\n00756: \n00757:     entry_n"
+    },
+    {
+      "line": 737,
+      "context": "00717: )\n00718: \n00719: entry_n = len(\n00720: \n00721:     trade_master_fix6\n00722: \n00723: )\n00724: \n00725: exit_n = int(\n00726: \n00727:     trade_master_fix6[\n00728: \n00729:         \"ExitDatetime\"\n00730: \n00731:     ].notna().sum()\n00732: \n00733: )\n00734: \n00735: side_counts = (\n00736: \n00737:     trade_master_fix6[\n00738: \n00739:         \"Side\"\n00740: \n00741:     ]\n00742: \n00743:     .astype(str)\n00744: \n00745:     .str.upper()\n00746: \n00747:     .value_counts()\n00748: \n00749: )\n00750: \n00751: print()\n00752: \n00753: print(\n00754: \n00755:     \"trade_master:\",\n00756: \n00757:     entry_n\n00758: \n00759: )\n00760: \n00761: print(\n00762: \n00763:     \"closed exits:\",\n00764: \n00765:     exit_n\n00766: \n00767: )"
+    },
+    {
+      "line": 755,
+      "context": "00735: side_counts = (\n00736: \n00737:     trade_master_fix6[\n00738: \n00739:         \"Side\"\n00740: \n00741:     ]\n00742: \n00743:     .astype(str)\n00744: \n00745:     .str.upper()\n00746: \n00747:     .value_counts()\n00748: \n00749: )\n00750: \n00751: print()\n00752: \n00753: print(\n00754: \n00755:     \"trade_master:\",\n00756: \n00757:     entry_n\n00758: \n00759: )\n00760: \n00761: print(\n00762: \n00763:     \"closed exits:\",\n00764: \n00765:     exit_n\n00766: \n00767: )\n00768: \n00769: print(\n00770: \n00771:     \"LONG        :\",\n00772: \n00773:     int(\n00774: \n00775:         side_counts.get(\n00776: \n00777:             \"LONG\",\n00778: \n00779:             0\n00780: \n00781:         )\n00782: \n00783:     )\n00784: \n00785: )"
+    },
+    {
+      "line": 809,
+      "context": "00789:     \"SHORT       :\",\n00790: \n00791:     int(\n00792: \n00793:         side_counts.get(\n00794: \n00795:             \"SHORT\",\n00796: \n00797:             0\n00798: \n00799:         )\n00800: \n00801:     )\n00802: \n00803: )\n00804: \n00805: all_events = [\n00806: \n00807:     e\n00808: \n00809:     for events in events_by_date.values()\n00810: \n00811:     for e in events\n00812: \n00813: ]\n00814: \n00815: event_df = pd.DataFrame(\n00816: \n00817:     all_events\n00818: \n00819: )\n00820: \n00821: entry_events = int(\n00822: \n00823:     (\n00824: \n00825:         event_df[\"Event\"]\n00826: \n00827:         .astype(str)\n00828: \n00829:         .str.upper()\n00830: \n00831:         ==\n00832: \n00833:         \"ENTRY\"\n00834: \n00835:     ).sum()\n00836: \n00837: )\n00838: \n00839: exit_events = int("
+    },
+    {
+      "line": 1015,
+      "context": "00995:     len(missing_close)\n00996: \n00997: )\n00998: \n00999: # ============================================================\n01000: \n01001: # 8. Hard checks\n01002: \n01003: # ============================================================\n01004: \n01005: assert len(daily_stock) == 2_421_801\n01006: \n01007: assert daily_stock[\"Code\"].nunique() == 4_772\n01008: \n01009: assert len(long_formal_exit) == 7_822\n01010: \n01011: assert len(short_state) == 5_409\n01012: \n01013: assert len(regime) == 464\n01014: \n01015: assert len(trade_master_fix6) == 867\n01016: \n01017: assert exit_n == 865\n01018: \n01019: assert int(\n01020: \n01021:     side_counts.get(\n01022: \n01023:         \"LONG\",\n01024: \n01025:         0\n01026: \n01027:     )\n01028: \n01029: ) == 625\n01030: \n01031: assert int(\n01032: \n01033:     side_counts.get(\n01034: \n01035:         \"SHORT\",\n01036: \n01037:         0\n01038: \n01039:     )\n01040: \n01041: ) == 242\n01042: \n01043: assert entry_events == 867\n01044: \n01045: assert exit_events == 865"
+    },
+    {
+      "line": 1153,
+      "context": "01133:     \"START_DATE\":\n01134: \n01135:         START_DATE,\n01136: \n01137:     \"END_DATE\":\n01138: \n01139:         END_DATE,\n01140: \n01141:     \"long_formal_exit\":\n01142: \n01143:         long_formal_exit,\n01144: \n01145:     \"short_state\":\n01146: \n01147:         short_state,\n01148: \n01149:     \"regime\":\n01150: \n01151:         regime,\n01152: \n01153:     \"trade_master_fix6\":\n01154: \n01155:         trade_master_fix6,\n01156: \n01157:     \"events_by_date\":\n01158: \n01159:         events_by_date,\n01160: \n01161:     \"base_code\":\n01162: \n01163:         base_code,\n01164: \n01165:     \"baseline_summary\":\n01166: \n01167:         baseline_summary,\n01168: \n01169:     \"baseline_targets\":\n01170: \n01171:         FIX11_BASELINE_TARGETS,\n01172: \n01173:     \"manifest\":\n01174: \n01175:         manifest,\n01176: \n01177: }\n01178: \n01179: # ============================================================\n01180: \n01181: # 11. Final\n01182: \n01183: # ============================================================"
+    },
+    {
+      "line": 1155,
+      "context": "01135:         START_DATE,\n01136: \n01137:     \"END_DATE\":\n01138: \n01139:         END_DATE,\n01140: \n01141:     \"long_formal_exit\":\n01142: \n01143:         long_formal_exit,\n01144: \n01145:     \"short_state\":\n01146: \n01147:         short_state,\n01148: \n01149:     \"regime\":\n01150: \n01151:         regime,\n01152: \n01153:     \"trade_master_fix6\":\n01154: \n01155:         trade_master_fix6,\n01156: \n01157:     \"events_by_date\":\n01158: \n01159:         events_by_date,\n01160: \n01161:     \"base_code\":\n01162: \n01163:         base_code,\n01164: \n01165:     \"baseline_summary\":\n01166: \n01167:         baseline_summary,\n01168: \n01169:     \"baseline_targets\":\n01170: \n01171:         FIX11_BASELINE_TARGETS,\n01172: \n01173:     \"manifest\":\n01174: \n01175:         manifest,\n01176: \n01177: }\n01178: \n01179: # ============================================================\n01180: \n01181: # 11. Final\n01182: \n01183: # ============================================================\n01184: \n01185: print()"
+    },
+    {
+      "line": 1157,
+      "context": "01137:     \"END_DATE\":\n01138: \n01139:         END_DATE,\n01140: \n01141:     \"long_formal_exit\":\n01142: \n01143:         long_formal_exit,\n01144: \n01145:     \"short_state\":\n01146: \n01147:         short_state,\n01148: \n01149:     \"regime\":\n01150: \n01151:         regime,\n01152: \n01153:     \"trade_master_fix6\":\n01154: \n01155:         trade_master_fix6,\n01156: \n01157:     \"events_by_date\":\n01158: \n01159:         events_by_date,\n01160: \n01161:     \"base_code\":\n01162: \n01163:         base_code,\n01164: \n01165:     \"baseline_summary\":\n01166: \n01167:         baseline_summary,\n01168: \n01169:     \"baseline_targets\":\n01170: \n01171:         FIX11_BASELINE_TARGETS,\n01172: \n01173:     \"manifest\":\n01174: \n01175:         manifest,\n01176: \n01177: }\n01178: \n01179: # ============================================================\n01180: \n01181: # 11. Final\n01182: \n01183: # ============================================================\n01184: \n01185: print()\n01186: \n01187: print(\"=\" * 120)"
+    },
+    {
+      "line": 1159,
+      "context": "01139:         END_DATE,\n01140: \n01141:     \"long_formal_exit\":\n01142: \n01143:         long_formal_exit,\n01144: \n01145:     \"short_state\":\n01146: \n01147:         short_state,\n01148: \n01149:     \"regime\":\n01150: \n01151:         regime,\n01152: \n01153:     \"trade_master_fix6\":\n01154: \n01155:         trade_master_fix6,\n01156: \n01157:     \"events_by_date\":\n01158: \n01159:         events_by_date,\n01160: \n01161:     \"base_code\":\n01162: \n01163:         base_code,\n01164: \n01165:     \"baseline_summary\":\n01166: \n01167:         baseline_summary,\n01168: \n01169:     \"baseline_targets\":\n01170: \n01171:         FIX11_BASELINE_TARGETS,\n01172: \n01173:     \"manifest\":\n01174: \n01175:         manifest,\n01176: \n01177: }\n01178: \n01179: # ============================================================\n01180: \n01181: # 11. Final\n01182: \n01183: # ============================================================\n01184: \n01185: print()\n01186: \n01187: print(\"=\" * 120)\n01188: \n01189: print(\"RECOVERY RESULT\")"
+    },
+    {
+      "line": 1211,
+      "context": "01191: print(\"=\" * 120)\n01192: \n01193: print(\"Objects ready:\")\n01194: \n01195: print(\"  daily_stock\")\n01196: \n01197: print(\"  d1557_fix\")\n01198: \n01199: print(\"  open_map / close_map\")\n01200: \n01201: print(\"  quote_dates / sim_dates\")\n01202: \n01203: print(\"  START_DATE / END_DATE\")\n01204: \n01205: print(\"  long_formal_exit\")\n01206: \n01207: print(\"  short_state\")\n01208: \n01209: print(\"  regime\")\n01210: \n01211: print(\"  trade_master_fix6\")\n01212: \n01213: print(\"  events_by_date\")\n01214: \n01215: print(\"  base_code\")\n01216: \n01217: print(\"  baseline_summary\")\n01218: \n01219: print(\"  FIX11_BASELINE_TARGETS\")\n01220: \n01221: print(\"  FIX11_RESEARCH_MASTER\")\n01222: \n01223: print()\n01224: \n01225: print(\n01226: \n01227:     \"★★★★★ FIX11 RESEARCH MASTER \"\n01228: \n01229:     \"ONE-CELL RECOVERY PASS ★★★★★\"\n01230: \n01231: )\n01232: \n01233: print()\n01234: \n01235: print(\n01236: \n01237:     \"次回から:\"\n01238: \n01239: )\n01240: \n01241: print("
+    },
+    {
+      "line": 1213,
+      "context": "01193: print(\"Objects ready:\")\n01194: \n01195: print(\"  daily_stock\")\n01196: \n01197: print(\"  d1557_fix\")\n01198: \n01199: print(\"  open_map / close_map\")\n01200: \n01201: print(\"  quote_dates / sim_dates\")\n01202: \n01203: print(\"  START_DATE / END_DATE\")\n01204: \n01205: print(\"  long_formal_exit\")\n01206: \n01207: print(\"  short_state\")\n01208: \n01209: print(\"  regime\")\n01210: \n01211: print(\"  trade_master_fix6\")\n01212: \n01213: print(\"  events_by_date\")\n01214: \n01215: print(\"  base_code\")\n01216: \n01217: print(\"  baseline_summary\")\n01218: \n01219: print(\"  FIX11_BASELINE_TARGETS\")\n01220: \n01221: print(\"  FIX11_RESEARCH_MASTER\")\n01222: \n01223: print()\n01224: \n01225: print(\n01226: \n01227:     \"★★★★★ FIX11 RESEARCH MASTER \"\n01228: \n01229:     \"ONE-CELL RECOVERY PASS ★★★★★\"\n01230: \n01231: )\n01232: \n01233: print()\n01234: \n01235: print(\n01236: \n01237:     \"次回から:\"\n01238: \n01239: )\n01240: \n01241: print(\n01242: \n01243:     \"新Colab → このセル → 条件変更テスト\""
+    }
+  ],
+  "producer_candidates": [
+    "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py",
+    "LONG_FORMAL_EXIT_7822_EXACT.parquet",
+    "SHORT_FORMAL_STATE_5409_EXACT.parquet",
+    "MA200_REGIME_464_EXACT.parquet",
+    "CAP200_ORIGINAL_867_trade_master.parquet",
+    "CAP200_ORIGINAL_867_events_by_date.pkl"
+  ]
+}

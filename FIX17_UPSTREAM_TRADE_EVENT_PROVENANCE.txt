@@ -1,0 +1,1566 @@
+FIX17 UPSTREAM TRADE / EVENT PROVENANCE
+==============================================================================================================
+HEAD: d0a50d5
+
+MANIFEST TARGET CHECK
+--------------------------------------------------------------------------------------------------------------
+trade_master_fix6                                                      : False
+events_by_date                                                         : False
+CAP200_ORIGINAL_867_trade_master.parquet                               : False
+CAP200_ORIGINAL_867_events_by_date.pkl                                 : False
+1WZAUjmhzqfhLfObLQy_t66VbthEIMj98                                      : False
+1wKmommitNwE8esQZbyxt9z2zvLuVHR2D                                      : False
+STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py                : False
+1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw                                      : False
+FIX10                                                                  : False
+CAP200                                                                 : False
+867                                                                    : True
+
+RECOVERY LOADER TARGET HITS
+--------------------------------------------------------------------------------------------------------------
+trade_master_fix6: 15 hits
+  L119: "trade_master_fix6": (
+  L557: trade_master_fix6 = pd.read_parquet(
+  L559: paths["trade_master_fix6"]
+  L563: trade_master_fix6["Code"] = (
+  L565: trade_master_fix6["Code"]
+  L581: if c in trade_master_fix6.columns:
+  L583: trade_master_fix6[c] = pd.to_datetime(
+  L585: trade_master_fix6[c],
+  L721: trade_master_fix6
+  L727: trade_master_fix6[
+  L737: trade_master_fix6[
+  L1015: assert len(trade_master_fix6) == 867
+  L1153: "trade_master_fix6":
+  L1155: trade_master_fix6,
+  L1211: print("  trade_master_fix6")
+events_by_date: 11 hits
+  L127: "events_by_date": (
+  L131: "CAP200_ORIGINAL_867_events_by_date.pkl"
+  L593: paths["events_by_date"],
+  L599: events_by_date = pickle.load(f)
+  L633: # 6. Normalize events_by_date keys
+  L639: for k, v in events_by_date.items():
+  L649: events_by_date = normalized_events
+  L809: for events in events_by_date.values()
+  L1157: "events_by_date":
+  L1159: events_by_date,
+  L1213: print("  events_by_date")
+CAP200_ORIGINAL_867_trade_master.parquet: 1 hits
+  L123: "CAP200_ORIGINAL_867_trade_master.parquet"
+CAP200_ORIGINAL_867_events_by_date.pkl: 1 hits
+  L131: "CAP200_ORIGINAL_867_events_by_date.pkl"
+1WZAUjmhzqfhLfObLQy_t66VbthEIMj98: 1 hits
+  L121: "1WZAUjmhzqfhLfObLQy_t66VbthEIMj98",
+1wKmommitNwE8esQZbyxt9z2zvLuVHR2D: 1 hits
+  L129: "1wKmommitNwE8esQZbyxt9z2zvLuVHR2D",
+STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py: 1 hits
+  L139: "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py"
+1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw: 1 hits
+  L137: "1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw",
+FIX10: 0 hits
+CAP200: 3 hits
+  L123: "CAP200_ORIGINAL_867_trade_master.parquet"
+  L131: "CAP200_ORIGINAL_867_events_by_date.pkl"
+  L139: "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py"
+867: 4 hits
+  L123: "CAP200_ORIGINAL_867_trade_master.parquet"
+  L131: "CAP200_ORIGINAL_867_events_by_date.pkl"
+  L1015: assert len(trade_master_fix6) == 867
+  L1043: assert entry_events == 867
+
+IMPORTANT RECOVERY CONTEXT
+--------------------------------------------------------------------------------------------------------------
+around L119
+00099:         "LONG_FORMAL_EXIT_7822_EXACT.parquet"
+00100: 
+00101:     ),
+00102: 
+00103:     "short_state": (
+00104: 
+00105:         "1hfYpTSJRN8hgUp-iZaNowrcmjCvTYj-a",
+00106: 
+00107:         "SHORT_FORMAL_STATE_5409_EXACT.parquet"
+00108: 
+00109:     ),
+00110: 
+00111:     "regime": (
+00112: 
+00113:         "1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW",
+00114: 
+00115:         "MA200_REGIME_464_EXACT.parquet"
+00116: 
+00117:     ),
+00118: 
+00119:     "trade_master_fix6": (
+00120: 
+00121:         "1WZAUjmhzqfhLfObLQy_t66VbthEIMj98",
+00122: 
+00123:         "CAP200_ORIGINAL_867_trade_master.parquet"
+00124: 
+00125:     ),
+00126: 
+00127:     "events_by_date": (
+00128: 
+00129:         "1wKmommitNwE8esQZbyxt9z2zvLuVHR2D",
+00130: 
+00131:         "CAP200_ORIGINAL_867_events_by_date.pkl"
+00132: 
+00133:     ),
+00134: 
+00135:     "fix11_source": (
+00136: 
+00137:         "1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw",
+00138: 
+00139:         "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py"
+00140: 
+00141:     ),
+00142: 
+00143:     "baseline_summary": (
+00144: 
+00145:         "1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ",
+00146: 
+00147:         "BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv"
+00148: 
+00149:     ),
+
+around L123
+00103:     "short_state": (
+00104: 
+00105:         "1hfYpTSJRN8hgUp-iZaNowrcmjCvTYj-a",
+00106: 
+00107:         "SHORT_FORMAL_STATE_5409_EXACT.parquet"
+00108: 
+00109:     ),
+00110: 
+00111:     "regime": (
+00112: 
+00113:         "1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW",
+00114: 
+00115:         "MA200_REGIME_464_EXACT.parquet"
+00116: 
+00117:     ),
+00118: 
+00119:     "trade_master_fix6": (
+00120: 
+00121:         "1WZAUjmhzqfhLfObLQy_t66VbthEIMj98",
+00122: 
+00123:         "CAP200_ORIGINAL_867_trade_master.parquet"
+00124: 
+00125:     ),
+00126: 
+00127:     "events_by_date": (
+00128: 
+00129:         "1wKmommitNwE8esQZbyxt9z2zvLuVHR2D",
+00130: 
+00131:         "CAP200_ORIGINAL_867_events_by_date.pkl"
+00132: 
+00133:     ),
+00134: 
+00135:     "fix11_source": (
+00136: 
+00137:         "1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw",
+00138: 
+00139:         "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py"
+00140: 
+00141:     ),
+00142: 
+00143:     "baseline_summary": (
+00144: 
+00145:         "1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ",
+00146: 
+00147:         "BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv"
+00148: 
+00149:     ),
+00150: 
+00151:     "manifest": (
+00152: 
+00153:         "1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_",
+
+around L127
+00107:         "SHORT_FORMAL_STATE_5409_EXACT.parquet"
+00108: 
+00109:     ),
+00110: 
+00111:     "regime": (
+00112: 
+00113:         "1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW",
+00114: 
+00115:         "MA200_REGIME_464_EXACT.parquet"
+00116: 
+00117:     ),
+00118: 
+00119:     "trade_master_fix6": (
+00120: 
+00121:         "1WZAUjmhzqfhLfObLQy_t66VbthEIMj98",
+00122: 
+00123:         "CAP200_ORIGINAL_867_trade_master.parquet"
+00124: 
+00125:     ),
+00126: 
+00127:     "events_by_date": (
+00128: 
+00129:         "1wKmommitNwE8esQZbyxt9z2zvLuVHR2D",
+00130: 
+00131:         "CAP200_ORIGINAL_867_events_by_date.pkl"
+00132: 
+00133:     ),
+00134: 
+00135:     "fix11_source": (
+00136: 
+00137:         "1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw",
+00138: 
+00139:         "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py"
+00140: 
+00141:     ),
+00142: 
+00143:     "baseline_summary": (
+00144: 
+00145:         "1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ",
+00146: 
+00147:         "BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv"
+00148: 
+00149:     ),
+00150: 
+00151:     "manifest": (
+00152: 
+00153:         "1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_",
+00154: 
+00155:         "MANIFEST.json"
+00156: 
+00157:     ),
+
+around L131
+00111:     "regime": (
+00112: 
+00113:         "1m0orjZmdkFtSSMjbkR7IcXxaiyKz4cOW",
+00114: 
+00115:         "MA200_REGIME_464_EXACT.parquet"
+00116: 
+00117:     ),
+00118: 
+00119:     "trade_master_fix6": (
+00120: 
+00121:         "1WZAUjmhzqfhLfObLQy_t66VbthEIMj98",
+00122: 
+00123:         "CAP200_ORIGINAL_867_trade_master.parquet"
+00124: 
+00125:     ),
+00126: 
+00127:     "events_by_date": (
+00128: 
+00129:         "1wKmommitNwE8esQZbyxt9z2zvLuVHR2D",
+00130: 
+00131:         "CAP200_ORIGINAL_867_events_by_date.pkl"
+00132: 
+00133:     ),
+00134: 
+00135:     "fix11_source": (
+00136: 
+00137:         "1K83mTzyTLfZHaVjIyJvZD1Msd1vYX6zw",
+00138: 
+00139:         "STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py"
+00140: 
+00141:     ),
+00142: 
+00143:     "baseline_summary": (
+00144: 
+00145:         "1l9ZCSdhltPWLXbdpebDPByuO0eEK0TqQ",
+00146: 
+00147:         "BASELINE_stage5_1557_FIX11_ENTRY_MARGIN_summary.csv"
+00148: 
+00149:     ),
+00150: 
+00151:     "manifest": (
+00152: 
+00153:         "1jVvzA_cGIA_M-zy4hMZswCpC_U4HB7s_",
+00154: 
+00155:         "MANIFEST.json"
+00156: 
+00157:     ),
+00158: 
+00159: }
+00160: 
+00161: # ============================================================
+
+around L557
+00537:             short_state[c],
+00538: 
+00539:             errors="coerce"
+00540: 
+00541:         )
+00542: 
+00543: regime = pd.read_parquet(
+00544: 
+00545:     paths["regime"]
+00546: 
+00547: )
+00548: 
+00549: regime["Date"] = pd.to_datetime(
+00550: 
+00551:     regime["Date"],
+00552: 
+00553:     errors="coerce"
+00554: 
+00555: ).dt.normalize()
+00556: 
+00557: trade_master_fix6 = pd.read_parquet(
+00558: 
+00559:     paths["trade_master_fix6"]
+00560: 
+00561: )
+00562: 
+00563: trade_master_fix6["Code"] = (
+00564: 
+00565:     trade_master_fix6["Code"]
+00566: 
+00567:     .astype(str)
+00568: 
+00569:     .str.replace(".0", "", regex=False)
+00570: 
+00571: )
+00572: 
+00573: for c in [
+00574: 
+00575:     "EntryDatetime",
+00576: 
+00577:     "ExitDatetime"
+00578: 
+00579: ]:
+00580: 
+00581:     if c in trade_master_fix6.columns:
+00582: 
+00583:         trade_master_fix6[c] = pd.to_datetime(
+00584: 
+00585:             trade_master_fix6[c],
+00586: 
+00587:             errors="coerce"
+
+around L559
+00539:             errors="coerce"
+00540: 
+00541:         )
+00542: 
+00543: regime = pd.read_parquet(
+00544: 
+00545:     paths["regime"]
+00546: 
+00547: )
+00548: 
+00549: regime["Date"] = pd.to_datetime(
+00550: 
+00551:     regime["Date"],
+00552: 
+00553:     errors="coerce"
+00554: 
+00555: ).dt.normalize()
+00556: 
+00557: trade_master_fix6 = pd.read_parquet(
+00558: 
+00559:     paths["trade_master_fix6"]
+00560: 
+00561: )
+00562: 
+00563: trade_master_fix6["Code"] = (
+00564: 
+00565:     trade_master_fix6["Code"]
+00566: 
+00567:     .astype(str)
+00568: 
+00569:     .str.replace(".0", "", regex=False)
+00570: 
+00571: )
+00572: 
+00573: for c in [
+00574: 
+00575:     "EntryDatetime",
+00576: 
+00577:     "ExitDatetime"
+00578: 
+00579: ]:
+00580: 
+00581:     if c in trade_master_fix6.columns:
+00582: 
+00583:         trade_master_fix6[c] = pd.to_datetime(
+00584: 
+00585:             trade_master_fix6[c],
+00586: 
+00587:             errors="coerce"
+00588: 
+00589:         )
+
+around L563
+00543: regime = pd.read_parquet(
+00544: 
+00545:     paths["regime"]
+00546: 
+00547: )
+00548: 
+00549: regime["Date"] = pd.to_datetime(
+00550: 
+00551:     regime["Date"],
+00552: 
+00553:     errors="coerce"
+00554: 
+00555: ).dt.normalize()
+00556: 
+00557: trade_master_fix6 = pd.read_parquet(
+00558: 
+00559:     paths["trade_master_fix6"]
+00560: 
+00561: )
+00562: 
+00563: trade_master_fix6["Code"] = (
+00564: 
+00565:     trade_master_fix6["Code"]
+00566: 
+00567:     .astype(str)
+00568: 
+00569:     .str.replace(".0", "", regex=False)
+00570: 
+00571: )
+00572: 
+00573: for c in [
+00574: 
+00575:     "EntryDatetime",
+00576: 
+00577:     "ExitDatetime"
+00578: 
+00579: ]:
+00580: 
+00581:     if c in trade_master_fix6.columns:
+00582: 
+00583:         trade_master_fix6[c] = pd.to_datetime(
+00584: 
+00585:             trade_master_fix6[c],
+00586: 
+00587:             errors="coerce"
+00588: 
+00589:         )
+00590: 
+00591: with open(
+00592: 
+00593:     paths["events_by_date"],
+
+around L565
+00545:     paths["regime"]
+00546: 
+00547: )
+00548: 
+00549: regime["Date"] = pd.to_datetime(
+00550: 
+00551:     regime["Date"],
+00552: 
+00553:     errors="coerce"
+00554: 
+00555: ).dt.normalize()
+00556: 
+00557: trade_master_fix6 = pd.read_parquet(
+00558: 
+00559:     paths["trade_master_fix6"]
+00560: 
+00561: )
+00562: 
+00563: trade_master_fix6["Code"] = (
+00564: 
+00565:     trade_master_fix6["Code"]
+00566: 
+00567:     .astype(str)
+00568: 
+00569:     .str.replace(".0", "", regex=False)
+00570: 
+00571: )
+00572: 
+00573: for c in [
+00574: 
+00575:     "EntryDatetime",
+00576: 
+00577:     "ExitDatetime"
+00578: 
+00579: ]:
+00580: 
+00581:     if c in trade_master_fix6.columns:
+00582: 
+00583:         trade_master_fix6[c] = pd.to_datetime(
+00584: 
+00585:             trade_master_fix6[c],
+00586: 
+00587:             errors="coerce"
+00588: 
+00589:         )
+00590: 
+00591: with open(
+00592: 
+00593:     paths["events_by_date"],
+00594: 
+00595:     "rb"
+
+around L581
+00561: )
+00562: 
+00563: trade_master_fix6["Code"] = (
+00564: 
+00565:     trade_master_fix6["Code"]
+00566: 
+00567:     .astype(str)
+00568: 
+00569:     .str.replace(".0", "", regex=False)
+00570: 
+00571: )
+00572: 
+00573: for c in [
+00574: 
+00575:     "EntryDatetime",
+00576: 
+00577:     "ExitDatetime"
+00578: 
+00579: ]:
+00580: 
+00581:     if c in trade_master_fix6.columns:
+00582: 
+00583:         trade_master_fix6[c] = pd.to_datetime(
+00584: 
+00585:             trade_master_fix6[c],
+00586: 
+00587:             errors="coerce"
+00588: 
+00589:         )
+00590: 
+00591: with open(
+00592: 
+00593:     paths["events_by_date"],
+00594: 
+00595:     "rb"
+00596: 
+00597: ) as f:
+00598: 
+00599:     events_by_date = pickle.load(f)
+00600: 
+00601: with open(
+00602: 
+00603:     paths["fix11_source"],
+00604: 
+00605:     "r",
+00606: 
+00607:     encoding="utf-8"
+00608: 
+00609: ) as f:
+00610: 
+00611:     base_code = f.read()
+
+around L583
+00563: trade_master_fix6["Code"] = (
+00564: 
+00565:     trade_master_fix6["Code"]
+00566: 
+00567:     .astype(str)
+00568: 
+00569:     .str.replace(".0", "", regex=False)
+00570: 
+00571: )
+00572: 
+00573: for c in [
+00574: 
+00575:     "EntryDatetime",
+00576: 
+00577:     "ExitDatetime"
+00578: 
+00579: ]:
+00580: 
+00581:     if c in trade_master_fix6.columns:
+00582: 
+00583:         trade_master_fix6[c] = pd.to_datetime(
+00584: 
+00585:             trade_master_fix6[c],
+00586: 
+00587:             errors="coerce"
+00588: 
+00589:         )
+00590: 
+00591: with open(
+00592: 
+00593:     paths["events_by_date"],
+00594: 
+00595:     "rb"
+00596: 
+00597: ) as f:
+00598: 
+00599:     events_by_date = pickle.load(f)
+00600: 
+00601: with open(
+00602: 
+00603:     paths["fix11_source"],
+00604: 
+00605:     "r",
+00606: 
+00607:     encoding="utf-8"
+00608: 
+00609: ) as f:
+00610: 
+00611:     base_code = f.read()
+00612: 
+00613: baseline_summary = pd.read_csv(
+
+around L585
+00565:     trade_master_fix6["Code"]
+00566: 
+00567:     .astype(str)
+00568: 
+00569:     .str.replace(".0", "", regex=False)
+00570: 
+00571: )
+00572: 
+00573: for c in [
+00574: 
+00575:     "EntryDatetime",
+00576: 
+00577:     "ExitDatetime"
+00578: 
+00579: ]:
+00580: 
+00581:     if c in trade_master_fix6.columns:
+00582: 
+00583:         trade_master_fix6[c] = pd.to_datetime(
+00584: 
+00585:             trade_master_fix6[c],
+00586: 
+00587:             errors="coerce"
+00588: 
+00589:         )
+00590: 
+00591: with open(
+00592: 
+00593:     paths["events_by_date"],
+00594: 
+00595:     "rb"
+00596: 
+00597: ) as f:
+00598: 
+00599:     events_by_date = pickle.load(f)
+00600: 
+00601: with open(
+00602: 
+00603:     paths["fix11_source"],
+00604: 
+00605:     "r",
+00606: 
+00607:     encoding="utf-8"
+00608: 
+00609: ) as f:
+00610: 
+00611:     base_code = f.read()
+00612: 
+00613: baseline_summary = pd.read_csv(
+00614: 
+00615:     paths["baseline_summary"]
+
+around L593
+00573: for c in [
+00574: 
+00575:     "EntryDatetime",
+00576: 
+00577:     "ExitDatetime"
+00578: 
+00579: ]:
+00580: 
+00581:     if c in trade_master_fix6.columns:
+00582: 
+00583:         trade_master_fix6[c] = pd.to_datetime(
+00584: 
+00585:             trade_master_fix6[c],
+00586: 
+00587:             errors="coerce"
+00588: 
+00589:         )
+00590: 
+00591: with open(
+00592: 
+00593:     paths["events_by_date"],
+00594: 
+00595:     "rb"
+00596: 
+00597: ) as f:
+00598: 
+00599:     events_by_date = pickle.load(f)
+00600: 
+00601: with open(
+00602: 
+00603:     paths["fix11_source"],
+00604: 
+00605:     "r",
+00606: 
+00607:     encoding="utf-8"
+00608: 
+00609: ) as f:
+00610: 
+00611:     base_code = f.read()
+00612: 
+00613: baseline_summary = pd.read_csv(
+00614: 
+00615:     paths["baseline_summary"]
+00616: 
+00617: )
+00618: 
+00619: with open(
+00620: 
+00621:     paths["manifest"],
+00622: 
+00623:     "r",
+
+around L599
+00579: ]:
+00580: 
+00581:     if c in trade_master_fix6.columns:
+00582: 
+00583:         trade_master_fix6[c] = pd.to_datetime(
+00584: 
+00585:             trade_master_fix6[c],
+00586: 
+00587:             errors="coerce"
+00588: 
+00589:         )
+00590: 
+00591: with open(
+00592: 
+00593:     paths["events_by_date"],
+00594: 
+00595:     "rb"
+00596: 
+00597: ) as f:
+00598: 
+00599:     events_by_date = pickle.load(f)
+00600: 
+00601: with open(
+00602: 
+00603:     paths["fix11_source"],
+00604: 
+00605:     "r",
+00606: 
+00607:     encoding="utf-8"
+00608: 
+00609: ) as f:
+00610: 
+00611:     base_code = f.read()
+00612: 
+00613: baseline_summary = pd.read_csv(
+00614: 
+00615:     paths["baseline_summary"]
+00616: 
+00617: )
+00618: 
+00619: with open(
+00620: 
+00621:     paths["manifest"],
+00622: 
+00623:     "r",
+00624: 
+00625:     encoding="utf-8"
+00626: 
+00627: ) as f:
+00628: 
+00629:     manifest = json.load(f)
+
+around L633
+00613: baseline_summary = pd.read_csv(
+00614: 
+00615:     paths["baseline_summary"]
+00616: 
+00617: )
+00618: 
+00619: with open(
+00620: 
+00621:     paths["manifest"],
+00622: 
+00623:     "r",
+00624: 
+00625:     encoding="utf-8"
+00626: 
+00627: ) as f:
+00628: 
+00629:     manifest = json.load(f)
+00630: 
+00631: # ============================================================
+00632: 
+00633: # 6. Normalize events_by_date keys
+00634: 
+00635: # ============================================================
+00636: 
+00637: normalized_events = {}
+00638: 
+00639: for k, v in events_by_date.items():
+00640: 
+00641:     nk = pd.Timestamp(
+00642: 
+00643:         k
+00644: 
+00645:     ).normalize()
+00646: 
+00647:     normalized_events[nk] = v
+00648: 
+00649: events_by_date = normalized_events
+00650: 
+00651: # ============================================================
+00652: 
+00653: # 7. Audit
+00654: 
+00655: # ============================================================
+00656: 
+00657: print()
+00658: 
+00659: print("=" * 120)
+00660: 
+00661: print("EXACT RECOVERY AUDIT")
+00662: 
+00663: print("=" * 120)
+
+around L639
+00619: with open(
+00620: 
+00621:     paths["manifest"],
+00622: 
+00623:     "r",
+00624: 
+00625:     encoding="utf-8"
+00626: 
+00627: ) as f:
+00628: 
+00629:     manifest = json.load(f)
+00630: 
+00631: # ============================================================
+00632: 
+00633: # 6. Normalize events_by_date keys
+00634: 
+00635: # ============================================================
+00636: 
+00637: normalized_events = {}
+00638: 
+00639: for k, v in events_by_date.items():
+00640: 
+00641:     nk = pd.Timestamp(
+00642: 
+00643:         k
+00644: 
+00645:     ).normalize()
+00646: 
+00647:     normalized_events[nk] = v
+00648: 
+00649: events_by_date = normalized_events
+00650: 
+00651: # ============================================================
+00652: 
+00653: # 7. Audit
+00654: 
+00655: # ============================================================
+00656: 
+00657: print()
+00658: 
+00659: print("=" * 120)
+00660: 
+00661: print("EXACT RECOVERY AUDIT")
+00662: 
+00663: print("=" * 120)
+00664: 
+00665: print(
+00666: 
+00667:     "daily_stock :",
+00668: 
+00669:     f"{len(daily_stock):,}"
+
+around L649
+00629:     manifest = json.load(f)
+00630: 
+00631: # ============================================================
+00632: 
+00633: # 6. Normalize events_by_date keys
+00634: 
+00635: # ============================================================
+00636: 
+00637: normalized_events = {}
+00638: 
+00639: for k, v in events_by_date.items():
+00640: 
+00641:     nk = pd.Timestamp(
+00642: 
+00643:         k
+00644: 
+00645:     ).normalize()
+00646: 
+00647:     normalized_events[nk] = v
+00648: 
+00649: events_by_date = normalized_events
+00650: 
+00651: # ============================================================
+00652: 
+00653: # 7. Audit
+00654: 
+00655: # ============================================================
+00656: 
+00657: print()
+00658: 
+00659: print("=" * 120)
+00660: 
+00661: print("EXACT RECOVERY AUDIT")
+00662: 
+00663: print("=" * 120)
+00664: 
+00665: print(
+00666: 
+00667:     "daily_stock :",
+00668: 
+00669:     f"{len(daily_stock):,}"
+00670: 
+00671: )
+00672: 
+00673: print(
+00674: 
+00675:     "daily codes :",
+00676: 
+00677:     f"{daily_stock['Code'].nunique():,}"
+00678: 
+00679: )
+
+around L721
+00701: )
+00702: 
+00703: print(
+00704: 
+00705:     "SHORT state :",
+00706: 
+00707:     f"{len(short_state):,}"
+00708: 
+00709: )
+00710: 
+00711: print(
+00712: 
+00713:     "MA200 regime:",
+00714: 
+00715:     f"{len(regime):,}"
+00716: 
+00717: )
+00718: 
+00719: entry_n = len(
+00720: 
+00721:     trade_master_fix6
+00722: 
+00723: )
+00724: 
+00725: exit_n = int(
+00726: 
+00727:     trade_master_fix6[
+00728: 
+00729:         "ExitDatetime"
+00730: 
+00731:     ].notna().sum()
+00732: 
+00733: )
+00734: 
+00735: side_counts = (
+00736: 
+00737:     trade_master_fix6[
+00738: 
+00739:         "Side"
+00740: 
+00741:     ]
+00742: 
+00743:     .astype(str)
+00744: 
+00745:     .str.upper()
+00746: 
+00747:     .value_counts()
+00748: 
+00749: )
+00750: 
+00751: print()
+
+around L727
+00707:     f"{len(short_state):,}"
+00708: 
+00709: )
+00710: 
+00711: print(
+00712: 
+00713:     "MA200 regime:",
+00714: 
+00715:     f"{len(regime):,}"
+00716: 
+00717: )
+00718: 
+00719: entry_n = len(
+00720: 
+00721:     trade_master_fix6
+00722: 
+00723: )
+00724: 
+00725: exit_n = int(
+00726: 
+00727:     trade_master_fix6[
+00728: 
+00729:         "ExitDatetime"
+00730: 
+00731:     ].notna().sum()
+00732: 
+00733: )
+00734: 
+00735: side_counts = (
+00736: 
+00737:     trade_master_fix6[
+00738: 
+00739:         "Side"
+00740: 
+00741:     ]
+00742: 
+00743:     .astype(str)
+00744: 
+00745:     .str.upper()
+00746: 
+00747:     .value_counts()
+00748: 
+00749: )
+00750: 
+00751: print()
+00752: 
+00753: print(
+00754: 
+00755:     "trade_master:",
+00756: 
+00757:     entry_n
+
+around L737
+00717: )
+00718: 
+00719: entry_n = len(
+00720: 
+00721:     trade_master_fix6
+00722: 
+00723: )
+00724: 
+00725: exit_n = int(
+00726: 
+00727:     trade_master_fix6[
+00728: 
+00729:         "ExitDatetime"
+00730: 
+00731:     ].notna().sum()
+00732: 
+00733: )
+00734: 
+00735: side_counts = (
+00736: 
+00737:     trade_master_fix6[
+00738: 
+00739:         "Side"
+00740: 
+00741:     ]
+00742: 
+00743:     .astype(str)
+00744: 
+00745:     .str.upper()
+00746: 
+00747:     .value_counts()
+00748: 
+00749: )
+00750: 
+00751: print()
+00752: 
+00753: print(
+00754: 
+00755:     "trade_master:",
+00756: 
+00757:     entry_n
+00758: 
+00759: )
+00760: 
+00761: print(
+00762: 
+00763:     "closed exits:",
+00764: 
+00765:     exit_n
+00766: 
+00767: )
+
+around L755
+00735: side_counts = (
+00736: 
+00737:     trade_master_fix6[
+00738: 
+00739:         "Side"
+00740: 
+00741:     ]
+00742: 
+00743:     .astype(str)
+00744: 
+00745:     .str.upper()
+00746: 
+00747:     .value_counts()
+00748: 
+00749: )
+00750: 
+00751: print()
+00752: 
+00753: print(
+00754: 
+00755:     "trade_master:",
+00756: 
+00757:     entry_n
+00758: 
+00759: )
+00760: 
+00761: print(
+00762: 
+00763:     "closed exits:",
+00764: 
+00765:     exit_n
+00766: 
+00767: )
+00768: 
+00769: print(
+00770: 
+00771:     "LONG        :",
+00772: 
+00773:     int(
+00774: 
+00775:         side_counts.get(
+00776: 
+00777:             "LONG",
+00778: 
+00779:             0
+00780: 
+00781:         )
+00782: 
+00783:     )
+00784: 
+00785: )
+
+around L809
+00789:     "SHORT       :",
+00790: 
+00791:     int(
+00792: 
+00793:         side_counts.get(
+00794: 
+00795:             "SHORT",
+00796: 
+00797:             0
+00798: 
+00799:         )
+00800: 
+00801:     )
+00802: 
+00803: )
+00804: 
+00805: all_events = [
+00806: 
+00807:     e
+00808: 
+00809:     for events in events_by_date.values()
+00810: 
+00811:     for e in events
+00812: 
+00813: ]
+00814: 
+00815: event_df = pd.DataFrame(
+00816: 
+00817:     all_events
+00818: 
+00819: )
+00820: 
+00821: entry_events = int(
+00822: 
+00823:     (
+00824: 
+00825:         event_df["Event"]
+00826: 
+00827:         .astype(str)
+00828: 
+00829:         .str.upper()
+00830: 
+00831:         ==
+00832: 
+00833:         "ENTRY"
+00834: 
+00835:     ).sum()
+00836: 
+00837: )
+00838: 
+00839: exit_events = int(
+
+around L1015
+00995:     len(missing_close)
+00996: 
+00997: )
+00998: 
+00999: # ============================================================
+01000: 
+01001: # 8. Hard checks
+01002: 
+01003: # ============================================================
+01004: 
+01005: assert len(daily_stock) == 2_421_801
+01006: 
+01007: assert daily_stock["Code"].nunique() == 4_772
+01008: 
+01009: assert len(long_formal_exit) == 7_822
+01010: 
+01011: assert len(short_state) == 5_409
+01012: 
+01013: assert len(regime) == 464
+01014: 
+01015: assert len(trade_master_fix6) == 867
+01016: 
+01017: assert exit_n == 865
+01018: 
+01019: assert int(
+01020: 
+01021:     side_counts.get(
+01022: 
+01023:         "LONG",
+01024: 
+01025:         0
+01026: 
+01027:     )
+01028: 
+01029: ) == 625
+01030: 
+01031: assert int(
+01032: 
+01033:     side_counts.get(
+01034: 
+01035:         "SHORT",
+01036: 
+01037:         0
+01038: 
+01039:     )
+01040: 
+01041: ) == 242
+01042: 
+01043: assert entry_events == 867
+01044: 
+01045: assert exit_events == 865
+
+around L1153
+01133:     "START_DATE":
+01134: 
+01135:         START_DATE,
+01136: 
+01137:     "END_DATE":
+01138: 
+01139:         END_DATE,
+01140: 
+01141:     "long_formal_exit":
+01142: 
+01143:         long_formal_exit,
+01144: 
+01145:     "short_state":
+01146: 
+01147:         short_state,
+01148: 
+01149:     "regime":
+01150: 
+01151:         regime,
+01152: 
+01153:     "trade_master_fix6":
+01154: 
+01155:         trade_master_fix6,
+01156: 
+01157:     "events_by_date":
+01158: 
+01159:         events_by_date,
+01160: 
+01161:     "base_code":
+01162: 
+01163:         base_code,
+01164: 
+01165:     "baseline_summary":
+01166: 
+01167:         baseline_summary,
+01168: 
+01169:     "baseline_targets":
+01170: 
+01171:         FIX11_BASELINE_TARGETS,
+01172: 
+01173:     "manifest":
+01174: 
+01175:         manifest,
+01176: 
+01177: }
+01178: 
+01179: # ============================================================
+01180: 
+01181: # 11. Final
+01182: 
+01183: # ============================================================
+
+around L1155
+01135:         START_DATE,
+01136: 
+01137:     "END_DATE":
+01138: 
+01139:         END_DATE,
+01140: 
+01141:     "long_formal_exit":
+01142: 
+01143:         long_formal_exit,
+01144: 
+01145:     "short_state":
+01146: 
+01147:         short_state,
+01148: 
+01149:     "regime":
+01150: 
+01151:         regime,
+01152: 
+01153:     "trade_master_fix6":
+01154: 
+01155:         trade_master_fix6,
+01156: 
+01157:     "events_by_date":
+01158: 
+01159:         events_by_date,
+01160: 
+01161:     "base_code":
+01162: 
+01163:         base_code,
+01164: 
+01165:     "baseline_summary":
+01166: 
+01167:         baseline_summary,
+01168: 
+01169:     "baseline_targets":
+01170: 
+01171:         FIX11_BASELINE_TARGETS,
+01172: 
+01173:     "manifest":
+01174: 
+01175:         manifest,
+01176: 
+01177: }
+01178: 
+01179: # ============================================================
+01180: 
+01181: # 11. Final
+01182: 
+01183: # ============================================================
+01184: 
+01185: print()
+
+around L1157
+01137:     "END_DATE":
+01138: 
+01139:         END_DATE,
+01140: 
+01141:     "long_formal_exit":
+01142: 
+01143:         long_formal_exit,
+01144: 
+01145:     "short_state":
+01146: 
+01147:         short_state,
+01148: 
+01149:     "regime":
+01150: 
+01151:         regime,
+01152: 
+01153:     "trade_master_fix6":
+01154: 
+01155:         trade_master_fix6,
+01156: 
+01157:     "events_by_date":
+01158: 
+01159:         events_by_date,
+01160: 
+01161:     "base_code":
+01162: 
+01163:         base_code,
+01164: 
+01165:     "baseline_summary":
+01166: 
+01167:         baseline_summary,
+01168: 
+01169:     "baseline_targets":
+01170: 
+01171:         FIX11_BASELINE_TARGETS,
+01172: 
+01173:     "manifest":
+01174: 
+01175:         manifest,
+01176: 
+01177: }
+01178: 
+01179: # ============================================================
+01180: 
+01181: # 11. Final
+01182: 
+01183: # ============================================================
+01184: 
+01185: print()
+01186: 
+01187: print("=" * 120)
+
+around L1159
+01139:         END_DATE,
+01140: 
+01141:     "long_formal_exit":
+01142: 
+01143:         long_formal_exit,
+01144: 
+01145:     "short_state":
+01146: 
+01147:         short_state,
+01148: 
+01149:     "regime":
+01150: 
+01151:         regime,
+01152: 
+01153:     "trade_master_fix6":
+01154: 
+01155:         trade_master_fix6,
+01156: 
+01157:     "events_by_date":
+01158: 
+01159:         events_by_date,
+01160: 
+01161:     "base_code":
+01162: 
+01163:         base_code,
+01164: 
+01165:     "baseline_summary":
+01166: 
+01167:         baseline_summary,
+01168: 
+01169:     "baseline_targets":
+01170: 
+01171:         FIX11_BASELINE_TARGETS,
+01172: 
+01173:     "manifest":
+01174: 
+01175:         manifest,
+01176: 
+01177: }
+01178: 
+01179: # ============================================================
+01180: 
+01181: # 11. Final
+01182: 
+01183: # ============================================================
+01184: 
+01185: print()
+01186: 
+01187: print("=" * 120)
+01188: 
+01189: print("RECOVERY RESULT")
+
+around L1211
+01191: print("=" * 120)
+01192: 
+01193: print("Objects ready:")
+01194: 
+01195: print("  daily_stock")
+01196: 
+01197: print("  d1557_fix")
+01198: 
+01199: print("  open_map / close_map")
+01200: 
+01201: print("  quote_dates / sim_dates")
+01202: 
+01203: print("  START_DATE / END_DATE")
+01204: 
+01205: print("  long_formal_exit")
+01206: 
+01207: print("  short_state")
+01208: 
+01209: print("  regime")
+01210: 
+01211: print("  trade_master_fix6")
+01212: 
+01213: print("  events_by_date")
+01214: 
+01215: print("  base_code")
+01216: 
+01217: print("  baseline_summary")
+01218: 
+01219: print("  FIX11_BASELINE_TARGETS")
+01220: 
+01221: print("  FIX11_RESEARCH_MASTER")
+01222: 
+01223: print()
+01224: 
+01225: print(
+01226: 
+01227:     "★★★★★ FIX11 RESEARCH MASTER "
+01228: 
+01229:     "ONE-CELL RECOVERY PASS ★★★★★"
+01230: 
+01231: )
+01232: 
+01233: print()
+01234: 
+01235: print(
+01236: 
+01237:     "次回から:"
+01238: 
+01239: )
+01240: 
+01241: print(
+
+around L1213
+01193: print("Objects ready:")
+01194: 
+01195: print("  daily_stock")
+01196: 
+01197: print("  d1557_fix")
+01198: 
+01199: print("  open_map / close_map")
+01200: 
+01201: print("  quote_dates / sim_dates")
+01202: 
+01203: print("  START_DATE / END_DATE")
+01204: 
+01205: print("  long_formal_exit")
+01206: 
+01207: print("  short_state")
+01208: 
+01209: print("  regime")
+01210: 
+01211: print("  trade_master_fix6")
+01212: 
+01213: print("  events_by_date")
+01214: 
+01215: print("  base_code")
+01216: 
+01217: print("  baseline_summary")
+01218: 
+01219: print("  FIX11_BASELINE_TARGETS")
+01220: 
+01221: print("  FIX11_RESEARCH_MASTER")
+01222: 
+01223: print()
+01224: 
+01225: print(
+01226: 
+01227:     "★★★★★ FIX11 RESEARCH MASTER "
+01228: 
+01229:     "ONE-CELL RECOVERY PASS ★★★★★"
+01230: 
+01231: )
+01232: 
+01233: print()
+01234: 
+01235: print(
+01236: 
+01237:     "次回から:"
+01238: 
+01239: )
+01240: 
+01241: print(
+01242: 
+01243:     "新Colab → このセル → 条件変更テスト"
+
+
+POSSIBLE PRODUCER / RELATED FILES
+--------------------------------------------------------------------------------------------------------------
+STEP23_H_EXACT_FIX11_CAP200_LONG_ONLY_TRUE_CAP200_V2.py
+LONG_FORMAL_EXIT_7822_EXACT.parquet
+SHORT_FORMAL_STATE_5409_EXACT.parquet
+MA200_REGIME_464_EXACT.parquet
+CAP200_ORIGINAL_867_trade_master.parquet
+CAP200_ORIGINAL_867_events_by_date.pkl
