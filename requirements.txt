@@ -8,3 +8,4 @@ google-auth-httplib2
 yfinance
 google-cloud-storage
 jpholiday
+google-api-core
