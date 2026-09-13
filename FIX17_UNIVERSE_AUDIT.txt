@@ -1,0 +1,12 @@
+FIX17 UNIVERSE AUDIT
+====================================================================================================
+Source ID : 1vR8UQo00HOS4w8bKxWpQBAzHxId92-XG
+Source    : FIX11_daily_stock_EXACT.parquet
+SHA256    : df04d9166b342a5195a3817a90dc3a3c38c88069755cbaf6c6580556ab6dd0b6
+Rows      : 2421801
+Code col  : Code
+Date col  : Date
+Codes     : 4772
+Date min  : 2024-04-01 00:00:00
+Date max  : 2026-07-31 00:00:00
+Bad codes : 444
