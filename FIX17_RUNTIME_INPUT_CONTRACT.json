@@ -1,0 +1,100 @@
+{
+  "github_head": "b4e6fe2",
+  "source": "FIX11_ENTRY_SOURCE_EXACT.py",
+  "source_lines": 6849,
+  "required_globals": [
+    "trade_master_fix6",
+    "events_by_date",
+    "sim_dates",
+    "daily_stock",
+    "d1557_fix",
+    "open_map",
+    "close_map",
+    "quote_dates",
+    "START_DATE",
+    "END_DATE"
+  ],
+  "contract": {
+    "trade_master_fix6": {
+      "required_global": true,
+      "source_hit_count": 2,
+      "source_hits": [
+        {
+          "line": 283,
+          "text": "\"trade_master_fix6\","
+        },
+        {
+          "line": 331,
+          "text": "tm = trade_master_fix6.copy()"
+        }
+      ]
+    },
+    "events_by_date": {
+      "required_global": true,
+      "source_hit_count": 3,
+      "source_hits": [
+        {
+          "line": 285,
+          "text": "\"events_by_date\","
+        },
+        {
+          "line": 413,
+          "text": "for date, events in events_by_date.items():"
+        },
+        {
+          "line": 2807,
+          "text": "for e in events_by_date.get("
+        }
+      ]
+    },
+    "daily_stock": {
+      "required_global": true,
+      "source_hit_count": 3,
+      "source_hits": [
+        {
+          "line": 289,
+          "text": "\"daily_stock\","
+        },
+        {
+          "line": 781,
+          "text": "# 7. daily_stock"
+        },
+        {
+          "line": 785,
+          "text": "ds = daily_stock.copy()"
+        }
+      ]
+    },
+    "d1557": {
+      "required_global": false,
+      "source_hit_count": 0,
+      "source_hits": []
+    },
+    "runtime_maps": {
+      "required_global": false,
+      "source_hit_count": 0,
+      "source_hits": []
+    },
+    "long_formal_exit": {
+      "required_global": false,
+      "source_hit_count": 0,
+      "source_hits": []
+    },
+    "short_state": {
+      "required_global": false,
+      "source_hit_count": 0,
+      "source_hits": []
+    },
+    "regime": {
+      "required_global": false,
+      "source_hit_count": 0,
+      "source_hits": []
+    }
+  },
+  "globals_blocks": [
+    {
+      "line": 309,
+      "context": "00229: EXPECTED_TRADE_MASTER = 867\n00230: \n00231: EXPECTED_ENTRY_EVENTS = 867\n00232: \n00233: EXPECTED_EXIT_EVENTS = 865\n00234: \n00235: # CAP200_LONG_ONLYではFormal Stage5 583件とは\n00236: \n00237: # 売買ストリーム自体が異なるため、\n00238: \n00239: # 旧5,755,654円をhard checkには使用しない。\n00240: \n00241: EXPECTED_STAGE5_FINAL = None\n00242: \n00243: # ------------------------------------------------------------\n00244: \n00245: # Financing\n00246: \n00247: # ------------------------------------------------------------\n00248: \n00249: LONG_INTEREST_ANNUAL = 0.0285\n00250: \n00251: SHORT_LENDING_ANNUAL = 0.0110\n00252: \n00253: DAY_COUNT = 365.0\n00254: \n00255: # ------------------------------------------------------------\n00256: \n00257: # Margin / 1557\n00258: \n00259: # ------------------------------------------------------------\n00260: \n00261: SUBSTITUTE_HAIRCUT = 0.80\n00262: \n00263: MIN_MARGIN_RATIO = 0.30\n00264: \n00265: MARGIN_CALL_LINE = 0.20\n00266: \n00267: SEVERE_LINE = 0.15\n00268: \n00269: CASH_FLOOR = 0.0\n00270: \n00271: ETF_BUY_FEE = 0.0\n00272: \n00273: ETF_SELL_FEE = 0.0\n00274: \n00275: # ============================================================\n00276: \n00277: # 1. 必須変数\n00278: \n00279: # ============================================================\n00280: \n00281: required = [\n00282: \n00283:     \"trade_master_fix6\",\n00284: \n00285:     \"events_by_date\",\n00286: \n00287:     \"sim_dates\",\n00288: \n00289:     \"daily_stock\",\n00290: \n00291:     \"d1557_fix\",\n00292: \n00293:     \"open_map\",\n00294: \n00295:     \"close_map\",\n00296: \n00297:     \"quote_dates\",\n00298: \n00299:     \"START_DATE\",\n00300: \n00301:     \"END_DATE\",\n00302: \n00303: ]\n00304: \n00305: missing = [\n00306: \n00307:     x for x in required\n00308: \n00309:     if x not in globals()\n00310: \n00311: ]\n00312: \n00313: if missing:\n00314: \n00315:     raise RuntimeError(\n00316: \n00317:         \"必要な変数がありません:\\n\"\n00318: \n00319:         + \"\\n\".join(missing)\n00320: \n00321:         + \"\\n\\nFIX10までのセルを確認してください。\"\n00322: \n00323:     )\n00324: \n00325: # ============================================================\n00326: \n00327: # 2. Trade master\n00328: \n00329: # ============================================================"
+    }
+  ]
+}
