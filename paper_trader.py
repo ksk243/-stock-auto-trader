@@ -553,7 +553,6 @@ def check_official_engine():
     _fix17_google = _fix17_stub_root / "google"
     _fix17_colab = _fix17_google / "colab"
     _fix17_colab.mkdir(parents=True, exist_ok=True)
-    (_fix17_google / "__init__.py").touch()
     (_fix17_colab / "__init__.py").write_text("class _Auth:\n    @staticmethod\n    def authenticate_user(*args, **kwargs):\n        return None\nauth = _Auth()\n", encoding="utf-8")
     _fix17_old_pythonpath = _fix17_os.environ.get("PYTHONPATH", "")
     _fix17_stub_path = str(_fix17_stub_root)
