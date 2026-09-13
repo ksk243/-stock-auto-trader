@@ -2956,12 +2956,19 @@ def build_fix17_long_live_inputs():
 
 
 def generate_fix17_long_live_candidates():
+    """
+    Generate FIX17 LONG live candidates and return the
+    same payload shape expected by execute_fix17_candidate_batch().
 
-    (
-        minute_by_code,
-        feature_by_code,
-    ) = build_fix17_long_live_inputs()
+    Candidate logic itself is unchanged.
+    """
 
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    minute_by_code, feature_by_code = (
+        build_fix17_long_live_inputs()
+    )
 
     generator = (
         get_fix17_long_candidate_generator()
@@ -2969,7 +2976,7 @@ def generate_fix17_long_live_candidates():
 
     if generator is None:
         raise RuntimeError(
-            "FIX17 LONG generator missing"
+            "FIX17 LONG candidate generator missing"
         )
 
 
@@ -2980,17 +2987,35 @@ def generate_fix17_long_live_candidates():
 
 
     if candidates is None:
-        return []
+        candidates = []
 
 
-    if isinstance(
+    if not isinstance(
         candidates,
         list,
     ):
-        return candidates
+
+        try:
+            candidates = list(
+                candidates
+            )
+
+        except Exception:
+            raise RuntimeError(
+                "FIX17 LONG candidates must be list-compatible"
+            )
 
 
-    return list(candidates)
+    market_date = datetime.now(
+        ZoneInfo("Asia/Tokyo")
+    ).date().isoformat()
+
+
+    return {
+        "market_date": market_date,
+        "candidates": candidates,
+    }
+
 
 
 def execute_fix17_candidate_batch():
