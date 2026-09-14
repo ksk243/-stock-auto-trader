@@ -1,0 +1,3025 @@
+{
+  "schema_version": 1,
+  "source": "GitHub FIX17 frozen snapshot only",
+  "github_head": "1adcca2190ca8c5d7da6787697f95181d33f13f1",
+  "runtime_tag": "FIX17_RUNTIME",
+  "runtime_commit": "dfba056f1e8a86d7f6ee7b9507f16830d9dfaeda",
+  "runtime_commit_prefix_verified": true,
+  "frozen_root": "FIX17_FROZEN",
+  "recovery_root": "FIX17_RECOVERY",
+  "frozen_file_count": 102,
+  "recovery_file_count": 5,
+  "canonical_files": {
+    "paper_trader.py": [
+      "FIX17_FROZEN/paper_trader.py"
+    ],
+    "FIX17_OFFICIAL_FULL_SOURCE.py": [
+      "FIX17_FROZEN/FIX17_OFFICIAL_FULL_SOURCE.py"
+    ],
+    "FIX17_RUNTIME_RESOLVED_FUNCTIONS.py": [
+      "FIX17_FROZEN/FIX17_RUNTIME_RESOLVED_FUNCTIONS.py"
+    ],
+    "FIX17_RUNTIME_ALL_FUNCTIONS.py": [
+      "FIX17_FROZEN/FIX17_RUNTIME_ALL_FUNCTIONS.py"
+    ],
+    "FIX11_ENTRY_SOURCE_EXACT.py": [
+      "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py"
+    ]
+  },
+  "known_symbols": {
+    "execute_fix17_candidate_batch": [
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 3343,
+        "end_line": 3524
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_contract_gate.py",
+        "line": 2209,
+        "end_line": 2389
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_entry_contract.py",
+        "line": 2227,
+        "end_line": 2407
+      }
+    ],
+    "calculate_fix17_order": [
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 2021,
+        "end_line": 2270
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_contract_gate.py",
+        "line": 1813,
+        "end_line": 2037
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_entry_contract.py",
+        "line": 1831,
+        "end_line": 2055
+      }
+    ],
+    "apply_paper_fill": [
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 2278,
+        "end_line": 2404
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_contract_gate.py",
+        "line": 2045,
+        "end_line": 2171
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_entry_contract.py",
+        "line": 2063,
+        "end_line": 2189
+      }
+    ],
+    "get_fix17_position_state": [
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 2412,
+        "end_line": 2434
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_contract_gate.py",
+        "line": 2179,
+        "end_line": 2201
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_entry_contract.py",
+        "line": 2197,
+        "end_line": 2219
+      }
+    ],
+    "generate_fix17_live_candidates": [
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 3004,
+        "end_line": 3339
+      }
+    ],
+    "generate_fix17_long_live_candidates": [
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 2942,
+        "end_line": 3001
+      }
+    ],
+    "load_fix17_candidates": [
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 1299,
+        "end_line": 1365
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_contract_gate.py",
+        "line": 1421,
+        "end_line": 1487
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_entry_contract.py",
+        "line": 1439,
+        "end_line": 1505
+      }
+    ],
+    "estimate_margin_ratio_after_entry": [
+      {
+        "path": "FIX17_FROZEN/.github/workflows/fix11_paper_trader.py",
+        "line": 2115,
+        "end_line": 2215
+      }
+    ],
+    "execute_paper_entry": [
+      {
+        "path": "FIX17_FROZEN/.github/workflows/fix11_paper_trader.py",
+        "line": 2223,
+        "end_line": 2455
+      }
+    ],
+    "simulate_fix15": [
+      {
+        "path": "FIX17_FROZEN/FIX17_OFFICIAL_FULL_SOURCE.py",
+        "line": 1202,
+        "end_line": 1537
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_ALL_FUNCTIONS.py",
+        "line": 461,
+        "end_line": 796
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_EXTRACT.py",
+        "line": 441,
+        "end_line": 776
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RESOLVED_FUNCTIONS.py",
+        "line": 602,
+        "end_line": 937
+      }
+    ],
+    "simulate_profit_floor_trail": [
+      {
+        "path": "FIX17_FROZEN/FIX17_OFFICIAL_FULL_SOURCE.py",
+        "line": 330,
+        "end_line": 730
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_ALL_FUNCTIONS.py",
+        "line": 51,
+        "end_line": 451
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_EXTRACT.py",
+        "line": 34,
+        "end_line": 434
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RESOLVED_FUNCTIONS.py",
+        "line": 192,
+        "end_line": 592
+      }
+    ]
+  },
+  "runtime_tag_python_candidates": [
+    ".github/workflows/fix11_paper_trader.py",
+    "FIX11_ENTRY_SOURCE_EXACT.py",
+    "FIX17_ENTRY_BOOLEAN_SOURCE.py",
+    "FIX17_ENTRY_DATA_PROVENANCE_SOURCE.py",
+    "FIX17_ENTRY_RELEVANT_SOURCE.py",
+    "FIX17_ENTRY_RULES_SOURCE.py",
+    "FIX17_ENTRY_SOURCE_CONTEXT.py",
+    "FIX17_OFFICIAL_FULL_SOURCE.py",
+    "FIX17_RUNTIME_ALL_FUNCTIONS.py",
+    "FIX17_RUNTIME_EXTRACT.py",
+    "FIX17_RUNTIME_RESOLVED_FUNCTIONS.py",
+    "fix17_contract.py",
+    "fix17_long_candidate_bridge.py",
+    "paper_trader.py",
+    "paper_trader_before_contract_gate.py",
+    "paper_trader_before_entry_contract.py",
+    "paper_trader_v29_4.py"
+  ],
+  "recovery_references": [
+    {
+      "path": "FIX17_RECOVERY/FIX17_EXTERNAL_CODE_AUDIT.md",
+      "hits": [
+        {
+          "line": 5,
+          "text": "- `FIX17_OFFICIAL_FULL_SOURCE.py:42` `from googleapiclient.discovery import build`"
+        },
+        {
+          "line": 6,
+          "text": "- `FIX17_OFFICIAL_FULL_SOURCE.py:43` `from googleapiclient.http import MediaIoBaseDownload`"
+        },
+        {
+          "line": 7,
+          "text": "- `FIX17_OFFICIAL_FULL_SOURCE.py:79` `dl = MediaIoBaseDownload(`"
+        },
+        {
+          "line": 8,
+          "text": "- `FIX17_OFFICIAL_FULL_SOURCE.py:103` `FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\\n# FIX15 OFFICIAL STANDALONE\\n#\\n# Parent:\\n#   FIX14_OFFICIAL_FULL_SOURCE.py\\n#   File ID:\\n#       1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk\\n"
+        },
+        {
+          "line": 9,
+          "text": "- `FIX17_RUNTIME_ALL_FUNCTIONS.py:31` `dl = MediaIoBaseDownload(`"
+        },
+        {
+          "line": 10,
+          "text": "- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:23` `dl = MediaIoBaseDownload(`"
+        },
+        {
+          "line": 11,
+          "text": "- `FIX17_RUNTIME_RESOLVED_FUNCTIONS.py:965` `downloader = MediaIoBaseDownload(`"
+        },
+        {
+          "line": 13,
+          "text": "- `paper_trader.py:398` `ns = runpy.run_path(`"
+        },
+        {
+          "line": 14,
+          "text": "- `paper_trader.py:1013` `spec = importlib.util.spec_from_file_location(`"
+        },
+        {
+          "line": 15,
+          "text": "- `paper_trader.py:2542` `ns = runpy.run_path(`"
+        },
+        {
+          "line": 16,
+          "text": "- `paper_trader.py:3091` `ns = runpy.run_path(`"
+        },
+        {
+          "line": 17,
+          "text": "- `paper_trader.py:3845` `spec = importlib.util.spec_from_file_location(`"
+        }
+      ]
+    },
+    {
+      "path": "FIX17_RECOVERY/FIX17_FUNCTION_INDEX.md",
+      "hits": [
+        {
+          "line": 3,
+          "text": "Runtime commit: `dfba056f1e8a86d7f6ee7b9507f16830d9dfaeda`"
+        },
+        {
+          "line": 5,
+          "text": "- `.github/workflows/fix11_paper_trader.py:241` **now_jst()**"
+        },
+        {
+          "line": 6,
+          "text": "- `.github/workflows/fix11_paper_trader.py:245` **normalize_code()**"
+        },
+        {
+          "line": 7,
+          "text": "- `.github/workflows/fix11_paper_trader.py:259` **ticker_from_code()**"
+        },
+        {
+          "line": 8,
+          "text": "- `.github/workflows/fix11_paper_trader.py:263` **safe_float()**"
+        },
+        {
+          "line": 9,
+          "text": "- `.github/workflows/fix11_paper_trader.py:279` **load_csv_safe()**"
+        },
+        {
+          "line": 10,
+          "text": "- `.github/workflows/fix11_paper_trader.py:293` **save_json()**"
+        },
+        {
+          "line": 11,
+          "text": "- `.github/workflows/fix11_paper_trader.py:329` **load_universe()**"
+        },
+        {
+          "line": 12,
+          "text": "- `.github/workflows/fix11_paper_trader.py:479` **initial_state()**"
+        },
+        {
+          "line": 13,
+          "text": "- `.github/workflows/fix11_paper_trader.py:529` **load_state()**"
+        },
+        {
+          "line": 14,
+          "text": "- `.github/workflows/fix11_paper_trader.py:563` **normalize_yf_intraday()**"
+        },
+        {
+          "line": 15,
+          "text": "- `.github/workflows/fix11_paper_trader.py:761` **fetch_today_1m()**"
+        },
+        {
+          "line": 16,
+          "text": "- `.github/workflows/fix11_paper_trader.py:825` **save_raw_snapshot()**"
+        },
+        {
+          "line": 17,
+          "text": "- `.github/workflows/fix11_paper_trader.py:941` **fetch_daily_batch()**"
+        },
+        {
+          "line": 18,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1131` **build_daily_features()**"
+        },
+        {
+          "line": 19,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1333` **get_history_files_for_code()**"
+        },
+        {
+          "line": 20,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1383` **calc_rvol20()**"
+        },
+        {
+          "line": 21,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1547` **find_first_signal()**"
+        },
+        {
+          "line": 22,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1873` **attach_next_open()**"
+        },
+        {
+          "line": 23,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1933` **choose_candidate()**"
+        },
+        {
+          "line": 24,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2051` **calc_qty()**"
+        },
+        {
+          "line": 25,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2115` **estimate_margin_ratio_after_entry()**"
+        },
+        {
+          "line": 26,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2223` **execute_paper_entry()**"
+        },
+        {
+          "line": 27,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2463` **append_screen_rows()**"
+        },
+        {
+          "line": 28,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2499` **append_trade_row()**"
+        },
+        {
+          "line": 29,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2531` **write_result()**"
+        },
+        {
+          "line": 30,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2573` **main()**"
+        },
+        {
+          "line": 41,
+          "text": "- `FIX17_OFFICIAL_FULL_SOURCE.py:71` **_fix16_download_bytes()**"
+        },
+        {
+          "line": 42,
+          "text": "- `FIX17_OFFICIAL_FULL_SOURCE.py:330` **simulate_profit_floor_trail()**"
+        },
+        {
+          "line": 43,
+          "text": "- `FIX17_OFFICIAL_FULL_SOURCE.py:1202` **simulate_fix15()**"
+        }
+      ]
+    },
+    {
+      "path": "FIX17_RECOVERY/FIX17_RECOVERY_MANIFEST.json",
+      "hits": [
+        {
+          "line": 4,
+          "text": "\"known_good_commit\": \"dfba056f1e8a86d7f6ee7b9507f16830d9dfaeda\","
+        },
+        {
+          "line": 5,
+          "text": "\"runtime_tag\": \"FIX17_RUNTIME\","
+        },
+        {
+          "line": 7,
+          "text": "\"file\": \"FIX17_OFFICIAL_FULL_SOURCE.py\","
+        },
+        {
+          "line": 17,
+          "text": "\".github/workflows/fix11_paper_trader.py\","
+        },
+        {
+          "line": 20,
+          "text": "\"FIX17_OFFICIAL_FULL_SOURCE.py\","
+        },
+        {
+          "line": 21,
+          "text": "\"FIX17_RUNTIME_ALL_FUNCTIONS.py\","
+        },
+        {
+          "line": 22,
+          "text": "\"FIX17_RUNTIME_EXTRACT.py\","
+        },
+        {
+          "line": 23,
+          "text": "\"FIX17_RUNTIME_RESOLVED_FUNCTIONS.py\","
+        },
+        {
+          "line": 28,
+          "text": "\"paper_trader.py\","
+        },
+        {
+          "line": 48,
+          "text": "\".github/workflows/fix11_paper_trader.py\","
+        },
+        {
+          "line": 49,
+          "text": "\"FIX17_OFFICIAL_FULL_SOURCE.py\","
+        },
+        {
+          "line": 54,
+          "text": "\"paper_trader.py\","
+        },
+        {
+          "line": 62,
+          "text": "\"file\": \"FIX17_OFFICIAL_FULL_SOURCE.py\","
+        },
+        {
+          "line": 67,
+          "text": "\"file\": \"FIX17_OFFICIAL_FULL_SOURCE.py\","
+        },
+        {
+          "line": 72,
+          "text": "\"file\": \"FIX17_OFFICIAL_FULL_SOURCE.py\","
+        },
+        {
+          "line": 77,
+          "text": "\"file\": \"FIX17_OFFICIAL_FULL_SOURCE.py\","
+        },
+        {
+          "line": 79,
+          "text": "\"text\": \"FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\\\\n# FIX15 OFFICIAL STANDALONE\\\\n#\\\\n# Parent:\\\\n#   FIX14_OFFICIAL_FULL_SOURCE.py\\\\n#   File ID:\\\\n#       1mBLtCf39ar4I60GuKLS_HWAbVUYhbgmk\\\\n#\\\\n# FIX15 addition:\\\\"
+        },
+        {
+          "line": 82,
+          "text": "\"file\": \"FIX17_RUNTIME_ALL_FUNCTIONS.py\","
+        },
+        {
+          "line": 87,
+          "text": "\"file\": \"FIX17_RUNTIME_RESOLVED_FUNCTIONS.py\","
+        },
+        {
+          "line": 92,
+          "text": "\"file\": \"FIX17_RUNTIME_RESOLVED_FUNCTIONS.py\","
+        },
+        {
+          "line": 102,
+          "text": "\"file\": \"paper_trader.py\","
+        },
+        {
+          "line": 107,
+          "text": "\"file\": \"paper_trader.py\","
+        },
+        {
+          "line": 112,
+          "text": "\"file\": \"paper_trader.py\","
+        },
+        {
+          "line": 117,
+          "text": "\"file\": \"paper_trader.py\","
+        },
+        {
+          "line": 122,
+          "text": "\"file\": \"paper_trader.py\","
+        },
+        {
+          "line": 150,
+          "text": "\"path\": \".github/workflows/fix11_paper_trader.py\","
+        },
+        {
+          "line": 440,
+          "text": "\"path\": \"FIX17_OFFICIAL_FULL_SOURCE.py\","
+        },
+        {
+          "line": 455,
+          "text": "\"path\": \"FIX17_RUNTIME_ALL_FUNCTIONS.py\","
+        },
+        {
+          "line": 460,
+          "text": "\"path\": \"FIX17_RUNTIME_EXEC_RESOLUTION.txt\","
+        },
+        {
+          "line": 465,
+          "text": "\"path\": \"FIX17_RUNTIME_EXTRACT.py\","
+        }
+      ]
+    },
+    {
+      "path": "FIX17_RECOVERY/FIX17_RESTORE_GUIDE.md",
+      "hits": [
+        {
+          "line": 1,
+          "text": "# FIX17 RESTORE GUIDE"
+        },
+        {
+          "line": 6,
+          "text": "FIX17_RUNTIME"
+        },
+        {
+          "line": 9,
+          "text": "dfba056f1e8a86d7f6ee7b9507f16830d9dfaeda"
+        },
+        {
+          "line": 17,
+          "text": "git checkout FIX17_RUNTIME"
+        }
+      ]
+    },
+    {
+      "path": "FIX17_RECOVERY/FIX17_RULE_INDEX.md",
+      "hits": [
+        {
+          "line": 3,
+          "text": "Known-good runtime commit: `dfba056f1e8a86d7f6ee7b9507f16830d9dfaeda`"
+        },
+        {
+          "line": 11,
+          "text": "- `.github/workflows/fix11_paper_trader.py:29` `#   RS20 >= 80`"
+        },
+        {
+          "line": 12,
+          "text": "- `.github/workflows/fix11_paper_trader.py:43` `#   RS20 <= 20`"
+        },
+        {
+          "line": 13,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1277` `f[\"RS20\"] = np.nan`"
+        },
+        {
+          "line": 14,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1287` `valid[\"RS20\"] = (`"
+        },
+        {
+          "line": 15,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1313` `\"RS20\",`"
+        },
+        {
+          "line": 16,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1609` `rs20 = safe_float(`"
+        },
+        {
+          "line": 17,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1611` `feature.get(\"RS20\")`"
+        },
+        {
+          "line": 18,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1625` `if not np.isfinite(rs20):`"
+        },
+        {
+          "line": 19,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1725` `rs20 >= RS_LONG_MIN`"
+        },
+        {
+          "line": 20,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1763` `\"RS20\":`"
+        },
+        {
+          "line": 21,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1765` `rs20,`"
+        },
+        {
+          "line": 22,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1807` `rs20 <= RS_SHORT_MAX`"
+        },
+        {
+          "line": 23,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1845` `\"RS20\":`"
+        },
+        {
+          "line": 24,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1847` `rs20,`"
+        },
+        {
+          "line": 25,
+          "text": "- `.github/workflows/fix11_paper_trader.py:1985` `\"RS20\",`"
+        },
+        {
+          "line": 26,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2017` `\"RS20\",`"
+        },
+        {
+          "line": 27,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2379` `\"RS20\":`"
+        },
+        {
+          "line": 28,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2381` `candidate[\"RS20\"],`"
+        },
+        {
+          "line": 29,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2749` `\"RS20\":`"
+        },
+        {
+          "line": 30,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2753` `\"RS20\"`"
+        },
+        {
+          "line": 31,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2867` `\"RS20\":`"
+        },
+        {
+          "line": 32,
+          "text": "- `.github/workflows/fix11_paper_trader.py:2871` `\"RS20\"`"
+        },
+        {
+          "line": 37,
+          "text": "- `paper_trader.py:1544` `'RS20_corrected',`"
+        },
+        {
+          "line": 38,
+          "text": "- `paper_trader.py:1587` `rs20 = float(`"
+        },
+        {
+          "line": 39,
+          "text": "- `paper_trader.py:1589` `\"RS20_corrected\"`"
+        },
+        {
+          "line": 40,
+          "text": "- `paper_trader.py:1616` `\"RS20_corrected\":`"
+        },
+        {
+          "line": 41,
+          "text": "- `paper_trader.py:1617` `rs20,`"
+        },
+        {
+          "line": 42,
+          "text": "- `paper_trader.py:1695` `if rs20 < 80.0:`"
+        },
+        {
+          "line": 43,
+          "text": "- `paper_trader.py:1699` `f\"RS20_corrected={rs20} < 80\"`"
+        }
+      ]
+    }
+  ],
+  "search_summary": {
+    "FIX17_RUNTIME": [
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 65,
+        "text": "\"context\": \"01092: \\n01093: #\\n01094: \\n01095: # candidate生成は別データ層から行う。\\n01096: \\n01097: # ここでは正式FIX17 sizing / margin / state logicのみ使用。\\n01098: \\n01099: # ============================================================\\n01100: \\n01101: impor"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 69,
+        "text": "\"context\": \"01096: \\n01097: # ここでは正式FIX17 sizing / margin / state logicのみ使用。\\n01098: \\n01099: # ============================================================\\n01100: \\n01101: import importlib.util\\n01102: \\n01103: import math\\n01104: \\n01105"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 97,
+        "text": "\"context\": \"02226: \\n02227: def execute_fix17_candidate_batch():\\n02228: \\n02229:     state = ensure_paper_state()\\n02230: \\n02231:     payload = load_fix17_candidates()\\n02232: \\n02233:     market_date = payload.get(\\n02234: \\n02235:      "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 855,
+        "text": "01141: def load_fix17_runtime_module():"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 913,
+        "text": "01141: def load_fix17_runtime_module():"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 1351,
+        "text": "02275:     runtime = load_fix17_runtime_module()"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 134,
+        "text": "\"name\": \"load_fix17_runtime_module\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 355,
+        "text": "\"text\": \"def load_fix17_runtime_module():\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 483,
+        "text": "\"text\": \"runtime = load_fix17_runtime_module()\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.txt",
+        "line": 43,
+        "text": "L01141 load_fix17_runtime_module()"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 161,
+        "text": "\"label\": \"FIX17_RUNTIME_RESOLVED_SOURCES.json\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 162,
+        "text": "\"origin\": \"FIX17_RUNTIME_RESOLVED_SOURCES.json\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 177,
+        "text": "\"label\": \"FIX17_RUNTIME_RESOLVED_SOURCES.json[1].source\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 178,
+        "text": "\"origin\": \"FIX17_RUNTIME_RESOLVED_SOURCES.json\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 193,
+        "text": "\"label\": \"FIX17_RUNTIME_RESOLVED_SOURCES.json[2].source\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 194,
+        "text": "\"origin\": \"FIX17_RUNTIME_RESOLVED_SOURCES.json\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 209,
+        "text": "\"label\": \"FIX17_RUNTIME_RESOLVED_SOURCES.json[2].source\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 210,
+        "text": "\"origin\": \"FIX17_RUNTIME_RESOLVED_SOURCES.json\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 225,
+        "text": "\"label\": \"FIX17_RUNTIME_RESOLVED_SOURCES.json[2].source\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 226,
+        "text": "\"origin\": \"FIX17_RUNTIME_RESOLVED_SOURCES.json\","
+      }
+    ],
+    "dfba056": [
+      {
+        "path": "FIX17_RECOVERY/FIX17_FUNCTION_INDEX.md",
+        "line": 3,
+        "text": "Runtime commit: `dfba056f1e8a86d7f6ee7b9507f16830d9dfaeda`"
+      },
+      {
+        "path": "FIX17_RECOVERY/FIX17_RECOVERY_MANIFEST.json",
+        "line": 4,
+        "text": "\"known_good_commit\": \"dfba056f1e8a86d7f6ee7b9507f16830d9dfaeda\","
+      },
+      {
+        "path": "FIX17_RECOVERY/FIX17_RESTORE_GUIDE.md",
+        "line": 9,
+        "text": "dfba056f1e8a86d7f6ee7b9507f16830d9dfaeda"
+      },
+      {
+        "path": "FIX17_RECOVERY/FIX17_RULE_INDEX.md",
+        "line": 3,
+        "text": "Known-good runtime commit: `dfba056f1e8a86d7f6ee7b9507f16830d9dfaeda`"
+      }
+    ],
+    "restore": [
+      {
+        "path": "FIX17_FROZEN/.github/workflows/fix17_paper_trader_auto.yml",
+        "line": 58,
+        "text": "- name: Restore FIX17 Paper State"
+      },
+      {
+        "path": "FIX17_FROZEN/.github/workflows/fix17_paper_trader_auto.yml",
+        "line": 60,
+        "text": "run: python paper_state_store.py restore"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 56,
+        "text": "\"restore\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 837,
+        "text": "\"restore\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 961,
+        "text": "\"restore\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 1038,
+        "text": "\"restore\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 1088,
+        "text": "\"restore\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 29,
+        "text": "\"text\": \"FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\\\\n# FIX15 OFFICIAL STANDALONE\\\\n#\\\\n# Parent:\\\\n#   FIX14_OFFICIAL_FULL_SOURCE.py\\\\n#   File ID:\\\\n#      "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 173,
+        "text": "\"text\": \"[\\n  {\\n    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ====================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 461,
+        "text": "\"text\": \"FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\\\\n# FIX15 OFFICIAL STANDALONE\\\\n#\\\\n# Parent:\\\\n#   FIX14_OFFICIAL_FULL_SOURCE.py\\\\n#   File ID:\\\\n#      "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 909,
+        "text": "\"text\": \"[\\n  {\\n    \\\"layer_name\\\": \\\"FIX17_ROOT\\\",\\n    \\\"parent_name\\\": null,\\n    \\\"variable_name\\\": null,\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# =="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1220,
+        "text": "\"text\": \"[\\n  {\\n    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ====================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1233,
+        "text": "\"text\": \"[\\n  {\\n    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ====================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1246,
+        "text": "\"text\": \"    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ============================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1259,
+        "text": "\"text\": \"    \\\"label\\\": \\\"FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE\\\",\\n    \\\"origin\\\": \\\"FIX17_ROOT:L103\\\",\\n    \\\"depth\\\": 1,\\n    \\\"sha256\\\": \\\"2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b\\\",\\n    \\\"source\\\": \\\"# ====="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1272,
+        "text": "\"text\": \"    \\\"label\\\": \\\"DRIVE::FIX11_RECOVERY_ID::1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n\\\",\\n    \\\"origin\\\": \\\"Drive ID 1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n name=FIX11_RESEARCH_MASTER_ONE_CELL_RECOVERY_LOADER.py\\\",\\n    \\\"depth\\\": 1,\\n    \\\"sha25"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1441,
+        "text": "\"text\": \"[\\n  {\\n    \\\"layer_name\\\": \\\"FIX17_ROOT\\\",\\n    \\\"parent_name\\\": null,\\n    \\\"variable_name\\\": null,\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# =="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1467,
+        "text": "\"text\": \"\\n    while not done:\\n        _, done = dl.next_chunk()\\n\\n    return buf.getvalue()\\n\\n\\n# ============================================================\\n# 1. RESTORE EXACT OFFICIAL FIX15\\n# ======================================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1480,
+        "text": "\"text\": \"\\nFIX16_EMBEDDED_PARENT_SHA256 = '2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b'\\n\\nFIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\\\\n#"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1493,
+        "text": "\"text\": \"\\n    while not done:\\n        _, done = dl.next_chunk()\\n\\n    return buf.getvalue()\\n\\n\\n# ============================================================\\n# 1. RESTORE EXACT OFFICIAL FIX15\\n# ======================================="
+      }
+    ],
+    "runtime": [
+      {
+        "path": "FIX17_FROZEN/.github/workflows/fix11_paper_trader.py",
+        "line": 447,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/.github/workflows/fix11_paper_trader.py",
+        "line": 2637,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/.gitignore",
+        "line": 11,
+        "text": "runtime/*"
+      },
+      {
+        "path": "FIX17_FROZEN/.gitignore",
+        "line": 12,
+        "text": "!runtime/.gitkeep"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 315,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 363,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 373,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 381,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 389,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 473,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 483,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 573,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 677,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 695,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 831,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 2851,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 2935,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 3185,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 3255,
+        "text": "raise RuntimeError("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 3907,
+        "text": "raise RuntimeError("
+      }
+    ],
+    "official": [
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 47,
+        "text": "\"source\": \"def apply_paper_fill(\\n\\n    state,\\n\\n    order,\\n\\n    market_date,\\n\\n):\\n\\n    if order.get(\\n\\n        \\\"status\\\"\\n\\n    ) != \\\"ORDER\\\":\\n\\n        return None\\n\\n    c = order[\\n\\n        \\\"candidate\\\"\\n\\n    ]\\n\\n    qty ="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 53,
+        "text": "\"context\": \"01048: \\n01049: # ============================================================\\n01050: \\n01051: # FIX17 OFFICIAL LIVE EXECUTION LAYER\\n01052: \\n01053: # ============================================================\\n01054: \\n0105"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 65,
+        "text": "\"context\": \"01092: \\n01093: #\\n01094: \\n01095: # candidate生成は別データ層から行う。\\n01096: \\n01097: # ここでは正式FIX17 sizing / margin / state logicのみ使用。\\n01098: \\n01099: # ============================================================\\n01100: \\n01101: impor"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 69,
+        "text": "\"context\": \"01096: \\n01097: # ここでは正式FIX17 sizing / margin / state logicのみ使用。\\n01098: \\n01099: # ============================================================\\n01100: \\n01101: import importlib.util\\n01102: \\n01103: import math\\n01104: \\n01105"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 592,
+        "text": "\"source\": \"FIX17_OFFICIAL_PIPELINE\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 623,
+        "text": "01051: # FIX17 OFFICIAL LIVE EXECUTION LAYER"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 839,
+        "text": "01125: # OFFICIAL RUNTIME LOADER"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 857,
+        "text": "01143:     verify_official_source()"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 861,
+        "text": "01147:         \"_fix17_official_runtime_\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 897,
+        "text": "01125: # OFFICIAL RUNTIME LOADER"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 915,
+        "text": "01143:     verify_official_source()"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 919,
+        "text": "01147:         \"_fix17_official_runtime_\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 109,
+        "text": "\"name\": \"verify_official_source\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 114,
+        "text": "\"name\": \"check_official_engine\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 351,
+        "text": "\"text\": \"# OFFICIAL RUNTIME LOADER\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 359,
+        "text": "\"text\": \"\\\"_fix17_official_runtime_\\\"\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 1130,
+        "text": "\": error_text,\\n                }\\n            )\\n\\n        except Exception:\\n\\n            pass\\n\\n\\n        send_error_mail(\\n            type(\\n                e\\n            ).__name__,\\n            error_text,\\n        )\\n\\n\\n        "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.txt",
+        "line": 38,
+        "text": "L00317 verify_official_source()"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.txt",
+        "line": 39,
+        "text": "L00545 check_official_engine()"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.txt",
+        "line": 133,
+        "text": "# FIX17 OFFICIAL LIVE EXECUTION LAYER"
+      }
+    ],
+    "execute_fix17_candidate_batch": [
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 97,
+        "text": "\"context\": \"02226: \\n02227: def execute_fix17_candidate_batch():\\n02228: \\n02229:     state = ensure_paper_state()\\n02230: \\n02231:     payload = load_fix17_candidates()\\n02232: \\n02233:     market_date = payload.get(\\n02234: \\n02235:      "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 1303,
+        "text": "02227: def execute_fix17_candidate_batch():"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 238,
+        "text": "\"name\": \"execute_fix17_candidate_batch\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.txt",
+        "line": 57,
+        "text": "L02470 execute_fix17_candidate_batch()"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 179,
+        "text": "\"name\": \"execute_fix17_candidate_batch\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 527,
+        "text": "\"text\": \"def execute_fix17_candidate_batch():\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 767,
+        "text": "\"text\": \"def execute_fix17_candidate_batch():\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1751,
+        "text": "\"name\": \"execute_fix17_candidate_batch\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1754,
+        "text": "\"context\": \"02208: \\n02209: def execute_fix17_candidate_batch():\\n02210: \\n02211:     state = ensure_paper_state()\\n02212: \\n02213:     payload = load_fix17_candidates()\\n02214: \\n02215:     market_date = payload.get(\\n02216: \\n02217:      "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 34,
+        "text": "L02209 execute_fix17_candidate_batch()"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 116,
+        "text": "L2209: def execute_fix17_candidate_batch():"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 180,
+        "text": "L2209: def execute_fix17_candidate_batch():"
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 2945,
+        "text": "same payload shape expected by execute_fix17_candidate_batch()."
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 3343,
+        "text": "def execute_fix17_candidate_batch():"
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 3767,
+        "text": "execute_fix17_candidate_batch()"
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_contract_gate.py",
+        "line": 2209,
+        "text": "def execute_fix17_candidate_batch():"
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_entry_contract.py",
+        "line": 2227,
+        "text": "def execute_fix17_candidate_batch():"
+      },
+      {
+        "path": "FIX17_RECOVERY/FIX17_FUNCTION_INDEX.md",
+        "line": 127,
+        "text": "- `paper_trader.py:3343` **execute_fix17_candidate_batch()**"
+      },
+      {
+        "path": "FIX17_RECOVERY/FIX17_FUNCTION_INDEX.md",
+        "line": 156,
+        "text": "- `paper_trader_before_contract_gate.py:2209` **execute_fix17_candidate_batch()**"
+      },
+      {
+        "path": "FIX17_RECOVERY/FIX17_FUNCTION_INDEX.md",
+        "line": 181,
+        "text": "- `paper_trader_before_entry_contract.py:2227` **execute_fix17_candidate_batch()**"
+      }
+    ],
+    "calculate_fix17_order": [
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 13,
+        "text": "\"calculate_fix17_order\": ["
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 39,
+        "text": "\"calculate_fix17_order\": {"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 42,
+        "text": "\"source\": \"def calculate_fix17_order(\\n\\n    runtime,\\n\\n    candidate,\\n\\n    state,\\n\\n):\\n\\n    candidate = validate_candidate(\\n\\n        candidate\\n\\n    )\\n\\n    code = candidate[\\n\\n        \\\"code\\\"\\n\\n    ]\\n\\n    side = candidate[\\"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 16,
+        "text": "calculate_fix17_order"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 262,
+        "text": "calculate_fix17_order L1831-L2055"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 263,
+        "text": "def calculate_fix17_order("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 211,
+        "text": "\"name\": \"calculate_fix17_order\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.txt",
+        "line": 54,
+        "text": "L02043 calculate_fix17_order(runtime, candidate, state)"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 152,
+        "text": "\"name\": \"calculate_fix17_order\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 503,
+        "text": "\"text\": \"def calculate_fix17_order(\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 547,
+        "text": "\"text\": \"order = calculate_fix17_order(\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1262,
+        "text": "\"text\": \"def calculate_fix17_order(\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1298,
+        "text": "\"text\": \"order = calculate_fix17_order(\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1721,
+        "text": "\"name\": \"calculate_fix17_order\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1728,
+        "text": "\"context\": \"01812: \\n01813: def calculate_fix17_order(\\n01814: \\n01815:     runtime,\\n01816: \\n01817:     candidate,\\n01818: \\n01819:     state,\\n01820: \\n01821: ):\\n01822: \\n01823:     candidate = validate_candidate(\\n01824: \\n01825:      "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 31,
+        "text": "L01813 calculate_fix17_order(runtime, candidate, state)"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 110,
+        "text": "L1813: def calculate_fix17_order("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 121,
+        "text": "L2285: order = calculate_fix17_order("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 315,
+        "text": "L1813: def calculate_fix17_order("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 324,
+        "text": "L2285: order = calculate_fix17_order("
+      }
+    ],
+    "apply_paper_fill": [
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 20,
+        "text": "\"apply_paper_fill\": ["
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 44,
+        "text": "\"apply_paper_fill\": {"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 47,
+        "text": "\"source\": \"def apply_paper_fill(\\n\\n    state,\\n\\n    order,\\n\\n    market_date,\\n\\n):\\n\\n    if order.get(\\n\\n        \\\"status\\\"\\n\\n    ) != \\\"ORDER\\\":\\n\\n        return None\\n\\n    c = order[\\n\\n        \\\"candidate\\\"\\n\\n    ]\\n\\n    qty ="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 23,
+        "text": "apply_paper_fill"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 489,
+        "text": "apply_paper_fill L2063-L2189"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 490,
+        "text": "def apply_paper_fill("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 220,
+        "text": "\"name\": \"apply_paper_fill\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.txt",
+        "line": 55,
+        "text": "L02306 apply_paper_fill(state, order, market_date)"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 161,
+        "text": "\"name\": \"apply_paper_fill\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1216,
+        "text": "\"text\": \"def apply_paper_fill(\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1228,
+        "text": "\"text\": \"fill = apply_paper_fill(\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1731,
+        "text": "\"name\": \"apply_paper_fill\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1738,
+        "text": "\"context\": \"02044: \\n02045: def apply_paper_fill(\\n02046: \\n02047:     state,\\n02048: \\n02049:     order,\\n02050: \\n02051:     market_date,\\n02052: \\n02053: ):\\n02054: \\n02055:     if order.get(\\n02056: \\n02057:         \\\"status\\\"\\n02058: \\"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 32,
+        "text": "L02045 apply_paper_fill(state, order, market_date)"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 303,
+        "text": "L2045: def apply_paper_fill("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 306,
+        "text": "L2309: fill = apply_paper_fill("
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 2278,
+        "text": "def apply_paper_fill("
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 3444,
+        "text": "fill = apply_paper_fill("
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_contract_gate.py",
+        "line": 2045,
+        "text": "def apply_paper_fill("
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_contract_gate.py",
+        "line": 2309,
+        "text": "fill = apply_paper_fill("
+      }
+    ],
+    "get_fix17_position_state": [
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+        "line": 97,
+        "text": "\"context\": \"02226: \\n02227: def execute_fix17_candidate_batch():\\n02228: \\n02229:     state = ensure_paper_state()\\n02230: \\n02231:     payload = load_fix17_candidates()\\n02232: \\n02233:     market_date = payload.get(\\n02234: \\n02235:      "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+        "line": 1361,
+        "text": "02285:         get_fix17_position_state("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+        "line": 229,
+        "text": "\"name\": \"get_fix17_position_state\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.txt",
+        "line": 56,
+        "text": "L02440 get_fix17_position_state(runtime, state, market_date)"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 170,
+        "text": "\"name\": \"get_fix17_position_state\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 523,
+        "text": "\"text\": \"def get_fix17_position_state(\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 543,
+        "text": "\"text\": \"get_fix17_position_state(\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 927,
+        "text": "\"text\": \"def get_fix17_position_state(\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 947,
+        "text": "\"text\": \"get_fix17_position_state(\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1741,
+        "text": "\"name\": \"get_fix17_position_state\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+        "line": 1748,
+        "text": "\"context\": \"02178: \\n02179: def get_fix17_position_state(\\n02180: \\n02181:     runtime,\\n02182: \\n02183:     state,\\n02184: \\n02185:     market_date,\\n02186: \\n02187: ):\\n02188: \\n02189:     broker_active = active_positions(\\n02190: \\n02191"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 33,
+        "text": "L02179 get_fix17_position_state(runtime, state, market_date)"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 115,
+        "text": "L2179: def get_fix17_position_state("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 120,
+        "text": "L2267: get_fix17_position_state("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 227,
+        "text": "L2179: def get_fix17_position_state("
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+        "line": 232,
+        "text": "L2267: get_fix17_position_state("
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 2412,
+        "text": "def get_fix17_position_state("
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader.py",
+        "line": 3402,
+        "text": "get_fix17_position_state("
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_contract_gate.py",
+        "line": 2179,
+        "text": "def get_fix17_position_state("
+      },
+      {
+        "path": "FIX17_FROZEN/paper_trader_before_contract_gate.py",
+        "line": 2267,
+        "text": "get_fix17_position_state("
+      }
+    ],
+    "simulate_fix15": [
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 29,
+        "text": "\"text\": \"FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\\\\n# FIX15 OFFICIAL STANDALONE\\\\n#\\\\n# Parent:\\\\n#   FIX14_OFFICIAL_FULL_SOURCE.py\\\\n#   File ID:\\\\n#      "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 54,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 70,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 86,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 102,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 118,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 134,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 150,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 173,
+        "text": "\"text\": \"[\\n  {\\n    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ====================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 461,
+        "text": "\"text\": \"FIX16_EMBEDDED_PARENT_SOURCE = '# ==========================================================================================\\\\n# FIX15 OFFICIAL STANDALONE\\\\n#\\\\n# Parent:\\\\n#   FIX14_OFFICIAL_FULL_SOURCE.py\\\\n#   File ID:\\\\n#      "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 502,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 566,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 614,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 646,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 662,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 678,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 694,
+        "text": "\"function\": \"simulate_fix15\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 765,
+        "text": "\"text\": \"{\\n  \\\"_fix16_download_bytes\\\": {\\n    \\\"signature\\\": \\\"(file_id)\\\",\\n    \\\"source_file\\\": \\\"/content/-stock-auto-trader/FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n    \\\"source_line\\\": 71,\\n    \\\"source\\\": \\\"def _fix16_download_bytes(file_i"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 769,
+        "text": "\"label\": \"FIX17_LIVE_FUNCTION_SOURCES.json.simulate_fix15.source\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 774,
+        "text": "\"function\": \"simulate_fix15\","
+      }
+    ],
+    "simulate_profit_floor_trail": [
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 38,
+        "text": "\"function\": \"simulate_profit_floor_trail\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 173,
+        "text": "\"text\": \"[\\n  {\\n    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ====================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 470,
+        "text": "\"function\": \"simulate_profit_floor_trail\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 486,
+        "text": "\"function\": \"simulate_profit_floor_trail\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 765,
+        "text": "\"text\": \"{\\n  \\\"_fix16_download_bytes\\\": {\\n    \\\"signature\\\": \\\"(file_id)\\\",\\n    \\\"source_file\\\": \\\"/content/-stock-auto-trader/FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n    \\\"source_line\\\": 71,\\n    \\\"source\\\": \\\"def _fix16_download_bytes(file_i"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 881,
+        "text": "\"label\": \"FIX17_LIVE_FUNCTION_SOURCES.json.simulate_profit_floor_trail.source\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 886,
+        "text": "\"function\": \"simulate_profit_floor_trail\","
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 909,
+        "text": "\"text\": \"[\\n  {\\n    \\\"layer_name\\\": \\\"FIX17_ROOT\\\",\\n    \\\"parent_name\\\": null,\\n    \\\"variable_name\\\": null,\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# =="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 934,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1220,
+        "text": "\"text\": \"[\\n  {\\n    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ====================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1233,
+        "text": "\"text\": \"[\\n  {\\n    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ====================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1246,
+        "text": "\"text\": \"    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ============================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1259,
+        "text": "\"text\": \"    \\\"label\\\": \\\"FIX17_ROOT::FIX16_EMBEDDED_PARENT_SOURCE\\\",\\n    \\\"origin\\\": \\\"FIX17_ROOT:L103\\\",\\n    \\\"depth\\\": 1,\\n    \\\"sha256\\\": \\\"2a8ccfc90e1b47c20c9b2c6dd23281debf49f11f92677161e45233e23887ce2b\\\",\\n    \\\"source\\\": \\\"# ====="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1272,
+        "text": "\"text\": \"    \\\"label\\\": \\\"DRIVE::FIX11_RECOVERY_ID::1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n\\\",\\n    \\\"origin\\\": \\\"Drive ID 1srmgAZnbOkYEfj0aQ3QuNUwxz4cBuL6n name=FIX11_RESEARCH_MASTER_ONE_CELL_RECOVERY_LOADER.py\\\",\\n    \\\"depth\\\": 1,\\n    \\\"sha25"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1389,
+        "text": "\"text\": \"    \\\"source\\\": null\\n  },\\n  \\\"fix15_ensure_tax_year\\\": {\\n    \\\"signature\\\": \\\"(year)\\\",\\n    \\\"source_file\\\": null,\\n    \\\"source_line\\\": null,\\n    \\\"source\\\": null\\n  },\\n  \\\"fix15_apply_tax\\\": {\\n    \\\"signature\\\": \\\"(dt, tax"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1402,
+        "text": "\"text\": \"    \\\"source\\\": null\\n  },\\n  \\\"fix15_apply_tax\\\": {\\n    \\\"signature\\\": \\\"(dt, taxable_pnl, source, detail='')\\\",\\n    \\\"source_file\\\": null,\\n    \\\"source_line\\\": null,\\n    \\\"source\\\": null\\n  },\\n  \\\"simulate_fix15\\\": {\\n    \\\""
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1441,
+        "text": "\"text\": \"[\\n  {\\n    \\\"layer_name\\\": \\\"FIX17_ROOT\\\",\\n    \\\"parent_name\\\": null,\\n    \\\"variable_name\\\": null,\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# =="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1533,
+        "text": "\"text\": \"        \\\"o\\\",\\n        \\\"h\\\",\\n        \\\"l\\\",\\n    ]:\\n\\n        _arr[_k] = _arr[_k][\\n            _order\\n        ]\\n\\n\\n_missing_codes = sorted(\\n    _candidate_codes\\n    -\\n    set(minute_np15.keys())\\n)\\n\\nif _missing_codes:\\"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1624,
+        "text": "\"text\": \"        \\\"o\\\",\\n        \\\"h\\\",\\n        \\\"l\\\",\\n    ]:\\n\\n        _arr[_k] = _arr[_k][\\n            _order\\n        ]\\n\\n\\n_missing_codes = sorted(\\n    _candidate_codes\\n    -\\n    set(minute_np15.keys())\\n)\\n\\nif _missing_codes:\\"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_SOURCE.py",
+        "line": 342,
+        "text": "\"source\": \"# ============================================================\\n# FIX16 OFFICIAL FULL SOURCE\\n# SELF-CONTAINED CANDIDATE\\n#\\n# Parent FIX15 source:\\n#   exact SHA-verified official source embedded internally.\\n#\\n# Runtime FIX15 "
+      }
+    ],
+    "OPEN_BELOW_STOP": [
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 934,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 33,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 49,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 65,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 81,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 97,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 113,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 136,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 152,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 168,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.json",
+        "line": 1969,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.txt",
+        "line": 301,
+        "text": "{ \"version\": \"FIX17\", \"official_file\": \"FIX17_OFFICIAL_FULL_SOURCE.py\", \"official_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\", \"verified_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec722"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_FULL_INVENTORY.json",
+        "line": 370,
+        "text": "\"OPEN_BELOW_STOP\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULES.json",
+        "line": 48,
+        "text": "\"OPEN_BELOW_STOP\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULE_CONTEXTS.txt",
+        "line": 504,
+        "text": "PATTERN: OPEN_BELOW_STOP"
+      }
+    ],
+    "OPEN_BELOW_TRAIL": [
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 934,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 33,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 49,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 65,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 81,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 97,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 113,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 136,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 152,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 168,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.json",
+        "line": 1969,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.txt",
+        "line": 301,
+        "text": "{ \"version\": \"FIX17\", \"official_file\": \"FIX17_OFFICIAL_FULL_SOURCE.py\", \"official_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\", \"verified_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec722"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_FULL_INVENTORY.json",
+        "line": 371,
+        "text": "\"OPEN_BELOW_TRAIL\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULES.json",
+        "line": 49,
+        "text": "\"OPEN_BELOW_TRAIL\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULE_CONTEXTS.txt",
+        "line": 509,
+        "text": "PATTERN: OPEN_BELOW_TRAIL"
+      }
+    ],
+    "OPEN_ABOVE_TP": [
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 934,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 33,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 49,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 65,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 81,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 97,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 113,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 136,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 152,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 168,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.json",
+        "line": 1969,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.txt",
+        "line": 301,
+        "text": "{ \"version\": \"FIX17\", \"official_file\": \"FIX17_OFFICIAL_FULL_SOURCE.py\", \"official_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\", \"verified_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec722"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_FULL_INVENTORY.json",
+        "line": 372,
+        "text": "\"OPEN_ABOVE_TP\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULES.json",
+        "line": 50,
+        "text": "\"OPEN_ABOVE_TP\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULE_CONTEXTS.txt",
+        "line": 514,
+        "text": "PATTERN: OPEN_ABOVE_TP"
+      }
+    ],
+    "SL_BOTH": [],
+    "FixedStopPrice": [
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 934,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 33,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 49,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 65,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 81,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 97,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 113,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 136,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 152,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 168,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.json",
+        "line": 1969,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.txt",
+        "line": 301,
+        "text": "{ \"version\": \"FIX17\", \"official_file\": \"FIX17_OFFICIAL_FULL_SOURCE.py\", \"official_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\", \"verified_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec722"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_FULL_INVENTORY.json",
+        "line": 373,
+        "text": "\"FixedStopPrice\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULES.json",
+        "line": 101,
+        "text": "\"FixedStopPrice\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULE_CONTEXTS.txt",
+        "line": 519,
+        "text": "PATTERN: FixedStopPrice"
+      }
+    ],
+    "EffectiveStopPrice": [
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 934,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 33,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 49,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 65,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 81,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 97,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 113,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 136,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 152,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 168,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.json",
+        "line": 1969,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.txt",
+        "line": 301,
+        "text": "{ \"version\": \"FIX17\", \"official_file\": \"FIX17_OFFICIAL_FULL_SOURCE.py\", \"official_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\", \"verified_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec722"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_FULL_INVENTORY.json",
+        "line": 374,
+        "text": "\"EffectiveStopPrice\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULES.json",
+        "line": 100,
+        "text": "\"EffectiveStopPrice\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULE_CONTEXTS.txt",
+        "line": 524,
+        "text": "PATTERN: EffectiveStopPrice"
+      }
+    ],
+    "TrailActive": [
+      {
+        "path": "FIX17_FROZEN/.github/workflows/fix11_paper_trader.py",
+        "line": 2407,
+        "text": "\"TrailActive\":"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 934,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 33,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 49,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 65,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 81,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 97,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 113,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 136,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 152,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+        "line": 168,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.json",
+        "line": 1969,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.txt",
+        "line": 301,
+        "text": "{ \"version\": \"FIX17\", \"official_file\": \"FIX17_OFFICIAL_FULL_SOURCE.py\", \"official_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\", \"verified_sha256\": \"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec722"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_FULL_INVENTORY.json",
+        "line": 375,
+        "text": "\"TrailActive\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULES.json",
+        "line": 99,
+        "text": "\"TrailActive\": [],"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_RUNTIME_RULE_CONTEXTS.txt",
+        "line": 529,
+        "text": "PATTERN: TrailActive"
+      },
+      {
+        "path": "FIX17_RECOVERY/FIX17_RULE_INDEX.md",
+        "line": 360,
+        "text": "- `.github/workflows/fix11_paper_trader.py:2407` `\"TrailActive\":`"
+      }
+    ],
+    "BrokerReturnPct": [
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 3141,
+        "text": "\"BrokerReturnPct\":"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 61,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 77,
+        "text": "\"text\": \"for e in events_by_date.get(date, []):\\n            trade_id = str(e['TradeID'])\\n            side = str(e['Side']).upper()\\n            if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                 "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 93,
+        "text": "\"text\": \"if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                    raise RuntimeError(f\\\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\\\")\\n                fp = formal_active[trade_id]\\n           "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 125,
+        "text": "\"text\": \"trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'Targ"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 173,
+        "text": "\"text\": \"[\\n  {\\n    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ====================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 301,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 381,
+        "text": "\"text\": \"for e in events_by_date.get(date, []):\\n            trade_id = str(e['TradeID'])\\n            side = str(e['Side']).upper()\\n            if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                 "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 397,
+        "text": "\"text\": \"if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                    raise RuntimeError(f\\\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\\\")\\n                fp = formal_active[trade_id]\\n           "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 413,
+        "text": "\"text\": \"trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'Targ"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 509,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 541,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 573,
+        "text": "\"text\": \"for e in events_by_date.get(date, []):\\n            trade_id = str(e['TradeID'])\\n            side = str(e['Side']).upper()\\n            if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                 "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 605,
+        "text": "\"text\": \"for e in events_by_date.get(date, []):\\n            trade_id = str(e['TradeID'])\\n            side = str(e['Side']).upper()\\n            if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                 "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 621,
+        "text": "\"text\": \"if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                    raise RuntimeError(f\\\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\\\")\\n                fp = formal_active[trade_id]\\n           "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 637,
+        "text": "\"text\": \"if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                    raise RuntimeError(f\\\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\\\")\\n                fp = formal_active[trade_id]\\n           "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 669,
+        "text": "\"text\": \"trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'Targ"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 717,
+        "text": "\"text\": \"trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'Targ"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 765,
+        "text": "\"text\": \"{\\n  \\\"_fix16_download_bytes\\\": {\\n    \\\"signature\\\": \\\"(file_id)\\\",\\n    \\\"source_file\\\": \\\"/content/-stock-auto-trader/FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n    \\\"source_line\\\": 71,\\n    \\\"source\\\": \\\"def _fix16_download_bytes(file_i"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 781,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      }
+    ],
+    "FormalReturnPct": [
+      {
+        "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+        "line": 3129,
+        "text": "\"FormalReturnPct\":"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 61,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 77,
+        "text": "\"text\": \"for e in events_by_date.get(date, []):\\n            trade_id = str(e['TradeID'])\\n            side = str(e['Side']).upper()\\n            if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                 "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 93,
+        "text": "\"text\": \"if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                    raise RuntimeError(f\\\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\\\")\\n                fp = formal_active[trade_id]\\n           "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 125,
+        "text": "\"text\": \"trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'Targ"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 173,
+        "text": "\"text\": \"[\\n  {\\n    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ====================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 301,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 381,
+        "text": "\"text\": \"for e in events_by_date.get(date, []):\\n            trade_id = str(e['TradeID'])\\n            side = str(e['Side']).upper()\\n            if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                 "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 397,
+        "text": "\"text\": \"if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                    raise RuntimeError(f\\\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\\\")\\n                fp = formal_active[trade_id]\\n           "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 413,
+        "text": "\"text\": \"trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'Targ"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 509,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 541,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 573,
+        "text": "\"text\": \"for e in events_by_date.get(date, []):\\n            trade_id = str(e['TradeID'])\\n            side = str(e['Side']).upper()\\n            if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                 "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 605,
+        "text": "\"text\": \"for e in events_by_date.get(date, []):\\n            trade_id = str(e['TradeID'])\\n            side = str(e['Side']).upper()\\n            if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                 "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 621,
+        "text": "\"text\": \"if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                    raise RuntimeError(f\\\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\\\")\\n                fp = formal_active[trade_id]\\n           "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 637,
+        "text": "\"text\": \"if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                    raise RuntimeError(f\\\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\\\")\\n                fp = formal_active[trade_id]\\n           "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 669,
+        "text": "\"text\": \"trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'Targ"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 717,
+        "text": "\"text\": \"trade_rows.append({'TradeID': trade_id, 'Side': side, 'Code': bp['Code'], 'EntryDatetime': bp['EntryDatetime'], 'ExitDatetime': pd.Timestamp(e['Datetime']), 'EntryPrice': entry_price, 'ExitPrice': exit_price, 'Quantity': qty, 'Targ"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 765,
+        "text": "\"text\": \"{\\n  \\\"_fix16_download_bytes\\\": {\\n    \\\"signature\\\": \\\"(file_id)\\\",\\n    \\\"source_file\\\": \\\"/content/-stock-auto-trader/FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n    \\\"source_line\\\": 71,\\n    \\\"source\\\": \\\"def _fix16_download_bytes(file_i"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 781,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      }
+    ],
+    "closed_result": [
+      {
+        "path": "FIX17_FROZEN/save_1m.py",
+        "line": 920,
+        "text": "def is_market_closed_result("
+      },
+      {
+        "path": "FIX17_FROZEN/save_1m.py",
+        "line": 1387,
+        "text": "if is_market_closed_result("
+      },
+      {
+        "path": "FIX17_FROZEN/save_1m_before_jpx_calendar_gate.py",
+        "line": 784,
+        "text": "def is_market_closed_result("
+      },
+      {
+        "path": "FIX17_FROZEN/save_1m_before_jpx_calendar_gate.py",
+        "line": 1230,
+        "text": "if is_market_closed_result("
+      },
+      {
+        "path": "FIX17_RECOVERY/FIX17_FUNCTION_INDEX.md",
+        "line": 214,
+        "text": "- `save_1m.py:920` **is_market_closed_result()**"
+      },
+      {
+        "path": "FIX17_RECOVERY/FIX17_FUNCTION_INDEX.md",
+        "line": 241,
+        "text": "- `save_1m_before_jpx_calendar_gate.py:784` **is_market_closed_result()**"
+      }
+    ],
+    "target_notional = long_remaining_capacity": [
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 61,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 77,
+        "text": "\"text\": \"for e in events_by_date.get(date, []):\\n            trade_id = str(e['TradeID'])\\n            side = str(e['Side']).upper()\\n            if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                 "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 93,
+        "text": "\"text\": \"if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                    raise RuntimeError(f\\\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\\\")\\n                fp = formal_active[trade_id]\\n           "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 173,
+        "text": "\"text\": \"[\\n  {\\n    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ====================="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 509,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 573,
+        "text": "\"text\": \"for e in events_by_date.get(date, []):\\n            trade_id = str(e['TradeID'])\\n            side = str(e['Side']).upper()\\n            if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                 "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 621,
+        "text": "\"text\": \"if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                    raise RuntimeError(f\\\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\\\")\\n                fp = formal_active[trade_id]\\n           "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 765,
+        "text": "\"text\": \"{\\n  \\\"_fix16_download_bytes\\\": {\\n    \\\"signature\\\": \\\"(file_id)\\\",\\n    \\\"source_file\\\": \\\"/content/-stock-auto-trader/FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n    \\\"source_line\\\": 71,\\n    \\\"source\\\": \\\"def _fix16_download_bytes(file_i"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 781,
+        "text": "\"text\": \"for date in sorted(pd.to_datetime(sim_dates)):\\n        date = pd.Timestamp(date).normalize()\\n        has_quote = date in quote_dates\\n        is_monthly_buy = date in monthly_buy_dates\\n        if has_quote:\\n            etf_open"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 797,
+        "text": "\"text\": \"for e in events_by_date.get(date, []):\\n            trade_id = str(e['TradeID'])\\n            side = str(e['Side']).upper()\\n            if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                 "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 813,
+        "text": "\"text\": \"if e['Event'] == 'EXIT':\\n                if trade_id not in formal_active:\\n                    raise RuntimeError(f\\\"{e['Datetime']} Formal EXIT positionなし: {trade_id}\\\")\\n                fp = formal_active[trade_id]\\n           "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 909,
+        "text": "\"text\": \"[\\n  {\\n    \\\"layer_name\\\": \\\"FIX17_ROOT\\\",\\n    \\\"parent_name\\\": null,\\n    \\\"variable_name\\\": null,\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# =="
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 934,
+        "text": "\"text\": \"{\\n  \\\"version\\\": \\\"FIX17\\\",\\n  \\\"official_file\\\": \\\"FIX17_OFFICIAL_FULL_SOURCE.py\\\",\\n  \\\"official_sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n  \\\"verified_sha256\\\": \\\"9598156080b81445e5754c7b0"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1118,
+        "text": "\"text\": \"      \\\"depth\\\": 1,\\n      \\\"start_line\\\": 266,\\n      \\\"end_line\\\": 347\\n    }\\n  ],\\n  \\\"all_classes\\\": [],\\n  \\\"duplicate_function_names\\\": {},\\n  \\\"rule_hits\\\": {\\n    \\\"target_notional = long_remaining_capacity\\\": [\\n      {\\n"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1139,
+        "text": "\"text\": \"      \\\"end_line\\\": 347\\n    }\\n  ],\\n  \\\"all_classes\\\": [],\\n  \\\"duplicate_function_names\\\": {},\\n  \\\"rule_hits\\\": {\\n    \\\"target_notional = long_remaining_capacity\\\": [\\n      {\\n        \\\"layer\\\": \\\"FIX17_ROOT\\\",\\n        \\\"lin"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1160,
+        "text": "\"text\": \"    }\\n  ],\\n  \\\"all_classes\\\": [],\\n  \\\"duplicate_function_names\\\": {},\\n  \\\"rule_hits\\\": {\\n    \\\"target_notional = long_remaining_capacity\\\": [\\n      {\\n        \\\"layer\\\": \\\"FIX17_ROOT\\\",\\n        \\\"line\\\": 1467\\n      }\\n    ]"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1181,
+        "text": "\"text\": \"  ],\\n  \\\"all_classes\\\": [],\\n  \\\"duplicate_function_names\\\": {},\\n  \\\"rule_hits\\\": {\\n    \\\"target_notional = long_remaining_capacity\\\": [\\n      {\\n        \\\"layer\\\": \\\"FIX17_ROOT\\\",\\n        \\\"line\\\": 1467\\n      }\\n    ],\\n    "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1194,
+        "text": "\"text\": \"                    fix15_exit_dt,\\n                    fix15_taxable_pnl,\\n                    f\\\"CREDIT_{side}\\\",\\n                    bp[\\\"Code\\\"],\\n                )\\n\\n                cash -= fix15_tax_change\\n\\n              "
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1207,
+        "text": "\"text\": \"                cash -= fix15_tax_change\\n\\n                broker_strategy_equity -= (\\n                    fix15_tax_change\\n                )\\n\\n                broker_realized_today += broker_pnl\\n                trade_rows.app"
+      },
+      {
+        "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+        "line": 1220,
+        "text": "\"text\": \"[\\n  {\\n    \\\"label\\\": \\\"FIX17_ROOT\\\",\\n    \\\"origin\\\": \\\"GitHub official FIX17\\\",\\n    \\\"depth\\\": 0,\\n    \\\"sha256\\\": \\\"9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4\\\",\\n    \\\"source\\\": \\\"# ====================="
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": "FIX17_FROZEN/.github/workflows/fix11_paper_trader.py",
+      "size": 38970,
+      "sha256": "5b9e9c7c5249825ab75e7671bd0fb358818faa1f46afdf8d9a0424325615d654"
+    },
+    {
+      "path": "FIX17_FROZEN/.github/workflows/fix17_paper_trader_auto.yml",
+      "size": 1461,
+      "sha256": "a4015685ee0565a9f36f4d9cbf380c345db2a83b9ee7a1b623eb71d60f265ddd"
+    },
+    {
+      "path": "FIX17_FROZEN/.github/workflows/main.yml",
+      "size": 10719,
+      "sha256": "2587a460a4623689c8a045fbe8d8ded4fe08577ea08511c269bd5f9eff8ab60f"
+    },
+    {
+      "path": "FIX17_FROZEN/.github/workflows/paper_trader.yml",
+      "size": 849,
+      "sha256": "596059fe4d1c536c47d15ab9fe00e21e577b99cc0fdd617b78ed0bc8e7f16e91"
+    },
+    {
+      "path": "FIX17_FROZEN/.github/workflows/save_1m.yml",
+      "size": 1236,
+      "sha256": "fddc5fd22eefe8bfe41c354f88d6451f61f9d1119dfa9952a3036fc7d4601a82"
+    },
+    {
+      "path": "FIX17_FROZEN/.github/workflows/test_save1m_error_mail.yml",
+      "size": 1185,
+      "sha256": "605a71e7bcbf62de2ddb62db8438564f5ef6218a4d693550ddacf494ff6192de"
+    },
+    {
+      "path": "FIX17_FROZEN/.gitignore",
+      "size": 108,
+      "sha256": "7505506a2324f43c27edc15f9d7e3a27190c7db0dd60c1d99f54ab88de49855a"
+    },
+    {
+      "path": "FIX17_FROZEN/Dockerfile",
+      "size": 245,
+      "sha256": "ac7c0f419931a81aed146dd209caa9f69bbefacc8b2a43c6660598ac4dd08801"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX11_ENTRY_SOURCE_EXACT.py",
+      "size": 88051,
+      "sha256": "cb4d239f907ec3d8377902f5a59205bb96151da8ebf5fcd0cf21573ea3568ea9"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.json",
+      "size": 24283,
+      "sha256": "7102be15ff0cb9a231f221bb486bfae2f22f46b84712a68659815caa4ac1f111"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_CANDIDATE_INTERFACE_EXACT.txt",
+      "size": 21990,
+      "sha256": "676b54d9030f7afaf52425073bb5cb6b4432f4cf1c792c3c17c89a7df2a381c1"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.json",
+      "size": 28888,
+      "sha256": "ad5903345946ac6439b10a90ad743c43d2b9e36e44fd112e586e3b6da729a885"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_DATA_INFRA_AUDIT.txt",
+      "size": 3897,
+      "sha256": "6979b992362ad4784c350c27dcdda871327eddd08ee6939dc27b1c689bbeff76"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.json",
+      "size": 3805375,
+      "sha256": "a2c13ff4fcd809f5377e5c63fde925aa7579c929fd8cf46037523f445b6429a3"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_EXACT.txt",
+      "size": 2097,
+      "sha256": "f0f73493bf79ab65d81f29a7e5b4ac45bfa1a0c3495effc73a10f93845113079"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_BOOLEAN_SOURCE.py",
+      "size": 1873187,
+      "sha256": "7e887ab92a545df562664b12e86c974cab43700d8e6118aa4bf9a3340e970919"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_CONTRACT.json",
+      "size": 94207,
+      "sha256": "15b0a3a970c6bcbeda48e37a1ee48cb3c1f884859d2c3abfd7bd048f9c32e010"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_CONTRACT.txt",
+      "size": 23095,
+      "sha256": "e889d174ce72b05e9df1969c87a96bd933573b535686af418c9a634ba84fe891"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_CONTRACT_PROVEN.json",
+      "size": 4551,
+      "sha256": "6410f9ea16b1c229caeb56c885cfc9ab4b5019ca03733e91127cb4cad7e5d3f7"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_CONTRACT_PROVEN.txt",
+      "size": 2987,
+      "sha256": "9c125ba211c90c7baf2d481b7418e1e0d5f62a9d3d387b4fa47915442f99d09f"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_CONTRACT_REGRESSION_TEST.json",
+      "size": 2388,
+      "sha256": "7dc1faf036b5a380c892bab041aef8bd7053e12ed47f74da8a6b33f56226ecb9"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_CONTRACT_REGRESSION_TEST.txt",
+      "size": 1696,
+      "sha256": "d8945567ba328f9123b5385792935aa6841b0579c365aeea79eb2998cf87de4f"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_DATA_PROVENANCE.json",
+      "size": 4745424,
+      "sha256": "b1aa9f5ba266448bee3107b841e4ce0f9a4600853d69f30be54c0e2e66c8e73f"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_DATA_PROVENANCE.txt",
+      "size": 382252,
+      "sha256": "d77f6be3facd6679ee8f1bc226555f98dc4e1131ccef3e75129c71fa86765ead"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_DATA_PROVENANCE_SOURCE.py",
+      "size": 941519,
+      "sha256": "3a8c5ab0479fb38b1ebd8cccbc8995cea20c9e8f13b0267033beafa367bf9943"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_DATA_SCHEMA.json",
+      "size": 2726,
+      "sha256": "d651e24b4231f5a4ce0886b72a8da97f808e20cbf47f6c49009c282430d273d9"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_DATA_SCHEMA.txt",
+      "size": 1157,
+      "sha256": "d14d20bdc32a1b7560b09d081fb8e22be51763f900d5d3c7cd242eca50f475af"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_EVENT_LINEAGE_EXACT.json",
+      "size": 23418,
+      "sha256": "28f3990afeabcbb88562a68d82814fc08094e883ba465eb10d3fcb914456a13d"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_EVENT_LINEAGE_EXACT.txt",
+      "size": 16621,
+      "sha256": "2ee2944f651c50ae269e790c8c4ad831943a7ded29ba3862c0bab7d92bfa4f41"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_EVENT_SOURCE_TRACE.json",
+      "size": 43839,
+      "sha256": "78cc5eb3595e3556e2a76f3d82f6e52cd4b57f83cc8e80248846f10949653a6a"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_EVENT_SOURCE_TRACE.txt",
+      "size": 36253,
+      "sha256": "f2ff4a2a6408a0fae1865260bd7663cb3660cf5e6be53e482d641f33b795657b"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_FILTER_AUDIT.json",
+      "size": 5811,
+      "sha256": "4a7680a87c3f0310e1f8ac0be0ca0a9005f05910c150e1571192fb226853fce0"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_FILTER_AUDIT.txt",
+      "size": 1192,
+      "sha256": "4743e334cf3efeb056b7bf1af528c3ad5827656d1842cb342e578e982694001a"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_INPUT_LINEAGE_EXACT.json",
+      "size": 12849,
+      "sha256": "7cfd4e4b0c4ee612698a0a661893328c6d611f4f66fa9d8efda4afbdb368c19d"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_INPUT_LINEAGE_EXACT.txt",
+      "size": 7852,
+      "sha256": "4e5f230c26765512a4068147f2ec6af8af16ccfee673a097a2215c14b996d526"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_RELEVANT_SOURCE.py",
+      "size": 33120,
+      "sha256": "48b643add6a416d993c39af32791852e075f3ce9dad8e1915ce5b8ab333a36e0"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.json",
+      "size": 129468,
+      "sha256": "8850d1720ebf06c3f4de141c3fa9591907925c8678b41828da1a33396dbd3492"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_EXACT.txt",
+      "size": 1382,
+      "sha256": "1894e7eb6556cfc429de1b01e3c1103381cbad5e9c936a79a2676995e15cc8eb"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_RULES_SOURCE.py",
+      "size": 361,
+      "sha256": "dc9926bbe3014a952ead57c3f739afda0ba4becb43f0968e0bb3b04d122079eb"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_CONTEXT.py",
+      "size": 895139,
+      "sha256": "da9de5576de0c66114dea0b488504b92583d7ec07cfeac536f40771125bdf616"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.json",
+      "size": 2387857,
+      "sha256": "8a58a325d1a9bebeda2d25185a95f9869ce74fd4bf193b682ea20cc2845a5f0b"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_ENTRY_SOURCE_LOCATOR.txt",
+      "size": 1709667,
+      "sha256": "ab3388fdd96e505dabb479d22dc9b5d4eb5ca3ada94d1142117d7f4de4f7a744"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_FINAL_UPSTREAM_PROVENANCE_CHECK.json",
+      "size": 5229,
+      "sha256": "bc89b1521f9b5883ec2a737b20d093560ed72cf9b60d7e50a6ff960c9843ff4c"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_FINAL_UPSTREAM_PROVENANCE_CHECK.txt",
+      "size": 3503,
+      "sha256": "72549ff04beac85e4619816f5b3cd68c8a0443fc4d01cf77ad9a6ab8ffd06547"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_FIX11_ENTRY_LOGIC_EXACT.json",
+      "size": 29039,
+      "sha256": "0f78195281bc0f6f0230edbbfbeb71f420cd52e8a99c03450e0f6d69f0302acc"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_FIX11_ENTRY_LOGIC_EXACT.txt",
+      "size": 957,
+      "sha256": "3f3a49adb64a231fad406cdbb058e5f009d804bf3a91094c292986b59ff7827f"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_FORMAL_DATA_USAGE_EXACT.json",
+      "size": 157,
+      "sha256": "c6e229ac4ac510e7fcb60614f85bfb3d89825d96c1de61a9028b771c0839940a"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_FORMAL_DATA_USAGE_EXACT.txt",
+      "size": 588,
+      "sha256": "da24c20e55d8f5ef00d075a2879cb3454a5f3c6eda68fc56aee5d3424c42555f"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_FORMAL_ENTRY_DATA_SCHEMA.json",
+      "size": 13243,
+      "sha256": "939c644ff2beb1b6d40bbc7d9b309a6a083127a566abde45d0ea131ea9c54b60"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_FORMAL_ENTRY_DATA_SCHEMA.txt",
+      "size": 4996,
+      "sha256": "1a14696ea21553d701fdccab6e60d2e6b48bff963bfa738dd7e1ab7262d48b75"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_LATEST_ACTIVE_UNIVERSE_AUDIT.json",
+      "size": 7271,
+      "sha256": "a2e56f1642bd4ef69c87ec158ca869ffcda70c6fdd96c80a1195ae1ad070a96b"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_LATEST_ACTIVE_UNIVERSE_AUDIT.txt",
+      "size": 907,
+      "sha256": "3622fd7600eb9d749fd06133e0469fabd9fb787b501529ae42cbdd3daaecb649"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_LIVE_FUNCTION_SOURCES.json",
+      "size": 31347,
+      "sha256": "eacdcdb493826b7ffc225f2452c8d19be2d7380112d6d9c2a11da6c7c504a0f3"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_LIVE_INTERFACE.json",
+      "size": 428260,
+      "sha256": "84bf43f8ab6dcb3bea88d8fb28febd9c290dbe1b29466e080ff62b8ac032502a"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_LIVE_INTERFACE.txt",
+      "size": 15670,
+      "sha256": "b92bf933c275c0c439ced3b7dd555e059b0df471b05c3971204db517eaaa9555"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_MANIFEST.json",
+      "size": 937,
+      "sha256": "d06d206f27bd4728fb4bb49404ab087f5afd82f181a23deab61eebdc66d7f078"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_MASTER_FOLDER_INVENTORY.json",
+      "size": 7096,
+      "sha256": "52afdedb2b410a27af89800ef18df240bd6a036e062e1a34f660ab6abc043364"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_MASTER_FOLDER_INVENTORY.txt",
+      "size": 3690,
+      "sha256": "a0c463538ce3346a8f81e892251945ab8fd40e24566d46d4d3e35e2918fcc5d6"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_OFFICIAL_FULL_SOURCE.py",
+      "size": 225528,
+      "sha256": "9598156080b81445e5754c7b0f56138900862e8fd7f35ac89960491bec7222c4"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.json",
+      "size": 45399,
+      "sha256": "100f53c8bdb170816d54c4e418565093dd86b554866ff24d5175ee5cc241ea26"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_PAPER_TRADER_CURRENT_STRUCTURE.txt",
+      "size": 13980,
+      "sha256": "ec9cae0f21894026439171d7a747851993b065362c621035245268315f76b3e5"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_ALL_FUNCTIONS.py",
+      "size": 30468,
+      "sha256": "b5903544ae22f4afe9a960de4166baf779dd99c3d4b9b1c135d6ce9ae45bcd92"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_EXEC_RESOLUTION.txt",
+      "size": 3423,
+      "sha256": "74e009e81067c6b5b0850c81a41b75469972dbcd27c9bb57d10b0b19e0a5aa28"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_EXTRACT.py",
+      "size": 27670,
+      "sha256": "217398a3748674843f9b055a23d01ef9aaa280856fb1a3ac9514014fc6a5f06a"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_FINAL_AUDIT.json",
+      "size": 3025,
+      "sha256": "b83857d11c8e84567dcf44c5eaf9b57067d2f52447950b5d376ff79e2590bca9"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_FINAL_AUDIT.txt",
+      "size": 1424,
+      "sha256": "1cab8f84a983bc6541b9001cf02211efca6e1d940b9ffd7804e508cac26c97d0"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_FULL_INVENTORY.json",
+      "size": 12497,
+      "sha256": "6b63f75fb04c7885943d7d86796dc393c163c50ce14743cbf4a7e3bd961ce10b"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_INPUT_CONTRACT.json",
+      "size": 4448,
+      "sha256": "38ac2ae817e55a90fefb686a599378de88d5af632284cf16393080b484d4506b"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_INPUT_CONTRACT.txt",
+      "size": 3411,
+      "sha256": "d217606ee5fdf9535c7629150792223e431bf99bab69658a143b460dddfc18a3"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_MAPS_SCHEMA.json",
+      "size": 2027,
+      "sha256": "e59903f5d187af02166e561ad7a45605f7ea13caed5a9092aa57d0a5e8bb40fa"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_MAPS_SCHEMA.txt",
+      "size": 1548,
+      "sha256": "94dea1cb64a88739457275bdef82604527023974524bfe5d513ab5ebc6f7c3fc"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_RESOLVED_FUNCTIONS.py",
+      "size": 61165,
+      "sha256": "e50a3c743dc2fb6766dbb06a1dd1e9f3cb1ca5223b98f8ab8ed18589e802b7f7"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_RESOLVED_INVENTORY.json",
+      "size": 10816,
+      "sha256": "40a0ef995431eaddea77e1a635201046b33745ac0455ffe18852481876097640"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_RESOLVED_SOURCES.json",
+      "size": 520233,
+      "sha256": "f876675e36c7e52329e0b90d25ef23d71024bd1769d935fe9b00f965f10c9aa2"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_RULES.json",
+      "size": 55347,
+      "sha256": "95459c516eb97239f75cfda596e9a69dff70c2c0a6c96ee0e05f4ef3a47c5245"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_RULE_CONTEXTS.txt",
+      "size": 131552,
+      "sha256": "38ba1511259e8e1c7ed3872e6fb2048b546f046b1a64d1c63c139154bc43062c"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_RUNTIME_SOURCE_LAYERS.json",
+      "size": 250882,
+      "sha256": "0afbe07fe6f687ff948dba2efd0bc7b2c8b2e41dc8451c647b3aed2c640de0de"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_UNIVERSE_AUDIT.json",
+      "size": 8207,
+      "sha256": "8c6292acc0ddadf1605565fe39eef4d7eacde28d7d7dce1568b00f79aa1c333c"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_UNIVERSE_AUDIT.txt",
+      "size": 440,
+      "sha256": "c92f73feb5451569a1568eed4a236aba0df539bd529c29aab777a7be911d0389"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_UNIVERSE_CODE_NORMALIZATION_AUDIT.json",
+      "size": 709,
+      "sha256": "8ef47ab2566c1da1a2249fb451cacd323b54e565b5427d3aa8bb6907e29a242d"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_UNIVERSE_CODE_NORMALIZATION_AUDIT.txt",
+      "size": 367,
+      "sha256": "d81ce609b799e0b784b6bc5441c115e5a9b65d7d204badaa03600597e31bc042"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_UPSTREAM_TRADE_EVENT_PROVENANCE.json",
+      "size": 64822,
+      "sha256": "30b1efe6e901004f74915c6b27a2924b84b1ec10ecf8e142772e5d2c491acb07"
+    },
+    {
+      "path": "FIX17_FROZEN/FIX17_UPSTREAM_TRADE_EVENT_PROVENANCE.txt",
+      "size": 31169,
+      "sha256": "ea3e28472c677f8e9d3505a9de7421961b40f9d6506210cb02416c73f100ccb1"
+    },
+    {
+      "path": "FIX17_FROZEN/README.md",
+      "size": 918,
+      "sha256": "951250145516c4f0ab676d856347912388665da681e5b33bab669c1f7672f32c"
+    },
+    {
+      "path": "FIX17_FROZEN/config/fix17_universe.txt",
+      "size": 21380,
+      "sha256": "45d78aa4626c5a28aaaaa7ccf5193065c6370aa200007511d818ba7e670433fb"
+    },
+    {
+      "path": "FIX17_FROZEN/data/.gitkeep",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "FIX17_FROZEN/entrypoint.sh",
+      "size": 323,
+      "sha256": "4d072c67925faac98b24e358bd7f430045c8727bcfe871c7b35e6bfff90a1bfe"
+    },
+    {
+      "path": "FIX17_FROZEN/fix17_contract.py",
+      "size": 5309,
+      "sha256": "3f1d889d1a317b0d2f78aebdfd5626c47b82bdbdf856809511484cdddb844de6"
+    },
+    {
+      "path": "FIX17_FROZEN/fix17_long_candidate_bridge.py",
+      "size": 7849,
+      "sha256": "c90c970ece1ae175d9221ce1baf057373fce2fd5f6456b74e2d02386ca6d063f"
+    },
+    {
+      "path": "FIX17_FROZEN/latest_result.txt",
+      "size": 439,
+      "sha256": "5db125653a8208a442c88a7550706f2e147b5938b56178770a4882eca5de1b1b"
+    },
+    {
+      "path": "FIX17_FROZEN/mailer.py",
+      "size": 1649,
+      "sha256": "a7e76cbd014a6e3bfd6e607b191e3837784a04e71b5ebef57a9ca47d14373d0f"
+    },
+    {
+      "path": "FIX17_FROZEN/paper_state_store.py",
+      "size": 1759,
+      "sha256": "94e2e7d4fcd6c85c84321dbb945af5350f4809a8a75a8fe40abfedc365f1c2fa"
+    },
+    {
+      "path": "FIX17_FROZEN/paper_trader.py",
+      "size": 67683,
+      "sha256": "cb75c6757fbe7ec95e7a97dcf565c017eb74b899c179cec5706cb09d430fd899"
+    },
+    {
+      "path": "FIX17_FROZEN/paper_trader_before_contract_gate.py",
+      "size": 33981,
+      "sha256": "576ab9d7b1f5e29f5661ed4369c8e7b6bb509f5342918ed52c4cde23e39b03d1"
+    },
+    {
+      "path": "FIX17_FROZEN/paper_trader_before_entry_contract.py",
+      "size": 34440,
+      "sha256": "f21398ba06a814626188e7b7bd65614fda16e9915f5e8c8155a71b15cc170df0"
+    },
+    {
+      "path": "FIX17_FROZEN/paper_trader_v29_4.py",
+      "size": 33368,
+      "sha256": "17178af691d93f7b9e892aaf17a0dafaf1fc8659eb9e4640586eacda8ddb43fc"
+    },
+    {
+      "path": "FIX17_FROZEN/requirements.txt",
+      "size": 142,
+      "sha256": "c9a378979876b4ab9d412e2c36b9340488555d2c7d1cd4ac33ed6f4ba724b37f"
+    },
+    {
+      "path": "FIX17_FROZEN/runtime/.gitkeep",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "FIX17_FROZEN/save_1m.py",
+      "size": 24942,
+      "sha256": "8ed88366fc9dce13e0e19d0cc29f34c58ca9ffd4477dc235df595087f70cb4ac"
+    },
+    {
+      "path": "FIX17_FROZEN/save_1m_before_batch_hardening.py",
+      "size": 18700,
+      "sha256": "28f8b353d6035a9ab43d09d56a0ba2768edfff0919ef8c5908060792daf68771"
+    },
+    {
+      "path": "FIX17_FROZEN/save_1m_before_jpx_calendar_gate.py",
+      "size": 22345,
+      "sha256": "b3d173657d5876970dab5e2a666e906fe0e1f55f0d38ea9848d4f2496b7ca2e3"
+    },
+    {
+      "path": "FIX17_FROZEN/save_1m_before_live_data.py",
+      "size": 879,
+      "sha256": "e2f5625a58184b3f90fd4d9d3fcb9164c40888b0a757aae325995c1d9a651ee7"
+    }
+  ]
+}
