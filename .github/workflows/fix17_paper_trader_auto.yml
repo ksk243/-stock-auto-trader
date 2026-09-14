@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
 
   schedule:
+    # 15:45 JST / weekdays
     - cron: "45 6 * * 1-5"
 
 permissions:
@@ -73,4 +74,3 @@ jobs:
 
       - name: Save FIX17 Paper State
         run: python paper_state_store.py save
-
