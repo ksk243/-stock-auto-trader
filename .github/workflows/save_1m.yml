@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
   schedule:
-    # 16:15 JST
+    # 16:15 JST / weekdays
     - cron: "15 7 * * 1-5"
 
 permissions:
