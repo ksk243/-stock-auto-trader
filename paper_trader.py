@@ -2446,33 +2446,31 @@ def build_fix17_long_live_inputs():
     """
     FIX17 LONG live input builder.
 
-    1m data:
-        Yahoo Finance batch download
+    Current / historical 1m data:
+        Existing FIX17 Save 1m data in GCS
 
-    Feature / signal:
-        Existing audited FIX11 find_first_signal()
+    Daily feature / signal:
+        Existing audited FIX11 functions are used unchanged.
 
-    No LONG thresholds are changed here.
+    IMPORTANT:
+        - FIX17 official source is not modified.
+        - FIX11 find_first_signal / calc_rvol20 are not rewritten.
+        - Only the input adapter is implemented here.
+        - SHORT live execution remains disabled.
     """
 
-    import logging
+    import re
+    import runpy
+    import shutil
     from datetime import datetime
+    from pathlib import Path
     from zoneinfo import ZoneInfo
 
     import pandas as pd
-    import yfinance as yf
-
-    try:
-        import jpholiday
-    except Exception:
-        jpholiday = None
-
-    import runpy
-    from pathlib import Path
-
+    from google.cloud import storage
 
     # --------------------------------------------------------
-    # JPX TRADING DAY
+    # MARKET DATE
     # --------------------------------------------------------
 
     now_jst = datetime.now(
@@ -2480,48 +2478,10 @@ def build_fix17_long_live_inputs():
     )
 
     today = now_jst.date()
-
-
-    is_trading_day = True
-
-    if today.weekday() >= 5:
-        is_trading_day = False
-
-    if (
-        today.month == 1
-        and
-        today.day in (1, 2, 3)
-    ):
-        is_trading_day = False
-
-    if (
-        today.month == 12
-        and
-        today.day == 31
-    ):
-        is_trading_day = False
-
-    if (
-        is_trading_day
-        and
-        jpholiday is not None
-        and
-        jpholiday.is_holiday(today)
-    ):
-        is_trading_day = False
-
-
-    if not is_trading_day:
-
-        print(
-            "LONG 1m batch: NON_TRADING_DAY"
-        )
-
-        return {}, {}
-
+    today_str = today.isoformat()
 
     # --------------------------------------------------------
-    # FIX11 ENTRY FUNCTIONS
+    # LOAD EXISTING FIX11 ENTRY ENGINE
     # --------------------------------------------------------
 
     repo_dir = Path(__file__).resolve().parent
@@ -2538,22 +2498,35 @@ def build_fix17_long_live_inputs():
             "FIX11 paper trader source missing"
         )
 
-
     ns = runpy.run_path(
         str(fix11_path),
-        run_name="__fix17_fix11_batch_entry__",
+        run_name="__fix17_fix11_gcs_entry__",
     )
 
-
+    fetch_daily_batch = ns.get(
+        "fetch_daily_batch"
+    )
+    build_daily_features = ns.get(
+        "build_daily_features"
+    )
     find_first_signal = ns.get(
         "find_first_signal"
     )
 
-    if find_first_signal is None:
+    if fetch_daily_batch is None:
         raise RuntimeError(
-            "find_first_signal missing"
+            "FIX11 fetch_daily_batch missing"
         )
 
+    if build_daily_features is None:
+        raise RuntimeError(
+            "FIX11 build_daily_features missing"
+        )
+
+    if find_first_signal is None:
+        raise RuntimeError(
+            "FIX11 find_first_signal missing"
+        )
 
     # --------------------------------------------------------
     # UNIVERSE
@@ -2570,9 +2543,8 @@ def build_fix17_long_live_inputs():
             "FIX17 universe missing"
         )
 
-
     codes = [
-        x.strip()
+        normalize_code(x.strip())
         for x in universe_path.read_text(
             encoding="utf-8"
         ).splitlines()
@@ -2580,357 +2552,413 @@ def build_fix17_long_live_inputs():
         and not x.strip().startswith("#")
     ]
 
+    codes = list(dict.fromkeys(codes))
 
     if not codes:
         raise RuntimeError(
             "FIX17 universe empty"
         )
 
+    code_set = set(codes)
 
     # --------------------------------------------------------
-    # BATCH DOWNLOAD SETTINGS
+    # EXISTING FIX11 DAILY FEATURES
     # --------------------------------------------------------
 
-    BATCH_SIZE = 100
-    MIN_SUCCESS_RATIO = 0.95
+    daily = fetch_daily_batch(codes)
 
-
-    logging.getLogger(
-        "yfinance"
-    ).setLevel(
-        logging.CRITICAL
-    )
-
-
-    minute_by_code = {}
-
-
-    # --------------------------------------------------------
-    # HELPER: EXTRACT ONE SYMBOL FROM BATCH
-    # --------------------------------------------------------
-
-    def extract_symbol_df(
-        raw,
-        symbol,
-        batch_len,
-    ):
-
-        if raw is None:
-            return None
-
-        if getattr(
-            raw,
-            "empty",
-            True,
-        ):
-            return None
-
-
-        # MultiIndex output
-        if isinstance(
-            raw.columns,
-            pd.MultiIndex,
-        ):
-
-            level0 = set(
-                map(
-                    str,
-                    raw.columns.get_level_values(0),
-                )
-            )
-
-            level1 = set(
-                map(
-                    str,
-                    raw.columns.get_level_values(1),
-                )
-            )
-
-
-            if symbol in level0:
-
-                try:
-                    df = raw[symbol].copy()
-                except Exception:
-                    return None
-
-
-            elif symbol in level1:
-
-                try:
-                    df = raw.xs(
-                        symbol,
-                        axis=1,
-                        level=1,
-                    ).copy()
-
-                except Exception:
-                    return None
-
-            else:
-                return None
-
-
-        else:
-
-            if batch_len != 1:
-                return None
-
-            df = raw.copy()
-
-
-        if df is None or df.empty:
-            return None
-
-
-        # ----------------------------------------------------
-        # DATETIME NORMALIZATION
-        # ----------------------------------------------------
-
-        idx = pd.to_datetime(
-            df.index,
-            errors="coerce",
-        )
-
-
-        if getattr(
-            idx,
-            "tz",
-            None,
-        ) is None:
-
-            try:
-                idx = idx.tz_localize(
-                    "Asia/Tokyo"
-                )
-            except Exception:
-                pass
-
-        else:
-
-            try:
-                idx = idx.tz_convert(
-                    "Asia/Tokyo"
-                )
-            except Exception:
-                pass
-
-
-        df.index = idx
-        df.index.name = "Datetime"
-
-
-        # Only today's JST bars
-        try:
-
-            mask = [
-                (
-                    x is not pd.NaT
-                    and
-                    x.date() == today
-                )
-                for x in df.index
-            ]
-
-            df = df.loc[
-                mask
-            ].copy()
-
-        except Exception:
-            return None
-
-
-        if df.empty:
-            return None
-
-
-        # Remove completely empty price rows
-        price_cols = [
-            c
-            for c in [
-                "Open",
-                "High",
-                "Low",
-                "Close",
-            ]
-            if c in df.columns
-        ]
-
-
-        if price_cols:
-
-            df = df.dropna(
-                how="all",
-                subset=price_cols,
-            )
-
-
-        if df.empty:
-            return None
-
-
-        # Keep both Datetime index and column.
-        # Existing FIX11 code can use either form.
-        df["Datetime"] = df.index
-
-
-        return df
-
-
-    # --------------------------------------------------------
-    # DOWNLOAD 100 SYMBOLS AT A TIME
-    # --------------------------------------------------------
-
-    for start in range(
-        0,
-        len(codes),
-        BATCH_SIZE,
-    ):
-
-        batch_codes = codes[
-            start:start + BATCH_SIZE
-        ]
-
-        symbols = [
-            (
-                code
-                if code.endswith(".T")
-                else f"{code}.T"
-            )
-            for code in batch_codes
-        ]
-
-
-        try:
-
-            raw = yf.download(
-                tickers=symbols,
-                period="1d",
-                interval="1m",
-                group_by="ticker",
-                auto_adjust=False,
-                prepost=False,
-                threads=True,
-                progress=False,
-            )
-
-        except Exception:
-
-            continue
-
-
-        for code, symbol in zip(
-            batch_codes,
-            symbols,
-        ):
-
-            df = extract_symbol_df(
-                raw,
-                symbol,
-                len(symbols),
-            )
-
-            if df is None:
-                continue
-
-
-            minute_by_code[
-                str(code)
-            ] = df
-
-
-    # --------------------------------------------------------
-    # COVERAGE GATE
-    # --------------------------------------------------------
-
-    success_count = len(
-        minute_by_code
-    )
-
-    success_ratio = (
-        success_count
-        / len(codes)
-    )
-
-
-    print(
-        "LONG 1m batch:",
-        f"{success_count}/{len(codes)}",
-        f"({success_ratio:.1%})",
-    )
-
-
-    if success_ratio < MIN_SUCCESS_RATIO:
-
+    if daily is None or daily.empty:
         raise RuntimeError(
-            "FIX17 LONG 1m coverage too low: "
-            f"{success_count}/{len(codes)} "
-            f"({success_ratio:.2%})"
+            "FIX11 daily data empty"
         )
 
+    features = build_daily_features(
+        daily,
+        pd.Timestamp(today),
+    )
 
-    # --------------------------------------------------------
-    # EXISTING FIX11 FEATURE / SIGNAL LOGIC
-    # --------------------------------------------------------
+    if features is None or features.empty:
+        raise RuntimeError(
+            "FIX11 daily features empty"
+        )
 
     feature_by_code = {}
 
+    for _, row in features.iterrows():
+        item = row.to_dict()
+        code = normalize_code(
+            item.get("Code", "")
+        )
+        if code:
+            item["Code"] = code
+            feature_by_code[code] = item
 
-    for code, minute_df in minute_by_code.items():
+    # LONG necessary daily filters only.
+    # These are not new rules; find_first_signal applies the
+    # same FIX11 rules again. This only avoids creating tens of
+    # thousands of unnecessary temporary history files.
+    eligible_codes = []
 
-        signal = None
-
-
-        # Preserve existing two-call compatibility only.
-        try:
-
-            signal = find_first_signal(
-                code,
-                minute_df,
-            )
-
-        except TypeError:
-
-            try:
-
-                signal = find_first_signal(
-                    minute_df,
-                    code,
-                )
-
-            except Exception:
-
-                signal = None
-
-        except Exception:
-
-            signal = None
-
-
-        if signal is None:
+    for code in codes:
+        feature = feature_by_code.get(code)
+        if feature is None:
             continue
 
+        try:
+            rs20 = float(feature.get("RS20"))
+            turnover = float(
+                feature.get(
+                    "turnover_median_20d_oku"
+                )
+            )
+        except Exception:
+            continue
 
-        if hasattr(
-            signal,
-            "to_dict",
+        if (
+            math.isfinite(rs20)
+            and math.isfinite(turnover)
+            and rs20 >= 80.0
+            and turnover >= 3.0
         ):
+            eligible_codes.append(code)
 
-            try:
-                signal = signal.to_dict()
-            except Exception:
-                pass
+    print(
+        "LONG daily eligible:",
+        f"{len(eligible_codes)}/{len(codes)}",
+    )
 
+    if not eligible_codes:
+        return {}, {}
 
-        if isinstance(
-            signal,
-            dict,
+    eligible_set = set(eligible_codes)
+
+    # --------------------------------------------------------
+    # GCS SAVED 1-MINUTE DATA
+    # --------------------------------------------------------
+
+    bucket_name = os.getenv(
+        "GCS_BUCKET",
+        "",
+    ).strip()
+
+    if not bucket_name:
+        raise RuntimeError(
+            "GCS_BUCKET is not set"
+        )
+
+    prefix = os.getenv(
+        "GCS_1M_PREFIX",
+        "fix17/minute_1m",
+    ).strip().strip("/")
+
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+
+    date_pattern = re.compile(
+        r"/date=(\d{4}-\d{2}-\d{2})/minute_1m\.parquet$"
+    )
+
+    blob_by_date = {}
+
+    for blob in client.list_blobs(
+        bucket_name,
+        prefix=prefix + "/date=",
+    ):
+        m = date_pattern.search(
+            "/" + blob.name
+        )
+        if m:
+            blob_by_date[m.group(1)] = blob.name
+
+    if today_str not in blob_by_date:
+        raise RuntimeError(
+            "FIX17 current 1m GCS file missing: "
+            f"{prefix}/date={today_str}/minute_1m.parquet"
+        )
+
+    history_dates = sorted(
+        d
+        for d in blob_by_date
+        if d < today_str
+    )[-20:]
+
+    if len(history_dates) != 20:
+        raise RuntimeError(
+            "FIX17 RVOL20 history不足: "
+            f"{len(history_dates)}/20"
+        )
+
+    print(
+        "RVOL20 history:",
+        f"{len(history_dates)}/20",
+    )
+
+    # --------------------------------------------------------
+    # TEMPORARY FIX11 RAW_DIR
+    # --------------------------------------------------------
+
+    history_dir = (
+        RUNTIME_DIR
+        / "fix17_rvol_history"
+    )
+
+    if history_dir.exists():
+        shutil.rmtree(history_dir)
+
+    history_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    # Functions loaded by runpy keep this namespace as globals.
+    # Point only RAW_DIR to the temporary adapter directory.
+    ns["RAW_DIR"] = history_dir
+
+    # --------------------------------------------------------
+    # NORMALIZER FOR save_1m.py OUTPUT
+    # --------------------------------------------------------
+
+    def normalize_saved_1m(df):
+        if df is None or df.empty:
+            return pd.DataFrame()
+
+        x = df.copy()
+
+        required = [
+            "Datetime",
+            "Code",
+            "Open",
+            "High",
+            "Low",
+            "Close",
+            "Volume",
+        ]
+
+        missing = [
+            c for c in required
+            if c not in x.columns
+        ]
+
+        if missing:
+            raise RuntimeError(
+                "saved 1m columns missing: "
+                + ",".join(missing)
+            )
+
+        dt = pd.to_datetime(
+            x["Datetime"],
+            errors="coerce",
+            utc=True,
+        )
+
+        dt = dt.dt.tz_convert(
+            "Asia/Tokyo"
+        ).dt.tz_localize(None)
+
+        x["Datetime"] = dt
+        x = x[
+            x["Datetime"].notna()
+        ].copy()
+
+        x["Code"] = (
+            x["Code"]
+            .astype(str)
+            .map(normalize_code)
+        )
+
+        x = x[
+            x["Code"].isin(code_set)
+        ].copy()
+
+        x["Time"] = (
+            x["Datetime"]
+            .dt.strftime("%H:%M")
+        )
+
+        x["O"] = pd.to_numeric(
+            x["Open"],
+            errors="coerce",
+        )
+        x["H"] = pd.to_numeric(
+            x["High"],
+            errors="coerce",
+        )
+        x["L"] = pd.to_numeric(
+            x["Low"],
+            errors="coerce",
+        )
+        x["C"] = pd.to_numeric(
+            x["Close"],
+            errors="coerce",
+        )
+        x["V"] = pd.to_numeric(
+            x["Volume"],
+            errors="coerce",
+        ).fillna(0.0)
+
+        return x.sort_values(
+            ["Code", "Datetime"]
+        ).reset_index(drop=True)
+
+    # --------------------------------------------------------
+    # DOWNLOAD CURRENT DAY
+    # --------------------------------------------------------
+
+    current_local = (
+        RUNTIME_DIR
+        / f"minute_1m_{today_str}.parquet"
+    )
+
+    bucket.blob(
+        blob_by_date[today_str]
+    ).download_to_filename(
+        str(current_local)
+    )
+
+    current_all = normalize_saved_1m(
+        pd.read_parquet(current_local)
+    )
+
+    current_all = current_all[
+        current_all["Code"].isin(
+            eligible_set
+        )
+    ].copy()
+
+    minute_by_code = {}
+
+    for code, g in current_all.groupby(
+        "Code",
+        sort=False,
+    ):
+        minute_by_code[str(code)] = (
+            g.sort_values("Datetime")
+            .reset_index(drop=True)
+        )
+
+    success_count = len(minute_by_code)
+
+    print(
+        "LONG GCS current 1m:",
+        f"{success_count}/{len(eligible_codes)}",
+    )
+
+    if not minute_by_code:
+        return {}, {}
+
+    active_codes = set(
+        minute_by_code.keys()
+    )
+
+    # --------------------------------------------------------
+    # DOWNLOAD 20 PRIOR SESSIONS AND CREATE ONLY THE TEMPORARY
+    # PER-CODE FILES REQUIRED BY THE EXISTING FIX11 RVOL ENGINE.
+    # --------------------------------------------------------
+
+    for hist_date in history_dates:
+
+        local_path = (
+            RUNTIME_DIR
+            / f"minute_1m_hist_{hist_date}.parquet"
+        )
+
+        bucket.blob(
+            blob_by_date[hist_date]
+        ).download_to_filename(
+            str(local_path)
+        )
+
+        hist = normalize_saved_1m(
+            pd.read_parquet(local_path)
+        )
+
+        hist = hist[
+            hist["Code"].isin(active_codes)
+        ][
+            ["Datetime", "Code", "V"]
+        ].copy()
+
+        for code, g in hist.groupby(
+            "Code",
+            sort=False,
         ):
+            out = (
+                history_dir
+                / f"{hist_date}_{code}.parquet"
+            )
 
-            feature_by_code[
-                str(code)
-            ] = signal
+            g[
+                ["Datetime", "V"]
+            ].to_parquet(
+                out,
+                index=False,
+            )
 
+        try:
+            local_path.unlink()
+        except Exception:
+            pass
+
+    try:
+        current_local.unlink()
+    except Exception:
+        pass
+
+    # --------------------------------------------------------
+    # STRICT HISTORY COVERAGE CHECK
+    # --------------------------------------------------------
+
+    history_ready_codes = []
+
+    for code in sorted(active_codes):
+        count = len(
+            list(
+                history_dir.glob(
+                    f"*_{code}.parquet"
+                )
+            )
+        )
+
+        if count == 20:
+            history_ready_codes.append(code)
+
+    print(
+        "LONG RVOL-ready:",
+        f"{len(history_ready_codes)}/{len(active_codes)}",
+    )
+
+    ready_set = set(history_ready_codes)
+
+    minute_by_code = {
+        code: df
+        for code, df in minute_by_code.items()
+        if code in ready_set
+    }
+
+    feature_by_code = {
+        code: feature_by_code[code]
+        for code in minute_by_code
+        if code in feature_by_code
+    }
+
+    # --------------------------------------------------------
+    # CONTRACT CHECK: EXACT 3-ARG FIX11 CALL
+    # --------------------------------------------------------
+
+    # Do not execute a separate signal pass here. The audited
+    # LONG bridge performs the real call. This signature check
+    # prevents the old two-argument wiring from returning.
+    import inspect
+
+    sig = inspect.signature(
+        find_first_signal
+    )
+
+    if len(sig.parameters) != 3:
+        raise RuntimeError(
+            "FIX11 find_first_signal signature mismatch: "
+            + str(sig)
+        )
 
     return (
         minute_by_code,
@@ -2938,13 +2966,10 @@ def build_fix17_long_live_inputs():
     )
 
 
-
 def generate_fix17_long_live_candidates():
     """
-    Generate FIX17 LONG live candidates and return the
-    same payload shape expected by execute_fix17_candidate_batch().
-
-    Candidate logic itself is unchanged.
+    Generate FIX17 LONG live candidates through the existing
+    audited FIX17 LONG bridge.
     """
 
     from datetime import datetime
@@ -2953,6 +2978,16 @@ def generate_fix17_long_live_candidates():
     minute_by_code, feature_by_code = (
         build_fix17_long_live_inputs()
     )
+
+    market_date = datetime.now(
+        ZoneInfo("Asia/Tokyo")
+    ).date().isoformat()
+
+    if not minute_by_code:
+        return {
+            "market_date": market_date,
+            "candidates": [],
+        }
 
     generator = (
         get_fix17_long_candidate_generator()
@@ -2963,37 +2998,19 @@ def generate_fix17_long_live_candidates():
             "FIX17 LONG candidate generator missing"
         )
 
-
     candidates = generator(
         minute_by_code,
         feature_by_code,
     )
 
-
     if candidates is None:
         candidates = []
-
 
     if not isinstance(
         candidates,
         list,
     ):
-
-        try:
-            candidates = list(
-                candidates
-            )
-
-        except Exception:
-            raise RuntimeError(
-                "FIX17 LONG candidates must be list-compatible"
-            )
-
-
-    market_date = datetime.now(
-        ZoneInfo("Asia/Tokyo")
-    ).date().isoformat()
-
+        candidates = list(candidates)
 
     return {
         "market_date": market_date,
@@ -3003,342 +3020,26 @@ def generate_fix17_long_live_candidates():
 
 def generate_fix17_live_candidates():
     """
-    Generate combined FIX17 paper candidates.
+    Combined FIX17 paper candidate entry point.
 
     LONG:
-        Existing FIX17 LONG bridge.
+        Existing audited FIX17 LONG bridge.
 
     SHORT:
-        Existing FIX11 find_first_signal / choose_candidate.
-
-    No new SHORT threshold is defined here.
+        Disabled because the current audited status is
+        SHORT_ENTRY_CONTRACT_NOT_FULLY_PROVEN.
     """
 
-    from datetime import datetime
-    from zoneinfo import ZoneInfo
-    import runpy
-    from pathlib import Path
-
-
-    minute_by_code, feature_by_code = (
-        build_fix17_long_live_inputs()
+    short_status = (
+        get_fix17_short_generator_status()
     )
 
-
-    market_date = datetime.now(
-        ZoneInfo("Asia/Tokyo")
-    ).date().isoformat()
-
-
-    # Non-trading day
-    if not minute_by_code:
-        return {
-            "market_date": market_date,
-            "candidates": [],
-        }
-
-
-    # --------------------------------------------------------
-    # LONG
-    # --------------------------------------------------------
-
-    long_generator = (
-        get_fix17_long_candidate_generator()
-    )
-
-    if long_generator is None:
+    if short_status.get("enabled", False):
         raise RuntimeError(
-            "FIX17 LONG generator missing"
+            "Unexpected SHORT enablement without proven contract"
         )
 
-
-    long_candidates = long_generator(
-        minute_by_code,
-        feature_by_code,
-    )
-
-
-    if long_candidates is None:
-        long_candidates = []
-
-    long_candidates = list(
-        long_candidates
-    )
-
-
-    # --------------------------------------------------------
-    # LOAD EXISTING FIX11 ENTRY FUNCTIONS
-    # --------------------------------------------------------
-
-    repo_dir = Path(
-        __file__
-    ).resolve().parent
-
-    fix11_path = (
-        repo_dir
-        / ".github"
-        / "workflows"
-        / "fix11_paper_trader.py"
-    )
-
-
-    if not fix11_path.exists():
-        raise RuntimeError(
-            "FIX11 paper trader missing"
-        )
-
-
-    ns = runpy.run_path(
-        str(fix11_path),
-        run_name="__fix17_short_live__",
-    )
-
-
-    find_first_signal = ns.get(
-        "find_first_signal"
-    )
-
-    choose_candidate = ns.get(
-        "choose_candidate"
-    )
-
-
-    if find_first_signal is None:
-        raise RuntimeError(
-            "FIX11 find_first_signal missing"
-        )
-
-    if choose_candidate is None:
-        raise RuntimeError(
-            "FIX11 choose_candidate missing"
-        )
-
-
-    # --------------------------------------------------------
-    # SHORT SIGNALS
-    # --------------------------------------------------------
-
-    short_signals = []
-
-
-    for code, minute_df in minute_by_code.items():
-
-        signal = None
-
-
-        try:
-            signal = find_first_signal(
-                code,
-                minute_df,
-            )
-
-        except TypeError:
-
-            try:
-                signal = find_first_signal(
-                    minute_df,
-                    code,
-                )
-
-            except Exception:
-                signal = None
-
-        except Exception:
-            signal = None
-
-
-        if signal is None:
-            continue
-
-
-        if hasattr(
-            signal,
-            "to_dict",
-        ):
-            try:
-                signal = signal.to_dict()
-            except Exception:
-                pass
-
-
-        if not isinstance(
-            signal,
-            dict,
-        ):
-            continue
-
-
-        side = str(
-            signal.get(
-                "Side",
-                signal.get(
-                    "side",
-                    "",
-                ),
-            )
-        ).upper()
-
-
-        if side != "SHORT":
-            continue
-
-
-        item = dict(
-            signal
-        )
-
-        item["side"] = "SHORT"
-
-        item["code"] = str(
-            item.get(
-                "code",
-                item.get(
-                    "Code",
-                    code,
-                ),
-            )
-        )
-
-
-        short_signals.append(
-            item
-        )
-
-
-    # --------------------------------------------------------
-    # EXISTING FIX11 SHORT RANKING
-    # --------------------------------------------------------
-
-    short_candidates = []
-
-
-    if short_signals:
-
-        selected = None
-        last_type_error = None
-
-
-        # Do not recreate ranking.
-        # Use the existing FIX11 function.
-        for args in (
-            (short_signals,),
-            (short_signals, "SHORT"),
-            ("SHORT", short_signals),
-        ):
-
-            try:
-                selected = choose_candidate(
-                    *args
-                )
-                last_type_error = None
-                break
-
-            except TypeError as e:
-                last_type_error = e
-
-
-        if (
-            selected is None
-            and
-            last_type_error is not None
-        ):
-            raise RuntimeError(
-                "FIX11 choose_candidate signature mismatch"
-            ) from last_type_error
-
-
-        if selected is not None:
-
-            if hasattr(
-                selected,
-                "to_dict",
-            ):
-                try:
-                    selected = selected.to_dict()
-                except Exception:
-                    pass
-
-
-            if isinstance(
-                selected,
-                dict,
-            ):
-
-                selected = dict(
-                    selected
-                )
-
-                selected["side"] = "SHORT"
-
-                selected["code"] = str(
-                    selected.get(
-                        "code",
-                        selected.get(
-                            "Code",
-                            "",
-                        ),
-                    )
-                )
-
-                short_candidates = [
-                    selected
-                ]
-
-
-            elif isinstance(
-                selected,
-                (list, tuple),
-            ):
-
-                for x in selected:
-
-                    if hasattr(
-                        x,
-                        "to_dict",
-                    ):
-                        try:
-                            x = x.to_dict()
-                        except Exception:
-                            continue
-
-
-                    if not isinstance(
-                        x,
-                        dict,
-                    ):
-                        continue
-
-
-                    x = dict(
-                        x
-                    )
-
-                    x["side"] = "SHORT"
-
-                    x["code"] = str(
-                        x.get(
-                            "code",
-                            x.get(
-                                "Code",
-                                "",
-                            ),
-                        )
-                    )
-
-                    short_candidates.append(
-                        x
-                    )
-
-
-    return {
-        "market_date": market_date,
-        "candidates": (
-            long_candidates
-            + short_candidates
-        ),
-    }
-
-
+    return generate_fix17_long_live_candidates()
 
 def execute_fix17_candidate_batch():
 
@@ -3993,4 +3694,3 @@ if __name__ == "__main__":
         sys.exit(
             1
         )
-
