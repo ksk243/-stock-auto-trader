@@ -3,13 +3,10 @@ name: FIX17 Save 1m
 on:
   workflow_dispatch:
 
-  schedule:
-    # 16:15 JST / weekdays
-    - cron: "15 7 * * 1-5"
-
 permissions:
   contents: read
   id-token: write
+  actions: write
 
 jobs:
   save-1m:
@@ -55,3 +52,9 @@ jobs:
       - name: Save 1-minute data
         run: |
           python save_1m.py
+
+      - name: Start FIX17 Paper Trader
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run fix17_paper_trader_auto.yml --ref main
