@@ -1122,6 +1122,21 @@ def normalize_code(
 
         code = code[:-2]
 
+    # JPX / J-Quants 5-character normal code:
+    #   72030 -> 7203
+    #   130A0 -> 130A
+    # 5-character preferred/class-share codes that do not end in 0
+    # remain unchanged (e.g. 25935, 94346).
+    if (
+
+        len(code) == 5
+
+        and code.endswith("0")
+
+    ):
+
+        code = code[:-1]
+
     return code
 
 def normalize_side(
