@@ -6,6 +6,15 @@
 #
 # LONG only.
 # SHORT is intentionally blocked.
+#
+# IMPORTANT:
+#   FIX11 ENTRY logic is NOT modified.
+#   FIX17 ENTRY logic is NOT modified.
+#
+# FIX:
+#   Connect the freshly loaded FIX11 namespace to the
+#   FIX17 temporary RVOL20 history directory created by
+#   paper_trader.py.
 # ============================================================
 
 from pathlib import Path
@@ -25,6 +34,17 @@ def _load_fix11_entry_namespace():
     """
     Load the FIX11 entry implementation stored permanently
     inside this GitHub repository.
+
+    IMPORTANT:
+    paper_trader.py creates the temporary FIX17 RVOL20 history:
+
+        data/runtime/fix17_rvol_history
+
+    The FIX11 namespace loaded here is a NEW runpy namespace.
+    Therefore its RAW_DIR must explicitly be connected to the
+    same temporary history directory.
+
+    No FIX11 trading rule is changed.
     """
 
     import runpy
@@ -69,8 +89,105 @@ def _load_fix11_entry_namespace():
             + ", ".join(missing)
         )
 
-    return ns
+    # ========================================================
+    # FIX17 RVOL HISTORY CONNECTION
+    #
+    # paper_trader.py creates:
+    #
+    #   repo/data/runtime/fix17_rvol_history
+    #
+    # The functions loaded above have their own globals dict
+    # because runpy.run_path() created a new namespace.
+    #
+    # Bind ONLY RAW_DIR.
+    # Trading logic is unchanged.
+    # ========================================================
 
+    history_dir = (
+        repo_dir
+        / "data"
+        / "runtime"
+        / "fix17_rvol_history"
+    )
+
+    # Fallback:
+    # use the same runtime location used by paper_trader.py
+    # if the repository layout differs.
+    if not history_dir.exists():
+
+        candidates = [
+            repo_dir
+            / "runtime"
+            / "fix17_rvol_history",
+
+            repo_dir
+            / "data"
+            / "runtime"
+            / "fix17_rvol_history",
+        ]
+
+        found = [
+            p
+            for p in candidates
+            if p.exists()
+            and p.is_dir()
+        ]
+
+        if found:
+            history_dir = found[0]
+
+    if not history_dir.exists():
+        raise RuntimeError(
+            "FIX17 RVOL history directory missing: "
+            + str(history_dir)
+        )
+
+    history_files = list(
+        history_dir.glob(
+            "*.parquet"
+        )
+    )
+
+    if not history_files:
+        raise RuntimeError(
+            "FIX17 RVOL history directory is empty: "
+            + str(history_dir)
+        )
+
+    # runpy functions retain their own globals dictionary.
+    # Bind the existing audited FIX11 functions to the
+    # FIX17-prepared history directory.
+    for fn_name in [
+        "get_history_files_for_code",
+        "calc_rvol20",
+        "find_first_signal",
+    ]:
+
+        fn = ns.get(
+            fn_name
+        )
+
+        if fn is None:
+            raise RuntimeError(
+                "FIX11 required RVOL function missing: "
+                + fn_name
+            )
+
+        fn.__globals__[
+            "RAW_DIR"
+        ] = history_dir
+
+    print(
+        "FIX17 bridge RVOL history:",
+        str(history_dir)
+    )
+
+    print(
+        "FIX17 bridge RVOL files:",
+        len(history_files)
+    )
+
+    return ns
 
 
 def _finite(v):
@@ -83,8 +200,9 @@ def _finite(v):
         return False
 
 
-
-# === FIX17 STEP9B FORMAL ENTRY PRICE ===
+# ============================================================
+# FIX17 STEP9B FORMAL ENTRY PRICE
+# ============================================================
 
 def resolve_fix17_formal_entry_price(
     minute_df,
@@ -167,8 +285,10 @@ def resolve_fix17_formal_entry_price(
         row["Datetime"],
     )
 
-# === END FIX17 STEP9B FORMAL ENTRY PRICE ===
 
+# ============================================================
+# SIGNAL -> FIX17 CANDIDATE
+# ============================================================
 
 def convert_fix11_long_signal_to_fix17(
     signal,
@@ -185,7 +305,6 @@ def convert_fix11_long_signal_to_fix17(
     """
 
     if not signal:
-
         return None
 
     side = str(
@@ -291,7 +410,6 @@ def convert_fix11_long_signal_to_fix17(
         "EntryDatetime":
             formal_entry_datetime,
 
-
         "RS20_corrected":
             float(rs),
 
@@ -337,6 +455,10 @@ def convert_fix11_long_signal_to_fix17(
     }
 
 
+# ============================================================
+# LONG GENERATOR
+# ============================================================
+
 def generate_fix17_long_candidates(
     minute_by_code,
     feature_by_code,
@@ -370,6 +492,9 @@ def generate_fix17_long_candidates(
 
     raw = []
 
+    scanned = 0
+    long_signals = 0
+
     for code, minute_df in (
         minute_by_code.items()
     ):
@@ -380,6 +505,8 @@ def generate_fix17_long_candidates(
 
         if feature is None:
             continue
+
+        scanned += 1
 
         signal = find_first_signal(
             code,
@@ -402,9 +529,23 @@ def generate_fix17_long_candidates(
         ):
             continue
 
+        long_signals += 1
+
         raw.append(
             signal
         )
+
+    # Diagnostic only.
+    # Does not change candidate selection.
+    print(
+        "FIX17 bridge scanned:",
+        scanned
+    )
+
+    print(
+        "FIX17 bridge LONG signals:",
+        long_signals
+    )
 
     if not raw:
         return []
@@ -438,6 +579,10 @@ def generate_fix17_long_candidates(
         candidate
     ]
 
+
+# ============================================================
+# SHORT STATUS
+# ============================================================
 
 def short_generator_status():
 
