@@ -2710,9 +2710,21 @@ def build_fix17_long_live_inputs():
         exist_ok=True,
     )
 
-    # Functions loaded by runpy keep this namespace as globals.
-    # Point only RAW_DIR to the temporary adapter directory.
-    ns["RAW_DIR"] = history_dir
+    # Functions returned by runpy keep their own globals dict.
+    # Point the existing audited FIX11 functions themselves to the
+    # temporary RVOL history directory. No FIX17/FIX11 trading rule
+    # is changed here; this only connects the input storage path.
+    for _fn_name in (
+        "get_history_files_for_code",
+        "calc_rvol20",
+        "find_first_signal",
+    ):
+        _fn = ns.get(_fn_name)
+        if _fn is None:
+            raise RuntimeError(
+                f"FIX11 {_fn_name} missing"
+            )
+        _fn.__globals__["RAW_DIR"] = history_dir
 
     # --------------------------------------------------------
     # NORMALIZER FOR save_1m.py OUTPUT
