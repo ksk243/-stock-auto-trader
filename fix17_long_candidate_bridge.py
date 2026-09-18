@@ -341,22 +341,35 @@ def convert_fix11_signal_to_fix17(
     return candidate
 
 
-def _generate_selected_side(
+def generate_fix17_long_short_candidates(
     minute_by_code,
     feature_by_code,
-    side,
 ):
+    """
+    Single-pass FIX17 LONG + SHORT bridge.
+
+    IMPORTANT:
+      - Each code is scanned exactly ONCE.
+      - Signal generation remains the recovered FIX11
+        find_first_signal() implementation.
+      - LONG/SHORT are only separated AFTER the signal is returned.
+      - Candidate ordering remains FIX11 choose_candidate().
+      - At most one LONG and one SHORT are returned.
+    """
+
     ns = _load_fix11_entry_namespace()
 
     find_first_signal = ns[
         "find_first_signal"
     ]
-
     choose_candidate = ns[
         "choose_candidate"
     ]
 
-    raw = []
+    raw_long = []
+    raw_short = []
+
+    scanned = 0
 
     for code, minute_df in (
         minute_by_code.items()
@@ -368,6 +381,8 @@ def _generate_selected_side(
         if feature is None:
             continue
 
+        scanned += 1
+
         signal = find_first_signal(
             code,
             minute_df,
@@ -377,115 +392,145 @@ def _generate_selected_side(
         if not signal:
             continue
 
-        if (
-            str(
-                signal.get(
-                    "Side",
-                    "",
-                )
-            ).upper()
-            != side
-        ):
-            continue
+        side = str(
+            signal.get(
+                "Side",
+                "",
+            )
+        ).upper()
 
-        raw.append(
-            signal
-        )
+        if side == "LONG":
+            raw_long.append(
+                signal
+            )
+
+        elif side == "SHORT":
+            raw_short.append(
+                signal
+            )
 
     print(
-        f"FIX17 bridge {side} signals:",
-        len(raw),
+        "FIX17 bridge scanned:",
+        scanned,
+    )
+    print(
+        "FIX17 bridge LONG signals:",
+        len(raw_long),
+    )
+    print(
+        "FIX17 bridge SHORT signals:",
+        len(raw_short),
     )
 
-    if not raw:
-        return []
+    result = []
 
-    selected = choose_candidate(
-        raw,
-        side,
-    )
-
-    if not selected:
-        return []
-
-    code = str(
-        selected.get(
-            "Code",
-            "",
+    if raw_long:
+        selected_long = (
+            choose_candidate(
+                raw_long,
+                "LONG",
+            )
         )
-    )
 
-    candidate = (
-        convert_fix11_signal_to_fix17(
-            selected,
-            minute_by_code.get(
-                code
-            ),
+        if selected_long:
+            code = str(
+                selected_long.get(
+                    "Code",
+                    "",
+                )
+            )
+
+            candidate = (
+                convert_fix11_signal_to_fix17(
+                    selected_long,
+                    minute_by_code.get(
+                        code
+                    ),
+                )
+            )
+
+            if candidate is not None:
+                result.append(
+                    candidate
+                )
+
+    if raw_short:
+        selected_short = (
+            choose_candidate(
+                raw_short,
+                "SHORT",
+            )
         )
-    )
 
-    if candidate is None:
-        return []
+        if selected_short:
+            code = str(
+                selected_short.get(
+                    "Code",
+                    "",
+                )
+            )
 
-    return [
-        candidate
-    ]
+            candidate = (
+                convert_fix11_signal_to_fix17(
+                    selected_short,
+                    minute_by_code.get(
+                        code
+                    ),
+                )
+            )
+
+            if candidate is not None:
+                result.append(
+                    candidate
+                )
+
+    return result
 
 
 def generate_fix17_long_candidates(
     minute_by_code,
     feature_by_code,
 ):
-    return _generate_selected_side(
-        minute_by_code,
-        feature_by_code,
-        "LONG",
-    )
+    """
+    Compatibility wrapper.
+    Uses the same single-pass combined generator and returns LONG only.
+    """
+    return [
+        c
+        for c in generate_fix17_long_short_candidates(
+            minute_by_code,
+            feature_by_code,
+        )
+        if str(
+            c.get(
+                "side",
+                "",
+            )
+        ).upper() == "LONG"
+    ]
 
 
 def generate_fix17_short_candidates(
     minute_by_code,
     feature_by_code,
 ):
-    return _generate_selected_side(
-        minute_by_code,
-        feature_by_code,
-        "SHORT",
-    )
-
-
-def generate_fix17_long_short_candidates(
-    minute_by_code,
-    feature_by_code,
-):
     """
-    At most one LONG and one SHORT.
-    Both are selected independently using the recovered FIX11
-    choose_candidate() ordering.
+    Compatibility wrapper.
+    Uses the same single-pass combined generator and returns SHORT only.
     """
-    long_candidates = (
-        generate_fix17_long_candidates(
+    return [
+        c
+        for c in generate_fix17_long_short_candidates(
             minute_by_code,
             feature_by_code,
         )
-    )
-
-    short_candidates = (
-        generate_fix17_short_candidates(
-            minute_by_code,
-            feature_by_code,
-        )
-    )
-
-    return (
-        list(
-            long_candidates
-        )
-        +
-        list(
-            short_candidates
-        )
-    )
+        if str(
+            c.get(
+                "side",
+                "",
+            )
+        ).upper() == "SHORT"
+    ]
 
 
 def short_generator_status():
