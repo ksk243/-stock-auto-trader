@@ -2958,7 +2958,7 @@ def get_fix17_position_state(
 
 def build_fix17_long_live_inputs():
     """
-    FIX17 LONG live input builder.
+    FIX17 LONG + SHORT live input builder.
 
     Current / historical 1m data:
         Existing FIX17 Save 1m data in GCS
@@ -2970,7 +2970,7 @@ def build_fix17_long_live_inputs():
         - FIX17 official source is not modified.
         - FIX11 find_first_signal / calc_rvol20 are not rewritten.
         - Only the input adapter is implemented here.
-        - SHORT live execution remains disabled.
+        - LONG and SHORT live inputs are both enabled.
     """
 
     import re
@@ -3107,7 +3107,7 @@ def build_fix17_long_live_inputs():
             item["Code"] = code
             feature_by_code[code] = item
 
-    # LONG necessary daily filters only.
+    # LONG + SHORT necessary daily filters only.
     # These are not new rules; find_first_signal applies the
     # same FIX11 rules again. This only avoids creating tens of
     # thousands of unnecessary temporary history files.
@@ -3131,13 +3131,16 @@ def build_fix17_long_live_inputs():
         if (
             math.isfinite(rs20)
             and math.isfinite(turnover)
-            and rs20 >= 80.0
             and turnover >= 3.0
+            and (
+                rs20 >= 80.0
+                or rs20 <= 20.0
+            )
         ):
             eligible_codes.append(code)
 
     print(
-        "LONG daily eligible:",
+        "LONG+SHORT daily eligible:",
         f"{len(eligible_codes)}/{len(codes)}",
     )
 
@@ -3266,13 +3269,16 @@ def build_fix17_long_live_inputs():
         if (
             math.isfinite(rs20)
             and math.isfinite(turnover)
-            and rs20 >= 80.0
             and turnover >= 3.0
+            and (
+                rs20 >= 80.0
+                or rs20 <= 20.0
+            )
         ):
             eligible_codes.append(code)
 
     print(
-        "LONG daily eligible target:",
+        "LONG+SHORT daily eligible target:",
         f"{len(eligible_codes)}/{len(codes)}",
     )
 
@@ -3456,7 +3462,7 @@ def build_fix17_long_live_inputs():
     success_count = len(minute_by_code)
 
     print(
-        "LONG GCS current 1m:",
+        "LONG+SHORT GCS current 1m:",
         f"{success_count}/{len(eligible_codes)}",
     )
 
@@ -3540,7 +3546,7 @@ def build_fix17_long_live_inputs():
             history_ready_codes.append(code)
 
     print(
-        "LONG RVOL-ready:",
+        "LONG+SHORT RVOL-ready:",
         f"{len(history_ready_codes)}/{len(active_codes)}",
     )
 
