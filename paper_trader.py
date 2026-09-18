@@ -2812,6 +2812,8 @@ def get_fix17_position_state(
     state,
     market_date,
 ):
+    import pandas as pd
+
     """
     Convert the paper-state representation into the formal FIX17/FIX13
     broker_active contract used by calc_entry_time_position_state().
