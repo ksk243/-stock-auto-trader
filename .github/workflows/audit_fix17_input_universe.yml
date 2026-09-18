@@ -1,0 +1,54 @@
+name: FIX17 Input Universe Audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  audit-input-universe:
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 30
+
+    env:
+      TZ: Asia/Tokyo
+
+      GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+      GCS_1M_PREFIX: fix17/minute_1m
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run FIX17 Input Universe Audit
+        run: |
+          python audit_fix17_input_universe.py
+
+      - name: Upload audit CSV
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fix17-input-universe-audit
+          path: fix17_input_universe_audit.csv
+          if-no-files-found: ignore
