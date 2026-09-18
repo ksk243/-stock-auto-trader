@@ -1038,6 +1038,32 @@ def load_fix17_runtime_module():
 
     )
 
+    # --------------------------------------------------------
+    # GitHub Actions compatibility for frozen FIX17 source.
+    # The official source imports google.colab.auth, which is
+    # unavailable on GitHub Actions. Google Cloud auth is already
+    # supplied by the workflow, so authenticate_user() is a no-op.
+    # The frozen FIX17 source itself is NOT modified.
+    # --------------------------------------------------------
+    if "google.colab" not in sys.modules:
+        import types
+        import google
+
+        _colab_module = types.ModuleType("google.colab")
+        _colab_auth_module = types.ModuleType("google.colab.auth")
+
+        def _github_actions_authenticate_user(*args, **kwargs):
+            return None
+
+        _colab_auth_module.authenticate_user = (
+            _github_actions_authenticate_user
+        )
+        _colab_module.auth = _colab_auth_module
+
+        sys.modules["google.colab"] = _colab_module
+        sys.modules["google.colab.auth"] = _colab_auth_module
+        setattr(google, "colab", _colab_module)
+
     spec.loader.exec_module(
 
         module
