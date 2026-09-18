@@ -53,6 +53,40 @@ def _load_fix11_entry_namespace():
             + ", ".join(missing)
         )
 
+    # IMPORTANT:
+    # build_fix17_long_live_inputs() has already created the exact
+    # 20-session per-code RVOL history here. runpy.run_path() above
+    # creates a NEW FIX11 namespace, so its functions must be pointed
+    # to the same prepared history directory too.
+    history_dir = (
+        repo_dir
+        / "runtime"
+        / "fix17_rvol_history"
+    )
+
+    if not history_dir.exists():
+        raise RuntimeError(
+            "FIX17 bridge RVOL history missing: "
+            + str(history_dir)
+        )
+
+    for fn_name in (
+        "get_history_files_for_code",
+        "calc_rvol20",
+        "find_first_signal",
+    ):
+        fn = ns.get(fn_name)
+        if fn is None:
+            raise RuntimeError(
+                f"FIX11 {fn_name} missing"
+            )
+        fn.__globals__["RAW_DIR"] = history_dir
+
+    print(
+        "FIX17 bridge RVOL history:",
+        history_dir,
+    )
+
     return ns
 
 
