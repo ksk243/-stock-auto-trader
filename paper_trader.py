@@ -2858,12 +2858,37 @@ def get_fix17_position_state(
         )
 
         entry_datetime = p.get(
-            "entry_datetime",
-            p.get(
-                "market_date",
-                market_date,
-            ),
+            "entry_datetime"
         )
+
+        # Saved paper positions created before EntryDatetime was
+        # populated can contain the key with None / "" / NaT.
+        # p.get(key, fallback) does not fall back when the key exists,
+        # so normalize the adapter value here before handing it to the
+        # unchanged FIX17 runtime.
+        try:
+            _entry_dt_check = pd.to_datetime(
+                entry_datetime,
+                errors="coerce",
+            )
+        except Exception:
+            _entry_dt_check = pd.NaT
+
+        if pd.isna(_entry_dt_check):
+            entry_datetime = p.get(
+                "market_date"
+            )
+
+            try:
+                _entry_dt_check = pd.to_datetime(
+                    entry_datetime,
+                    errors="coerce",
+                )
+            except Exception:
+                _entry_dt_check = pd.NaT
+
+        if pd.isna(_entry_dt_check):
+            entry_datetime = market_date
 
         broker_active[
             trade_id
