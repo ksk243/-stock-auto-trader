@@ -3092,6 +3092,7 @@ def generate_fix17_long_live_candidates():
 
     from datetime import datetime
     from zoneinfo import ZoneInfo
+    import pandas as pd
 
     minute_by_code, feature_by_code = (
         build_fix17_long_live_inputs()
