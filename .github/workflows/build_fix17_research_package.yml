@@ -1,0 +1,155 @@
+name: Build FIX17 Research Package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-fix17-research:
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 120
+
+    env:
+      TZ: Asia/Tokyo
+
+      # 現在Paper Traderで使っているGCS bucket。
+      # Repository Secret GCS_BUCKET があればそちらを優先。
+      GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+
+    steps:
+
+      # ======================================================
+      # CHECKOUT
+      # ======================================================
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+      # ======================================================
+      # GOOGLE CLOUD AUTH
+      # ======================================================
+
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+
+      # ======================================================
+      # GCLOUD
+      # ======================================================
+
+      - name: Setup Google Cloud
+        uses: google-github-actions/setup-gcloud@v3
+
+
+      # ======================================================
+      # PYTHON
+      # ======================================================
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+
+      # ======================================================
+      # ENVIRONMENT CHECK
+      # ======================================================
+
+      - name: Environment check
+        run: |
+          python --version
+          gcloud --version
+
+          echo "Repository:"
+          pwd
+
+          echo "GCS_BUCKET=${GCS_BUCKET}"
+
+          echo "FIX17 files:"
+          find . \
+            -type f \
+            -name 'FIX17_OFFICIAL_FULL_SOURCE.py' \
+            -print
+
+
+      # ======================================================
+      # BUILD PACKAGE
+      #
+      # 過去データ量によって時間がかかる可能性あり。
+      # ======================================================
+
+      - name: Build FIX17 Research Package
+        run: |
+          python build_fix17_research_package.py
+
+
+      # ======================================================
+      # SHOW RESULT
+      # ======================================================
+
+      - name: Show package
+        if: always()
+        run: |
+          echo "========================================"
+          echo "PACKAGE"
+          echo "========================================"
+
+          ls -lh FIX17_RESEARCH.zip 2>/dev/null || true
+
+          echo
+          echo "========================================"
+          echo "MANIFEST"
+          echo "========================================"
+
+          cat \
+            _fix17_research_build/FIX17_RESEARCH/manifest/FIX17_RESEARCH_MANIFEST.json \
+            2>/dev/null || true
+
+
+      # ======================================================
+      # UPLOAD TO GITHUB ACTIONS
+      #
+      # ここからPCへ1回保存する。
+      # ======================================================
+
+      - name: Upload FIX17 Research Package
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FIX17_RESEARCH
+          path: FIX17_RESEARCH.zip
+          if-no-files-found: error
+          retention-days: 30
+
+
+      # ======================================================
+      # FAILURE DIAGNOSTIC
+      # ======================================================
+
+      - name: Failure diagnostic
+        if: failure()
+        run: |
+          echo "========================================"
+          echo "FIX17 RESEARCH BUILD FAILED"
+          echo "========================================"
+
+          echo
+          echo "Repository FIX17 files:"
+          find . \
+            -type f \
+            -iname '*fix17*' \
+            -print \
+            2>/dev/null || true
+
+          echo
+          echo "Repository top level:"
+          ls -lah
