@@ -2685,16 +2685,107 @@ def build_fix17_long_live_inputs():
         if m:
             blob_by_date[m.group(1)] = blob.name
 
-    if today_str not in blob_by_date:
+    # --------------------------------------------------------
+    # TARGET MARKET DATE
+    #
+    # Do NOT require a file for the calendar date on which this
+    # job happens to run.  Use the latest saved FIX17 1m session
+    # that is not later than today.
+    #
+    # Example:
+    #   job run  : 2026-09-18 09:00 JST
+    #   latest 1m: 2026-09-17
+    #   target   : 2026-09-17
+    #
+    # This keeps morning/manual reruns usable while preserving
+    # No-Future: daily features and RVOL history are both cut at
+    # the selected target session.
+    # --------------------------------------------------------
+
+    available_dates = sorted(
+        d
+        for d in blob_by_date
+        if d <= today_str
+    )
+
+    if not available_dates:
         raise RuntimeError(
-            "FIX17 current 1m GCS file missing: "
-            f"{prefix}/date={today_str}/minute_1m.parquet"
+            "FIX17 1m GCS file not found on or before: "
+            + today_str
         )
+
+    target_date_str = available_dates[-1]
+    target_date = pd.Timestamp(target_date_str)
+
+    print(
+        "FIX17 target 1m date:",
+        target_date_str,
+    )
+
+    # Rebuild the daily feature map on the exact target date.
+    # build_daily_features() itself uses Date < target_date, so
+    # the target day's daily bar is never used for its own signal.
+    features = build_daily_features(
+        daily,
+        target_date,
+    )
+
+    if features is None or features.empty:
+        raise RuntimeError(
+            "FIX11 daily features empty for target date: "
+            + target_date_str
+        )
+
+    feature_by_code = {}
+
+    for _, row in features.iterrows():
+        item = row.to_dict()
+        code = normalize_code(
+            item.get("Code", "")
+        )
+        if code:
+            item["Code"] = code
+            feature_by_code[code] = item
+
+    eligible_codes = []
+
+    for code in codes:
+        feature = feature_by_code.get(code)
+        if feature is None:
+            continue
+
+        try:
+            rs20 = float(feature.get("RS20"))
+            turnover = float(
+                feature.get(
+                    "turnover_median_20d_oku"
+                )
+            )
+        except Exception:
+            continue
+
+        if (
+            math.isfinite(rs20)
+            and math.isfinite(turnover)
+            and rs20 >= 80.0
+            and turnover >= 3.0
+        ):
+            eligible_codes.append(code)
+
+    print(
+        "LONG daily eligible target:",
+        f"{len(eligible_codes)}/{len(codes)}",
+    )
+
+    if not eligible_codes:
+        return {}, {}
+
+    eligible_set = set(eligible_codes)
 
     history_dates = sorted(
         d
         for d in blob_by_date
-        if d < today_str
+        if d < target_date_str
     )[-20:]
 
     if len(history_dates) != 20:
@@ -2833,11 +2924,11 @@ def build_fix17_long_live_inputs():
 
     current_local = (
         RUNTIME_DIR
-        / f"minute_1m_{today_str}.parquet"
+        / f"minute_1m_{target_date_str}.parquet"
     )
 
     bucket.blob(
-        blob_by_date[today_str]
+        blob_by_date[target_date_str]
     ).download_to_filename(
         str(current_local)
     )
@@ -3006,9 +3097,32 @@ def generate_fix17_long_live_candidates():
         build_fix17_long_live_inputs()
     )
 
-    market_date = datetime.now(
-        ZoneInfo("Asia/Tokyo")
-    ).date().isoformat()
+    # Use the actual GCS 1m session selected by the input builder,
+    # not the calendar date on which this job happens to run.
+    market_date = None
+
+    if minute_by_code:
+        first_df = next(iter(minute_by_code.values()))
+        if (
+            first_df is not None
+            and not first_df.empty
+            and "Datetime" in first_df.columns
+        ):
+            market_date = (
+                pd.to_datetime(
+                    first_df["Datetime"],
+                    errors="coerce",
+                )
+                .dropna()
+                .iloc[0]
+                .date()
+                .isoformat()
+            )
+
+    if market_date is None:
+        market_date = datetime.now(
+            ZoneInfo("Asia/Tokyo")
+        ).date().isoformat()
 
     if not minute_by_code:
         return {
