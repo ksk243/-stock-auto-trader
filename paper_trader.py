@@ -2040,8 +2040,7 @@ def validate_candidate(candidate):
 
         required_short = [
             "ORB15_ShortSignal",
-            "is_lending",
-            "_entered",
+            "BacktestReady",
         ]
 
         missing_short = [
@@ -2080,26 +2079,14 @@ def validate_candidate(candidate):
 
         if (
             candidate[
-                "is_lending"
+                "BacktestReady"
             ]
             is not True
         ):
 
             raise RuntimeError(
                 "FIX17 SHORT ENTRY CONTRACT違反: "
-                "is_lending != True"
-            )
-
-        if (
-            candidate[
-                "_entered"
-            ]
-            is not True
-        ):
-
-            raise RuntimeError(
-                "FIX17 SHORT ENTRY CONTRACT違反: "
-                "_entered != True"
+                "BacktestReady != True"
             )
 
         # ----------------------------------------------------
@@ -2113,10 +2100,10 @@ def validate_candidate(candidate):
         # ----------------------------------------------------
 
         contract_status = (
-            "PROVEN_EFFECTIVE_SHORT"
+            "PROVEN_FIX11_SHORT"
         )
 
-        live_entry_allowed = False
+        live_entry_allowed = True
 
     else:
 
@@ -2194,6 +2181,7 @@ def validate_candidate(candidate):
 # === FIX17 STEP9B LONG SIZING ===
 
 FIX17_LONG_TOTAL_LEVERAGE = 1.0
+FIX17_SHORT_TOTAL_LEVERAGE = 0.5
 
 
 def calculate_fix17_long_remaining_capacity(
@@ -2309,6 +2297,102 @@ def calculate_fix17_long_remaining_capacity(
 # === END FIX17 STEP9B LONG SIZING ===
 
 
+
+def calculate_fix17_short_remaining_capacity(
+    state,
+):
+    """
+    FIX17 paper sizing:
+        SHORT total leverage cap = 0.5 x equity.
+        LONG and SHORT capacities are managed independently.
+    """
+
+    try:
+        equity = float(
+            state.get(
+                "equity",
+                state.get(
+                    "cash",
+                    state.get(
+                        "initial_equity",
+                        0.0,
+                    ),
+                ),
+            )
+        )
+    except Exception:
+        equity = 0.0
+
+    if equity <= 0:
+        return 0.0
+
+    existing_short_notional = 0.0
+
+    for p in state.get(
+        "positions",
+        [],
+    ):
+        if not isinstance(
+            p,
+            dict,
+        ):
+            continue
+
+        if str(
+            p.get(
+                "status",
+                "OPEN",
+            )
+        ).upper() not in {
+            "OPEN",
+            "ACTIVE",
+        }:
+            continue
+
+        if str(
+            p.get(
+                "side",
+                "",
+            )
+        ).upper() != "SHORT":
+            continue
+
+        try:
+            existing_short_notional += abs(
+                float(
+                    p.get(
+                        "entry_notional",
+                        float(
+                            p.get(
+                                "entry_price",
+                                0.0,
+                            )
+                        )
+                        *
+                        int(
+                            p.get(
+                                "qty",
+                                0,
+                            )
+                        ),
+                    )
+                )
+            )
+        except Exception:
+            continue
+
+    max_short_notional = (
+        equity
+        * FIX17_SHORT_TOTAL_LEVERAGE
+    )
+
+    return max(
+        0.0,
+        max_short_notional
+        - existing_short_notional,
+    )
+
+
 def calculate_fix17_order(
 
     runtime,
@@ -2319,15 +2403,31 @@ def calculate_fix17_order(
 
 ):
 
-    long_remaining_capacity = (
-        calculate_fix17_long_remaining_capacity(
-            state
+    requested_side = normalize_side(
+        candidate.get(
+            "side",
+            "",
         )
     )
 
+    if requested_side == "LONG":
+        remaining_capacity = (
+            calculate_fix17_long_remaining_capacity(
+                state
+            )
+        )
+    elif requested_side == "SHORT":
+        remaining_capacity = (
+            calculate_fix17_short_remaining_capacity(
+                state
+            )
+        )
+    else:
+        remaining_capacity = 0.0
+
     candidate_for_validation = dict(candidate)
     candidate_for_validation["target_notional"] = (
-        long_remaining_capacity
+        remaining_capacity
     )
 
     candidate = validate_candidate(
@@ -2367,13 +2467,20 @@ def calculate_fix17_order(
 
     ]
 
-    long_remaining_capacity = (
-        calculate_fix17_long_remaining_capacity(
-            state
+    if side == "LONG":
+        remaining_capacity = (
+            calculate_fix17_long_remaining_capacity(
+                state
+            )
         )
-    )
+    else:
+        remaining_capacity = (
+            calculate_fix17_short_remaining_capacity(
+                state
+            )
+        )
 
-    target_notional = long_remaining_capacity
+    target_notional = remaining_capacity
 
     if active_trade_id_exists(
 
@@ -3449,41 +3556,49 @@ def build_fix17_long_live_inputs():
     )
 
 
-def generate_fix17_long_live_candidates():
+def generate_fix17_live_candidates():
     """
-    Generate FIX17 LONG live candidates through the existing
-    audited FIX17 LONG bridge.
+    Combined FIX17 paper candidate entry point.
+
+    The same audited live inputs are passed to the recovered FIX11
+    signal engine once. LONG and SHORT are independently selected:
+        choose_candidate(..., "LONG")
+        choose_candidate(..., "SHORT")
     """
 
     from datetime import datetime
     from zoneinfo import ZoneInfo
     import pandas as pd
+    import importlib.util
 
     minute_by_code, feature_by_code = (
         build_fix17_long_live_inputs()
     )
 
-    # Use the actual GCS 1m session selected by the input builder,
-    # not the calendar date on which this job happens to run.
     market_date = None
 
     if minute_by_code:
-        first_df = next(iter(minute_by_code.values()))
+        first_df = next(
+            iter(
+                minute_by_code.values()
+            )
+        )
         if (
             first_df is not None
             and not first_df.empty
             and "Datetime" in first_df.columns
         ):
-            market_date = (
-                pd.to_datetime(
-                    first_df["Datetime"],
-                    errors="coerce",
+            dt_series = pd.to_datetime(
+                first_df["Datetime"],
+                errors="coerce",
+            ).dropna()
+
+            if not dt_series.empty:
+                market_date = (
+                    dt_series.iloc[0]
+                    .date()
+                    .isoformat()
                 )
-                .dropna()
-                .iloc[0]
-                .date()
-                .isoformat()
-            )
 
     if market_date is None:
         market_date = datetime.now(
@@ -3496,18 +3611,51 @@ def generate_fix17_long_live_candidates():
             "candidates": [],
         }
 
-    generator = (
-        get_fix17_long_candidate_generator()
+    bridge_path = (
+        Path(__file__).resolve().parent
+        / "fix17_long_candidate_bridge.py"
     )
 
-    if generator is None:
+    if not bridge_path.exists():
         raise RuntimeError(
-            "FIX17 LONG candidate generator missing"
+            "FIX17 candidate bridge missing: "
+            + str(bridge_path)
         )
 
-    candidates = generator(
-        minute_by_code,
-        feature_by_code,
+    spec = importlib.util.spec_from_file_location(
+        "fix17_candidate_bridge",
+        bridge_path,
+    )
+
+    if (
+        spec is None
+        or spec.loader is None
+    ):
+        raise RuntimeError(
+            "FIX17 candidate bridge import failed"
+        )
+
+    module = importlib.util.module_from_spec(
+        spec
+    )
+    spec.loader.exec_module(
+        module
+    )
+
+    if not hasattr(
+        module,
+        "generate_fix17_long_short_candidates",
+    ):
+        raise RuntimeError(
+            "FIX17 LONG+SHORT bridge function missing"
+        )
+
+    candidates = (
+        module
+        .generate_fix17_long_short_candidates(
+            minute_by_code,
+            feature_by_code,
+        )
     )
 
     if candidates is None:
@@ -3517,36 +3665,49 @@ def generate_fix17_long_live_candidates():
         candidates,
         list,
     ):
-        candidates = list(candidates)
-
-    return {
-        "market_date": market_date,
-        "candidates": candidates,
-    }
-
-
-def generate_fix17_live_candidates():
-    """
-    Combined FIX17 paper candidate entry point.
-
-    LONG:
-        Existing audited FIX17 LONG bridge.
-
-    SHORT:
-        Disabled because the current audited status is
-        SHORT_ENTRY_CONTRACT_NOT_FULLY_PROVEN.
-    """
-
-    short_status = (
-        get_fix17_short_generator_status()
-    )
-
-    if short_status.get("enabled", False):
-        raise RuntimeError(
-            "Unexpected SHORT enablement without proven contract"
+        candidates = list(
+            candidates
         )
 
-    return generate_fix17_long_live_candidates()
+    long_count = sum(
+        1
+        for c in candidates
+        if str(
+            c.get(
+                "side",
+                "",
+            )
+        ).upper() == "LONG"
+    )
+
+    short_count = sum(
+        1
+        for c in candidates
+        if str(
+            c.get(
+                "side",
+                "",
+            )
+        ).upper() == "SHORT"
+    )
+
+    print(
+        "FIX17 selected LONG candidates:",
+        long_count,
+    )
+    print(
+        "FIX17 selected SHORT candidates:",
+        short_count,
+    )
+
+    return {
+        "market_date":
+            market_date,
+
+        "candidates":
+            candidates,
+    }
+
 
 def execute_fix17_candidate_batch():
 
@@ -3889,9 +4050,12 @@ def send_normal_result_mail(
             )
 
             lines.append(
-                f"{code} {side} "
-                f"{qty}株 "
-                f"@{entry_price:,.2f}"
+                f"Side: {side} | "
+                f"Code: {code} | "
+                f"Qty: {qty}株 | "
+                f"Entry: {entry_price:,.2f}円 | "
+                f"Notional: "
+                f"{entry_price * float(qty):,.0f}円"
             )
 
     orders = execution_result.get(
@@ -4080,9 +4244,9 @@ def get_fix17_long_candidate_generator():
 def get_fix17_short_generator_status():
 
     return {
-        "enabled": False,
+        "enabled": True,
         "reason":
-            "SHORT_ENTRY_CONTRACT_NOT_FULLY_PROVEN",
+            "RECOVERED_FIX11_SHORT_SIGNAL_PATH",
     }
 
 # === END FIX17 STEP8 LONG GENERATOR BRIDGE ===
